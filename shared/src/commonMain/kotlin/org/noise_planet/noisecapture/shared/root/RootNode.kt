@@ -1,4 +1,4 @@
-package org.noise_planet.noisecapture.shared.child.root
+package org.noise_planet.noisecapture.shared.root
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,8 +18,8 @@ import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
 import com.bumble.appyx.navigation.node.ParentNode
 import org.noise_planet.noisecapture.shared.child.ChildNode1
-import org.noise_planet.noisecapture.shared.child.root.RootNode.InteractionTarget
-import org.noise_planet.noisecapture.shared.child.root.RootNode.InteractionTarget.Child1
+import org.noise_planet.noisecapture.shared.root.RootNode.InteractionTarget
+import org.noise_planet.noisecapture.shared.root.RootNode.InteractionTarget.Child1
 import com.bumble.appyx.utils.multiplatform.Parcelable
 import com.bumble.appyx.utils.multiplatform.Parcelize
 import org.koin.core.Koin

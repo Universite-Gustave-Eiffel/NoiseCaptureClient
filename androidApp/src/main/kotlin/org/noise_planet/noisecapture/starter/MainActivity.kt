@@ -9,7 +9,7 @@ import com.bumble.appyx.navigation.integration.NodeActivity
 import com.bumble.appyx.navigation.integration.NodeHost
 import com.bumble.appyx.navigation.platform.AndroidLifecycle
 import org.koin.dsl.module
-import org.noise_planet.noisecapture.shared.child.root.RootNode
+import org.noise_planet.noisecapture.shared.root.RootNode
 import org.noise_planet.noisecapture.shared.initKoin
 import org.noise_planet.noisecapture.shared.ui.theme.AppyxStarterKitTheme
 

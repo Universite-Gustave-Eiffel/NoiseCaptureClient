@@ -18,15 +18,13 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppyxStarterKit"
-        tools:targetApi="31">
+        android:theme="@style/Theme.AppyxStarterKit">
         <activity
             android:name="org.noise_planet.noisecapture.starter.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.AppyxStarterKit">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
