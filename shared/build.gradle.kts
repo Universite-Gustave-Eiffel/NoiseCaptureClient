@@ -15,21 +15,22 @@ kotlin {
         }
     }
 
-    jvm("desktop") {
-        compilations.all {
-            kotlinOptions.jvmTarget = libs.versions.jvm.target.get()
-        }
-    }
-
     js(IR) {
         // Adding moduleName as a workaround for this issue: https://youtrack.jetbrains.com/issue/KT-51942
-        moduleName = "appyx-starter-kit-common"
+        moduleName = "noisecapture-common"
         browser()
     }
 
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
+    listOf(
+        iosX64(),
+        iosArm64(),
+        iosSimulatorArm64()
+    ).forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            baseName = "shared"
+            isStatic = true
+        }
+    }
 
     sourceSets {
         val commonMain by getting {
@@ -49,6 +50,15 @@ kotlin {
                 implementation(kotlin("test"))
             }
         }
+        val iosX64Main by getting
+        val iosArm64Main by getting
+        val iosSimulatorArm64Main by getting
+        val iosMain by creating {
+            dependsOn(commonMain)
+            iosX64Main.dependsOn(this)
+            iosArm64Main.dependsOn(this)
+            iosSimulatorArm64Main.dependsOn(this)
+        }
     }
 }
 
@@ -63,7 +73,6 @@ android {
 dependencies {
     add("kspCommonMainMetadata", libs.appyx.mutable.ui.processor)
     add("kspAndroid", libs.appyx.mutable.ui.processor)
-    add("kspDesktop", libs.appyx.mutable.ui.processor)
     add("kspJs", libs.appyx.mutable.ui.processor)
     add("kspIosArm64", libs.appyx.mutable.ui.processor)
     add("kspIosX64", libs.appyx.mutable.ui.processor)

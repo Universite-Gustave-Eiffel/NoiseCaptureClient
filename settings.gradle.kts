@@ -22,7 +22,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "AppyxStarterKit"
+rootProject.name = "NoiseCapture"
 
 include(":androidApp")
 include(":webApp")
