@@ -33,8 +33,10 @@ kotlin {
     }
 
     sourceSets {
+        @Suppress("UNUSED_VARIABLE")
         val commonMain by getting {
             dependencies {
+                implementation(projects.permissions)
                 api(compose.runtime)
                 api(compose.foundation)
                 api(compose.material3)
@@ -43,8 +45,10 @@ kotlin {
                 api(libs.appyx.components.backstack)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 implementation(compose.components.resources)
+                implementation(libs.koin.core)
             }
         }
+        @Suppress("UNUSED_VARIABLE")
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
@@ -53,6 +57,7 @@ kotlin {
         val iosX64Main by getting
         val iosArm64Main by getting
         val iosSimulatorArm64Main by getting
+        @Suppress("UNUSED_VARIABLE")
         val iosMain by creating {
             dependsOn(commonMain)
             iosX64Main.dependsOn(this)

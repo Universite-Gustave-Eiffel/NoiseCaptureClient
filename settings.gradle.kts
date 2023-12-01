@@ -24,7 +24,10 @@ dependencyResolutionManagement {
 
 rootProject.name = "NoiseCapture"
 
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 include(":androidApp")
 include(":webApp")
 include(":ios")
 include(":shared")
+include(":permissions")
