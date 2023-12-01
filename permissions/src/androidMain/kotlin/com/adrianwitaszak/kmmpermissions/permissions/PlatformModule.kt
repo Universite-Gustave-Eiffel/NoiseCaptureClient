@@ -3,6 +3,7 @@ package com.adrianwitaszak.kmmpermissions.permissions
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.location.LocationManager
+import com.adrianwitaszak.kmmpermissions.permissions.delegate.AudioRecordPermissionDelegate
 import com.adrianwitaszak.kmmpermissions.permissions.delegate.BluetoothPermissionDelegate
 import com.adrianwitaszak.kmmpermissions.permissions.delegate.BluetoothServicePermissionDelegate
 import com.adrianwitaszak.kmmpermissions.permissions.delegate.LocationBackgroundPermissionDelegate
@@ -53,6 +54,12 @@ internal actual fun platformModule(): Module = module {
             context = get(),
             activity = inject(),
             locationForegroundPermissionDelegate = get(named(Permission.LOCATION_FOREGROUND.name)),
+        )
+    }
+    single<PermissionDelegate>(named(Permission.RECORD_AUDIO.name)) {
+        AudioRecordPermissionDelegate(
+            context = get(),
+            activity = inject()
         )
     }
 }

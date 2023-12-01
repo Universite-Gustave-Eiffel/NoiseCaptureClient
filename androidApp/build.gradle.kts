@@ -24,6 +24,8 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = true
+            multiDexEnabled = true
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {

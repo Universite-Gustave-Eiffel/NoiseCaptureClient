@@ -29,4 +29,9 @@ enum class Permission {
      * App location background permission.
      */
     LOCATION_BACKGROUND,
+
+    /**
+     * App audio recording permission.
+     */
+    RECORD_AUDIO,
 }

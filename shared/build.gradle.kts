@@ -74,6 +74,12 @@ android {
     defaultConfig {
         minSdk = libs.versions.android.min.sdk.get().toInt()
     }
+    buildTypes {
+        getByName("release") {
+            isMinifyEnabled = true
+            multiDexEnabled = true
+        }
+    }
 }
 
 dependencies {
