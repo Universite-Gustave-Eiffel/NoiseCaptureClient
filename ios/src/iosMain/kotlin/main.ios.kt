@@ -6,8 +6,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.window.ComposeUIViewController
 import com.bumble.appyx.navigation.integration.IosNodeHost
 import com.bumble.appyx.navigation.integration.MainIntegrationPoint
-import com.bumble.appyx.shared.root.RootNode
-import com.bumble.appyx.shared.ui.theme.AppyxStarterKitTheme
+import org.noise_planet.noisecapture.shared.child.root.RootNode
+import org.noise_planet.noisecapture.shared.ui.theme.AppyxStarterKitTheme
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 

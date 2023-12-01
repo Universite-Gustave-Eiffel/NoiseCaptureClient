@@ -53,7 +53,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.bumble.appyx.shared"
+    namespace = "org.noise_planet.noisecapturekmp.shared"
     compileSdk = 34
     defaultConfig {
         minSdk = libs.versions.android.min.sdk.get().toInt()

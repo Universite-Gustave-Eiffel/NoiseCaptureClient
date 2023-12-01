@@ -6,10 +6,10 @@ plugins {
 }
 
 android {
-    namespace = "com.bumble.starter"
+    namespace = "org.noise_planet.noisecapture"
     compileSdk = libs.versions.android.compile.sdk.get().toInt()
     defaultConfig {
-        applicationId = "com.bumble.starter"
+        applicationId = "org.noise_planet.noisecapturekmp"
         minSdk = libs.versions.android.min.sdk.get().toInt()
         targetSdk = libs.versions.android.target.sdk.get().toInt()
         versionCode = 1

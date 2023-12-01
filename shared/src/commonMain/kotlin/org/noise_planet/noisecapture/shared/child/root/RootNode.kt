@@ -1,4 +1,4 @@
-package com.bumble.appyx.shared.root
+package org.noise_planet.noisecapture.shared.child.root
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,11 +16,11 @@ import com.bumble.appyx.navigation.composable.AppyxComponent
 import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
 import com.bumble.appyx.navigation.node.ParentNode
-import com.bumble.appyx.shared.child.ChildNode1
-import com.bumble.appyx.shared.child.ChildNode2
-import com.bumble.appyx.shared.root.RootNode.InteractionTarget
-import com.bumble.appyx.shared.root.RootNode.InteractionTarget.Child1
-import com.bumble.appyx.shared.root.RootNode.InteractionTarget.Child2
+import org.noise_planet.noisecapture.shared.child.ChildNode1
+import org.noise_planet.noisecapture.shared.child.ChildNode2
+import org.noise_planet.noisecapture.shared.child.root.RootNode.InteractionTarget
+import org.noise_planet.noisecapture.shared.child.root.RootNode.InteractionTarget.Child1
+import org.noise_planet.noisecapture.shared.child.root.RootNode.InteractionTarget.Child2
 import com.bumble.appyx.utils.multiplatform.Parcelable
 import com.bumble.appyx.utils.multiplatform.Parcelize
 import kotlinx.coroutines.delay

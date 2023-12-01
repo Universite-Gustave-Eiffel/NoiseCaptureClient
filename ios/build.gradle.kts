@@ -47,7 +47,7 @@ kotlin {
 
 compose.experimental {
     uikit.application {
-        projectName = "Appyx Starter Kit"
-        bundleIdPrefix = "com.bumble.appyx"
+        projectName = "NoiseCapture"
+        bundleIdPrefix = "org.noise_planet.noisecapturekmp"
     }
 }

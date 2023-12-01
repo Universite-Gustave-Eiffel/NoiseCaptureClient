@@ -21,8 +21,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.CanvasBasedWindow
 import com.bumble.appyx.navigation.integration.ScreenSize
 import com.bumble.appyx.navigation.integration.WebNodeHost
-import com.bumble.appyx.shared.root.RootNode
-import com.bumble.appyx.shared.ui.theme.AppyxStarterKitTheme
+import org.noise_planet.noisecapture.shared.child.root.RootNode
+import org.noise_planet.noisecapture.shared.ui.theme.AppyxStarterKitTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

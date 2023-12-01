@@ -1,4 +1,4 @@
-package com.bumble.appyx.shared.ui.theme
+package org.noise_planet.noisecapture.shared.ui.theme
 
 import androidx.compose.material.Typography
 import androidx.compose.ui.text.TextStyle

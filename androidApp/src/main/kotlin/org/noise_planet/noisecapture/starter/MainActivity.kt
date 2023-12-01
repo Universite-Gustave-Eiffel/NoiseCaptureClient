@@ -1,4 +1,4 @@
-package com.bumble.starter
+package org.noise_planet.noisecapture.starter
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
@@ -6,8 +6,8 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import com.bumble.appyx.navigation.integration.NodeActivity
 import com.bumble.appyx.navigation.integration.NodeHost
 import com.bumble.appyx.navigation.platform.AndroidLifecycle
-import com.bumble.appyx.shared.root.RootNode
-import com.bumble.appyx.shared.ui.theme.AppyxStarterKitTheme
+import org.noise_planet.noisecapture.shared.child.root.RootNode
+import org.noise_planet.noisecapture.shared.ui.theme.AppyxStarterKitTheme
 
 class MainActivity : NodeActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

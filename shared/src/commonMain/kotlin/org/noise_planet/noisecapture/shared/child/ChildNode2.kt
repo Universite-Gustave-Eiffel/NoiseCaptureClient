@@ -1,4 +1,4 @@
-package com.bumble.appyx.shared.child
+package org.noise_planet.noisecapture.shared.child
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -14,8 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
-import com.bumble.appyx.shared.ui.theme.md_deep_purple_50
-import com.bumble.appyx.shared.ui.theme.md_grey_500
+import org.noise_planet.noisecapture.shared.ui.theme.md_deep_purple_50
+import org.noise_planet.noisecapture.shared.ui.theme.md_grey_500
 
 class ChildNode2(
     buildContext: BuildContext,
