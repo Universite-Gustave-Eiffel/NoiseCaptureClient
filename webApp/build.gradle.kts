@@ -19,6 +19,7 @@ kotlin {
                 implementation(project(":shared"))
                 implementation(libs.appyx.navigation)
                 implementation(libs.appyx.components.backstack)
+                implementation(libs.koin.core)
             }
         }
     }

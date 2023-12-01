@@ -30,6 +30,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import org.jetbrains.skiko.wasm.onWasmReady
+import org.noise_planet.noisecapture.shared.initKoin
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
@@ -55,9 +56,12 @@ fun main() {
                         .focusRequester(requester)
                         .focusable()
                         .onFocusChanged { hasFocus = it.hasFocus },
-                ) { buildContext ->
+                ) {
+                        buildContext ->
+                    val koinApplication = initKoin()
                     RootNode(
                         buildContext = buildContext,
+                        koin = koinApplication.koin
                     )
                 }
                 if (!hasFocus) {
