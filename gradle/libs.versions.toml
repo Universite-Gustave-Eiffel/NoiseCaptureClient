@@ -3,7 +3,7 @@
 [versions]
 agp = "8.1.1"
 android-compile-sdk = "34"
-android-min-sdk = "21"
+android-min-sdk = "23"
 android-target-sdk = "32"
 androidx-activity-compose = "1.8.0"
 androidx-lifecycle = "2.6.2"
