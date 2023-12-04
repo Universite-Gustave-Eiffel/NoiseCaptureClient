@@ -2,7 +2,6 @@ package org.noise_planet.noisecapture.shared.child
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,15 +12,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Button
+import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Divider
 import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.QuestionMark
 import androidx.compose.runtime.Composable
@@ -38,15 +35,13 @@ import com.adrianwitaszak.kmmpermissions.permissions.service.PermissionsService
 import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
 import kotlinx.coroutines.launch
-import org.noise_planet.noisecapture.shared.ui.theme.sizzling_red
 
-class ChildNode1(buildContext: BuildContext, private val permissionsService: PermissionsService) : Node(buildContext) {
+class PermissionScreen(buildContext: BuildContext, private val permissionsService: PermissionsService) : Node(buildContext) {
 
     @Composable
     override fun View(modifier: Modifier) {
         val scope = rememberCoroutineScope()
 
-        MyApplicationTheme {
             Surface(
                 modifier = Modifier.fillMaxSize(),
                 color = MaterialTheme.colors.background
@@ -71,7 +66,8 @@ class ChildNode1(buildContext: BuildContext, private val permissionsService: Per
                             Divider()
                         }
                     }
-                    items(Permission.values()) { permission ->
+                    val requiredPermissions = arrayOf(Permission.RECORD_AUDIO)
+                    items(requiredPermissions) { permission ->
                         val permissionState by permissionsService.checkPermissionFlow(permission)
                             .collectAsState(permissionsService.checkPermission(permission))
                         PermissionItem(
@@ -87,10 +83,17 @@ class ChildNode1(buildContext: BuildContext, private val permissionsService: Per
                             },
                         )
                     }
+                    item {
+                        val okToContinue = requiredPermissions.all {
+                                permission -> permissionsService.checkPermission(permission) == PermissionState.GRANTED
+                        }
+                        Button(onClick = {  }, enabled = okToContinue) {
+                            Text("Next")
+                        }
+                    }
                 }
             }
         }
-    }
 }
 
 

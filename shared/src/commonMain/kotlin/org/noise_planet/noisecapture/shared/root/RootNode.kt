@@ -9,15 +9,12 @@ import androidx.compose.ui.Modifier
 import com.adrianwitaszak.kmmpermissions.permissions.service.PermissionsService
 import com.bumble.appyx.components.backstack.BackStack
 import com.bumble.appyx.components.backstack.BackStackModel
-import com.bumble.appyx.components.backstack.activeElement
-import com.bumble.appyx.components.backstack.operation.pop
-import com.bumble.appyx.components.backstack.operation.push
 import com.bumble.appyx.components.backstack.ui.parallax.BackStackParallax
 import com.bumble.appyx.navigation.composable.AppyxComponent
 import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
 import com.bumble.appyx.navigation.node.ParentNode
-import org.noise_planet.noisecapture.shared.child.ChildNode1
+import org.noise_planet.noisecapture.shared.child.PermissionScreen
 import org.noise_planet.noisecapture.shared.root.RootNode.InteractionTarget
 import org.noise_planet.noisecapture.shared.root.RootNode.InteractionTarget.Child1
 import com.bumble.appyx.utils.multiplatform.Parcelable
@@ -45,7 +42,7 @@ class RootNode(
     }
 
     override fun resolve(interactionTarget: InteractionTarget, buildContext: BuildContext): Node =
-        ChildNode1(buildContext, koin.get<PermissionsService>())
+        PermissionScreen(buildContext, koin.get<PermissionsService>())
 
     @Composable
     override fun View(modifier: Modifier) {
