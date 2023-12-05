@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -34,6 +35,7 @@ import com.adrianwitaszak.kmmpermissions.permissions.model.PermissionState
 import com.adrianwitaszak.kmmpermissions.permissions.service.PermissionsService
 import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 class PermissionScreen(buildContext: BuildContext, private val permissionsService: PermissionsService) : Node(buildContext) {
@@ -70,7 +72,7 @@ class PermissionScreen(buildContext: BuildContext, private val permissionsServic
                     items(requiredPermissions) { permission ->
                         val permissionState by permissionsService.checkPermissionFlow(permission)
                             .collectAsState(permissionsService.checkPermission(permission))
-                        PermissionItem(
+                        permissionItem(
                             permissionName = permission.name,
                             permissionState = permissionState,
                             onRequestClick = {
@@ -84,22 +86,37 @@ class PermissionScreen(buildContext: BuildContext, private val permissionsServic
                         )
                     }
                     item {
-                        val okToContinue = requiredPermissions.all {
-                                permission -> permissionsService.checkPermission(permission) == PermissionState.GRANTED
-                        }
-                        Button(onClick = {  }, enabled = okToContinue) {
-                            Text("Next")
-                        }
+                        nextPanelAfterGranted(requiredPermissions, onNextClick = {}, permissionsService)
                     }
                 }
             }
         }
 }
 
+@Composable
+internal fun nextPanelAfterGranted(permissions: Array<Permission>, onNextClick: () -> Unit,
+                                   permissionsService: PermissionsService) {
+    val permissionsState by combine(permissions.map { p-> permissionsService.checkPermissionFlow(p)},
+        transform = {it.all { p -> p == PermissionState.GRANTED }})
+        .collectAsState(false)
+    Column(modifier = Modifier.fillMaxSize()) {
+        Spacer(modifier = Modifier.fillMaxSize())
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 20.dp),
+            horizontalArrangement = Arrangement.End,
+        ) {
+            Button(onClick = { }, enabled = permissionsState) {
+                Text("Next")
+            }
+        }
+    }
+}
 
 @Suppress("FunctionName")
 @Composable
-internal fun PermissionItem(
+internal fun permissionItem(
     permissionName: String,
     permissionState: PermissionState,
     onRequestClick: () -> Unit,

@@ -15,34 +15,32 @@ import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
 import com.bumble.appyx.navigation.node.ParentNode
 import org.noise_planet.noisecapture.shared.child.PermissionScreen
-import org.noise_planet.noisecapture.shared.root.RootNode.InteractionTarget
-import org.noise_planet.noisecapture.shared.root.RootNode.InteractionTarget.Child1
-import com.bumble.appyx.utils.multiplatform.Parcelable
-import com.bumble.appyx.utils.multiplatform.Parcelize
+import org.noise_planet.noisecapture.shared.Screens
+import org.noise_planet.noisecapture.shared.Screens.PermissionTarget
+import org.noise_planet.noisecapture.shared.Screens.HomeTarget
 import org.koin.core.Koin
+import org.noise_planet.noisecapture.shared.child.HomeScreen
 
 class RootNode(
     buildContext: BuildContext,
-    private val backStack: BackStack<InteractionTarget> = BackStack(
+    private val backStack: BackStack<Screens> = BackStack(
         model = BackStackModel(
-            initialTargets = listOf(Child1),
+            initialTargets = listOf(HomeTarget),
             savedStateMap = buildContext.savedStateMap
         ),
         visualisation = { BackStackParallax(it) }
     ),
     val koin: Koin
-) : ParentNode<InteractionTarget>(
+) : ParentNode<Screens>(
     buildContext = buildContext,
     appyxComponent = backStack
 ) {
 
-    sealed class InteractionTarget : Parcelable {
-        @Parcelize
-        data object Child1 : InteractionTarget()
-    }
-
-    override fun resolve(interactionTarget: InteractionTarget, buildContext: BuildContext): Node =
-        PermissionScreen(buildContext, koin.get<PermissionsService>())
+    override fun resolve(interactionTarget: Screens, buildContext: BuildContext): Node =
+        when(interactionTarget) {
+            is PermissionTarget -> PermissionScreen(buildContext, koin.get<PermissionsService>())
+            is HomeTarget -> HomeScreen(buildContext, backStack)
+        }
 
     @Composable
     override fun View(modifier: Modifier) {
