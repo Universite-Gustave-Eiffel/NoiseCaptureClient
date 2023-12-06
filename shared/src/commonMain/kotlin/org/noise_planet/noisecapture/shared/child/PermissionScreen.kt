@@ -51,7 +51,7 @@ class PermissionScreen(buildContext: BuildContext, private val permissionsServic
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     contentPadding = PaddingValues(
-                        top = 64.dp,
+                        top = 16.dp,
                         bottom = 64.dp,
                         start = 16.dp,
                         end = 16.dp

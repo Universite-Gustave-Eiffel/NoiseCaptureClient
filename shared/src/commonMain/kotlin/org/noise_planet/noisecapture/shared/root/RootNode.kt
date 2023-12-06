@@ -2,13 +2,17 @@ package org.noise_planet.noisecapture.shared.root
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.adrianwitaszak.kmmpermissions.permissions.service.PermissionsService
 import com.bumble.appyx.components.backstack.BackStack
 import com.bumble.appyx.components.backstack.BackStackModel
+import com.bumble.appyx.components.backstack.operation.pop
 import com.bumble.appyx.components.backstack.ui.parallax.BackStackParallax
 import com.bumble.appyx.navigation.composable.AppyxComponent
 import com.bumble.appyx.navigation.modality.BuildContext
@@ -20,6 +24,7 @@ import org.noise_planet.noisecapture.shared.Screens.PermissionTarget
 import org.noise_planet.noisecapture.shared.Screens.HomeTarget
 import org.koin.core.Koin
 import org.noise_planet.noisecapture.shared.child.HomeScreen
+import org.noise_planet.noisecapture.shared.child.NavigationScreen
 
 class RootNode(
     buildContext: BuildContext,
@@ -38,7 +43,7 @@ class RootNode(
 
     override fun resolve(interactionTarget: Screens, buildContext: BuildContext): Node =
         when(interactionTarget) {
-            is PermissionTarget -> PermissionScreen(buildContext, koin.get<PermissionsService>())
+            is PermissionTarget -> PermissionScreen(buildContext, koin.get())
             is HomeTarget -> HomeScreen(buildContext, backStack)
         }
 
@@ -49,10 +54,13 @@ class RootNode(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier.fillMaxSize()
         ) {
-            AppyxComponent(
-                appyxComponent = backStack,
-                modifier = Modifier.fillMaxSize()
-            )
+            NavigationScreen(backStack) {
+                AppyxComponent(
+                    appyxComponent = backStack,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+
         }
     }
 }
