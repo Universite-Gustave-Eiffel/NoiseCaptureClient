@@ -65,10 +65,18 @@ class PermissionScreen(buildContext: BuildContext, private val permissionsServic
                                 style = MaterialTheme.typography.h4,
                                 color = MaterialTheme.colors.onSurface,
                             )
+                            Text(
+                                text = "In order to measure the sound level and place it on a map the application need to have access to sensitive sensors. Please tap on Request buttons.",
+                                style = MaterialTheme.typography.body1,
+                                color = MaterialTheme.colors.onSurface,
+                            )
                             Divider()
                         }
                     }
-                    val requiredPermissions = arrayOf(Permission.RECORD_AUDIO)
+                    val requiredPermissions = arrayOf(Permission.RECORD_AUDIO, Permission.LOCATION_SERVICE_ON, Permission.LOCATION_FOREGROUND, Permission.LOCATION_BACKGROUND)
+                    item {
+                        nextPanelAfterGranted(requiredPermissions, onNextClick = {}, permissionsService)
+                    }
                     items(requiredPermissions) { permission ->
                         val permissionState by permissionsService.checkPermissionFlow(permission)
                             .collectAsState(permissionsService.checkPermission(permission))
@@ -84,9 +92,6 @@ class PermissionScreen(buildContext: BuildContext, private val permissionsServic
                                 permissionsService.openSettingPage(permission)
                             },
                         )
-                    }
-                    item {
-                        nextPanelAfterGranted(requiredPermissions, onNextClick = {}, permissionsService)
                     }
                 }
             }

@@ -11,13 +11,12 @@ import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Battery4Bar
-import androidx.compose.material.icons.outlined.FormatListBulleted
+import androidx.compose.material.icons.filled.CenterFocusWeak
 import androidx.compose.material.icons.outlined.Help
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.Mic
-import androidx.compose.material.icons.outlined.PieChartOutline
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.ShowChart
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -29,7 +28,7 @@ import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
 import org.noise_planet.noisecapture.shared.Screens
 import org.noise_planet.noisecapture.shared.ui.theme.rememberClinicalNotes
-import org.noise_planet.noisecapture.shared.ui.theme.rememberCalibrate
+import org.noise_planet.noisecapture.shared.ui.theme.rememberOverview
 
 class HomeScreen(buildContext: BuildContext,
                  val backStack: BackStack<Screens>) : Node(buildContext) {
@@ -42,7 +41,7 @@ class HomeScreen(buildContext: BuildContext,
             val menuItems = arrayOf(
                 MenuItem("Test label", Icons.Outlined.Mic,
                     onClick = { backStack.push(Screens.PermissionTarget) }),
-                MenuItem("Measurement History", Icons.Outlined.FormatListBulleted,
+                MenuItem("Measurement History", rememberOverview(),
                     onClick = {}),
                 MenuItem("Measurement feedback", rememberClinicalNotes(),
                     onClick = {}),
@@ -54,9 +53,9 @@ class HomeScreen(buildContext: BuildContext,
                     onClick = {}),
                 MenuItem("About", Icons.Outlined.Info,
                     onClick = {}),
-                MenuItem("Calibration", rememberCalibrate(),
+                MenuItem("Calibration", Icons.Default.CenterFocusWeak,
                     onClick = {}),
-                MenuItem("Settings", Icons.Outlined.Info,
+                MenuItem("Settings", Icons.Outlined.Settings,
                     onClick = {})
             )
 

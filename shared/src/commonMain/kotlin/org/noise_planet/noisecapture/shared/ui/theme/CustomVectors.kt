@@ -3,12 +3,9 @@ package org.noise_planet.noisecapture.shared.ui.theme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.PathFillType.Companion.NonZero
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeCap.Companion.Butt
-import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.StrokeJoin.Companion.Miter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
@@ -357,6 +354,87 @@ fun rememberCalibrate(): ImageVector {
                 curveToRelative(-0.1747f, 0.1561f, -0.3177f, 0.2914f, -0.3177f, 0.3008f)
                 curveToRelative(0.0f, 0.0152f, 3.1928f, 3.219f, 3.2079f, 3.219f)
                 curveToRelative(0.0034f, 0.0f, 0.152f, -0.1229f, 0.3303f, -0.273f)
+                close()
+            }
+        }.build()
+    }
+}
+
+
+@Composable
+fun rememberOverview(): ImageVector {
+    return remember {
+        ImageVector.Builder(name = "overview",
+            defaultWidth = 24.0.dp, defaultHeight = 24.0.dp, viewportWidth = 960.0f,
+            viewportHeight = 960.0f).apply {
+            path(fill = SolidColor(Color(0xFF000000)), stroke = null, strokeLineWidth = 0.0f,
+                strokeLineCap = Butt, strokeLineJoin = Miter, strokeLineMiter = 4.0f,
+                pathFillType = NonZero) {
+                moveToRelative(787.0f, 815.0f)
+                lineToRelative(28.0f, -28.0f)
+                lineToRelative(-75.0f, -75.0f)
+                verticalLineToRelative(-112.0f)
+                horizontalLineToRelative(-40.0f)
+                verticalLineToRelative(128.0f)
+                lineToRelative(87.0f, 87.0f)
+                close()
+                moveTo(200.0f, 840.0f)
+                quadToRelative(-33.0f, 0.0f, -56.5f, -23.5f)
+                reflectiveQuadTo(120.0f, 760.0f)
+                verticalLineToRelative(-560.0f)
+                quadToRelative(0.0f, -33.0f, 23.5f, -56.5f)
+                reflectiveQuadTo(200.0f, 120.0f)
+                horizontalLineToRelative(560.0f)
+                quadToRelative(33.0f, 0.0f, 56.5f, 23.5f)
+                reflectiveQuadTo(840.0f, 200.0f)
+                verticalLineToRelative(268.0f)
+                quadToRelative(-19.0f, -9.0f, -39.0f, -15.5f)
+                reflectiveQuadToRelative(-41.0f, -9.5f)
+                verticalLineToRelative(-243.0f)
+                lineTo(200.0f, 200.0f)
+                verticalLineToRelative(560.0f)
+                horizontalLineToRelative(242.0f)
+                quadToRelative(3.0f, 22.0f, 9.5f, 42.0f)
+                reflectiveQuadToRelative(15.5f, 38.0f)
+                lineTo(200.0f, 840.0f)
+                close()
+                moveTo(200.0f, 720.0f)
+                verticalLineToRelative(40.0f)
+                verticalLineToRelative(-560.0f)
+                verticalLineToRelative(243.0f)
+                verticalLineToRelative(-3.0f)
+                verticalLineToRelative(280.0f)
+                close()
+                moveTo(280.0f, 680.0f)
+                horizontalLineToRelative(163.0f)
+                quadToRelative(3.0f, -21.0f, 9.5f, -41.0f)
+                reflectiveQuadToRelative(14.5f, -39.0f)
+                lineTo(280.0f, 600.0f)
+                verticalLineToRelative(80.0f)
+                close()
+                moveTo(280.0f, 520.0f)
+                horizontalLineToRelative(244.0f)
+                quadToRelative(32.0f, -30.0f, 71.5f, -50.0f)
+                reflectiveQuadToRelative(84.5f, -27.0f)
+                verticalLineToRelative(-3.0f)
+                lineTo(280.0f, 440.0f)
+                verticalLineToRelative(80.0f)
+                close()
+                moveTo(280.0f, 360.0f)
+                horizontalLineToRelative(400.0f)
+                verticalLineToRelative(-80.0f)
+                lineTo(280.0f, 280.0f)
+                verticalLineToRelative(80.0f)
+                close()
+                moveTo(720.0f, 920.0f)
+                quadToRelative(-83.0f, 0.0f, -141.5f, -58.5f)
+                reflectiveQuadTo(520.0f, 720.0f)
+                quadToRelative(0.0f, -83.0f, 58.5f, -141.5f)
+                reflectiveQuadTo(720.0f, 520.0f)
+                quadToRelative(83.0f, 0.0f, 141.5f, 58.5f)
+                reflectiveQuadTo(920.0f, 720.0f)
+                quadToRelative(0.0f, 83.0f, -58.5f, 141.5f)
+                reflectiveQuadTo(720.0f, 920.0f)
                 close()
             }
         }.build()
