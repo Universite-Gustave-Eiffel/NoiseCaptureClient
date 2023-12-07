@@ -38,7 +38,9 @@ import com.bumble.appyx.navigation.node.Node
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
-class PermissionScreen(buildContext: BuildContext, private val permissionsService: PermissionsService) : Node(buildContext) {
+class PermissionScreen(buildContext: BuildContext,
+                       private val permissionsService: PermissionsService,
+    private val onNextClick: () -> Unit) : Node(buildContext) {
 
     @Composable
     override fun View(modifier: Modifier) {
@@ -65,17 +67,17 @@ class PermissionScreen(buildContext: BuildContext, private val permissionsServic
                                 style = MaterialTheme.typography.h4,
                                 color = MaterialTheme.colors.onSurface,
                             )
+                            Divider()
                             Text(
                                 text = "In order to measure the sound level and place it on a map the application need to have access to sensitive sensors. Please tap on Request buttons.",
                                 style = MaterialTheme.typography.body1,
                                 color = MaterialTheme.colors.onSurface,
                             )
-                            Divider()
                         }
                     }
                     val requiredPermissions = arrayOf(Permission.RECORD_AUDIO, Permission.LOCATION_SERVICE_ON, Permission.LOCATION_FOREGROUND, Permission.LOCATION_BACKGROUND)
                     item {
-                        nextPanelAfterGranted(requiredPermissions, onNextClick = {}, permissionsService)
+                        nextPanelAfterGranted(requiredPermissions, onNextClick = onNextClick, permissionsService)
                     }
                     items(requiredPermissions) { permission ->
                         val permissionState by permissionsService.checkPermissionFlow(permission)
@@ -112,7 +114,7 @@ internal fun nextPanelAfterGranted(permissions: Array<Permission>, onNextClick: 
                 .padding(bottom = 20.dp),
             horizontalArrangement = Arrangement.End,
         ) {
-            Button(onClick = { }, enabled = permissionsState) {
+            Button(onClick = onNextClick, enabled = permissionsState) {
                 Text("Next")
             }
         }

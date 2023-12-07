@@ -5,22 +5,29 @@ import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.os.Process
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import java.util.concurrent.atomic.AtomicBoolean
 
+const val SAMPLES_REPLAY = 10
+const val SAMPLES_CACHE = 10
 class AndroidAudioSource : AudioSource, Runnable {
+
     private lateinit var audioRecord: AudioRecord
-    private lateinit var callback: AudioCallback
     private var bufferSize = -1
+    private var sampleRate = -1
     private val recording = AtomicBoolean(false)
+    override val samples = MutableSharedFlow<FloatArray>(replay = SAMPLES_REPLAY,
+        extraBufferCapacity = SAMPLES_CACHE, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     @SuppressLint("MissingPermission")
     override fun setup(
         sampleRate: Int,
-        bufferSize: Int,
-        callback: AudioCallback
+        bufferSize: Int
     ): AudioSource.InitializeErrorCode {
         if(this.bufferSize != -1) {
             return AudioSource.InitializeErrorCode.INITIALIZE_ALREADY_INITIALIZED
         }
+        this.sampleRate = sampleRate
         val channel = AudioFormat.CHANNEL_IN_MONO
         val encoding = AudioFormat.ENCODING_PCM_FLOAT
         val minimalBufferSize = AudioRecord.getMinBufferSize(sampleRate, channel, encoding)
@@ -32,7 +39,6 @@ class AndroidAudioSource : AudioSource, Runnable {
         }
         this.bufferSize = bufferSize
         audioRecord = AudioRecord(MediaRecorder.AudioSource.VOICE_RECOGNITION, sampleRate, channel, encoding, bufferSize)
-        this.callback = callback
         Thread(this).start()
         return AudioSource.InitializeErrorCode.INITIALIZE_OK
     }
@@ -56,11 +62,15 @@ class AndroidAudioSource : AudioSource, Runnable {
             if (read < buffer.size) {
                 buffer = buffer.copyOfRange(0, read)
             }
-            callback(buffer)
+            samples.tryEmit(buffer.clone())
+            System.out.println("Got ${buffer.size} samples")
         }
         bufferSize = -1
     }
 
+    override fun getSampleRate(): Int {
+        return sampleRate
+    }
 
     override fun release() {
         audioRecord.stop()
@@ -68,6 +78,6 @@ class AndroidAudioSource : AudioSource, Runnable {
     }
 
     override fun getMicrophoneLocation(): AudioSource.MicrophoneLocation {
-        TODO("Not yet implemented")
+        return AudioSource.MicrophoneLocation.LOCATION_UNKNOWN
     }
 }

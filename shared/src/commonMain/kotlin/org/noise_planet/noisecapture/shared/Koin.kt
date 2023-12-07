@@ -13,7 +13,9 @@ fun initKoin(
     val koinApplication = koinApplication {
         modules(
             listOf(
-                module { includes(additionalModules) },
+                module {
+                    includes(additionalModules)
+               },
                 permissionsModule,
             )
         )

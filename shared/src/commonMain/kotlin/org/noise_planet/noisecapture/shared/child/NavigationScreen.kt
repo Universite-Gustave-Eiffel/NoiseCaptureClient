@@ -12,14 +12,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.bumble.appyx.components.backstack.BackStack
-import com.bumble.appyx.components.backstack.activeElement
-import com.bumble.appyx.components.backstack.activeInteractionTarget
 import com.bumble.appyx.components.backstack.operation.pop
-import org.noise_planet.noisecapture.shared.Screens
+import org.noise_planet.noisecapture.shared.ScreenData
 
 @Composable
 fun NavigationScreen(
-    backStack: BackStack<Screens>,
+    backStack: BackStack<ScreenData>,
     body: @Composable (PaddingValues) -> Unit
 ) {
     val canBackPress by backStack.canHandeBackPress().collectAsState(false)
