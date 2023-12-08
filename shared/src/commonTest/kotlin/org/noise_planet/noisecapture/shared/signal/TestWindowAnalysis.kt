@@ -45,6 +45,19 @@ class TestWindowAnalysis {
             )
             processedWindows.addAll(windowAnalysis.partialWindows)
             assertEquals(ones.sum(), processedWindows.map { it.samples.sum() }.sum())
+            // reconstruct the array
+            var sum = FloatArray(arraySize)
+            for(i in 0..<processedWindows.size) {
+                for(j in 0..<windowAnalysis.windowSize) {
+                    val to = i * windowAnalysis.windowHop + j
+                    if(to < sum.size) {
+                        sum[to] += processedWindows[i].samples[j]
+                    }
+                }
+            }
+            ones.forEachIndexed { index, value ->
+                assertEquals(value, sum[index], 1e-8f)
+            }
         }
     }
 
