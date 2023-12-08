@@ -29,16 +29,23 @@ class TestWindowAnalysis {
 
     @Test
     fun testOverlapWindowsSegments() {
-        val arraySize = 13
-        val ones = FloatArray(arraySize) {if(it in 2..arraySize-3) 1f else 0f}
-        val windowAnalysis = WindowAnalysis(1, 5, 2)
-        val processedWindows = ArrayList<Window>()
-        windowAnalysis.pushSamples(0, ones.copyOfRange(0, 9), processedWindows)
-        assertEquals(3, processedWindows.size)
-        assertEquals(2, windowAnalysis.partialWindows.size)
-        windowAnalysis.pushSamples(0, ones.copyOfRange(9, ones.size), processedWindows)
-        assertEquals(5, processedWindows.size)
-        assertEquals(ones.sum(), processedWindows.map { it.samples.sum() }.sum())
+        for(arraySize in 9..13) {
+            val ones = FloatArray(arraySize) { if (it in 2..arraySize - 3) 1f else 0f }
+            val windowAnalysis = WindowAnalysis(1, 5, 2)
+            val processedWindows = ArrayList<Window>()
+            windowAnalysis.pushSamples(
+                0,
+                ones.copyOfRange(0, (arraySize * 0.6).toInt()),
+                processedWindows
+            )
+            windowAnalysis.pushSamples(
+                0,
+                ones.copyOfRange((arraySize * 0.6).toInt(), ones.size),
+                processedWindows
+            )
+            processedWindows.addAll(windowAnalysis.partialWindows)
+            assertEquals(ones.sum(), processedWindows.map { it.samples.sum() }.sum())
+        }
     }
 
 }

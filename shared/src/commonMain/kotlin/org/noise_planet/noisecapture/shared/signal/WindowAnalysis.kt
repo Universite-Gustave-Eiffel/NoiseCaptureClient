@@ -36,7 +36,7 @@ class WindowAnalysis(val sampleRate : Int, val windowSize : Int, val windowHop :
         // feed partial windows
         var hopOffset = 0
         if(!partialWindows.isEmpty()) {
-            hopOffset = windowSize - partialWindows.last().cursor - windowHop
+            hopOffset = partialWindows.last().cursor % windowHop
         }
         for(window in partialWindows) {
             val loopTo = min(window.samples.size-window.cursor, samples.size)
