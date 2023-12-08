@@ -17,7 +17,7 @@ class AndroidAudioSource : AudioSource, Runnable {
     private var bufferSize = -1
     private var sampleRate = -1
     private val recording = AtomicBoolean(false)
-    override val samples = MutableSharedFlow<FloatArray>(replay = SAMPLES_REPLAY,
+    override val samples = MutableSharedFlow<AudioSamples>(replay = SAMPLES_REPLAY,
         extraBufferCapacity = SAMPLES_CACHE, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     @SuppressLint("MissingPermission")
     override fun setup(
@@ -61,9 +61,10 @@ class AndroidAudioSource : AudioSource, Runnable {
             )
             if (read < buffer.size) {
                 buffer = buffer.copyOfRange(0, read)
+                samples.tryEmit(AudioSamples(System.currentTimeMillis(), buffer))
+            } else {
+                samples.tryEmit(AudioSamples(System.currentTimeMillis(), buffer.clone()))
             }
-            samples.tryEmit(buffer.clone())
-            System.out.println("Got ${buffer.size} samples")
         }
         bufferSize = -1
     }

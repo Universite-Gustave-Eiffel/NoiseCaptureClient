@@ -8,6 +8,8 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -21,17 +23,21 @@ import kotlinx.coroutines.launch
 import org.noise_planet.noisecapture.AudioSource
 import org.noise_planet.noisecapture.shared.ScreenData
 import kotlin.math.log10
+import kotlin.math.round
 
 class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<ScreenData>,
                         private val audioSource: AudioSource) : Node(buildContext) {
-    private val noiseLevel : State<Double> =  mutableStateOf(0.0)
 
     @Composable
     override fun View(modifier: Modifier) {
+        var noiseLevel by remember { mutableStateOf(0.0) }
+
 
         lifecycleScope.launch {
-            audioSource.samples.collect {
-                    samples -> noiseLevel to 10*log10(samples.map { it*it }.average())
+            audioSource.samples.collect { samples ->
+                val spl = 10*log10(samples.samples.map { it*it }.average())
+                noiseLevel = spl
+                println("Got $spl dBFS")
             }
         }
         Surface(
@@ -39,7 +45,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
             color = MaterialTheme.colors.background
         ) {
             Column(Modifier.fillMaxWidth()) {
-                Text("${noiseLevel.value} dBFS")
+                Text("${round(noiseLevel * 100)/100} dBFS")
             }
         }
     }
