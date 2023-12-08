@@ -18,16 +18,27 @@ class TestWindowAnalysis {
 
     @Test
     fun testOverlapWindows() {
-        val ones = FloatArray(10) { 1f }
-        val windowAnalysis = WindowAnalysis(64, 5, 2)
-        val processedWindow = ArrayList<Window>()
-        windowAnalysis.pushSamples(0, ones, processedWindow)
-        assertEquals(3, processedWindow.size)
-        assertEquals(2, windowAnalysis.windows.size)
-        // zero padding at the end
-        windowAnalysis.pushSamples(0, FloatArray(3), processedWindow)
-        assertEquals(5, processedWindow.size)
+        val arraySize = 13
+        val ones = FloatArray(arraySize) {if(it in 2..arraySize-3) 1f else 0f}
+        val windowAnalysis = WindowAnalysis(1, 5, 2)
+        val processedWindows = ArrayList<Window>()
+        windowAnalysis.pushSamples(0, ones, processedWindows)
+        assertEquals(5, processedWindows.size)
+        assertEquals(ones.sum(), processedWindows.map { it.samples.sum() }.sum())
+    }
 
+    @Test
+    fun testOverlapWindowsSegments() {
+        val arraySize = 13
+        val ones = FloatArray(arraySize) {if(it in 2..arraySize-3) 1f else 0f}
+        val windowAnalysis = WindowAnalysis(1, 5, 2)
+        val processedWindows = ArrayList<Window>()
+        windowAnalysis.pushSamples(0, ones.copyOfRange(0, 9), processedWindows)
+        assertEquals(3, processedWindows.size)
+        assertEquals(2, windowAnalysis.partialWindows.size)
+        windowAnalysis.pushSamples(0, ones.copyOfRange(9, ones.size), processedWindows)
+        assertEquals(5, processedWindows.size)
+        assertEquals(ones.sum(), processedWindows.map { it.samples.sum() }.sum())
     }
 
 }
