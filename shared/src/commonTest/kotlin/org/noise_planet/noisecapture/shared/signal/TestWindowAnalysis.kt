@@ -1,5 +1,6 @@
 package org.noise_planet.noisecapture.shared.signal
 
+import kotlin.math.min
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -46,7 +47,7 @@ class TestWindowAnalysis {
             processedWindows.addAll(windowAnalysis.partialWindows)
             assertEquals(ones.sum(), processedWindows.map { it.samples.sum() }.sum())
             // reconstruct the array
-            var sum = FloatArray(arraySize)
+            val sum = FloatArray(arraySize)
             for(i in 0..<processedWindows.size) {
                 for(j in 0..<windowAnalysis.windowSize) {
                     val to = i * windowAnalysis.windowHop + j
@@ -61,4 +62,30 @@ class TestWindowAnalysis {
         }
     }
 
+    @Test
+    fun testOverlapWindowsSmallPush() {
+        val arraySize = 13
+        //val ones = FloatArray(arraySize) {if(it in 2..arraySize-3) 1f else 0f}
+        val ones = FloatArray(arraySize) {it.toFloat()}
+        val windowAnalysis = WindowAnalysis(1, 5, 2)
+        val processedWindows = ArrayList<Window>()
+        val step = 3
+        for(i in 1..ones.size step step) {
+            windowAnalysis.pushSamples(0, ones.copyOfRange(i, min(i + step, ones.size)), processedWindows)
+        }
+        processedWindows.addAll(windowAnalysis.partialWindows)
+        assertEquals(ones.sum(), processedWindows.map { it.samples.sum() }.sum())
+        val sum = FloatArray(arraySize)
+        for(i in 0..<processedWindows.size) {
+            for(j in 0..<windowAnalysis.windowSize) {
+                val to = i * windowAnalysis.windowHop + j
+                if(to < sum.size) {
+                    sum[to] += processedWindows[i].samples[j]
+                }
+            }
+        }
+        ones.forEachIndexed { index, value ->
+            assertEquals(value, sum[index], 1e-8f)
+        }
+    }
 }

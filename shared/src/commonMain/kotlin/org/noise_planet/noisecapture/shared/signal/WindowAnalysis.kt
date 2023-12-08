@@ -13,8 +13,8 @@ class WindowAnalysis(val sampleRate : Int, val windowSize : Int, val windowHop :
         extraBufferCapacity = SPECTRUM_CACHE, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     val partialWindows = ArrayList<Window>()
-    val hannWindow = FloatArray(windowSize) {(0.5 * (1 - cos(2 * PI * it / (windowSize - 1)))).toFloat()}
-    //val hannWindow = FloatArray(windowSize) {1f}
+    //val hannWindow = FloatArray(windowSize) {(0.5 * (1 - cos(2 * PI * it / (windowSize - 1)))).toFloat()}
+    val hannWindow = FloatArray(windowSize) {1f}
 
     private fun processCachedWindows(processedWindows: MutableList<Window>? = null) {
         while(!partialWindows.isEmpty()) {
