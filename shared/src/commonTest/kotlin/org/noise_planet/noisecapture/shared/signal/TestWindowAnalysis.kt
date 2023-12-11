@@ -69,14 +69,19 @@ class TestWindowAnalysis {
     @Test
     fun testOverlapWindowsSmallPush() {
         val arraySize = 13
-        //val ones = FloatArray(arraySize) {if(it in 2..arraySize-3) 1f else 0f}
-        val ones = FloatArray(arraySize) {it.toFloat()}
+        val ones = FloatArray(arraySize) {if(it in 2..arraySize-3) 1f else 0f}
+        //val ones = FloatArray(arraySize) {it.toFloat()}
         val windowAnalysis = WindowAnalysis(1, 5, 2)
         val processedWindows = ArrayList<Window>()
         val step = 3
-        for(i in 1..ones.size step step) {
+        for(i in ones.indices step step) {
             windowAnalysis.pushSamples(0, ones.copyOfRange(i, min(i + step, ones.size)), processedWindows)
         }
+        windowAnalysis.pushSamples(
+            (ones.size + windowAnalysis.samplesUntilWindow).toLong(),
+            FloatArray(windowAnalysis.samplesUntilWindow),
+            processedWindows
+        )
         assertEquals(ones.sum(), processedWindows.map { it.samples.sum() }.sum())
         val sum = FloatArray(arraySize)
         for(i in 0..<processedWindows.size) {
