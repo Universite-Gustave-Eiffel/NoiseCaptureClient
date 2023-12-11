@@ -91,17 +91,30 @@ class WindowAnalysis(val sampleRate : Int, val windowSize : Int, val windowHop :
      * @see <a href="https://www.dsprelated.com/freebooks/sasp/Filling_FFT_Input_Buffer.html">Filling the FFT Input Buffer</a>
      */
     private fun processWindow(window: Window) {
+        spectrum.tryEmit(SpectrumData(window.epoch, processWindowFloat(window)))
+    }
+
+    fun processWindowFloat(window: Window) : FloatArray {
+        val fftWindowSize = nextPowerOfTwo(windowSize)
+        val fftWindow = FloatArray(fftWindowSize)
+        window.samples.copyInto(fftWindow, 0, windowSize/2, windowSize)
+        window.samples.copyInto(fftWindow, fftWindowSize - (windowSize/2),
+            0, windowSize/2)
+        return realFFTFloat(fftWindow)
+    }
+
+    fun processWindowDouble(window: Window) : DoubleArray {
         val fftWindowSize = nextPowerOfTwo(windowSize)
         val fftWindow = DoubleArray(fftWindowSize)
         val startIndex = windowSize/2
         for(i in  startIndex..< windowSize) {
             fftWindow[i-startIndex] = window.samples[i].toDouble()
         }
+        val destinationOffset = fftWindowSize - (windowSize/2)
         for(i in  0..< startIndex) {
-            fftWindow[i+startIndex] = window.samples[i].toDouble()
+            fftWindow[i+destinationOffset] = window.samples[i].toDouble()
         }
-        val fftResult = realFFT(fftWindow)
-        spectrum.tryEmit(SpectrumData(window.epoch, fftResult))
+        return realFFT(fftWindow)
     }
 }
 
@@ -125,7 +138,7 @@ data class Window(val epoch : Long, val samples : FloatArray) {
     }
 }
 
-data class SpectrumData(val epoch : Long, val spectrum : DoubleArray) {
+data class SpectrumData(val epoch : Long, val spectrum : FloatArray) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
