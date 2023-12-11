@@ -1,7 +1,9 @@
 package org.noise_planet.noisecapture.shared.signal
 
 import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.yield
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.min
@@ -10,15 +12,12 @@ const val SPECTRUM_REPLAY = 10
 const val SPECTRUM_CACHE = 10
 
 /**
- *
+ * Computation of STFT (Short Time Fourier Transform)
  * @sampleRate Sample rate to compute epoch
  * @windowSize Size of the window
  * @windowHop Run a new analysis each windowHop samples
  */
 class WindowAnalysis(val sampleRate : Int, val windowSize : Int, val windowHop : Int) {
-    val spectrum = MutableSharedFlow<SpectrumData>(replay = SPECTRUM_REPLAY,
-        extraBufferCapacity = SPECTRUM_CACHE, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-
     val circularSamplesBuffer = FloatArray(windowSize)
     var circularBufferCursor = 0
     var samplesUntilWindow = windowSize
@@ -27,7 +26,8 @@ class WindowAnalysis(val sampleRate : Int, val windowSize : Int, val windowHop :
     /**
      * Process the provided samples and run a STFFT analysis when a window is complete
      */
-    fun pushSamples(epoch: Long, samples: FloatArray, processedWindows: MutableList<Window>? = null) {
+    fun pushSamples(epoch: Long, samples: FloatArray, processedWindows: MutableList<Window>? = null)
+    : Sequence<SpectrumData> = sequence {
         var processed = 0
         while(processed < samples.size) {
             var toFetch = min(samples.size - processed, samplesUntilWindow)
@@ -67,7 +67,7 @@ class WindowAnalysis(val sampleRate : Int, val windowSize : Int, val windowHop :
                     (epoch - ((samples.size - processed) / sampleRate.toDouble()) * 1000.0).toLong(),
                     windowSamples
                 )
-                processWindow(window)
+                yield(processWindow(window))
                 processedWindows?.add(window)
                 samplesUntilWindow = windowHop
             }
@@ -90,8 +90,8 @@ class WindowAnalysis(val sampleRate : Int, val windowSize : Int, val windowHop :
     /**
      * @see <a href="https://www.dsprelated.com/freebooks/sasp/Filling_FFT_Input_Buffer.html">Filling the FFT Input Buffer</a>
      */
-    private fun processWindow(window: Window) {
-        spectrum.tryEmit(SpectrumData(window.epoch, processWindowFloat(window)))
+    private fun processWindow(window: Window) : SpectrumData{
+        return SpectrumData(window.epoch, processWindowFloat(window))
     }
 
     fun processWindowFloat(window: Window) : FloatArray {

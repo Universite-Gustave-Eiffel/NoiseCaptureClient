@@ -61,12 +61,14 @@ class AndroidAudioSource : AudioSource, Runnable {
             )
             if (read < buffer.size) {
                 buffer = buffer.copyOfRange(0, read)
-                samples.tryEmit(AudioSamples(System.currentTimeMillis(), buffer))
+                samples.tryEmit(AudioSamples(System.currentTimeMillis(), buffer, AudioSamples.ErrorCode.OK))
             } else {
-                samples.tryEmit(AudioSamples(System.currentTimeMillis(), buffer.clone()))
+                samples.tryEmit(AudioSamples(System.currentTimeMillis(), buffer.clone(), AudioSamples.ErrorCode.OK))
             }
         }
         bufferSize = -1
+        samples.tryEmit(AudioSamples(System.currentTimeMillis(), FloatArray(0),
+            AudioSamples.ErrorCode.ABORTED))
     }
 
     override fun getSampleRate(): Int {

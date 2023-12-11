@@ -34,7 +34,9 @@ interface AudioSource {
 
 }
 
-data class AudioSamples(val epoch : Long, val samples : FloatArray) {
+data class AudioSamples(val epoch : Long, val samples : FloatArray, val errorCode: ErrorCode) {
+    enum class ErrorCode { OK, ABORTED, DEVICE_ERROR}
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false

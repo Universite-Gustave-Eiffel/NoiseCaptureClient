@@ -8,40 +8,43 @@ import kotlin.math.sin
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+
+fun generateSinusoidalSignal(
+    frequency: Double,
+    sampleRate: Double,
+    duration: Double
+): DoubleArray {
+    val numSamples = (duration * sampleRate).toInt()
+    val signal = DoubleArray(numSamples)
+
+    val angularFrequency = 2.0 * PI * frequency / sampleRate
+
+    for (i in 0 until numSamples) {
+        signal[i] = sin(i * angularFrequency)
+    }
+
+    return signal
+}
+
+fun generateSinusoidalFloatSignal(
+    frequency: Double,
+    sampleRate: Double,
+    duration: Double,
+    coefficient: (Int) -> Float = {1.0f}
+): FloatArray {
+    val numSamples = (duration * sampleRate).toInt()
+    val signal = FloatArray(numSamples, coefficient)
+
+    val angularFrequency = 2.0 * PI * frequency / sampleRate
+
+    for (i in 0 until numSamples) {
+        signal[i] *= sin(i * angularFrequency).toFloat()
+    }
+
+    return signal
+}
+
 class TestFFT {
-    private fun generateSinusoidalSignal(
-        frequency: Double,
-        sampleRate: Double,
-        duration: Double
-    ): DoubleArray {
-        val numSamples = (duration * sampleRate).toInt()
-        val signal = DoubleArray(numSamples)
-
-        val angularFrequency = 2.0 * PI * frequency / sampleRate
-
-        for (i in 0 until numSamples) {
-            signal[i] = sin(i * angularFrequency)
-        }
-
-        return signal
-    }
-
-    private fun generateSinusoidalFloatSignal(
-        frequency: Double,
-        sampleRate: Double,
-        duration: Double
-    ): FloatArray {
-        val numSamples = (duration * sampleRate).toInt()
-        val signal = FloatArray(numSamples)
-
-        val angularFrequency = 2.0 * PI * frequency / sampleRate
-
-        for (i in 0 until numSamples) {
-            signal[i] = sin(i * angularFrequency).toFloat()
-        }
-
-        return signal
-    }
     @Test
     fun testRFFTSinus() {
         val frequency = 8.0 // Hz

@@ -1,5 +1,8 @@
 package org.noise_planet.noisecapture.shared.signal
 
+import kotlinx.coroutines.test.runTest
+import kotlin.math.PI
+import kotlin.math.cos
 import kotlin.math.min
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -79,5 +82,20 @@ class TestWindowAnalysis {
         ones.forEachIndexed { index, value ->
             assertEquals(value, sum[index], 1e-8f)
         }
+    }
+
+    @Test
+    fun testSTFTSinus() = runTest {
+        val sampleRate = 32000
+        // create a 1000 Hz signal with hann function window
+        val signal = generateSinusoidalFloatSignal(
+            1000.0, sampleRate.toDouble(),
+            1.0
+        ) { (0.5 * (1 - cos(2 * PI * it / (32000 - 1)))).toFloat() }
+        val windowSize = (sampleRate * 0.125).toInt()
+        val hopSize = windowSize / 2
+        val windowAnalysis = WindowAnalysis(sampleRate, windowSize, hopSize)
+        val fftWindows = windowAnalysis.pushSamples(1000, signal).toList()
+        println(fftWindows.size)
     }
 }
