@@ -12,55 +12,59 @@ class WindowAnalysis(val sampleRate : Int, val windowSize : Int, val windowHop :
     val spectrum = MutableSharedFlow<SpectrumData>(replay = SPECTRUM_REPLAY,
         extraBufferCapacity = SPECTRUM_CACHE, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
-    val partialWindows = ArrayList<Window>()
-    //val hannWindow = FloatArray(windowSize) {(0.5 * (1 - cos(2 * PI * it / (windowSize - 1)))).toFloat()}
-    val hannWindow = FloatArray(windowSize) {1f}
-
-    private fun processCachedWindows(processedWindows: MutableList<Window>? = null) {
-        while(!partialWindows.isEmpty()) {
-            val window = partialWindows[0]
-            if(window.cursor >= window.samples.size) {
-                processWindow(window)
-                partialWindows.removeAt(0)
-                processedWindows?.add(window)
-            } else {
-                break
-            }
-        }
-    }
+    val circularSamplesBuffer = FloatArray(windowSize)
+    var circularBufferCursor = 0
+    var samplesUntilWindow = windowSize
+    val hannWindow = FloatArray(windowSize) {(0.5 * (1 - cos(2 * PI * it / (windowSize - 1)))).toFloat()}
+    //val hannWindow = FloatArray(windowSize) {1f}
 
     /**
      * @see <a href="https://www.dsprelated.com/freebooks/sasp/Filling_FFT_Input_Buffer.html">Filling the FFT Input Buffer</a>
      */
     fun pushSamples(epoch: Long, samples: FloatArray, processedWindows: MutableList<Window>? = null) {
-        // feed partial windows
-        var hopOffset = 0
-        if(!partialWindows.isEmpty()) {
-            hopOffset = partialWindows.last().cursor % windowHop
-        }
-        for(window in partialWindows) {
-            val loopTo = min(window.samples.size-window.cursor, samples.size)
-            for(i in 0..< loopTo) {
-                window.samples[i+window.cursor] = samples[i] * hannWindow[i+window.cursor]
+        var processed = 0
+        while(processed < samples.size) {
+            var toFetch = min(samples.size - processed, samplesUntilWindow)
+            // fill the circular buffer
+            while(toFetch > 0) {
+                val copySize = min(circularSamplesBuffer.size - circularBufferCursor, toFetch)
+                samples.copyInto(circularSamplesBuffer, circularBufferCursor, processed,
+                    processed + copySize)
+                circularBufferCursor += copySize
+                processed += copySize
+                toFetch -= copySize
+                samplesUntilWindow -= copySize
+                if(circularBufferCursor == circularSamplesBuffer.size) {
+                    circularBufferCursor = 0
+                }
             }
-            window.cursor += loopTo
-        }
-        processCachedWindows(processedWindows)
-        // Process new windows
-        while(hopOffset < samples.size) {
-            val window = Window((epoch+(hopOffset/sampleRate.toDouble())*1000).toLong(), 0, FloatArray(windowSize))
-            val loopTo = min(window.samples.size, samples.size-hopOffset)
-            for(i in 0..< loopTo) {
-                window.samples[i] = samples[i + hopOffset] * hannWindow[i]
-            }
-            window.cursor += loopTo - window.cursor
-            if(window.cursor < windowSize) {
-                partialWindows.add(window)
-            } else {
+            if(samplesUntilWindow == 0) {
+                // window complete push it
+                val windowSamples = FloatArray(windowSize)
+                circularSamplesBuffer.copyInto(
+                    windowSamples,
+                    windowSize - circularBufferCursor,
+                    0,
+                    circularBufferCursor
+                )
+                circularSamplesBuffer.copyInto(
+                    windowSamples,
+                    0,
+                    circularBufferCursor,
+                    circularSamplesBuffer.size
+                )
+                // apply window
+                for (i in windowSamples.indices) {
+                    windowSamples[i] *= hannWindow[i]
+                }
+                val window = Window(
+                    (epoch - ((samples.size - processed) / sampleRate.toDouble()) * 1000.0).toLong(),
+                    windowSamples
+                )
                 processWindow(window)
                 processedWindows?.add(window)
+                samplesUntilWindow = windowHop
             }
-            hopOffset += windowHop
         }
     }
 
@@ -69,7 +73,7 @@ class WindowAnalysis(val sampleRate : Int, val windowSize : Int, val windowHop :
     }
 }
 
-data class Window(val epoch : Long, var cursor : Int, val samples : FloatArray) {
+data class Window(val epoch : Long, val samples : FloatArray) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
@@ -77,7 +81,6 @@ data class Window(val epoch : Long, var cursor : Int, val samples : FloatArray) 
         other as Window
 
         if (epoch != other.epoch) return false
-        if (cursor != other.cursor) return false
         if (!samples.contentEquals(other.samples)) return false
 
         return true
@@ -85,7 +88,6 @@ data class Window(val epoch : Long, var cursor : Int, val samples : FloatArray) 
 
     override fun hashCode(): Int {
         var result = epoch.hashCode()
-        result = 31 * result + cursor
         result = 31 * result + samples.contentHashCode()
         return result
     }

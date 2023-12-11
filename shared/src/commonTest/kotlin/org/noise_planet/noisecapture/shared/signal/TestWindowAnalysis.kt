@@ -35,16 +35,20 @@ class TestWindowAnalysis {
             val windowAnalysis = WindowAnalysis(1, 5, 2)
             val processedWindows = ArrayList<Window>()
             windowAnalysis.pushSamples(
-                0,
+                (arraySize * 0.6).toLong(),
                 ones.copyOfRange(0, (arraySize * 0.6).toInt()),
                 processedWindows
             )
             windowAnalysis.pushSamples(
-                0,
+                ones.size.toLong(),
                 ones.copyOfRange((arraySize * 0.6).toInt(), ones.size),
                 processedWindows
             )
-            processedWindows.addAll(windowAnalysis.partialWindows)
+            windowAnalysis.pushSamples(
+                (ones.size + windowAnalysis.samplesUntilWindow).toLong(),
+                FloatArray(windowAnalysis.samplesUntilWindow),
+                processedWindows
+            )
             assertEquals(ones.sum(), processedWindows.map { it.samples.sum() }.sum())
             // reconstruct the array
             val sum = FloatArray(arraySize)
@@ -73,7 +77,6 @@ class TestWindowAnalysis {
         for(i in 1..ones.size step step) {
             windowAnalysis.pushSamples(0, ones.copyOfRange(i, min(i + step, ones.size)), processedWindows)
         }
-        processedWindows.addAll(windowAnalysis.partialWindows)
         assertEquals(ones.sum(), processedWindows.map { it.samples.sum() }.sum())
         val sum = FloatArray(arraySize)
         for(i in 0..<processedWindows.size) {
