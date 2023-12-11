@@ -1,6 +1,7 @@
 package org.noise_planet.noisecapture.shared.signal
 
 import kotlin.math.PI
+import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.sin
@@ -22,6 +23,8 @@ import kotlin.math.log2
 fun isPowerOfTwo(number: Int): Boolean {
     return number > 0 && (number and (number - 1)) == 0
 }
+
+fun nextPowerOfTwo(number: Int) = 2.0.pow(ceil(log2(number.toDouble()))).toInt()
 
 fun fft(length: Int, riArray: DoubleArray) {
     require(isPowerOfTwo(length))
