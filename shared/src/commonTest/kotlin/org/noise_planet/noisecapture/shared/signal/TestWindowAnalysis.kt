@@ -94,8 +94,14 @@ class TestWindowAnalysis {
         ) { (0.5 * (1 - cos(2 * PI * it / (32000 - 1)))).toFloat() }
         val windowSize = (sampleRate * 0.125).toInt()
         val hopSize = windowSize / 2
+        val firstFrequencyBand = 125.0
+        val lastFrequencyBand = 12500.0
         val windowAnalysis = WindowAnalysis(sampleRate, windowSize, hopSize)
-        val fftWindows = windowAnalysis.pushSamples(1000, signal).toList()
-        println(fftWindows.size)
+        windowAnalysis.pushSamples(1000, signal).forEach { window ->
+            window.thirdOctaveProcessing(sampleRate, firstFrequencyBand, lastFrequencyBand)
+                .forEach { thirdOctave ->
+                    println(thirdOctave.rms)
+            }
+        }
     }
 }

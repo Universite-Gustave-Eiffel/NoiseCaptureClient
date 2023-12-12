@@ -141,7 +141,7 @@ data class Window(val epoch : Long, val samples : FloatArray) {
 data class SpectrumData(val epoch : Long, val spectrum : FloatArray) {
 
     enum class BASE_METHOD { B10, B2 }
-
+    enum class OCTAVE_WINDOW { RECTANGULAR, FRACTIONAL}
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
@@ -188,33 +188,43 @@ data class SpectrumData(val epoch : Long, val spectrum : FloatArray) {
      */
     fun thirdOctaveProcessing(sampleRate: Int, firstFrequencyBand : Double,
                               lastFrequencyBand : Double, base : BASE_METHOD = BASE_METHOD.B10,
-                              bandDivision : Double = 3.0): List<ThirdOctave> {
+                              bandDivision : Double = 3.0,
+                              octaveWindow: OCTAVE_WINDOW = OCTAVE_WINDOW.FRACTIONAL): Array<ThirdOctave> {
         val g = when (base) {
             BASE_METHOD.B10 -> 10.0.pow(3.0 / 10.0)
             BASE_METHOD.B2 -> 2.0
         }
-        val freqByCell: Double = sampleRate / spectrum.size.toDouble()
+        val freqByCell: Double = sampleRate / (spectrum.size.toDouble() * 2)
         val firstBandIndex = getBandIndexByFrequency(firstFrequencyBand, g, bandDivision)
         val lastBandIndex = getBandIndexByFrequency(lastFrequencyBand, g, bandDivision)
-        val thirdOctave = ArrayList<ThirdOctave>(lastBandIndex - firstBandIndex)
-        for(bandIndex in firstBandIndex..lastBandIndex) {
-            val (fMin, fMid, fMax) = getBands(bandIndex, g, bandDivision)
-            val cellLower: Int = floor(fMin / freqByCell).toInt()
-            val cellUpper: Int = ceil(fMax / freqByCell).toInt()
-            var sum = 0.0
-            for(cellIndex in cellLower..cellUpper) {
-                if(cellIndex < spectrum.size) {
-                    val f = cellIndex * freqByCell
-                    val cellGain =
-                        sqrt(1.0 / (1.0 + ((f / fMid - fMid / f) * 1.507 * bandDivision).pow(6)))
+        val thirdOctave = Array(lastBandIndex - firstBandIndex) {bandIndex ->
+            val (fMin, fMid, fMax) = getBands(bandIndex + firstBandIndex, g, bandDivision)
+            ThirdOctave(fMin, fMid, fMax, 0.0)
+        }
+        if(octaveWindow == OCTAVE_WINDOW.FRACTIONAL) {
+            for (cellIndex in spectrum.indices) {
+                for (band in thirdOctave) {
+                    val f = (cellIndex + 1) * freqByCell
+                    val cellGain = sqrt(
+                        1.0 / (1.0 + ((f / band.midFrequency - band.midFrequency / f)
+                                * 1.507 * bandDivision).pow(6))
+                    )
                     val fg = spectrum[cellIndex] * cellGain
-                    sum += fg * fg
+                    band.rms += fg * fg
                 }
             }
-            thirdOctave.add(ThirdOctave(fMin, fMid, fMax, sum))
+        } else {
+            for (band in thirdOctave) {
+                val minCell = floor(band.minFrequency * freqByCell).toInt()
+                val maxCell = ceil(band.maxFrequency * freqByCell).toInt()
+                for(cellIndex in minCell..maxCell) {
+                    val fg = spectrum[cellIndex]
+                    band.rms += fg * fg
+                }
+            }
         }
         return thirdOctave
     }
 }
 
-data class ThirdOctave(val minFrequency : Double, val midFrequency : Double, val maxFrequency : Double, val rms : Double)
+data class ThirdOctave(val minFrequency : Double, val midFrequency : Double, val maxFrequency : Double, var rms : Double)
