@@ -1,12 +1,12 @@
 package org.noise_planet.noisecapture.shared.signal
 
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.yield
 import kotlin.math.PI
+import kotlin.math.ceil
 import kotlin.math.cos
+import kotlin.math.floor
 import kotlin.math.min
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 const val SPECTRUM_REPLAY = 10
 const val SPECTRUM_CACHE = 10
@@ -139,6 +139,9 @@ data class Window(val epoch : Long, val samples : FloatArray) {
 }
 
 data class SpectrumData(val epoch : Long, val spectrum : FloatArray) {
+
+    enum class BASE_METHOD { B10, B2 }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
@@ -156,4 +159,62 @@ data class SpectrumData(val epoch : Long, val spectrum : FloatArray) {
         result = 31 * result + spectrum.contentHashCode()
         return result
     }
+
+    private fun getBands(bandIndex : Int, g : Double, bandDivision : Double) : Triple<Double, Double, Double> {
+        val fMid = g.pow(bandIndex / bandDivision) * 1000.0
+        val fMax = g.pow(1.0 / (2.0 * bandDivision)) * fMid
+        val fMin = g.pow(-1.0 / (2.0 * bandDivision)) * fMid
+        return Triple(fMin, fMid, fMax)
+    }
+
+    private fun getBandIndexByFrequency(targetFrequency : Double, g : Double, bandDivision : Double) : Int {
+        var frequencyBandIndex = 0
+        var (fMin, fMid, fMax) = getBands(frequencyBandIndex, g, bandDivision)
+        while (!(fMin < targetFrequency && targetFrequency < fMax)) {
+            if(targetFrequency < fMin) {
+                frequencyBandIndex -= 1
+            } else if (targetFrequency > fMax) {
+                frequencyBandIndex += 1
+            }
+            val bandInfo = getBands(frequencyBandIndex, g, bandDivision)
+            fMin = bandInfo.first
+            fMax = bandInfo.third
+        }
+        return frequencyBandIndex
+    }
+
+    /**
+     * @see <a href="https://www.ap.com/technical-library/deriving-fractional-octave-spectra-from-the-fft-with-apx/">ref</a>
+     */
+    fun thirdOctaveProcessing(sampleRate: Int, firstFrequencyBand : Double,
+                              lastFrequencyBand : Double, base : BASE_METHOD = BASE_METHOD.B10,
+                              bandDivision : Double = 3.0): List<ThirdOctave> {
+        val g = when (base) {
+            BASE_METHOD.B10 -> 10.0.pow(3.0 / 10.0)
+            BASE_METHOD.B2 -> 2.0
+        }
+        val freqByCell: Double = sampleRate / spectrum.size.toDouble()
+        val firstBandIndex = getBandIndexByFrequency(firstFrequencyBand, g, bandDivision)
+        val lastBandIndex = getBandIndexByFrequency(lastFrequencyBand, g, bandDivision)
+        val thirdOctave = ArrayList<ThirdOctave>(lastBandIndex - firstBandIndex)
+        for(bandIndex in firstBandIndex..lastBandIndex) {
+            val (fMin, fMid, fMax) = getBands(bandIndex, g, bandDivision)
+            val cellLower: Int = floor(fMin / freqByCell).toInt()
+            val cellUpper: Int = ceil(fMax / freqByCell).toInt()
+            var sum = 0.0
+            for(cellIndex in cellLower..cellUpper) {
+                if(cellIndex < spectrum.size) {
+                    val f = cellIndex * freqByCell
+                    val cellGain =
+                        sqrt(1.0 / (1.0 + ((f / fMid - fMid / f) * 1.507 * bandDivision).pow(6)))
+                    val fg = spectrum[cellIndex] * cellGain
+                    sum += fg * fg
+                }
+            }
+            thirdOctave.add(ThirdOctave(fMin, fMid, fMax, sum))
+        }
+        return thirdOctave
+    }
 }
+
+data class ThirdOctave(val minFrequency : Double, val midFrequency : Double, val maxFrequency : Double, val rms : Double)
