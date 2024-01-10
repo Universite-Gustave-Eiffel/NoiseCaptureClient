@@ -89,33 +89,42 @@ class TestWindowAnalysis {
     @Test
     fun testSTFTSinus() = runTest {
         val sampleRate = 32000
-        // create a 1000 Hz signal with hann function window
-//        val signal = generateSinusoidalFloatSignal(
-//            1000.0, sampleRate.toDouble(),
-//            1.0
-//        ) { (0.5 * (1 - cos(2 * PI * it / (32000 - 1)))).toFloat() }
-        val expectedRms = 1.0
-        val signal = generateSinusoidalFloatSignal(1000.0, sampleRate.toDouble(),1.0) {
-            (expectedRms * sqrt(2.0)).toFloat()
-        }
-        val windowSize = (sampleRate * 0.125).toInt()
-        val hopSize = windowSize / 2
-        val windowAnalysis = WindowAnalysis(sampleRate, windowSize, hopSize)
-        // Sum of STFFT should be equal to the FFT of the whole signal
-        var sum = 0.0
-        var windows = 0
-        val rmsSignal = sqrt(signal.map { it * it }.average())
-        println("rmsSignal=$rmsSignal")
-        val fftWindow = FloatArray(nextPowerOfTwo(signal.size))
-        signal.copyInto(fftWindow, 0, 0, signal.size)
-        //signal.copyInto(fftWindow, 0, signal.size / 2, signal.size)
-        //signal.copyInto(fftWindow, fftWindow.size - signal.size / 2, 0, signal.size / 2)
-        val spectrum = realFFTFloat(fftWindow)
-        var sumWhole = sqrt((spectrum.mapIndexed { index, value ->
-            if(index < spectrum.size / 2) { value*value } else{ 0.0.toFloat() } }.sum().toDouble()) / ((signal.size / 2)))
-        //var sumWhole = sqrt(spectrum.map {it * it}.sum() / signal.size)
-        //sumWhole = sqrt(sumWhole / fftWindow.size)
-        println("sumWhole=$sumWhole")
+        val expectedRms = 2500.0
+        val sum: (Float, Float) -> Float = { x: Float, y: Float -> x + y }
+        var signal = generateSinusoidalFloatSignal(1000.0, sampleRate.toDouble(), 1.0)
+            .zip(generateSinusoidalFloatSignal(1600.0, sampleRate.toDouble(), 1.0), sum)
+            .toFloatArray().zip(
+                generateSinusoidalFloatSignal(4000.0, sampleRate.toDouble(), 1.0), sum
+            ).toFloatArray().zip(
+                generateSinusoidalFloatSignal(125.0, sampleRate.toDouble(), 1.0), sum
+            ).toFloatArray()
+        signal = signal.map(fun(it: Float): Float {
+            return (expectedRms * sqrt(2.0) * it).toFloat()
+        }).toFloatArray()
+
+        val input = FloatArray(nextPowerOfTwo(signal.size))
+        signal.copyInto(input)
+        val fr = realFFTFloat(input)
+        println(fr.joinToString())
+
+//        val windowSize = (sampleRate * 0.125).toInt()
+//        val hopSize = windowSize / 2
+//        val windowAnalysis = WindowAnalysis(sampleRate, windowSize, hopSize)
+//        // Sum of STFFT should be equal to the FFT of the whole signal
+//        var sum = 0.0
+//        var windows = 0
+//        val rmsSignal = sqrt(signal.map { it * it }.average())
+//        println("rmsSignal=$rmsSignal")
+//        val fftWindow = FloatArray(nextPowerOfTwo(signal.size))
+//        signal.copyInto(fftWindow, 0, 0, signal.size)
+//        //signal.copyInto(fftWindow, 0, signal.size / 2, signal.size)
+//        //signal.copyInto(fftWindow, fftWindow.size - signal.size / 2, 0, signal.size / 2)
+//        val spectrum = realFFTFloat(fftWindow)
+//        var sumWhole = sqrt((spectrum.mapIndexed { index, value ->
+//            if(index < spectrum.size / 2) { value*value } else{ 0.0.toFloat() } }.sum().toDouble()) / ((signal.size / 2)))
+//        //var sumWhole = sqrt(spectrum.map {it * it}.sum() / signal.size)
+//        //sumWhole = sqrt(sumWhole / fftWindow.size)
+//        println("sumWhole=$sumWhole")
 //        windowAnalysis.pushSamples(1125, signal).forEach { window ->
 //            sum += window.spectrum.map { it * it }.sum().toDouble()
 //            windows += 1

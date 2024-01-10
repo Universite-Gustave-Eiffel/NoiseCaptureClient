@@ -16,20 +16,20 @@ import kotlin.math.log2
 fun fftFloat(length: Int, riArray: FloatArray) {
     require(isPowerOfTwo(length))
     val m = log2(length.toDouble()).toInt()
-    val n = (2.0.pow(m) + 0.5).toInt()
+    val n = (2.0f.pow(m) + 0.5).toInt()
     require(n <= riArray.size)
-    var wCos: Double
-    var wSin: Double
+    var wCos: Float
+    var wSin: Float
     val n2 = n shr 1
     var l1 = n
     var l2: Int
 
     for (l in 0 until m) {
         l2 = l1 shr 1
-        wCos = 1.0
-        wSin = 0.0
-        val uCos = cos(PI / l2)
-        val uSin = -sin(PI / l2)
+        wCos = 1.0f
+        wSin = 0.0f
+        val uCos : Float = cos(PI.toFloat() / l2)
+        val uSin  : Float = -sin(PI.toFloat() / l2)
 
         for (j in 0 until l2) {
             for (i in j until n step l1) {
@@ -40,12 +40,12 @@ fun fftFloat(length: Int, riArray: FloatArray) {
                 val sumIm = riArray[ii] + riArray[ii + l22]
                 val diffRe = riArray[ir] - riArray[ir + l22]
                 val diffIm = riArray[ii] - riArray[ii + l22]
-                riArray[ir + l22] = (diffRe * wCos - diffIm * wSin).toFloat()
-                riArray[ii + l22] = (diffRe * wSin + diffIm * wCos).toFloat()
+                riArray[ir + l22] = (diffRe * wCos - diffIm * wSin)
+                riArray[ii + l22] = (diffRe * wSin + diffIm * wCos)
                 riArray[ir] = sumRe
                 riArray[ii] = sumIm
             }
-            val w = wCos * uCos - wSin * uSin
+            val w : Float= wCos * uCos - wSin * uSin
             wSin = wCos * uSin + wSin * uCos
             wCos = w
         }
