@@ -26,6 +26,11 @@ fun isPowerOfTwo(number: Int): Boolean {
 
 fun nextPowerOfTwo(number: Int) = 2.0.pow(ceil(log2(number.toDouble()))).toInt()
 
+/**
+ * Inplace fft
+ * @param length Size of real+imaginary to process
+ * @param riArray real and imaginary array ex: first real[0] then first imaginary [1], second real[2] then second imaginary [3]..
+ */
 fun fft(length: Int, riArray: DoubleArray) {
     require(isPowerOfTwo(length))
     val m = log2(length.toDouble()).toInt()

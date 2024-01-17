@@ -45,6 +45,13 @@ fun generateSinusoidalFloatSignal(
 }
 
 class TestFFT {
+
+    @Test
+    fun testFFT() {
+        val values = doubleArrayOf(0.0,0.0, 1.0,0.0, 2.0,0.0, 3.0,0.0, 4.0,0.0, 5.0,0.0, 6.0,0.0, 7.0,0.0)
+        fft(values.size/2, values)
+        print(values.joinToString(","))
+    }
     @Test
     fun testRFFTSinus() {
         val frequency = 8.0 // Hz

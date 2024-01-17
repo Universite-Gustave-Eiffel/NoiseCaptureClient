@@ -3,6 +3,7 @@ package org.noise_planet.noisecapture.shared.signal
 import kotlin.math.PI
 import kotlin.math.ceil
 import kotlin.math.cos
+import kotlin.math.floor
 import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.log2

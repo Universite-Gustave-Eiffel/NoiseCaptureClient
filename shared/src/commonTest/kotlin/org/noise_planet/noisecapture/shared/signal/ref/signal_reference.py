@@ -11,18 +11,14 @@ def generate_sinus(duration, sample_rate, frequency):
 
 def main():
     duration = 1.0
-    fs = 32000
-    power = 10**(94/20)*sqrt(2)
-    samples = generate_sinus(duration, fs, 1000) * power
-    samples += generate_sinus(duration, fs, 1600) * power
-    samples += generate_sinus(duration, fs, 4000) * power
-    samples += generate_sinus(duration, fs, 125) * power
-    window = np.hanning(len(samples))
-    pond = len(window)/window.sum()
-    samples *= window
-    samples_window = np.zeros(int(pow(2, ceil(log(len(samples))/log(2)))))
-    samples_window[0:len(samples)//2] = samples[len(samples)//2:]
-    samples_window[len(samples_window)-len(samples)//2:] = samples[:len(samples)//2]
+    fs = 32768
+    expected_power = 94
+    peak = 10**(expected_power/20)*sqrt(2)
+    samples = generate_sinus(duration, fs, 1000)
+    samples += generate_sinus(duration, fs, 1600)
+    samples += generate_sinus(duration, fs, 4000)
+    samples += generate_sinus(duration, fs, 125)
+    samples *= peak
     s = acoustics.Signal(samples, fs)
     bands = acoustics.signal.NOMINAL_THIRD_OCTAVE_CENTER_FREQUENCIES[:-2]
     fob = acoustics.signal.OctaveBand(center=bands, fraction=3)

@@ -4,6 +4,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.min
+import kotlin.math.pow
 import kotlin.math.sign
 import kotlin.math.sqrt
 import kotlin.test.Test
@@ -88,8 +89,9 @@ class TestWindowAnalysis {
 
     @Test
     fun testSTFTSinus() = runTest {
-        val sampleRate = 32000
-        val expectedRms = 2500.0
+        val sampleRate = 32768
+        val expectedLevel = 94
+        val peak = 10.0.pow(expectedLevel/20.0)*sqrt(2.0)
         val sum: (Float, Float) -> Float = { x: Float, y: Float -> x + y }
         var signal = generateSinusoidalFloatSignal(1000.0, sampleRate.toDouble(), 1.0)
             .zip(generateSinusoidalFloatSignal(1600.0, sampleRate.toDouble(), 1.0), sum)
@@ -99,13 +101,17 @@ class TestWindowAnalysis {
                 generateSinusoidalFloatSignal(125.0, sampleRate.toDouble(), 1.0), sum
             ).toFloatArray()
         signal = signal.map(fun(it: Float): Float {
-            return (expectedRms * sqrt(2.0) * it).toFloat()
+            return (peak * it).toFloat()
         }).toFloatArray()
 
-        val input = FloatArray(nextPowerOfTwo(signal.size))
-        signal.copyInto(input)
-        val fr = realFFTFloat(input)
-        println(fr.joinToString())
+        fftFloat(signal.size / 2, signal)
+        for (i in signal.indices) {
+            signal[i] = signal[i] / signal.size
+        }
+        //val fr = realFFTFloat(signal).map {
+        //    it / signal.size
+        //}
+        println(signal.joinToString())
 
 //        val windowSize = (sampleRate * 0.125).toInt()
 //        val hopSize = windowSize / 2
