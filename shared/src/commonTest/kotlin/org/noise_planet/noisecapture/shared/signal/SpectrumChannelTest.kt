@@ -111,7 +111,7 @@ class SpectrumChannelTest {
             (combinedInteger / (1L shl 15).toDouble()).toFloat()
         }
 
-        val spectrum = sc.processSamples(floatArray, parallel = false)
+        val spectrum = sc.processSamples(floatArray)
 
         val err = sqrt(refSpl.mapIndexed { i, spl -> (spl - spectrum[i]).pow(2) }.reduce { acc, e -> acc + e } / spectrum.size)
 

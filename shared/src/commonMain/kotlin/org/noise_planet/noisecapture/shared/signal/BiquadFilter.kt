@@ -27,7 +27,6 @@
 package org.noise_planet.noisecapture.shared.signal
 
 import kotlin.math.log10
-import kotlin.test.expect
 
 /**
  * A digital biquad filter is a second order recursive linear filter,
@@ -65,23 +64,23 @@ class BiquadFilter(
     }
 
     fun filterThenLeq(samples: FloatArray): Double {
-        var square_sum = 0.0
-        var output_acc: Double
+        var squareSum = 0.0
+        var outputAcc: Double
         for (i in samples.indices) {
-            var input_acc = samples[i].toDouble()
+            var inputAcc = samples[i].toDouble()
             for (j in b0.indices) {
-                input_acc -= delay1[j] * a1[j]
-                input_acc -= delay2[j] * a2[j]
-                output_acc = input_acc * b0[j]
-                output_acc += delay1[j] * b1[j]
-                output_acc += delay2[j] * b2[j]
+                inputAcc -= delay1[j] * a1[j]
+                inputAcc -= delay2[j] * a2[j]
+                outputAcc = inputAcc * b0[j]
+                outputAcc += delay1[j] * b1[j]
+                outputAcc += delay2[j] * b2[j]
                 delay2[j] = delay1[j]
-                delay1[j] = input_acc
-                input_acc = output_acc
+                delay1[j] = inputAcc
+                inputAcc = outputAcc
             }
-            square_sum += input_acc * input_acc
+            squareSum += inputAcc * inputAcc
         }
-        return 10 * log10(square_sum / samples.size)
+        return 10 * log10(squareSum / samples.size)
     }
 
     fun filterSlice(samplesIn: FloatArray, samplesOut: FloatArray, subsampling_factor: Int) {
