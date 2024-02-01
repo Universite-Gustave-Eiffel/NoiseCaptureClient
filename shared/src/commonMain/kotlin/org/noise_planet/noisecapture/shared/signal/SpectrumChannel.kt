@@ -115,7 +115,7 @@ class SpectrumChannel {
             ?: throw IllegalStateException("C weighting filter not configured")
     }
 
-    suspend fun processSamples(samples: FloatArray): DoubleArray {
+    suspend fun processSamples(samples: FloatArray, parallel : Boolean = true): DoubleArray {
         if (samples.size % minimumSamplesLength != 0) {
             throw IllegalArgumentException(
                 "Provided samples len should be a" +
@@ -132,11 +132,17 @@ class SpectrumChannel {
         val leqs = DoubleArray(bandFilterSize)
         for (cascadeIndex in iirFilters.indices) {
             val cascadeFilters: HashMap<Int, BiquadFilter> = iirFilters[cascadeIndex]
-            coroutineScope {
-                for ((key, value) in cascadeFilters.entries) {
-                    launch {
-                        leqs[key] = value.filterThenLeq(lastFilterSamples)
+            if(parallel) {
+                coroutineScope {
+                    for ((key, value) in cascadeFilters.entries) {
+                        launch {
+                            leqs[key] = value.filterThenLeq(lastFilterSamples)
+                        }
                     }
+                }
+            } else {
+                for ((key, value) in cascadeFilters.entries) {
+                    leqs[key] = value.filterThenLeq(lastFilterSamples)
                 }
             }
             // subsampling for next iteration

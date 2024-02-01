@@ -22,6 +22,7 @@ kotlin = "1.9.10"
 ksp = "1.9.10-1.0.13"
 koin-core = "3.4.0"
 appcompat = "1.6.1"
+kotxresources= "0.4.0"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
@@ -44,3 +45,4 @@ kotlin-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-s
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin-core" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+kotlinx-resources-test =  { module = "com.goncalossilva:resources", version.ref = "kotxresources" }

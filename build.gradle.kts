@@ -4,4 +4,5 @@ plugins {
     id("com.android.application") version libs.versions.agp.get() apply false
     id("org.jetbrains.compose") version libs.versions.compose.plugin.get() apply false
     id("com.google.devtools.ksp") version libs.versions.ksp.get() apply false
+    id("com.goncalossilva.resources") version libs.versions.kotxresources.get() apply false
 }

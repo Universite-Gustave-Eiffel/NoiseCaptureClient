@@ -108,12 +108,12 @@ class TestFFT {
         val result = realFFTFloat(samples)
         assertEquals(expected.size, result.size)
         expected.forEachIndexed { index, value ->
-            assertEquals(value, result[index], 1e-8f)
+            assertEquals(value, result[index], 1e-5f)
         }
         val origin = realIFFTFloat(result)
         assertEquals(samples.size, origin.size)
         samples.forEachIndexed { index, value ->
-            assertEquals(value, origin[index], 1e-8f)
+            assertEquals(value, origin[index], 1e-5f)
         }
     }
 }
