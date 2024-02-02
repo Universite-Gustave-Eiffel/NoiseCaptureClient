@@ -10,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.bumble.appyx.components.backstack.BackStack
@@ -38,15 +37,17 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
     @Composable
     override fun View(modifier: Modifier) {
         var noiseLevel by remember { mutableStateOf(0.0) }
-
-
         lifecycleScope.launch {
+            audioSource.setup()
             audioSource.samples.collect { samples ->
                 val spl = spectrumChannel.processSamplesWeightA(samples.samples)
                 noiseLevel = spl
                 println("Got $spl dBA")
             }
-        }.start()
+        }.invokeOnCompletion {
+            println("On completion $it")
+            audioSource.release()
+        }
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colors.background

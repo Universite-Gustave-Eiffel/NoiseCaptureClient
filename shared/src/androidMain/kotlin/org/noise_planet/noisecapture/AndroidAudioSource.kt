@@ -7,12 +7,13 @@ import android.media.MediaRecorder
 import android.os.Process
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import java.lang.Integer.max
 import java.util.concurrent.atomic.AtomicBoolean
 
 const val SAMPLES_REPLAY = 10
 const val SAMPLES_CACHE = 10
+const val BUFFER_SIZE_TIME = 0.1
 class AndroidAudioSource : AudioSource, Runnable {
-
     private lateinit var audioRecord: AudioRecord
     private var bufferSize = -1
     private var sampleRate = -1
@@ -20,27 +21,31 @@ class AndroidAudioSource : AudioSource, Runnable {
     override val samples = MutableSharedFlow<AudioSamples>(replay = SAMPLES_REPLAY,
         extraBufferCapacity = SAMPLES_CACHE, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     @SuppressLint("MissingPermission")
-    override fun setup(
-        sampleRate: Int,
-        bufferSize: Int
-    ): AudioSource.InitializeErrorCode {
+    override fun setup(): AudioSource.InitializeErrorCode {
         if(this.bufferSize != -1) {
             return AudioSource.InitializeErrorCode.INITIALIZE_ALREADY_INITIALIZED
         }
-        this.sampleRate = sampleRate
+        val mSampleRates = intArrayOf(48000, 44100)
         val channel = AudioFormat.CHANNEL_IN_MONO
         val encoding = AudioFormat.ENCODING_PCM_FLOAT
-        val minimalBufferSize = AudioRecord.getMinBufferSize(sampleRate, channel, encoding)
-        when {
-            minimalBufferSize == AudioRecord.ERROR_BAD_VALUE || minimalBufferSize == AudioRecord.ERROR  ->
-                return AudioSource.InitializeErrorCode.INITIALIZE_SAMPLE_RATE_NOT_SUPPORTED
-            minimalBufferSize > bufferSize ->
-                return AudioSource.InitializeErrorCode.INITIALIZE_WRONG_BUFFER_SIZE
+        for(tryRate in mSampleRates) {
+            this.sampleRate = tryRate
+            val minimalBufferSize = AudioRecord.getMinBufferSize(sampleRate, channel, encoding)
+            if(minimalBufferSize == AudioRecord.ERROR_BAD_VALUE || minimalBufferSize == AudioRecord.ERROR) {
+                continue
+            }
+            this.bufferSize = max(minimalBufferSize,(BUFFER_SIZE_TIME * sampleRate * 4).toInt())
+            audioRecord = AudioRecord(
+                MediaRecorder.AudioSource.VOICE_RECOGNITION,
+                sampleRate,
+                channel,
+                encoding,
+                bufferSize
+            )
+            Thread(this).start()
+            return AudioSource.InitializeErrorCode.INITIALIZE_OK
         }
-        this.bufferSize = bufferSize
-        audioRecord = AudioRecord(MediaRecorder.AudioSource.VOICE_RECOGNITION, sampleRate, channel, encoding, bufferSize)
-        Thread(this).start()
-        return AudioSource.InitializeErrorCode.INITIALIZE_OK
+        return AudioSource.InitializeErrorCode.INITIALIZE_SAMPLE_RATE_NOT_SUPPORTED
     }
 
     override fun run() {
@@ -53,6 +58,7 @@ class AndroidAudioSource : AudioSource, Runnable {
             // Ignore
         }
         audioRecord.startRecording()
+        println("Capture microphone")
         var buffer = FloatArray(bufferSize / 4)
         while(recording.get()) {
             val read: Int = audioRecord.read(
@@ -69,6 +75,7 @@ class AndroidAudioSource : AudioSource, Runnable {
         bufferSize = -1
         samples.tryEmit(AudioSamples(System.currentTimeMillis(), FloatArray(0),
             AudioSamples.ErrorCode.ABORTED))
+        println("Release microphone")
     }
 
     override fun getSampleRate(): Int {
@@ -76,7 +83,9 @@ class AndroidAudioSource : AudioSource, Runnable {
     }
 
     override fun release() {
-        audioRecord.stop()
+        if(audioRecord.recordingState == AudioRecord.RECORDSTATE_RECORDING) {
+            audioRecord.stop()
+        }
         recording.set(false)
     }
 

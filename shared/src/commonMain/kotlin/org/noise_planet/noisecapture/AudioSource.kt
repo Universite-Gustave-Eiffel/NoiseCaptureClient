@@ -1,6 +1,5 @@
 package org.noise_planet.noisecapture
 
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 
 /**
@@ -20,7 +19,7 @@ interface AudioSource {
      * @param bufferSize Buffer size in bytes
      * @return InitializeErrorCode instance
      */
-    fun setup(sampleRate: Int, bufferSize: Int) : InitializeErrorCode
+    fun setup() : InitializeErrorCode
 
     fun getSampleRate() : Int
 
