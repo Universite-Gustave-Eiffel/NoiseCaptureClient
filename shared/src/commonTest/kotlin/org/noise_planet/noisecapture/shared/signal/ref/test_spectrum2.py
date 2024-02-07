@@ -11,9 +11,15 @@ def generate_sinus(duration, sample_rate, frequency):
     return np.sin(2 * np.pi * np.arange(duration * sample_rate) * frequency /
                   sample_rate)
 
-
-# Your real data 'x'
-x = generate_sinus(1.0, fs, 1000)
+duration = 1.0
+fs = 32768
+expected_power = 94
+peak = 10 ** (expected_power / 20) * np.sqrt(2)
+x = generate_sinus(duration, fs, 1000)
+x += generate_sinus(duration, fs, 1600)
+x += generate_sinus(duration, fs, 4000)
+x += generate_sinus(duration, fs, 125)
+x *= peak
 
 # Compute the Fourier transform of the real data using rfft
 X_fft = np.fft.rfft(x)
@@ -34,12 +40,12 @@ freqs = np.fft.fftfreq(len(power_spectral_density_padded), 1 / fs)
 freqs, power_spectral_density_padded = np.fft.fftshift(freqs), np.fft.fftshift(power_spectral_density_padded)
 
 # Plot the power spectral density
-plt.scatter(freqs, power_spectral_density_padded, marker="x")
+plt.scatter(freqs, 10*np.log10(power_spectral_density_padded * 2), marker="x")
 
 # compare with acoustics
 f, auto_spectrum = acoustics.signal.auto_spectrum(x, fs)
 
-plt.scatter(f, auto_spectrum, marker="+")
+plt.scatter(f, 10*np.log10(auto_spectrum * 2), marker="+")
 
 
 plt.show()

@@ -41,10 +41,11 @@ def main():
     fob = acoustics.signal.OctaveBand(center=bands, fraction=3)
     f, a = acoustics.signal.auto_spectrum(s, fs, N=len(s))
     fr = numpy.fft.rfft(s)
-    print(a)
-    print(fr)
-    #bands, power = acoustics.signal.third_octaves(s, fs, frequencies=bands, ref=1.0)
-    #print(pandas.DataFrame(power, columns=["dB"], index=["%s Hz" % Decimal(f) for f in fob.nominal]))
+    #print(a)
+    #print(fr)
+    bands, power = acoustics.signal.third_octaves(s, fs, frequencies=bands, ref=1.0)
+    print(pandas.DataFrame(power, columns=["dB"], index=["%s Hz" % Decimal(f) for f in fob.nominal]))
 
 
-test2()
+if __name__ == '__main__':
+    main()
