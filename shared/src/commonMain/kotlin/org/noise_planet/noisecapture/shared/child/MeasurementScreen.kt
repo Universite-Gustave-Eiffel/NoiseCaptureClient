@@ -25,28 +25,29 @@ import kotlin.math.round
 
 class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<ScreenData>,
                         private val audioSource: AudioSource) : Node(buildContext) {
-    private val spectrumChannel: SpectrumChannel = SpectrumChannel().also { spectrumChannel ->
-        spectrumChannel.loadConfiguration(
-            when (audioSource.getSampleRate()) {
-                48000 -> get48000HZ()
-                else -> get44100HZ()
-            }
-        )
-    }
+    private val spectrumChannel: SpectrumChannel = SpectrumChannel()
 
     @Composable
     override fun View(modifier: Modifier) {
         var noiseLevel by remember { mutableStateOf(0.0) }
         lifecycleScope.launch {
             audioSource.setup()
+            spectrumChannel.loadConfiguration(
+                when (audioSource.getSampleRate()) {
+                    48000 -> get48000HZ()
+                    else -> get44100HZ()
+                }
+            )
             audioSource.samples.collect { samples ->
                 val spl = spectrumChannel.processSamplesWeightA(samples.samples)
                 noiseLevel = spl
                 println("Got $spl dBA")
             }
         }.invokeOnCompletion {
-            println("On completion $it")
-            audioSource.release()
+            println("On completion $it subs ${audioSource.samples.subscriptionCount.value}")
+            if(audioSource.samples.subscriptionCount.value == 0) {
+                audioSource.release()
+            }
         }
         Surface(
             modifier = Modifier.fillMaxSize(),

@@ -29,7 +29,7 @@ class TestWindowAnalysis {
         val ones = FloatArray(arraySize) {if(it in 2..arraySize-3) 1f else 0f}
         val windowAnalysis = WindowAnalysis(1, 5, 2)
         val processedWindows = ArrayList<Window>()
-        windowAnalysis.pushSamples(0, ones, processedWindows)
+        windowAnalysis.pushSamples(0, ones, processedWindows).toList()
         assertEquals(5, processedWindows.size)
         assertEquals(ones.sum(), processedWindows.map { it.samples.sum() }.sum())
     }
@@ -44,17 +44,17 @@ class TestWindowAnalysis {
                 (arraySize * 0.6).toLong(),
                 ones.copyOfRange(0, (arraySize * 0.6).toInt()),
                 processedWindows
-            )
+            ).toList()
             windowAnalysis.pushSamples(
                 ones.size.toLong(),
                 ones.copyOfRange((arraySize * 0.6).toInt(), ones.size),
                 processedWindows
-            )
+            ).toList()
             windowAnalysis.pushSamples(
                 (ones.size + windowAnalysis.samplesUntilWindow).toLong(),
                 FloatArray(windowAnalysis.samplesUntilWindow),
                 processedWindows
-            )
+            ).toList()
             assertEquals(ones.sum(), processedWindows.map { it.samples.sum() }.sum())
             // reconstruct the array
             val sum = windowAnalysis.reconstructOriginalSignal(processedWindows)
@@ -73,13 +73,13 @@ class TestWindowAnalysis {
         val processedWindows = ArrayList<Window>()
         val step = 3
         for(i in ones.indices step step) {
-            windowAnalysis.pushSamples(0, ones.copyOfRange(i, min(i + step, ones.size)), processedWindows)
+            windowAnalysis.pushSamples(0, ones.copyOfRange(i, min(i + step, ones.size)), processedWindows).toList()
         }
         windowAnalysis.pushSamples(
             (ones.size + windowAnalysis.samplesUntilWindow).toLong(),
             FloatArray(windowAnalysis.samplesUntilWindow),
             processedWindows
-        )
+        ).toList()
         assertEquals(ones.sum(), processedWindows.map { it.samples.sum() }.sum())
         val sum = windowAnalysis.reconstructOriginalSignal(processedWindows)
         ones.forEachIndexed { index, value ->
