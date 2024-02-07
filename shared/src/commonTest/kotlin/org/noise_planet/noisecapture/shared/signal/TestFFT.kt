@@ -1,10 +1,13 @@
 package org.noise_planet.noisecapture.shared.signal
 
+import kotlinx.coroutines.test.runTest
 import kotlin.math.PI
 import kotlin.math.ceil
+import kotlin.math.log10
 import kotlin.math.log2
 import kotlin.math.pow
 import kotlin.math.sin
+import kotlin.math.sqrt
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -181,6 +184,31 @@ class TestFFT {
         assertEquals(samples.size, origin.size)
         samples.forEachIndexed { index, value ->
             assertEquals(value, origin[index], 1e-5f)
+        }
+    }
+    @Test
+    fun testRFFTSinusLogScale() = runTest {
+        val sampleRate = 64
+        val expectedLevel = 94.0
+        val peak = 10.0.pow(expectedLevel/20.0)* sqrt(2.0)
+        val sum: (Double, Double) -> Double = { x: Double, y: Double -> x + y }
+        val frequencyPeaks = doubleArrayOf(5.0, 12.0, 20.0, 28.0)
+        var signal = DoubleArray(sampleRate)
+        // sum multiple sinusoidal signals
+        frequencyPeaks.forEach { frequencyPeak ->
+            signal = signal.zip(generateSinusoidalSignal(frequencyPeak,
+                sampleRate.toDouble(), 1.0){v -> peak*v}, sum).toDoubleArray() }
+        signal = signal.map(fun(it: Double): Double {
+            return peak * it
+        }).toDoubleArray()
+
+        val fr = realFFT(signal)
+
+        val magnitudeSquared = DoubleArray(fr.size / 2) { i: Int -> fr[(i*2)+1]*fr[(i*2)+1] }
+        val vref = (signal.size*signal.size)/2
+        val levels = magnitudeSquared.map { 10* log10(it/vref) }
+        frequencyPeaks.forEach {
+            assertEquals(expectedLevel, levels[it.toInt()], 1e-8)
         }
     }
 }

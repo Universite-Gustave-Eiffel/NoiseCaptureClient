@@ -4,6 +4,7 @@ import kotlin.math.PI
 import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.floor
+import kotlin.math.log10
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -100,7 +101,9 @@ class WindowAnalysis(val sampleRate : Int, val windowSize : Int, val windowHop :
         window.samples.copyInto(fftWindow, 0, windowSize/2, windowSize)
         window.samples.copyInto(fftWindow, fftWindowSize - (windowSize/2),
             0, windowSize/2)
-        return realFFTFloat(fftWindow)
+        val fr = realFFTFloat(fftWindow)
+        val vref = (windowSize*windowSize)/2
+        return FloatArray(fr.size / 2) { i: Int -> 10 * log10((fr[(i*2)+1]*fr[(i*2)+1]) /vref) }
     }
 
     fun processWindowDouble(window: Window) : DoubleArray {
