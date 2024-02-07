@@ -3,6 +3,7 @@ package org.noise_planet.noisecapture.shared.signal
 import kotlinx.coroutines.test.runTest
 import kotlin.math.PI
 import kotlin.math.cos
+import kotlin.math.log10
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sign
@@ -88,61 +89,27 @@ class TestWindowAnalysis {
     }
 
     @Test
-    fun testSTFTSinus() = runTest {
-        val sampleRate = 32768
-        val expectedLevel = 94
+    fun testRFFTSinus() = runTest {
+        val sampleRate = 64
+        val expectedLevel = 94.0
         val peak = 10.0.pow(expectedLevel/20.0)*sqrt(2.0)
-        val sum: (Float, Float) -> Float = { x: Float, y: Float -> x + y }
-        var signal = generateSinusoidalFloatSignal(1000.0, sampleRate.toDouble(), 1.0)
-            .zip(generateSinusoidalFloatSignal(1600.0, sampleRate.toDouble(), 1.0), sum)
-            .toFloatArray().zip(
-                generateSinusoidalFloatSignal(4000.0, sampleRate.toDouble(), 1.0), sum
-            ).toFloatArray().zip(
-                generateSinusoidalFloatSignal(125.0, sampleRate.toDouble(), 1.0), sum
-            ).toFloatArray()
-        signal = signal.map(fun(it: Float): Float {
-            return (peak * it).toFloat()
-        }).toFloatArray()
+        val sum: (Double, Double) -> Double = { x: Double, y: Double -> x + y }
+        val frequencyPeaks = doubleArrayOf(5.0, 12.0, 20.0, 28.0)
+        var signal = DoubleArray(sampleRate)
+        // sum multiple sinusoidal signals
+        frequencyPeaks.forEach { frequencyPeak ->
+            signal = signal.zip(generateSinusoidalSignal(frequencyPeak,
+            sampleRate.toDouble(), 1.0){v -> peak*v}, sum).toDoubleArray() }
+        signal = signal.map(fun(it: Double): Double {
+            return peak * it
+        }).toDoubleArray()
 
-        fftFloat(signal.size / 2, signal)
-        for (i in signal.indices) {
-            signal[i] = signal[i] / signal.size
+        val fr = realFFT(signal)
+
+        val magnitudeSquared = DoubleArray(fr.size / 2) { i: Int -> fr[(i*2)+1]*fr[(i*2)+1] }
+        val levels = magnitudeSquared.map { 10* log10(it/(signal.size*signal.size)*2) }
+        frequencyPeaks.forEach {
+            assertEquals(expectedLevel, levels[it.toInt()], 1e-8)
         }
-        //val fr = realFFTFloat(signal).map {
-        //    it / signal.size
-        //}
-        println(signal.joinToString())
-
-//        val windowSize = (sampleRate * 0.125).toInt()
-//        val hopSize = windowSize / 2
-//        val windowAnalysis = WindowAnalysis(sampleRate, windowSize, hopSize)
-//        // Sum of STFFT should be equal to the FFT of the whole signal
-//        var sum = 0.0
-//        var windows = 0
-//        val rmsSignal = sqrt(signal.map { it * it }.average())
-//        println("rmsSignal=$rmsSignal")
-//        val fftWindow = FloatArray(nextPowerOfTwo(signal.size))
-//        signal.copyInto(fftWindow, 0, 0, signal.size)
-//        //signal.copyInto(fftWindow, 0, signal.size / 2, signal.size)
-//        //signal.copyInto(fftWindow, fftWindow.size - signal.size / 2, 0, signal.size / 2)
-//        val spectrum = realFFTFloat(fftWindow)
-//        var sumWhole = sqrt((spectrum.mapIndexed { index, value ->
-//            if(index < spectrum.size / 2) { value*value } else{ 0.0.toFloat() } }.sum().toDouble()) / ((signal.size / 2)))
-//        //var sumWhole = sqrt(spectrum.map {it * it}.sum() / signal.size)
-//        //sumWhole = sqrt(sumWhole / fftWindow.size)
-//        println("sumWhole=$sumWhole")
-//        windowAnalysis.pushSamples(1125, signal).forEach { window ->
-//            sum += window.spectrum.map { it * it }.sum().toDouble()
-//            windows += 1
-//        }
-//        val fftWindow = FloatArray(nextPowerOfTwo(signal.size))
-//        signal.copyInto(fftWindow, 0, signal.size / 2, signal.size)
-//        signal.copyInto(fftWindow, fftWindow.size - signal.size / 2, 0, signal.size / 2)
-//        val spectrum = realFFTFloat(fftWindow)
-//        val spectrumData = SpectrumData(1000, spectrum)
-//        var sumWhole = sqrt(spectrumData.spectrum.map { it * it }.sum() / signal.size).toDouble()
-//        val thirdOctave = spectrumData.thirdOctaveProcessing(sampleRate, 125.0, 16000.0).asList()
-//        println("rmsSignal=$rmsSignal\nsum=$sum\nsumWhole=$sumWhole\nthirdOctave=${thirdOctave.size}")
-//        assertEquals(sumWhole, sum, 1e-6)
     }
 }

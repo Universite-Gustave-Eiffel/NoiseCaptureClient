@@ -12,20 +12,32 @@ def generate_sinus(duration, sample_rate, frequency):
                   sample_rate)
 
 duration = 1.0
-fs = 32768
+fs = 64
 expected_power = 94
 peak = 10 ** (expected_power / 20) * np.sqrt(2)
-x = generate_sinus(duration, fs, 1000)
-x += generate_sinus(duration, fs, 1600)
-x += generate_sinus(duration, fs, 4000)
-x += generate_sinus(duration, fs, 125)
+x = generate_sinus(duration, fs, 5)
+x += generate_sinus(duration, fs, 12)
+x += generate_sinus(duration, fs, 20)
+x += generate_sinus(duration, fs, 28)
 x *= peak
 
 # Compute the Fourier transform of the real data using rfft
 X_fft = np.fft.rfft(x)
 
+#print(",\n".join([ str(v) for v in list(np.hstack((X_fft.real[:, None], X_fft.imag[:, None])).flatten())]))
+
+X_fft_flat = np.hstack((X_fft.real[:, None], X_fft.imag[:, None])).flatten()
+
+magnitude_squared_flat = (X_fft.imag * X_fft.imag)[:-1]
+
 # Calculate the magnitude squared of the Fourier transformed signal
 magnitude_squared = (X_fft * np.conj(X_fft)).real[:-1]
+
+# plt.scatter(range(len(magnitude_squared_flat)), magnitude_squared_flat, marker="+")
+# plt.scatter(range(len(magnitude_squared)), magnitude_squared, marker="x")
+# print(",\n".join([str(v) for v in magnitude_squared]))
+# plt.show()
+# exit(0)
 
 # Divide the magnitude squared by the number of samples to obtain the power spectral density
 power_spectral_density = magnitude_squared / len(x)**2
