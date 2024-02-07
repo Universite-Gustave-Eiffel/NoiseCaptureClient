@@ -107,7 +107,8 @@ class TestWindowAnalysis {
         val fr = realFFT(signal)
 
         val magnitudeSquared = DoubleArray(fr.size / 2) { i: Int -> fr[(i*2)+1]*fr[(i*2)+1] }
-        val levels = magnitudeSquared.map { 10* log10(it/(signal.size*signal.size)*2) }
+        val vref = (signal.size*signal.size)/2
+        val levels = magnitudeSquared.map { 10* log10(it/vref) }
         frequencyPeaks.forEach {
             assertEquals(expectedLevel, levels[it.toInt()], 1e-8)
         }
