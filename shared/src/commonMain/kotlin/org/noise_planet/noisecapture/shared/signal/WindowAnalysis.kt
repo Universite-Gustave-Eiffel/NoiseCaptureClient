@@ -18,11 +18,23 @@ const val SPECTRUM_CACHE = 10
  * @windowSize Size of the window
  * @windowHop Run a new analysis each windowHop samples
  */
-class WindowAnalysis(val sampleRate : Int, val windowSize : Int, val windowHop : Int) {
+class WindowAnalysis(val sampleRate : Int, val windowSize : Int, val windowHop : Int, private val applyHannWindow  : Boolean = true) {
     val circularSamplesBuffer = FloatArray(windowSize)
     var circularBufferCursor = 0
     var samplesUntilWindow = windowSize
-    val hannWindow = FloatArray(windowSize) {(0.5 * (1 - cos(2 * PI * it / (windowSize - 1)))).toFloat()}
+    val hannWindow: FloatArray? = when (applyHannWindow) {
+        true ->
+            FloatArray(windowSize) {
+                (0.5 * (1 - cos(2 * PI * it / (windowSize - 1)))).toFloat()
+            }
+        else -> null
+    }
+
+    init {
+        if(windowHop <= 0) {
+            throw IllegalArgumentException("Window hop must be superior than 0")
+        }
+    }
 
     /**
      * Process the provided samples and run a STFFT analysis when a window is complete
@@ -61,8 +73,10 @@ class WindowAnalysis(val sampleRate : Int, val windowSize : Int, val windowHop :
                     circularSamplesBuffer.size
                 )
                 // apply window function
-                for (i in windowSamples.indices) {
-                    windowSamples[i] *= hannWindow[i]
+                if(hannWindow != null) {
+                    for (i in windowSamples.indices) {
+                        windowSamples[i] *= hannWindow[i]
+                    }
                 }
                 val window = Window(
                     (epoch - ((samples.size - processed) / sampleRate.toDouble()) * 1000.0).toLong(),
@@ -96,14 +110,23 @@ class WindowAnalysis(val sampleRate : Int, val windowSize : Int, val windowHop :
     }
 
     fun processWindowFloat(window: Window) : FloatArray {
-        val fftWindowSize = nextPowerOfTwo(windowSize)
-        val fftWindow = FloatArray(fftWindowSize)
-        window.samples.copyInto(fftWindow, 0, windowSize/2, windowSize)
-        window.samples.copyInto(fftWindow, fftWindowSize - (windowSize/2),
-            0, windowSize/2)
+        // resize array to power of two if window.samples.size is not a power of two
+        val fftWindow: FloatArray = when (val fftWindowSize = nextPowerOfTwo(windowSize)) {
+            windowSize -> window.samples
+            else -> {
+                val paddedWindow = FloatArray(fftWindowSize)
+                // place 0 padding at the center of the window
+                window.samples.copyInto(paddedWindow, 0, windowSize / 2, windowSize)
+                window.samples.copyInto(
+                    paddedWindow, fftWindowSize - (windowSize / 2),
+                    0, windowSize / 2
+                )
+                paddedWindow
+            }
+        }
         val fr = realFFTFloat(fftWindow)
-        val vref = (windowSize*windowSize)/2
-        return FloatArray(fr.size / 2) { i: Int -> 10 * log10((fr[(i*2)+1]*fr[(i*2)+1]) /vref) }
+        val vRef = (windowSize*windowSize)/2
+        return FloatArray(fr.size / 2) { i: Int -> 10 * log10((fr[(i*2)+1]*fr[(i*2)+1]) /vRef) }
     }
 
     fun processWindowDouble(window: Window) : DoubleArray {

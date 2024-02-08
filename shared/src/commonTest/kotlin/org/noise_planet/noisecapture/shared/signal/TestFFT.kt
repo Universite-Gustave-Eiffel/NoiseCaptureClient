@@ -24,7 +24,7 @@ fun generateSinusoidalSignal(
     val angularFrequency = 2.0 * PI * frequency / sampleRate
 
     for (i in 0 until numSamples) {
-        signal[i] = sin(i * angularFrequency)
+        signal[i] *= sin(i * angularFrequency)
     }
 
     return signal
@@ -197,13 +197,9 @@ class TestFFT {
         // sum multiple sinusoidal signals
         frequencyPeaks.forEach { frequencyPeak ->
             signal = signal.zip(generateSinusoidalSignal(frequencyPeak,
-                sampleRate.toDouble(), 1.0){v -> peak*v}, sum).toDoubleArray() }
-        signal = signal.map(fun(it: Double): Double {
-            return peak * it
-        }).toDoubleArray()
+                sampleRate.toDouble(), 1.0, coefficient = {peak}), sum).toDoubleArray() }
 
         val fr = realFFT(signal)
-
         val magnitudeSquared = DoubleArray(fr.size / 2) { i: Int -> fr[(i*2)+1]*fr[(i*2)+1] }
         val vref = (signal.size*signal.size)/2
         val levels = magnitudeSquared.map { 10* log10(it/vref) }

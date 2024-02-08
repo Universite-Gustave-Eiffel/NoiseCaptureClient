@@ -1,12 +1,8 @@
 package org.noise_planet.noisecapture.shared.signal
 
 import kotlinx.coroutines.test.runTest
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.log10
 import kotlin.math.min
 import kotlin.math.pow
-import kotlin.math.sign
 import kotlin.math.sqrt
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -20,7 +16,7 @@ class TestWindowAnalysis {
         val windowAnalysis = WindowAnalysis(44100, expected.size, 1)
 
         expected.forEachIndexed { index, value ->
-            assertEquals(value, windowAnalysis.hannWindow[index], 1e-8f)
+            assertEquals(value, windowAnalysis.hannWindow?.get(index) ?: 0.0F, 1e-8f)
         }
     }
 
@@ -88,4 +84,35 @@ class TestWindowAnalysis {
         }
     }
 
+    @Test
+    fun testSinusHannWindow() = runTest {
+        val sampleRate = 32768
+        val expectedLevel = 94.0
+        val peak = 10.0.pow(expectedLevel/20.0)* sqrt(2.0)
+        val sum: (Float, Float) -> Float = { x: Float, y: Float -> x + y }
+        val frequencyPeaks = doubleArrayOf(1000.0)
+        var signal = FloatArray(sampleRate)
+        // sum multiple sinusoidal signals
+        frequencyPeaks.forEach { frequencyPeak ->
+            signal = signal.zip(generateSinusoidalFloatSignal(frequencyPeak,
+                sampleRate.toDouble(), 1.0){peak.toFloat()}, sum).toFloatArray()}
+
+        val bufferSize = (sampleRate * 0.1).toInt()
+        var cursor = 0
+        val wa = WindowAnalysis(sampleRate, 4096, 4096, applyHannWindow = false)
+        val spectrumDataArray = ArrayList<SpectrumData>()
+        while (cursor < signal.size) {
+            val windowSize = min(bufferSize, signal.size - cursor)
+            val windowBuffer = signal.copyOfRange(cursor, cursor+windowSize)
+            val epoch = (((cursor+windowSize)/sampleRate.toDouble())*1000).toLong()
+            spectrumDataArray.addAll(wa.pushSamples(epoch, windowBuffer))
+            cursor += windowSize
+        }
+        val hertzPerCell = wa.windowSize/sampleRate.toDouble()
+        spectrumDataArray.forEach { spectrumData ->
+            assertEquals(expectedLevel,
+                spectrumData.spectrum[(hertzPerCell*frequencyPeaks[0]).toInt()].toDouble(),
+                0.01)
+        }
+    }
 }
