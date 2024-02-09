@@ -57,12 +57,12 @@ class SpectrumChannelTest {
         //var signal = generateSinusoidalFloatSignal(125.0, sampleRate.toDouble(), 5.0) { peak.toFloat() }
 
 
-        var signal = generateSinusoidalFloatSignal(1000.0, sampleRate.toDouble(), 5.0){peak}
-            .zip(generateSinusoidalFloatSignal(1600.0, sampleRate.toDouble(), 5.0){peak}, sum)
+        var signal = TestFFT.generateSinusoidalFloatSignal(1000.0, sampleRate.toDouble(), 5.0){peak}
+            .zip(TestFFT.generateSinusoidalFloatSignal(1600.0, sampleRate.toDouble(), 5.0){peak}, sum)
             .toFloatArray().zip(
-                generateSinusoidalFloatSignal(4000.0, sampleRate.toDouble(), 5.0){peak}, sum
+                TestFFT.generateSinusoidalFloatSignal(4000.0, sampleRate.toDouble(), 5.0){peak}, sum
             ).toFloatArray().zip(
-                generateSinusoidalFloatSignal(125.0, sampleRate.toDouble(), 5.0){peak}, sum
+                TestFFT.generateSinusoidalFloatSignal(125.0, sampleRate.toDouble(), 5.0){peak}, sum
             ).toFloatArray()
 
         val sc = SpectrumChannel()

@@ -94,7 +94,7 @@ class TestWindowAnalysis {
         var signal = FloatArray(sampleRate)
         // sum multiple sinusoidal signals
         frequencyPeaks.forEach { frequencyPeak ->
-            signal = signal.zip(generateSinusoidalFloatSignal(frequencyPeak,
+            signal = signal.zip(TestFFT.generateSinusoidalFloatSignal(frequencyPeak,
                 sampleRate.toDouble(), 1.0){peak.toFloat()}, sum).toFloatArray()}
 
         val bufferSize = (sampleRate * 0.1).toInt()
