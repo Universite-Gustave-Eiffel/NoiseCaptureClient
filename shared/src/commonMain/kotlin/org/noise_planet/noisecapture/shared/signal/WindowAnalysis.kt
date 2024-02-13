@@ -219,6 +219,11 @@ data class SpectrumData(val epoch : Long, val spectrum : FloatArray) {
     /**
      * @see <a href="https://www.ap.com/technical-library/deriving-fractional-octave-spectra-from-the-fft-with-apx/">ref</a>
      * Class 0 filter is 0.15 dB error according to IEC 61260
+     * @sampleRate sample rate
+     * @firstFrequencyBand Skip bands up to specified frequency
+     * @lastFrequencyBand Skip bands higher than this frequency
+     * @base Octave base 10 or base 2
+     * @octaveWindow Rectangular association of frequency band or fractional close to done by a filter
      */
     fun thirdOctaveProcessing(sampleRate: Int, firstFrequencyBand : Double,
                               lastFrequencyBand : Double, base : BASE_METHOD = BASE_METHOD.B10,
