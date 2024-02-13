@@ -85,7 +85,7 @@ class TestWindowAnalysis {
     }
 
     @Test
-    fun testSinusHannWindow() = runTest {
+    fun testSinusSTFFTRectangularWindow() = runTest {
         val sampleRate = 32768
         val expectedLevel = 94.0
         val peak = 10.0.pow(expectedLevel/20.0)* sqrt(2.0)
@@ -113,6 +113,42 @@ class TestWindowAnalysis {
             assertEquals(expectedLevel,
                 spectrumData.spectrum[(hertzPerCell*frequencyPeaks[0]).toInt()].toDouble(),
                 0.01)
+        }
+    }
+
+
+    @Test
+    fun testSinusSTFFTHannWindowThirdOctave() = runTest {
+        val sampleRate = 32768
+        val expectedLevel = 94.0
+        val peak = 10.0.pow(expectedLevel/20.0)* sqrt(2.0)
+        val sum: (Float, Float) -> Float = { x: Float, y: Float -> x + y }
+        val frequencyPeaks = doubleArrayOf(1000.0)
+        var signal = FloatArray(sampleRate)
+        // sum multiple sinusoidal signals
+        frequencyPeaks.forEach { frequencyPeak ->
+            signal = signal.zip(TestFFT.generateSinusoidalFloatSignal(frequencyPeak,
+                sampleRate.toDouble(), 1.0){peak.toFloat()}, sum).toFloatArray()}
+
+        val bufferSize = (sampleRate * 0.1).toInt()
+        var cursor = 0
+        val wa = WindowAnalysis(sampleRate, 4096, 2048)
+        val spectrumDataArray = ArrayList<SpectrumData>()
+        while (cursor < signal.size) {
+            val windowSize = min(bufferSize, signal.size - cursor)
+            val windowBuffer = signal.copyOfRange(cursor, cursor+windowSize)
+            val epoch = (((cursor+windowSize)/sampleRate.toDouble())*1000).toLong()
+            spectrumDataArray.addAll(wa.pushSamples(epoch, windowBuffer))
+            cursor += windowSize
+        }
+        spectrumDataArray.forEach { spectrumData ->
+            val thirdOctaveSquare = spectrumData.thirdOctaveProcessing(sampleRate, 50.0, 12000.0,
+                octaveWindow = SpectrumData.OCTAVE_WINDOW.RECTANGULAR).asList()
+            val thirdOctaveFractional = spectrumData.thirdOctaveProcessing(sampleRate, 50.0,
+                12000.0, octaveWindow = SpectrumData.OCTAVE_WINDOW.FRACTIONAL).asList()
+            val indexOf1000Hz = thirdOctaveSquare.indexOfFirst { t -> t.midFrequency.toInt() == 1000 }
+            assertEquals(expectedLevel, thirdOctaveSquare[indexOf1000Hz].spl, 0.01)
+            assertEquals(expectedLevel, thirdOctaveFractional[indexOf1000Hz].spl, 0.01)
         }
     }
 }

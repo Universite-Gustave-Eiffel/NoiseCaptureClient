@@ -5,6 +5,7 @@ import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.floor
 import kotlin.math.log10
+import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -29,7 +30,13 @@ class WindowAnalysis(val sampleRate : Int, val windowSize : Int, val windowHop :
             }
         else -> null
     }
-
+    //Windowing correction  factors
+    // [1] F. J. Harris, “On the use of windows for harmonic analysis with the discrete fourier
+    // transform,”Proceedings of the IEEE, vol. 66, no. 1, pp. 51–83, Jan. 1978.
+    val windowCorrectionFactor = when (applyHannWindow) {
+        true -> 0.375
+        else -> 1.0
+    }
     init {
         if(windowHop <= 0) {
             throw IllegalArgumentException("Window hop must be superior than 0")
@@ -125,7 +132,7 @@ class WindowAnalysis(val sampleRate : Int, val windowSize : Int, val windowHop :
             }
         }
         val fr = realFFTFloat(fftWindow)
-        val vRef = (windowSize*windowSize)/2
+        val vRef = (((windowSize*windowSize)/2.0)*windowCorrectionFactor).toFloat()
         return FloatArray(fr.size / 2) { i: Int -> 10 * log10((fr[(i*2)+1]*fr[(i*2)+1]) /vRef) }
     }
 
@@ -221,7 +228,7 @@ data class SpectrumData(val epoch : Long, val spectrum : FloatArray) {
             BASE_METHOD.B10 -> 10.0.pow(3.0 / 10.0)
             BASE_METHOD.B2 -> 2.0
         }
-        val freqByCell: Double = sampleRate / (spectrum.size.toDouble() * 2)
+        val freqByCell: Double = (spectrum.size.toDouble() * 2) / sampleRate
         val firstBandIndex = getBandIndexByFrequency(firstFrequencyBand, g, bandDivision)
         val lastBandIndex = getBandIndexByFrequency(lastFrequencyBand, g, bandDivision)
         val thirdOctave = Array(lastBandIndex - firstBandIndex) {bandIndex ->
@@ -229,29 +236,38 @@ data class SpectrumData(val epoch : Long, val spectrum : FloatArray) {
             ThirdOctave(fMin, fMid, fMax, 0.0)
         }
         if(octaveWindow == OCTAVE_WINDOW.FRACTIONAL) {
-            for (cellIndex in spectrum.indices) {
-                for (band in thirdOctave) {
-                    val f = (cellIndex + 1) * freqByCell
+            for (band in thirdOctave) {
+                for (cellIndex in spectrum.indices) {
+                    val f = (cellIndex + 1) / freqByCell
                     val cellGain = sqrt(
                         1.0 / (1.0 + ((f / band.midFrequency - band.midFrequency / f)
                                 * 1.507 * bandDivision).pow(6))
                     )
-                    val fg = spectrum[cellIndex] * cellGain
-                    band.rms += fg * fg
+                    val fg = 10.0.pow(spectrum[cellIndex]/10.0) * cellGain
+                    if(fg.isFinite()) {
+                        band.spl += fg
+                    }
                 }
+            }
+            for (band in thirdOctave) {
+                band.spl = 10*log10(band.spl)
             }
         } else {
             for (band in thirdOctave) {
-                val minCell = floor(band.minFrequency * freqByCell).toInt()
-                val maxCell = ceil(band.maxFrequency * freqByCell).toInt()
-                for(cellIndex in minCell..maxCell) {
-                    val fg = spectrum[cellIndex]
-                    band.rms += fg * fg
+                val minCell = max(0,floor(band.minFrequency * freqByCell).toInt())
+                val maxCell = min(spectrum.size, ceil(band.maxFrequency * freqByCell).toInt())
+                var rms = 0.0
+                for(cellIndex in minCell..<maxCell) {
+                    val fg = 10.0.pow(spectrum[cellIndex]/10.0)
+                    if(fg.isFinite()) {
+                        rms += fg
+                    }
                 }
+                band.spl = 10 * log10(rms)
             }
         }
         return thirdOctave
     }
 }
 
-data class ThirdOctave(val minFrequency : Double, val midFrequency : Double, val maxFrequency : Double, var rms : Double)
+data class ThirdOctave(val minFrequency : Double, val midFrequency : Double, val maxFrequency : Double, var spl : Double)

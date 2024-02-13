@@ -37,6 +37,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(projects.permissions)
+                implementation(libs.kotlinx.datetime)
                 api(compose.runtime)
                 api(compose.foundation)
                 api(compose.material3)

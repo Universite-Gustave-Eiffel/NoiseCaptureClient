@@ -22,7 +22,13 @@ def cround(z, d=None):
     return np.round(z.real, d) + 1j * np.round(z.imag, d)
 
 
-arr = [1.0, 2.0, 3.0]
+def generate_sinus(duration, sample_rate, frequency):
+    return np.sin(2 * np.pi * np.arange(duration * sample_rate) * frequency /
+                  sample_rate)
 
+
+# Your real data 'x'
+arr = np.random.randn(16)
+print(arr)
 print(cround(czt(arr), 4))  # [ 6.0+0.j    -1.5+0.866j -1.5-0.866j]
 print(cround(np.fft.fft(arr), 4))  # [ 6.0+0.j    -1.5+0.866j -1.5-0.866j]
