@@ -39,7 +39,7 @@ import kotlin.math.round
 const val FFT_SIZE = 2048
 const val FFT_HOP = 1024
 const val MAX_SPECTRUM = 320 // max spectrum displayed in the spectrogram
-const val SKIP_FFT_CELLS_LOG = 16 // skip low frequency in log spectrum to avoid squeezed rendering
+const val SKIP_FFT_CELLS_LOG = 20 // skip low frequency in log spectrum to avoid squeezed rendering
 
 fun parseColor(colorString: String): Int {
     var color = colorString.substring(1).toLong(16)
@@ -116,11 +116,17 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
             SCALE_MODE.SCALE_LOG -> log10(spectrum.size.toFloat())
             else -> spectrum.size.toFloat()
         }
-        val spectrumColor = spectrum.mapIndexed { index, magnitude ->
+        val skip = when(scaleMode) { SCALE_MODE.SCALE_LOG -> SKIP_FFT_CELLS_LOG else -> 0}
+        val skipOffset = log10(spectrum.size/(skip+1).toFloat())  / maxNonRatio
+        val rescaleOffset = (1/(1.0-skipOffset)).toFloat()
+        val spectrumColor = spectrum.takeLast(spectrum.size - skip).mapIndexed { index, magnitude ->
             val colorIndex = max( 0, min( colorRamp.size - 1,
                 floor(((magnitude - mindB) / rangedB) * colorRamp.size).toInt() ))
-            val verticalRatio = when(scaleMode) {
-                SCALE_MODE.SCALE_LOG -> 1F - (log10(spectrum.size/(index+1).toFloat()) / maxNonRatio)
+            val verticalRatio : Float = when(scaleMode) {
+                SCALE_MODE.SCALE_LOG -> {
+                    (skipOffset - ((log10(spectrum.size/(index+skip+1).toFloat())) / maxNonRatio)
+                            ) * rescaleOffset
+                }
                 else -> index.toFloat() / maxNonRatio
             }
             verticalRatio to colorRamp[colorIndex]
