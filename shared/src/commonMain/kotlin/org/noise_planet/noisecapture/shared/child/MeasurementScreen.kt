@@ -7,7 +7,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -17,14 +20,20 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.LinearGradient
 import com.bumble.appyx.components.backstack.BackStack
 import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import org.noise_planet.noisecapture.AudioSource
 import org.noise_planet.noisecapture.shared.ScreenData
 import org.noise_planet.noisecapture.shared.signal.SpectrumChannel
+import org.noise_planet.noisecapture.shared.signal.SpectrumData
 import org.noise_planet.noisecapture.shared.signal.WindowAnalysis
 import org.noise_planet.noisecapture.shared.signal.get44100HZ
 import org.noise_planet.noisecapture.shared.signal.get48000HZ
@@ -34,10 +43,11 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.round
+import kotlin.test.expect
 
 
 const val FFT_SIZE = 2048
-const val FFT_HOP = 1024
+const val FFT_HOP = 2048
 const val MAX_SPECTRUM = 320 // max spectrum displayed in the spectrogram
 const val SKIP_FFT_CELLS_LOG = 20 // skip low frequency in log spectrum to avoid squeezed rendering
 
@@ -87,30 +97,33 @@ data class SpectrogramModel(val values: List<Brush>)
 class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<ScreenData>,
                         private val audioSource: AudioSource) : Node(buildContext) {
     private val spectrumChannel: SpectrumChannel = SpectrumChannel()
-
+    var spectrumDataToProcess = MutableSharedFlow<SpectrumData>(replay = MAX_SPECTRUM,
+        extraBufferCapacity = MAX_SPECTRUM, BufferOverflow.DROP_OLDEST)
     var rangedB = 40.0
     var mindB = 0
 
     fun <Color> List<Pair<Float, Color>>.filterConsecutiveEqual(): Array<Pair<Float, Color>> {
-        if(isEmpty()) {
+        if(size <= 2) {
             return this.toTypedArray()
         }
         val result = ArrayList<Pair<Float, Color>>()
-        var lastItem : Pair<Float, Color>? = null
-        forEachIndexed { index, item ->
-            if (lastItem == null || lastItem!!.second != item.second || index == size - 1) {
-                result.add(item)
-                lastItem = item
+        var firstItem : Pair<Float, Color> = get(0)
+        var secondItem : Pair<Float, Color> = get(1)
+        result.add(firstItem)
+        this.takeLast(size - 2).forEachIndexed { index, item ->
+            if (!(secondItem.second == firstItem.second && secondItem.second == item.second)) {
+                result.add(secondItem)
+                firstItem = secondItem
+                secondItem = item
             }
         }
+        result.add(get(size-1))
         return result.toTypedArray()
     }
 
-    fun pushSpectrum(prepend : List<Brush>, spectrum : FloatArray,
-                     scaleMode : SCALE_MODE) : List<Brush> {
-        if (spectrum.isEmpty()) {
-            return prepend
-        }
+    fun spectrumToBrush(spectrum : FloatArray,
+                     scaleMode : SCALE_MODE) : Brush {
+        require(spectrum.isNotEmpty())
         // map spectrum value with brush ratio and rendering color
         val maxNonRatio = when(scaleMode) {
             SCALE_MODE.SCALE_LOG -> log10(spectrum.size.toFloat())
@@ -118,7 +131,9 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         }
         val skip = when(scaleMode) { SCALE_MODE.SCALE_LOG -> SKIP_FFT_CELLS_LOG else -> 0}
         val skipOffset = log10(spectrum.size/(skip+1).toFloat())  / maxNonRatio
-        val rescaleOffset = (1/(1.0-skipOffset)).toFloat()
+        val rescaleOffset = (1/skipOffset)
+        var minRatio = Float.MAX_VALUE
+        var maxRatio = 0F
         val spectrumColor = spectrum.takeLast(spectrum.size - skip).mapIndexed { index, magnitude ->
             val colorIndex = max( 0, min( colorRamp.size - 1,
                 floor(((magnitude - mindB) / rangedB) * colorRamp.size).toInt() ))
@@ -129,30 +144,18 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                 }
                 else -> index.toFloat() / maxNonRatio
             }
+            minRatio = min(minRatio, verticalRatio)
+            maxRatio = max(maxRatio, verticalRatio)
             verticalRatio to colorRamp[colorIndex]
         }.filterConsecutiveEqual()
-        return prepend.subList(max(0,prepend.size-MAX_SPECTRUM), prepend.size)
-            .plus(Brush.verticalGradient(colorStops = spectrumColor))
-    }
-
-    @Composable
-    fun SpectrogramView(spectrumData: SpectrogramModel) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val xStep = size.width/ MAX_SPECTRUM
-            val offset = min(MAX_SPECTRUM, MAX_SPECTRUM - spectrumData.values.size)
-            spectrumData.values.forEachIndexed() { index, brush ->
-                drawRect(brush = brush, size= Size(xStep, size.height),
-                    topLeft = Offset((index + offset) * xStep, 0F))
-            }
-        }
+        return Brush.verticalGradient(colorStops = spectrumColor)
     }
 
     @Composable
     override fun View(modifier: Modifier) {
         var noiseLevel by remember { mutableStateOf(0.0) }
-        var spectrumState by remember { mutableStateOf(SpectrogramModel(arrayListOf())) }
-
         lifecycleScope.launch {
+            println("Launch lifecycle")
             audioSource.setup()
             spectrumChannel.loadConfiguration(
                 when (audioSource.getSampleRate()) {
@@ -166,11 +169,9 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                 val samplesWithGain = samples.samples.map()
                 {it*gain}.toFloatArray()
                 noiseLevel = spectrumChannel.processSamplesWeightA(samplesWithGain)
-                windowAnalysis.pushSamples(
-                    samples.epoch, samplesWithGain)
-                    .forEach {
-                        spectrumState = SpectrogramModel(pushSpectrum(spectrumState.values,
-                            it.spectrum, SCALE_MODE.SCALE_LOG))
+                val thirdOctave = spectrumChannel.processSamples(samplesWithGain)
+                windowAnalysis.pushSamples(samples.epoch, samplesWithGain).forEach {
+                    spectrumDataToProcess.tryEmit(it)
                 }
             }
         }.invokeOnCompletion {
@@ -179,13 +180,30 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                 audioSource.release()
             }
         }
+        val spectrumDataState = remember { mutableStateOf( emptyList<Brush>() ) }
+        LaunchedEffect(lifecycleScope.coroutineContext) {
+            spectrumDataToProcess.collect() { spectrumData ->
+                val fromIndex = max(0, spectrumDataState.value.size-MAX_SPECTRUM)
+                spectrumDataState.value = spectrumDataState.value.
+                subList(fromIndex, spectrumDataState.value.size)
+                    .plus(spectrumToBrush(spectrumData.spectrum, SCALE_MODE.SCALE_LOG))
+            }
+        }
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colors.background
         ) {
             Column(Modifier.fillMaxWidth()) {
                 Text("${round(noiseLevel * 100)/100} dB(A)")
-                SpectrogramView(spectrumData = spectrumState)
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    rememberDrawerState()
+                    val xStep = floor(size.width/ MAX_SPECTRUM)
+                    val offset = min(MAX_SPECTRUM, MAX_SPECTRUM - spectrumDataState.value.size)
+                    spectrumDataState.value.forEachIndexed() { index, brush ->
+                        drawRect(brush = brush, size= Size(xStep, size.height),
+                            topLeft = Offset((index + offset) * xStep, 0F))
+                    }
+                }
             }
         }
     }
