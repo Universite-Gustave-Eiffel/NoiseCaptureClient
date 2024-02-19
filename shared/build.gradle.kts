@@ -1,4 +1,3 @@
-import java.awt.SystemColor.desktop
 
 plugins {
     kotlin("multiplatform")
@@ -41,7 +40,6 @@ kotlin {
                 api(compose.runtime)
                 api(compose.foundation)
                 api(compose.material3)
-                implementation(kotlin("test"))
                 implementation(libs.appyx.navigation)
                 api(libs.appyx.components.backstack)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)

@@ -10,6 +10,7 @@ kotlin {
         binaries.executable()
     }
     sourceSets {
+        @Suppress("UNUSED_VARIABLE")
         val commonMain by getting {
             dependencies {
                 implementation(compose.runtime)
