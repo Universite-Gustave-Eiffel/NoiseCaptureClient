@@ -33,11 +33,13 @@ import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.round
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.measureTime
 import kotlin.time.measureTimedValue
 
 
 const val FFT_SIZE = 2048
 const val FFT_HOP = 2048
+const val WINDOW_TIME = 0.125
 const val MAX_SPECTRUM = 320 // max spectrum displayed in the spectrogram
 const val SKIP_FFT_CELLS_LOG = 20 // skip low frequency in log spectrum to avoid squeezed rendering
 val EMPTY_BITMAP = ImageBitmap(1, 1)
@@ -171,19 +173,42 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                     else -> get44100HZ()
                 }
             )
+            val windowLength = (audioSource.getSampleRate() * WINDOW_TIME).toInt()
+            val windowData = FloatArray(windowLength)
+            val windowTime = (windowData.size/audioSource.getSampleRate().toDouble()).seconds
+            var windowDataCursor = 0
             //val windowAnalysis = WindowAnalysis(audioSource.getSampleRate(), FFT_SIZE, FFT_HOP)
             audioSource.samples.collect { samples ->
                 val gain = (10.0.pow(105/20.0)).toFloat()
-                val (thirdOctave, processingTime) = measureTimedValue {
-                    val samplesWithGain = samples.samples.map()
-                    {it*gain}.toFloatArray()
-                    noiseLevel = spectrumChannel.processSamplesWeightA(samplesWithGain)
-                    spectrumChannel.processSamples(samplesWithGain)
+                var samplesProcessed = 0
+                while (samplesProcessed < samples.samples.size) {
+                    while (windowDataCursor < windowLength &&
+                        samplesProcessed < samples.samples.size) {
+                        val remainingToProcess = min(
+                            windowLength - windowDataCursor,
+                            samples.samples.size - samplesProcessed
+                        )
+                        for (i in 0..<remainingToProcess) {
+                            windowData[i + windowDataCursor] =
+                                samples.samples[i + samplesProcessed] * gain
+                        }
+                        windowDataCursor += remainingToProcess
+                        samplesProcessed += remainingToProcess
+                    }
+                    if (windowDataCursor == windowLength) {
+                        // window complete
+                        var thirdOctave : DoubleArray
+                        val processingTime = measureTime {
+                            noiseLevel = spectrumChannel.processSamplesWeightA(windowData)
+                            thirdOctave = spectrumChannel.processSamples(windowData)
+                            //windowAnalysis.pushSamples(samples.epoch, windowData).forEach {
+                            //   spectrumDataToProcess.tryEmit(it)
+                            //}
+                        }
+                        println("Processed $windowTime of audio in $processingTime")
+                        windowDataCursor = 0
+                    }
                 }
-                println("Processed ${(samples.samples.size/audioSource.getSampleRate().toDouble()).seconds} of audio in $processingTime")
-                //windowAnalysis.pushSamples(samples.epoch, samplesWithGain).forEach {
-                //   spectrumDataToProcess.tryEmit(it)
-                //}
             }
         }.invokeOnCompletion {
             println("On completion $it subs ${audioSource.samples.subscriptionCount.value}")
