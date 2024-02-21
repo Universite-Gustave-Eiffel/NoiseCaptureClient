@@ -53,6 +53,8 @@ class SpectrogramBitmap {
         ).map { it.toByte() }.toByteArray()
 
         val sizeIndex = 2
+        val widthIndex = 18
+        val heightIndex = 22
         val rawSizeIndex = 34
 
         fun parseColor(colorString: String): Int {
@@ -101,11 +103,20 @@ class SpectrogramBitmap {
             "#FB2A00".toComposeColor(),
         )
         fun createSpectrogram(size: IntSize) : SpectrogramDataModel {
-            val byteArray = ByteArray(bmpHeader.size * Int.SIZE_BYTES * size.width * size.height)
+            val byteArray = ByteArray(bmpHeader.size + Int.SIZE_BYTES * size.width * size.height)
             bmpHeader.copyInto(byteArray)
+            // fill with changing header data
+            val rawPixelSize = size.width*size.height*Int.SIZE_BYTES
+            rawPixelSize.toLittleEndianBytes().copyInto(byteArray, rawSizeIndex)
+            (rawPixelSize+bmpHeader.size).toLittleEndianBytes().copyInto(byteArray, sizeIndex)
+            size.width.toLittleEndianBytes().copyInto(byteArray, widthIndex)
+            size.height.toLittleEndianBytes().copyInto(byteArray, heightIndex)
             return SpectrogramDataModel(size, byteArray)
         }
 
+        /**
+         * Convert Int into little endian array of bytes
+         */
         fun Int.toLittleEndianBytes() : ByteArray = byteArrayOf(this.toByte(), this.ushr(8).toByte(),
             this.ushr(16).toByte(), this.ushr(24).toByte())
 
@@ -132,11 +143,9 @@ class SpectrogramBitmap {
                                                                scaleMode: SCALE_MODE,
                                                                mindB : Double, rangedB : Double,
                                                                sampleRate: Double) {
-            // move pixels to the left
-            for(row in 0..<size.height) {
-                val destinationRow = bmpHeader.size + row*size.width*Int.SIZE_BYTES
-                byteArray.copyInto(byteArray, destinationRow, bmpHeader.size, bmpHeader.size + (size.width - 1) * Int.SIZE_BYTES)
-            }
+            // move pixels to the bottom
+            byteArray.copyInto(byteArray, bmpHeader.size + size.width * Int.SIZE_BYTES,
+                bmpHeader.size, (size.width * (size.height - 1)) * Int.SIZE_BYTES)
             // generate column of pixels
             // merge power of each frequencies following the destination bitmap resolution
             val hertzBySpectrumCell = sampleRate / FFT_SIZE.toDouble()
@@ -145,8 +154,8 @@ class SpectrogramBitmap {
                 else -> frequencyLegendPositionLinear
             }
             var lastProcessFrequencyIndex = 0
-            val freqByPixel = fftResult.spectrum.size / size.height.toDouble()
-            for(pixel in 0..<size.height) {
+            val freqByPixel = fftResult.spectrum.size / size.width.toDouble()
+            for(pixel in 0..<size.width) {
                 var freqStart: Int
                 var freqEnd: Int
                 if (scaleMode == SCALE_MODE.SCALE_LOG) {
@@ -154,7 +163,7 @@ class SpectrogramBitmap {
                     val fMax = sampleRate / 2
                     val fMin = frequencyLegendPosition[0]
                     val r = fMax / fMin.toDouble()
-                    val f = fMin * 10.0.pow(pixel * log10(r) / size.height)
+                    val f = fMin * 10.0.pow(pixel * log10(r) / size.width)
                     val nextFrequencyIndex = min(fftResult.spectrum.size, (f / hertzBySpectrumCell).toInt())
                     freqEnd = min(fftResult.spectrum.size, (f / hertzBySpectrumCell).toInt() + 1)
                     lastProcessFrequencyIndex = min(fftResult.spectrum.size, nextFrequencyIndex)
@@ -172,7 +181,7 @@ class SpectrogramBitmap {
                         colorRamp.size).toInt())
                 )
                 val pixelColor = colorRamp[colorIndex].toArgb()
-                val pixelIndex = bmpHeader.size + (pixel*size.width+size.width-1)*Int.SIZE_BYTES
+                val pixelIndex = bmpHeader.size + pixel * Int.SIZE_BYTES
                 pixelColor.toLittleEndianBytes().copyInto(byteArray, pixelIndex)
             }
         }
