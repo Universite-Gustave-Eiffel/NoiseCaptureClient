@@ -85,10 +85,8 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                         // window complete
                         var thirdOctave : DoubleArray
                         val processingTime = measureTime {
-                            noiseLevel = 10 * log10(windowData.fold(0.0)
-                            { acc, fl -> acc + fl*fl } / windowData.size)
-                            //noiseLevel = spectrumChannel.processSamplesWeightA(windowData)
-                            //thirdOctave = spectrumChannel.processSamples(windowData)
+                            noiseLevel = spectrumChannel.processSamplesWeightA(windowData)
+                            thirdOctave = spectrumChannel.processSamples(windowData)
                             windowAnalysis.pushSamples(samples.epoch, windowData).forEach {
                                 if(spectrogramBitmapData.size.height > 1) {
                                     spectrogramBitmapData.pushSpectrumToSpectrogramData(it,
