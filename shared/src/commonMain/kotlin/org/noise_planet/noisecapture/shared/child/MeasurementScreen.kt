@@ -87,13 +87,17 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                         val processingTime = measureTime {
                             noiseLevel = spectrumChannel.processSamplesWeightA(windowData)
                             thirdOctave = spectrumChannel.processSamples(windowData)
+                            var changed = false
                             windowAnalysis.pushSamples(samples.epoch, windowData).forEach {
-                                if(spectrogramBitmapData.size.height > 1) {
+                                if(spectrogramBitmapData.size.width > 1) {
                                     spectrogramBitmapData.pushSpectrumToSpectrogramData(it,
                                         SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG,
                                         mindB, rangedB, audioSource.getSampleRate().toDouble())
-                                    spectrumBitmapState = spectrogramBitmapData.byteArray.copyOf()
+                                    changed = true
                                 }
+                            }
+                            if(changed) {
+                                spectrumBitmapState = spectrogramBitmapData.byteArray.copyOf()
                             }
                         }
                         println("Processed $windowTime of audio in $processingTime (${spectrogramBitmapData.size})")
