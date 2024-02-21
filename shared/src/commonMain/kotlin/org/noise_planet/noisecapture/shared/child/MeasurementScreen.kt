@@ -34,8 +34,8 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
 
-const val FFT_SIZE = 2048
-const val FFT_HOP = 1024
+const val FFT_SIZE = 4096
+const val FFT_HOP = 2048
 const val WINDOW_TIME = 0.125
 
 class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<ScreenData>,
@@ -94,7 +94,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                                     spectrogramBitmapData.pushSpectrumToSpectrogramData(it,
                                         SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG,
                                         mindB, rangedB, audioSource.getSampleRate().toDouble())
-                                    spectrumBitmapState = spectrogramBitmapData.byteArray
+                                    spectrumBitmapState = spectrogramBitmapData.byteArray.copyOf()
                                 }
                             }
                         }
