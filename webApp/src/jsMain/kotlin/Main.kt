@@ -30,6 +30,10 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import org.jetbrains.skiko.wasm.onWasmReady
+import org.koin.core.logger.PrintLogger
+import org.koin.dsl.module
+import org.noise_planet.noisecapture.AudioSource
+import org.noise_planet.noisecapture.JsAudioSource
 import org.noise_planet.noisecapture.shared.initKoin
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -58,7 +62,9 @@ fun main() {
                         .onFocusChanged { hasFocus = it.hasFocus },
                 ) {
                         buildContext ->
-                    val koinApplication = initKoin()
+                    val koinApplication = initKoin(additionalModules = listOf(module {
+                        single<AudioSource> { JsAudioSource() }
+                    } )).logger(PrintLogger())
                     RootNode(
                         buildContext = buildContext,
                         koin = koinApplication.koin

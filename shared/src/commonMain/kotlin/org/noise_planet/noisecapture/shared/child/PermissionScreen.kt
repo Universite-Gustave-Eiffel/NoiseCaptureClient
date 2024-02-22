@@ -82,18 +82,20 @@ class PermissionScreen(buildContext: BuildContext,
                     items(requiredPermissions) { permission ->
                         val permissionState by permissionsService.checkPermissionFlow(permission)
                             .collectAsState(permissionsService.checkPermission(permission))
-                        permissionItem(
-                            permissionName = permission.name,
-                            permissionState = permissionState,
-                            onRequestClick = {
-                                scope.launch {
-                                    permissionsService.providePermission(permission)
-                                }
-                            },
-                            onOpenSettingsClick = {
-                                permissionsService.openSettingPage(permission)
-                            },
-                        )
+                        if(permissionState != PermissionState.NO_PERMISSION_DELEGATE) {
+                            permissionItem(
+                                permissionName = permission.name,
+                                permissionState = permissionState,
+                                onRequestClick = {
+                                    scope.launch {
+                                        permissionsService.providePermission(permission)
+                                    }
+                                },
+                                onOpenSettingsClick = {
+                                    permissionsService.openSettingPage(permission)
+                                },
+                            )
+                        }
                     }
                 }
             }
@@ -104,7 +106,8 @@ class PermissionScreen(buildContext: BuildContext,
 internal fun nextPanelAfterGranted(permissions: Array<Permission>, onNextClick: () -> Unit,
                                    permissionsService: PermissionsService) {
     val permissionsState by combine(permissions.map { p-> permissionsService.checkPermissionFlow(p)},
-        transform = {it.all { p -> p == PermissionState.GRANTED }})
+        transform = {it.all { p -> p in listOf(PermissionState.GRANTED,
+            PermissionState.NO_PERMISSION_DELEGATE) }})
         .collectAsState(false)
     Column(modifier = Modifier.fillMaxSize()) {
         Spacer(modifier = Modifier.fillMaxSize())
@@ -133,7 +136,7 @@ internal fun permissionItem(
         when (permissionState) {
             PermissionState.GRANTED -> Color.Green
             PermissionState.NOT_DETERMINED -> Color.Gray
-            PermissionState.DENIED -> Color.Red
+            else -> Color.Red
         }
     )
 
@@ -153,7 +156,7 @@ internal fun permissionItem(
                 imageVector = when (permissionState) {
                     PermissionState.GRANTED -> Icons.Default.Check
                     PermissionState.NOT_DETERMINED -> Icons.Outlined.QuestionMark
-                    PermissionState.DENIED -> Icons.Outlined.Close
+                    else -> Icons.Outlined.Close
                 },
                 tint = colorState,
                 contentDescription = null,

@@ -100,7 +100,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                                 spectrumBitmapState = spectrogramBitmapData.byteArray.copyOf()
                             }
                         }
-                        if(processingTime >= windowTime * 0.9) {
+                        if(true || processingTime >= windowTime * 0.9) {
                             logger.warn("Processed $windowTime of audio in $processingTime")
                         }
                         windowDataCursor = 0
