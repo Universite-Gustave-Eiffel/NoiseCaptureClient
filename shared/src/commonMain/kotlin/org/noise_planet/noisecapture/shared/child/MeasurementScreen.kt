@@ -18,6 +18,7 @@ import com.bumble.appyx.components.backstack.BackStack
 import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
 import kotlinx.coroutines.launch
+import org.koin.core.logger.Logger
 import org.noise_planet.noisecapture.AudioSource
 import org.noise_planet.noisecapture.shared.ScreenData
 import org.noise_planet.noisecapture.shared.signal.SpectrumChannel
@@ -39,7 +40,7 @@ const val FFT_HOP = 2048
 const val WINDOW_TIME = 0.125
 
 class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<ScreenData>,
-                        private val audioSource: AudioSource) : Node(buildContext) {
+                        private val audioSource: AudioSource, private val logger: Logger) : Node(buildContext) {
     private val spectrumChannel: SpectrumChannel = SpectrumChannel()
     private var rangedB = 40.0
     private var mindB = 0.0
@@ -88,19 +89,20 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                             noiseLevel = spectrumChannel.processSamplesWeightA(windowData)
                             thirdOctave = spectrumChannel.processSamples(windowData)
                             var changed = false
-                            windowAnalysis.pushSamples(samples.epoch, windowData).forEach {
-                                if(spectrogramBitmapData.size.width > 1) {
-                                    spectrogramBitmapData.pushSpectrumToSpectrogramData(it,
-                                        SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG,
-                                        mindB, rangedB, audioSource.getSampleRate().toDouble())
-                                    changed = true
-                                }
+                            val fftSpectrum = windowAnalysis.pushSamples(samples.epoch, windowData).toList()
+                            if(spectrogramBitmapData.size.width > 1) {
+                                spectrogramBitmapData.pushSpectrumToSpectrogramData(fftSpectrum,
+                                    SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG,
+                                    mindB, rangedB, audioSource.getSampleRate().toDouble())
+                                changed = true
                             }
                             if(changed) {
                                 spectrumBitmapState = spectrogramBitmapData.byteArray.copyOf()
                             }
                         }
-                        println("Processed $windowTime of audio in $processingTime (${spectrogramBitmapData.size})")
+                        if(processingTime >= windowTime * 0.9) {
+                            logger.warn("Processed $windowTime of audio in $processingTime")
+                        }
                         windowDataCursor = 0
                     }
                 }

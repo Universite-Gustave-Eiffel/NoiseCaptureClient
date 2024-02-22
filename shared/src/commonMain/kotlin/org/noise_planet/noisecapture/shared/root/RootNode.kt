@@ -43,7 +43,7 @@ class RootNode(
             is PermissionTarget -> PermissionScreen(buildContext, koin.get(),
                 ::onPermissionGrantedBeforeMeasurement)
             is HomeTarget -> HomeScreen(buildContext, backStack)
-            is ScreenData.MeasurementTarget -> MeasurementScreen(buildContext, backStack, koin.get())
+            is ScreenData.MeasurementTarget -> MeasurementScreen(buildContext, backStack, koin.get(), koin.logger)
         }
 
     private fun onPermissionGrantedBeforeMeasurement() {
