@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.KotlinJsCompile
+
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.compose")
@@ -6,6 +8,7 @@ plugins {
 kotlin {
     js(IR) {
         moduleName = "appyx-starter-kit-web"
+        useEsModules() // Enables ES6 modules
         browser()
         binaries.executable()
     }
@@ -28,4 +31,11 @@ kotlin {
 
 compose.experimental {
     web.application {}
+}
+
+// Enables ES6 classes generation
+tasks.withType<KotlinJsCompile>().configureEach {
+    kotlinOptions {
+        useEsClasses = true
+    }
 }

@@ -66,6 +66,11 @@ kotlin {
             iosArm64Main.dependsOn(this)
             iosSimulatorArm64Main.dependsOn(this)
         }
+        val jsMain by getting() {
+            dependencies {
+                implementation(libs.kotlin.browser)
+            }
+        }
     }
 }
 

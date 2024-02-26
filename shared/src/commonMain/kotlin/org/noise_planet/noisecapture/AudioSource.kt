@@ -19,7 +19,7 @@ interface AudioSource {
      * @param bufferSize Buffer size in bytes
      * @return InitializeErrorCode instance
      */
-    fun setup() : InitializeErrorCode
+    suspend fun setup() : InitializeErrorCode
 
     fun getSampleRate() : Int
 

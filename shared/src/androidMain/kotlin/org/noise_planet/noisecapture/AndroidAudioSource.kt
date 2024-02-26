@@ -21,7 +21,7 @@ class AndroidAudioSource : AudioSource, Runnable {
     override val samples = MutableSharedFlow<AudioSamples>(replay = SAMPLES_REPLAY,
         extraBufferCapacity = SAMPLES_CACHE, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     @SuppressLint("MissingPermission")
-    override fun setup(): AudioSource.InitializeErrorCode {
+    override suspend fun setup(): AudioSource.InitializeErrorCode {
         if(this.bufferSize != -1) {
             return AudioSource.InitializeErrorCode.INITIALIZE_ALREADY_INITIALIZED
         }
