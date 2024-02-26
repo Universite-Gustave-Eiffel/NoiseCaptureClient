@@ -14,7 +14,7 @@ internal class LocationForegroundPermissionDelegate(
     private val context: Context,
     private val activity: Lazy<Activity>,
 ) : PermissionDelegate {
-    override fun getPermissionState(): PermissionState {
+    override suspend fun getPermissionState(): PermissionState {
         return checkPermissions(context, activity, fineLocationPermissions)
     }
 

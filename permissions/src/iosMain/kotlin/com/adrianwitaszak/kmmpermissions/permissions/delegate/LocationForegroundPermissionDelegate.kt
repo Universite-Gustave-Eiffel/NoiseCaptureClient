@@ -12,7 +12,7 @@ import platform.CoreLocation.kCLAuthorizationStatusRestricted
 internal class LocationForegroundPermissionDelegate : PermissionDelegate {
     private var locationManager = CLLocationManager()
 
-    override fun getPermissionState(): PermissionState {
+    override suspend fun getPermissionState(): PermissionState {
         return when (locationManager.authorizationStatus()) {
             kCLAuthorizationStatusAuthorizedAlways,
             kCLAuthorizationStatusAuthorizedWhenInUse,

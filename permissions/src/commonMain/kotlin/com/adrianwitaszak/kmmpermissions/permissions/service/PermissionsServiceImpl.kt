@@ -15,7 +15,7 @@ import org.koin.mp.KoinPlatformTools
 internal class PermissionsServiceImpl : PermissionsService, KoinComponent {
     val logger : Logger  = KoinPlatformTools.defaultLogger()
 
-    override fun checkPermission(permission: Permission): PermissionState {
+    suspend fun checkPermission(permission: Permission): PermissionState {
         return try {
             return getPermissionDelegate(permission).getPermissionState()
         } catch (e: Exception) {

@@ -13,7 +13,7 @@ internal class LocationServicePermissionDelegate(
     private val context: Context,
     private val locationManager: LocationManager,
 ) : PermissionDelegate {
-    override fun getPermissionState(): PermissionState {
+    override suspend fun getPermissionState(): PermissionState {
         val granted = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
                 locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
         return if (granted)

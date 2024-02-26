@@ -12,7 +12,7 @@ internal class BluetoothServicePermissionDelegate(
     private val context: Context,
     private val bluetoothAdapter: BluetoothAdapter?,
 ) : PermissionDelegate {
-    override fun getPermissionState(): PermissionState {
+    override suspend fun getPermissionState(): PermissionState {
         return if (bluetoothAdapter?.isEnabled == true)
             PermissionState.GRANTED else PermissionState.DENIED
     }

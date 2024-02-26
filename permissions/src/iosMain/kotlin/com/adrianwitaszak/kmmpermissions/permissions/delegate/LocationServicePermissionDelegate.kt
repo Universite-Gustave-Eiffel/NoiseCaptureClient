@@ -7,7 +7,7 @@ import platform.CoreLocation.CLLocationManager
 internal class LocationServicePermissionDelegate : PermissionDelegate {
     private val locationManager = CLLocationManager()
 
-    override fun getPermissionState(): PermissionState {
+    override suspend fun getPermissionState(): PermissionState {
         return if (locationManager.locationServicesEnabled())
             PermissionState.GRANTED else PermissionState.DENIED
     }

@@ -81,7 +81,7 @@ class PermissionScreen(buildContext: BuildContext,
                     }
                     items(requiredPermissions) { permission ->
                         val permissionState by permissionsService.checkPermissionFlow(permission)
-                            .collectAsState(permissionsService.checkPermission(permission))
+                            .collectAsState(PermissionState.NOT_DETERMINED)
                         if(permissionState != PermissionState.NO_PERMISSION_DELEGATE) {
                             permissionItem(
                                 permissionName = permission.name,
@@ -106,8 +106,7 @@ class PermissionScreen(buildContext: BuildContext,
 internal fun nextPanelAfterGranted(permissions: Array<Permission>, onNextClick: () -> Unit,
                                    permissionsService: PermissionsService) {
     val permissionsState by combine(permissions.map { p-> permissionsService.checkPermissionFlow(p)},
-        transform = {it.all { p -> p in listOf(PermissionState.GRANTED,
-            PermissionState.NO_PERMISSION_DELEGATE) }})
+        transform = {it.all { p -> p != PermissionState.DENIED }})
         .collectAsState(false)
     Column(modifier = Modifier.fillMaxSize()) {
         Spacer(modifier = Modifier.fillMaxSize())
