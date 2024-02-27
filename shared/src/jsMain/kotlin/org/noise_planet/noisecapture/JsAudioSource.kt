@@ -14,7 +14,7 @@ import web.navigator.navigator
 const val SAMPLES_REPLAY = 10
 const val SAMPLES_CACHE = 10
 const val BUFFER_SIZE_TIME = 0.1
-const val AUDIO_CONSTRAINT = "{echoCancellation: false, optional: [ {autoGainControl: false}, {noiseSuppression: false} ]}"
+const val AUDIO_CONSTRAINT = "{audio: {echoCancellation: false, optional: [ {autoGainControl: false}, {noiseSuppression: false} ]}}"
 
 class JsAudioSource : AudioSource {
 
@@ -22,10 +22,12 @@ class JsAudioSource : AudioSource {
         extraBufferCapacity = SAMPLES_CACHE, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     override suspend fun setup(): AudioSource.InitializeErrorCode {
+        println("Launch JSAudioSource")
         return navigator.mediaDevices.getUserMedia(
             js(AUDIO_CONSTRAINT)
         ).then(onFulfilled = { mediaStream ->
             val audioContext = AudioContext()
+            println("AudioContext ready $audioContext")
             audioContext.audioWorklet.addModule("raw_audio_processor.js")
             val micNode = audioContext.createMediaStreamSource(mediaStream)
             val audioCaptureNode = AudioWorkletNode(audioContext, "raw_audio_processor")
@@ -34,7 +36,8 @@ class JsAudioSource : AudioSource {
             }
             micNode.connect(audioCaptureNode)
             AudioSource.InitializeErrorCode.INITIALIZE_OK
-        }, onRejected = {
+        }, onRejected = { jsError ->
+            println("Error ${this::class} $jsError \n${jsError.stackTraceToString()}")
             AudioSource.InitializeErrorCode.INITIALIZE_NO_MICROPHONE
         }
         ).await()

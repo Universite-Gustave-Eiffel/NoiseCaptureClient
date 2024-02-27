@@ -19,10 +19,7 @@ internal class LocationBackgroundPermissionDelegate(
         return when (locationForegroundPermissionDelegate.getPermissionState()) {
             PermissionState.GRANTED ->
                 checkPermissions(context, activity, backgroundLocationPermissions)
-
-            PermissionState.DENIED,
-            PermissionState.NOT_DETERMINED,
-            -> PermissionState.NOT_DETERMINED
+            else -> PermissionState.NOT_DETERMINED
         }
     }
 
