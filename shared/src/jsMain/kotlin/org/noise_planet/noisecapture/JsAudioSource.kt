@@ -1,27 +1,20 @@
 package org.noise_planet.noisecapture
 
-import js.array.ReadonlyArray
-import js.objects.Record
 import js.promise.await
-import js.typedarrays.Float32Array
-import kotlinx.coroutines.await
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import web.audio.AudioContext
-import web.audio.AudioWorkletGlobalScope
-import web.audio.AudioWorkletNode
-import web.audio.AudioWorkletProcessor
-import web.audio.AudioWorkletProcessorImpl
-import web.media.streams.MediaStreamTrack
-import web.messaging.MessageEvent
+import org.khronos.webgl.get
 import web.navigator.navigator
 
 const val SAMPLES_REPLAY = 10
 const val SAMPLES_CACHE = 10
+const val SAMPLES_BUFFER_SIZE = 512
 const val BUFFER_SIZE_TIME = 0.1
 const val AUDIO_CONSTRAINT = "{audio: {echoCancellation: false, optional: [ {autoGainControl: false}, {noiseSuppression: false} ]}}"
 
 class JsAudioSource : AudioSource {
+    var sampleRate = 0F
+    var micNode : AudioNode? = null
 
     override val samples = MutableSharedFlow<AudioSamples>(replay = SAMPLES_REPLAY,
         extraBufferCapacity = SAMPLES_CACHE, onBufferOverflow = BufferOverflow.DROP_OLDEST)
@@ -33,13 +26,17 @@ class JsAudioSource : AudioSource {
         ).then(onFulfilled = { mediaStream ->
             val audioContext = AudioContext()
             println("AudioContext ready $audioContext")
-            audioContext.audioWorklet.addModule("raw_audio_processor.js")
-            val micNode = audioContext.createMediaStreamSource(mediaStream)
-            val audioCaptureNode = AudioWorkletNode(audioContext, "raw_audio_processor")
-            audioCaptureNode.port.onmessage = {
-                event:MessageEvent<*> -> println("$event")
+            micNode = audioContext.createMediaStreamSource(mediaStream)
+            val scriptProcessorNode = audioContext.createScriptProcessor(SAMPLES_BUFFER_SIZE, 1, 1)
+            scriptProcessorNode.onaudioprocess = { audioProcessingEvent ->
+                val buffer = audioProcessingEvent.outputBuffer
+                sampleRate = buffer.sampleRate
+                val jsBuffer = buffer.getChannelData(0)
+                val samplesBuffer  = FloatArray(jsBuffer.length) { i -> jsBuffer[i] }
+                // Clock.systemUTC().instant().toEpochMilli().toLong()
+                samples.tryEmit(AudioSamples(0, samplesBuffer, AudioSamples.ErrorCode.OK))
             }
-            micNode.connect(audioCaptureNode)
+            micNode!!.connect(scriptProcessorNode)
             AudioSource.InitializeErrorCode.INITIALIZE_OK
         }, onRejected = { jsError ->
             println("Error ${this::class} $jsError \n${jsError.stackTraceToString()}")
@@ -48,23 +45,12 @@ class JsAudioSource : AudioSource {
         ).await()
     }
 
-    override fun getSampleRate(): Int = 48000
+    override fun getSampleRate(): Int = sampleRate.toInt()
 
     override fun release() {
-
+        micNode?.disconnect()
     }
 
     override fun getMicrophoneLocation(): AudioSource.MicrophoneLocation =
         AudioSource.MicrophoneLocation.LOCATION_UNKNOWN
-}
-
-class RawAudioProcessor : AudioWorkletProcessorImpl {
-    override fun process(
-        inputs: ReadonlyArray<ReadonlyArray<Float32Array>>,
-        outputs: ReadonlyArray<ReadonlyArray<Float32Array>>,
-        parameters: Record<String, Float32Array>
-    ): Boolean {
-        port.postMessage(inputs[0][0])
-        return true
-    }
 }
