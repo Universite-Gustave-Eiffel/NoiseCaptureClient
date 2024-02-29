@@ -19,6 +19,7 @@ import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
 import kotlinx.coroutines.launch
 import org.koin.core.logger.Logger
+import org.noise_planet.noisecapture.AudioSamples
 import org.noise_planet.noisecapture.AudioSource
 import org.noise_planet.noisecapture.shared.ScreenData
 import org.noise_planet.noisecapture.shared.signal.SpectrumChannel
@@ -46,6 +47,49 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
     private var mindB = 0.0
     private var spectrogramBitmapData = SpectrogramBitmap.SpectrogramDataModel(IntSize(1, 1), ByteArray(Int.SIZE_BYTES))
 
+    fun processSamples(samples : AudioSamples) {
+        val gain = (10.0.pow(105/20.0)).toFloat()
+        var samplesProcessed = 0
+        while (samplesProcessed < samples.samples.size) {
+            while (windowDataCursor < windowLength &&
+                samplesProcessed < samples.samples.size) {
+                val remainingToProcess = min(
+                    windowLength - windowDataCursor,
+                    samples.samples.size - samplesProcessed
+                )
+                for (i in 0..<remainingToProcess) {
+                    windowData[i + windowDataCursor] =
+                        samples.samples[i + samplesProcessed] * gain
+                }
+                windowDataCursor += remainingToProcess
+                samplesProcessed += remainingToProcess
+            }
+            if (windowDataCursor == windowLength) {
+                // window complete
+                var thirdOctave : DoubleArray
+                val processingTime = measureTime {
+                    noiseLevel = spectrumChannel.processSamplesWeightA(windowData)
+                    thirdOctave = spectrumChannel.processSamples(windowData)
+                    var changed = false
+                    val fftSpectrum = windowAnalysis.pushSamples(samples.epoch, windowData).toList()
+                    if(spectrogramBitmapData.size.width > 1) {
+                        spectrogramBitmapData.pushSpectrumToSpectrogramData(fftSpectrum,
+                            SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG,
+                            mindB, rangedB, audioSource.getSampleRate().toDouble())
+                        changed = true
+                    }
+                    if(changed) {
+                        spectrumBitmapState = spectrogramBitmapData.byteArray.copyOf()
+                    }
+                }
+                if(true || processingTime >= windowTime * 0.9) {
+                    logger.warn("Processed $windowTime of audio in $processingTime")
+                }
+                windowDataCursor = 0
+            }
+        }
+    }
+
     @Composable
     override fun View(modifier: Modifier) {
         var noiseLevel by remember { mutableStateOf(0.0) }
@@ -53,7 +97,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
 
         lifecycleScope.launch {
             println("Launch lifecycle")
-            audioSource.setup()
+            audioSource.setup(::processSamples)
             spectrumChannel.loadConfiguration(
                 when (audioSource.getSampleRate()) {
                     48000 -> get48000HZ()
@@ -65,53 +109,8 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
             val windowTime = (windowData.size/audioSource.getSampleRate().toDouble()).seconds
             var windowDataCursor = 0
             val windowAnalysis = WindowAnalysis(audioSource.getSampleRate(), FFT_SIZE, FFT_HOP)
-            audioSource.samples.collect { samples ->
-                val gain = (10.0.pow(105/20.0)).toFloat()
-                var samplesProcessed = 0
-                while (samplesProcessed < samples.samples.size) {
-                    while (windowDataCursor < windowLength &&
-                        samplesProcessed < samples.samples.size) {
-                        val remainingToProcess = min(
-                            windowLength - windowDataCursor,
-                            samples.samples.size - samplesProcessed
-                        )
-                        for (i in 0..<remainingToProcess) {
-                            windowData[i + windowDataCursor] =
-                                samples.samples[i + samplesProcessed] * gain
-                        }
-                        windowDataCursor += remainingToProcess
-                        samplesProcessed += remainingToProcess
-                    }
-                    if (windowDataCursor == windowLength) {
-                        // window complete
-                        var thirdOctave : DoubleArray
-                        val processingTime = measureTime {
-                            noiseLevel = spectrumChannel.processSamplesWeightA(windowData)
-                            thirdOctave = spectrumChannel.processSamples(windowData)
-                            var changed = false
-                            val fftSpectrum = windowAnalysis.pushSamples(samples.epoch, windowData).toList()
-                            if(spectrogramBitmapData.size.width > 1) {
-                                spectrogramBitmapData.pushSpectrumToSpectrogramData(fftSpectrum,
-                                    SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG,
-                                    mindB, rangedB, audioSource.getSampleRate().toDouble())
-                                changed = true
-                            }
-                            if(changed) {
-                                spectrumBitmapState = spectrogramBitmapData.byteArray.copyOf()
-                            }
-                        }
-                        if(true || processingTime >= windowTime * 0.9) {
-                            logger.warn("Processed $windowTime of audio in $processingTime")
-                        }
-                        windowDataCursor = 0
-                    }
-                }
-            }
         }.invokeOnCompletion {
-            println("On completion $it subs ${audioSource.samples.subscriptionCount.value}")
-            if(audioSource.samples.subscriptionCount.value == 0) {
-                audioSource.release()
-            }
+            audioSource.release()
         }
 
         Surface(

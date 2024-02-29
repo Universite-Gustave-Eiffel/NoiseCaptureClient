@@ -45,9 +45,3 @@ kotlin {
     }
 }
 
-compose.experimental {
-    uikit.application {
-        projectName = "NoiseCapture"
-        bundleIdPrefix = "org.noise_planet.noisecapturekmp"
-    }
-}

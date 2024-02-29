@@ -1,14 +1,10 @@
 package org.noise_planet.noisecapture
 
-import kotlinx.coroutines.flow.MutableSharedFlow
-
 /**
  * Common interface to access Audio samples from device microphone
  * As each device
  */
 interface AudioSource {
-    val samples: MutableSharedFlow<AudioSamples>
-
     enum class MicrophoneLocation { LOCATION_UNKNOWN, LOCATION_MAIN_BODY,
         LOCATION_MAIN_BODY_MOVABLE, LOCATION_PERIPHERAL }
 
@@ -19,7 +15,7 @@ interface AudioSource {
      * @param bufferSize Buffer size in bytes
      * @return InitializeErrorCode instance
      */
-    suspend fun setup() : InitializeErrorCode
+    suspend fun setup(callback : (audioSamples: AudioSamples)->Unit) : InitializeErrorCode
 
     fun getSampleRate() : Int
 

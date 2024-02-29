@@ -5,8 +5,6 @@ import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.os.Process
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import java.lang.Integer.max
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -18,10 +16,11 @@ class AndroidAudioSource : AudioSource, Runnable {
     private var bufferSize = -1
     private var sampleRate = -1
     private val recording = AtomicBoolean(false)
-    override val samples = MutableSharedFlow<AudioSamples>(replay = SAMPLES_REPLAY,
-        extraBufferCapacity = SAMPLES_CACHE, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    private var callback : (audioSamples: AudioSamples)->Unit = {}
+
     @SuppressLint("MissingPermission")
-    override suspend fun setup(): AudioSource.InitializeErrorCode {
+    override suspend fun setup(callback : (audioSamples: AudioSamples)->Unit): AudioSource.InitializeErrorCode {
+        this.callback = callback
         if(this.bufferSize != -1) {
             return AudioSource.InitializeErrorCode.INITIALIZE_ALREADY_INITIALIZED
         }
@@ -67,13 +66,13 @@ class AndroidAudioSource : AudioSource, Runnable {
             )
             if (read < buffer.size) {
                 buffer = buffer.copyOfRange(0, read)
-                samples.tryEmit(AudioSamples(System.currentTimeMillis(), buffer, AudioSamples.ErrorCode.OK))
+                callback(AudioSamples(System.currentTimeMillis(), buffer, AudioSamples.ErrorCode.OK))
             } else {
-                samples.tryEmit(AudioSamples(System.currentTimeMillis(), buffer.clone(), AudioSamples.ErrorCode.OK))
+                callback(AudioSamples(System.currentTimeMillis(), buffer.clone(), AudioSamples.ErrorCode.OK))
             }
         }
         bufferSize = -1
-        samples.tryEmit(AudioSamples(System.currentTimeMillis(), FloatArray(0),
+        callback(AudioSamples(System.currentTimeMillis(), FloatArray(0),
             AudioSamples.ErrorCode.ABORTED))
         println("Release microphone")
     }

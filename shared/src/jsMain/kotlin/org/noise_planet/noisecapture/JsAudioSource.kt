@@ -1,8 +1,7 @@
 package org.noise_planet.noisecapture
 
 import js.promise.await
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.datetime.Clock
 import org.khronos.webgl.get
 import web.navigator.navigator
 
@@ -16,10 +15,7 @@ class JsAudioSource : AudioSource {
     var sampleRate = 0F
     var micNode : AudioNode? = null
 
-    override val samples = MutableSharedFlow<AudioSamples>(replay = SAMPLES_REPLAY,
-        extraBufferCapacity = SAMPLES_CACHE, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-
-    override suspend fun setup(): AudioSource.InitializeErrorCode {
+    override suspend fun setup(callback : (audioSamples: AudioSamples)->Unit): AudioSource.InitializeErrorCode {
         println("Launch JSAudioSource")
         return navigator.mediaDevices.getUserMedia(
             js(AUDIO_CONSTRAINT)
@@ -33,8 +29,7 @@ class JsAudioSource : AudioSource {
                 sampleRate = buffer.sampleRate
                 val jsBuffer = buffer.getChannelData(0)
                 val samplesBuffer  = FloatArray(jsBuffer.length) { i -> jsBuffer[i] }
-                // Clock.systemUTC().instant().toEpochMilli().toLong()
-                samples.tryEmit(AudioSamples(0, samplesBuffer, AudioSamples.ErrorCode.OK))
+                callback(AudioSamples(Clock.System.now().toEpochMilliseconds(), samplesBuffer, AudioSamples.ErrorCode.OK))
             }
             micNode!!.connect(scriptProcessorNode)
             AudioSource.InitializeErrorCode.INITIALIZE_OK
