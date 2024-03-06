@@ -5,46 +5,46 @@ import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.os.Process
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.consumeAsFlow
 import java.lang.Integer.max
 import java.util.concurrent.atomic.AtomicBoolean
-
-const val SAMPLES_REPLAY = 10
-const val SAMPLES_CACHE = 10
 const val BUFFER_SIZE_TIME = 0.1
 class AndroidAudioSource : AudioSource, Runnable {
     private lateinit var audioRecord: AudioRecord
     private var bufferSize = -1
     private var sampleRate = -1
     private val recording = AtomicBoolean(false)
-    private var callback : (audioSamples: AudioSamples)->Unit = {}
+    val audioSamplesChannel = Channel<AudioSamples>(onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     @SuppressLint("MissingPermission")
-    override suspend fun setup(callback : (audioSamples: AudioSamples)->Unit): AudioSource.InitializeErrorCode {
-        this.callback = callback
-        if(this.bufferSize != -1) {
-            return AudioSource.InitializeErrorCode.INITIALIZE_ALREADY_INITIALIZED
-        }
-        val mSampleRates = intArrayOf(48000, 44100)
-        val channel = AudioFormat.CHANNEL_IN_MONO
-        val encoding = AudioFormat.ENCODING_PCM_FLOAT
-        for(tryRate in mSampleRates) {
-            this.sampleRate = tryRate
-            val minimalBufferSize = AudioRecord.getMinBufferSize(sampleRate, channel, encoding)
-            if(minimalBufferSize == AudioRecord.ERROR_BAD_VALUE || minimalBufferSize == AudioRecord.ERROR) {
-                continue
+    override suspend fun setup(): Flow<AudioSamples> {
+        if(this.bufferSize == -1) {
+            val mSampleRates = intArrayOf(48000, 44100)
+            val channel = AudioFormat.CHANNEL_IN_MONO
+            val encoding = AudioFormat.ENCODING_PCM_FLOAT
+            for (tryRate in mSampleRates) {
+                this.sampleRate = tryRate
+                val minimalBufferSize = AudioRecord.getMinBufferSize(sampleRate, channel, encoding)
+                if (minimalBufferSize == AudioRecord.ERROR_BAD_VALUE || minimalBufferSize == AudioRecord.ERROR) {
+                    continue
+                }
+                this.bufferSize =
+                    max(minimalBufferSize, (BUFFER_SIZE_TIME * sampleRate * 4).toInt())
+                audioRecord = AudioRecord(
+                    MediaRecorder.AudioSource.VOICE_RECOGNITION,
+                    sampleRate,
+                    channel,
+                    encoding,
+                    bufferSize
+                )
+                Thread(this).start()
+                break
             }
-            this.bufferSize = max(minimalBufferSize,(BUFFER_SIZE_TIME * sampleRate * 4).toInt())
-            audioRecord = AudioRecord(
-                MediaRecorder.AudioSource.VOICE_RECOGNITION,
-                sampleRate,
-                channel,
-                encoding,
-                bufferSize
-            )
-            Thread(this).start()
-            return AudioSource.InitializeErrorCode.INITIALIZE_OK
         }
-        return AudioSource.InitializeErrorCode.INITIALIZE_SAMPLE_RATE_NOT_SUPPORTED
+        return audioSamplesChannel.consumeAsFlow()
     }
 
     override fun run() {
@@ -66,19 +66,15 @@ class AndroidAudioSource : AudioSource, Runnable {
             )
             if (read < buffer.size) {
                 buffer = buffer.copyOfRange(0, read)
-                callback(AudioSamples(System.currentTimeMillis(), buffer, AudioSamples.ErrorCode.OK))
+                audioSamplesChannel.trySend(AudioSamples(System.currentTimeMillis(), buffer, AudioSamples.ErrorCode.OK, sampleRate))
             } else {
-                callback(AudioSamples(System.currentTimeMillis(), buffer.clone(), AudioSamples.ErrorCode.OK))
+                audioSamplesChannel.trySend(AudioSamples(System.currentTimeMillis(), buffer.clone(), AudioSamples.ErrorCode.OK, sampleRate))
             }
         }
         bufferSize = -1
-        callback(AudioSamples(System.currentTimeMillis(), FloatArray(0),
-            AudioSamples.ErrorCode.ABORTED))
+        audioSamplesChannel.trySend(AudioSamples(System.currentTimeMillis(), FloatArray(0),
+            AudioSamples.ErrorCode.ABORTED, sampleRate))
         println("Release microphone")
-    }
-
-    override fun getSampleRate(): Int {
-        return sampleRate
     }
 
     override fun release() {

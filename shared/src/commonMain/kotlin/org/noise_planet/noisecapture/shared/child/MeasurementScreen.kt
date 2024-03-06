@@ -17,10 +17,11 @@ import androidx.compose.ui.unit.IntSize
 import com.bumble.appyx.components.backstack.BackStack
 import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
+import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.koin.core.logger.Logger
 import org.noise_planet.noisecapture.AudioSamples
@@ -31,9 +32,6 @@ import org.noise_planet.noisecapture.shared.ScreenData
 import org.noise_planet.noisecapture.shared.ui.SpectrogramBitmap
 import org.noise_planet.noisecapture.toImageBitmap
 import kotlin.math.round
-import kotlin.time.Duration.Companion.seconds
-import kotlin.time.measureTime
-
 
 const val FFT_SIZE = 4096
 const val FFT_HOP = 2048
@@ -45,16 +43,6 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
     private var mindB = 0.0
     private var measurementService : MeasurementService? = null
     private var spectrogramBitmapData = SpectrogramBitmap.SpectrogramDataModel(IntSize(1, 1), ByteArray(Int.SIZE_BYTES))
-    val measurementServiceDataChannel = Channel<MeasurementServiceData>(onBufferOverflow = BufferOverflow.DROP_OLDEST)
-
-    fun processSamples(samples : AudioSamples) {
-        if(measurementService == null) {
-            measurementService = MeasurementService(samples.sampleRate)
-        }
-        measurementService!!.processSamples(samples).forEach { measurementServiceData ->
-            measurementServiceDataChannel.trySend(measurementServiceData)
-        }
-    }
 
     @Composable
     override fun View(modifier: Modifier) {
@@ -63,22 +51,21 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
 
         lifecycleScope.launch {
             println("Launch lifecycle")
-            audioSource.setup(::processSamples)
-            while (true) {
-                var changed = false
-                measurementServiceDataChannel.consumeEach { measurementServiceData->
+            audioSource.setup().collect {samples ->
+                if(measurementService == null) {
+                    measurementService = MeasurementService(samples.sampleRate)
+                }
+                measurementService!!.processSamples(samples).forEach {
+                        measurementServiceData->
+                    noiseLevel = measurementServiceData.laeq
                     if(spectrogramBitmapData.size.width > 1) {
                         spectrogramBitmapData.pushSpectrumToSpectrogramData(
                             measurementServiceData.spectrumDataList,
                             SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG,
                             mindB, rangedB, measurementService!!.sampleRate.toDouble())
-                        changed = true
+                        spectrumBitmapState = spectrogramBitmapData.byteArray.copyOf()
                     }
                 }
-                if(changed) {
-                    spectrumBitmapState = spectrogramBitmapData.byteArray.copyOf()
-                }
-                delay(5)
             }
         }.invokeOnCompletion {
             println("Release audio")

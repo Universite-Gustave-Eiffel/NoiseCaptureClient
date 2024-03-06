@@ -26,7 +26,7 @@ class MeasurementService(val sampleRate: Int) {
         )
     }
 
-    fun processSamples(samples: AudioSamples): List<MeasurementServiceData> {
+    suspend fun processSamples(samples: AudioSamples): List<MeasurementServiceData> {
         val measurementServiceDataList = ArrayList<MeasurementServiceData>()
         val gain = (10.0.pow(105 / 20.0)).toFloat()
         var samplesProcessed = 0
@@ -47,19 +47,17 @@ class MeasurementService(val sampleRate: Int) {
             }
             if (windowDataCursor == windowLength) {
                 // window complete
-                suspend {
-                    val laeq = spectrumChannel.processSamplesWeightA(windowData)
-                    val thirdOctave = spectrumChannel.processSamples(windowData)
-                    val fftSpectrum = windowAnalysis.pushSamples(samples.epoch, windowData).toList()
-                    measurementServiceDataList.add(
-                        MeasurementServiceData(
-                            samples.epoch,
-                            laeq,
-                            fftSpectrum,
-                            thirdOctave
-                        )
+                val laeq = spectrumChannel.processSamplesWeightA(windowData)
+                val thirdOctave = spectrumChannel.processSamples(windowData)
+                val fftSpectrum = windowAnalysis.pushSamples(samples.epoch, windowData).toList()
+                measurementServiceDataList.add(
+                    MeasurementServiceData(
+                        samples.epoch,
+                        laeq,
+                        fftSpectrum,
+                        thirdOctave
                     )
-                }
+                )
                 windowDataCursor = 0
             }
         }

@@ -3,6 +3,7 @@ import org.khronos.webgl.Float32Array
 import web.media.streams.MediaStream
 
 external class AudioContext {
+    val destination: AudioDestinationNode
 
     fun createMediaStreamSource(mediaStream: MediaStream): AudioNode
     fun createScriptProcessor(
@@ -10,6 +11,18 @@ external class AudioContext {
         numberOfInputChannels: Int,
         numberOfOutputChannels: Int
     ): ScriptProcessorNode
+
+    /**
+     * [MDN Reference](https://developer.mozilla.org/docs/Web/API/BaseAudioContext/createGain)
+     */
+    fun createGain(): GainNode
+}
+external class AudioDestinationNode :
+    AudioNode {
+    /**
+     * [MDN Reference](https://developer.mozilla.org/docs/Web/API/AudioDestinationNode/maxChannelCount)
+     */
+    val maxChannelCount: Int
 }
 
 external class AudioBuffer {
@@ -30,11 +43,22 @@ open external class AudioNode {
 }
 
 external class AudioProcessingEvent {
-    val outputBuffer: AudioBuffer
+    val inputBuffer: AudioBuffer
+}
+
+external class AudioParam {
+
+    /**
+     * [MDN Reference](https://developer.mozilla.org/docs/Web/API/AudioParam/value)
+     */
+    var value: Float
+}
+
+external class GainNode : AudioNode {
+    val gain: AudioParam
 }
 
 external class ScriptProcessorNode : AudioNode {
     var onaudioprocess : (AudioProcessingEvent) -> Unit
-    fun connect(node: AudioNode)
 }
 

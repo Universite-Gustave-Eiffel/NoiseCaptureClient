@@ -1,5 +1,7 @@
 package org.noise_planet.noisecapture
 
+import kotlinx.coroutines.flow.Flow
+
 /**
  * Common interface to access Audio samples from device microphone
  * As each device
@@ -15,7 +17,7 @@ interface AudioSource {
      * @param bufferSize Buffer size in bytes
      * @return InitializeErrorCode instance
      */
-    suspend fun setup(callback : (audioSamples: AudioSamples)->Unit) : InitializeErrorCode
+    suspend fun setup() : Flow<AudioSamples>
 
     /**
      * Release device and will require to setup again before getting new samples
