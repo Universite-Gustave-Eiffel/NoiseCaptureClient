@@ -1,10 +1,12 @@
 package org.noise_planet.noisecapture
+import js.core.Void
 import org.khronos.webgl.Float32Array
 import web.media.streams.MediaStream
+import kotlin.js.Promise
 
 external class AudioContext {
     val destination: AudioDestinationNode
-
+    fun close(): Promise<Void>
     fun createMediaStreamSource(mediaStream: MediaStream): AudioNode
     fun createScriptProcessor(
         bufferSize: Int,
@@ -12,10 +14,6 @@ external class AudioContext {
         numberOfOutputChannels: Int
     ): ScriptProcessorNode
 
-    /**
-     * [MDN Reference](https://developer.mozilla.org/docs/Web/API/BaseAudioContext/createGain)
-     */
-    fun createGain(): GainNode
 }
 external class AudioDestinationNode :
     AudioNode {
@@ -44,18 +42,6 @@ open external class AudioNode {
 
 external class AudioProcessingEvent {
     val inputBuffer: AudioBuffer
-}
-
-external class AudioParam {
-
-    /**
-     * [MDN Reference](https://developer.mozilla.org/docs/Web/API/AudioParam/value)
-     */
-    var value: Float
-}
-
-external class GainNode : AudioNode {
-    val gain: AudioParam
 }
 
 external class ScriptProcessorNode : AudioNode {

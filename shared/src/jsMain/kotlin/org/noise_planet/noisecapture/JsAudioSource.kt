@@ -6,25 +6,30 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.datetime.Clock
 import org.khronos.webgl.get
+import web.media.streams.MediaStream
 import web.navigator.navigator
 
-const val SAMPLES_BUFFER_SIZE = 512
+const val SAMPLES_BUFFER_SIZE = 1024
 const val AUDIO_CONSTRAINT = "{audio: {echoCancellation: false, autoGainControl: false, noiseSuppression: false}}"
 
 class JsAudioSource : AudioSource {
+    var audioContext : AudioContext? = null
+    var mediaStream : MediaStream? = null
     var micNode : AudioNode? = null
+    var scriptProcessorNode : AudioNode? = null
     //var dummyGainNode : GainNode? = null
     val audioSamplesChannel = Channel<AudioSamples>(onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     override suspend fun setup(): Flow<AudioSamples> {
-        println("Launch JSAudioSource")
+            println("Launch JSAudioSource")
         navigator.mediaDevices.getUserMedia(
             js(AUDIO_CONSTRAINT)
         ).then(onFulfilled = { mediaStream ->
-            val audioContext = AudioContext()
-            println("AudioContext ready $audioContext")
-            micNode = audioContext.createMediaStreamSource(mediaStream)
-            val scriptProcessorNode = audioContext.createScriptProcessor(SAMPLES_BUFFER_SIZE, 1, 1)
+            this.mediaStream = mediaStream
+            audioContext = AudioContext()
+            println("AudioContext ready $audioContext.")
+            micNode = audioContext!!.createMediaStreamSource(mediaStream)
+            val scriptProcessorNode = audioContext!!.createScriptProcessor(SAMPLES_BUFFER_SIZE, 1, 1)
             scriptProcessorNode.onaudioprocess = { audioProcessingEvent ->
                 val buffer = audioProcessingEvent.inputBuffer
                 val jsBuffer = buffer.getChannelData(0)
@@ -33,9 +38,7 @@ class JsAudioSource : AudioSource {
                     AudioSamples.ErrorCode.OK, buffer.sampleRate.toInt()))
             }
             micNode!!.connect(scriptProcessorNode)
-            //dummyGainNode = audioContext.createGain()
-            //dummyGainNode!!.gain.value = 0F
-            scriptProcessorNode.connect(audioContext.destination)
+            scriptProcessorNode.connect(audioContext!!.destination)
             micNode!!.connect(scriptProcessorNode);
             AudioSource.InitializeErrorCode.INITIALIZE_OK
         }, onRejected = { jsError ->
@@ -48,7 +51,18 @@ class JsAudioSource : AudioSource {
 
     override fun release() {
         micNode?.disconnect()
-        audioSamplesChannel.close()
+        scriptProcessorNode?.disconnect()
+
+        // Issue with reestablish microphone if released
+        //mediaStream?.getTracks()?.forEach { track -> track.stop() }
+        //try {
+        //    audioContext?.close()!!.catch {
+        //        // ignore
+        //    }
+        //} catch (error : Exception) {
+        //    // Ignore
+        //    println(error.stackTraceToString())
+        //}
     }
 
     override fun getMicrophoneLocation(): AudioSource.MicrophoneLocation =

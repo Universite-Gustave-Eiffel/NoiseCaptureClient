@@ -63,7 +63,7 @@ fun main() {
                 ) {
                         buildContext ->
                     val koinApplication = initKoin(additionalModules = listOf(module {
-                        single<AudioSource> { JsAudioSource() }
+                        factory<AudioSource> { JsAudioSource() }
                     } )).logger(PrintLogger())
                     RootNode(
                         buildContext = buildContext,
