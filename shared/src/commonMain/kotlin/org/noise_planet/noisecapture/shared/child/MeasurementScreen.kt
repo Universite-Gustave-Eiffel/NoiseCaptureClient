@@ -17,20 +17,19 @@ import androidx.compose.ui.unit.IntSize
 import com.bumble.appyx.components.backstack.BackStack
 import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.core.logger.Logger
 import org.noise_planet.noisecapture.AudioSamples
 import org.noise_planet.noisecapture.AudioSource
+import org.noise_planet.noisecapture.shared.MeasurementService
+import org.noise_planet.noisecapture.shared.MeasurementServiceData
 import org.noise_planet.noisecapture.shared.ScreenData
-import org.noise_planet.noisecapture.shared.signal.SpectrumChannel
-import org.noise_planet.noisecapture.shared.signal.WindowAnalysis
-import org.noise_planet.noisecapture.shared.signal.get44100HZ
-import org.noise_planet.noisecapture.shared.signal.get48000HZ
 import org.noise_planet.noisecapture.shared.ui.SpectrogramBitmap
 import org.noise_planet.noisecapture.toImageBitmap
-import kotlin.math.log10
-import kotlin.math.min
-import kotlin.math.pow
 import kotlin.math.round
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
@@ -42,51 +41,18 @@ const val WINDOW_TIME = 0.125
 
 class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<ScreenData>,
                         private val audioSource: AudioSource, private val logger: Logger) : Node(buildContext) {
-    private val spectrumChannel: SpectrumChannel = SpectrumChannel()
     private var rangedB = 40.0
     private var mindB = 0.0
+    private var measurementService : MeasurementService? = null
     private var spectrogramBitmapData = SpectrogramBitmap.SpectrogramDataModel(IntSize(1, 1), ByteArray(Int.SIZE_BYTES))
+    val measurementServiceDataChannel = Channel<MeasurementServiceData>(onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     fun processSamples(samples : AudioSamples) {
-        val gain = (10.0.pow(105/20.0)).toFloat()
-        var samplesProcessed = 0
-        while (samplesProcessed < samples.samples.size) {
-            while (windowDataCursor < windowLength &&
-                samplesProcessed < samples.samples.size) {
-                val remainingToProcess = min(
-                    windowLength - windowDataCursor,
-                    samples.samples.size - samplesProcessed
-                )
-                for (i in 0..<remainingToProcess) {
-                    windowData[i + windowDataCursor] =
-                        samples.samples[i + samplesProcessed] * gain
-                }
-                windowDataCursor += remainingToProcess
-                samplesProcessed += remainingToProcess
-            }
-            if (windowDataCursor == windowLength) {
-                // window complete
-                var thirdOctave : DoubleArray
-                val processingTime = measureTime {
-                    noiseLevel = spectrumChannel.processSamplesWeightA(windowData)
-                    thirdOctave = spectrumChannel.processSamples(windowData)
-                    var changed = false
-                    val fftSpectrum = windowAnalysis.pushSamples(samples.epoch, windowData).toList()
-                    if(spectrogramBitmapData.size.width > 1) {
-                        spectrogramBitmapData.pushSpectrumToSpectrogramData(fftSpectrum,
-                            SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG,
-                            mindB, rangedB, audioSource.getSampleRate().toDouble())
-                        changed = true
-                    }
-                    if(changed) {
-                        spectrumBitmapState = spectrogramBitmapData.byteArray.copyOf()
-                    }
-                }
-                if(true || processingTime >= windowTime * 0.9) {
-                    logger.warn("Processed $windowTime of audio in $processingTime")
-                }
-                windowDataCursor = 0
-            }
+        if(measurementService == null) {
+            measurementService = MeasurementService(samples.sampleRate)
+        }
+        measurementService!!.processSamples(samples).forEach { measurementServiceData ->
+            measurementServiceDataChannel.trySend(measurementServiceData)
         }
     }
 
@@ -98,18 +64,24 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         lifecycleScope.launch {
             println("Launch lifecycle")
             audioSource.setup(::processSamples)
-            spectrumChannel.loadConfiguration(
-                when (audioSource.getSampleRate()) {
-                    48000 -> get48000HZ()
-                    else -> get44100HZ()
+            while (true) {
+                var changed = false
+                measurementServiceDataChannel.consumeEach { measurementServiceData->
+                    if(spectrogramBitmapData.size.width > 1) {
+                        spectrogramBitmapData.pushSpectrumToSpectrogramData(
+                            measurementServiceData.spectrumDataList,
+                            SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG,
+                            mindB, rangedB, measurementService!!.sampleRate.toDouble())
+                        changed = true
+                    }
                 }
-            )
-            val windowLength = (audioSource.getSampleRate() * WINDOW_TIME).toInt()
-            val windowData = FloatArray(windowLength)
-            val windowTime = (windowData.size/audioSource.getSampleRate().toDouble()).seconds
-            var windowDataCursor = 0
-            val windowAnalysis = WindowAnalysis(audioSource.getSampleRate(), FFT_SIZE, FFT_HOP)
+                if(changed) {
+                    spectrumBitmapState = spectrogramBitmapData.byteArray.copyOf()
+                }
+                delay(5)
+            }
         }.invokeOnCompletion {
+            println("Release audio")
             audioSource.release()
         }
 

@@ -17,8 +17,6 @@ interface AudioSource {
      */
     suspend fun setup(callback : (audioSamples: AudioSamples)->Unit) : InitializeErrorCode
 
-    fun getSampleRate() : Int
-
     /**
      * Release device and will require to setup again before getting new samples
      * Will abort samples flow
@@ -29,7 +27,7 @@ interface AudioSource {
 
 }
 
-data class AudioSamples(val epoch : Long, val samples : FloatArray, val errorCode: ErrorCode) {
+data class AudioSamples(val epoch : Long, val samples : FloatArray, val errorCode: ErrorCode, val sampleRate : Int) {
     enum class ErrorCode { OK, ABORTED, DEVICE_ERROR}
 
     override fun equals(other: Any?): Boolean {
