@@ -52,17 +52,15 @@ class JsAudioSource : AudioSource {
     override fun release() {
         micNode?.disconnect()
         scriptProcessorNode?.disconnect()
-
-        // Issue with reestablish microphone if released
-        //mediaStream?.getTracks()?.forEach { track -> track.stop() }
-        //try {
-        //    audioContext?.close()!!.catch {
-        //        // ignore
-        //    }
-        //} catch (error : Exception) {
-        //    // Ignore
-        //    println(error.stackTraceToString())
-        //}
+        mediaStream?.getTracks()?.forEach { track -> track.stop() }
+        try {
+            audioContext?.close()!!.catch {
+                // ignore
+            }
+        } catch (error : Exception) {
+            // Ignore
+            println(error.stackTraceToString())
+        }
     }
 
     override fun getMicrophoneLocation(): AudioSource.MicrophoneLocation =
