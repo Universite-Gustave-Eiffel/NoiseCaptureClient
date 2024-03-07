@@ -1,38 +1,44 @@
-<img src="https://user-images.githubusercontent.com/238198/177164121-3aa4d19d-7714-4f2e-af12-7d3335b43f9c.png" width="75" />
+# About NoiseCapture App
 
-# Appyx starter kit
+![Build status](https://github.com/nicolas-f/NoiseCaptureKotlin/actions/workflows/test.yml/badge.svg)
 
-This repository contains a baseline Compose Multiplatform project with minimal setup to bootstrap starting an Appyx app from scratch. All the available platforms are already configured for you: Android, iOS, Desktop and Web.
+**NoiseCapture App** is Android App dedicated to the measurement of environmental noise.
 
-Please refer to JetBrains documentation [here](https://www.jetbrains.com/lp/compose-multiplatform/) for more details about each one of the supported platform.  
+## Description
+**NoiseCapture App** is an Android App project for measuring environmental noise using a smartphone. The goal is to **produce relevant noise indicators from audio measurements, including a geospatial representation**. Measurements can be shared with the community in order to produce participatory noise maps. **NoiseCapture App** is a component of a global infrastructure, _i.e._ a Spatial Data Infrastructure (SDI), called the **OnoMap SDI**, that allows to process and represent the geospatial information, like noise maps.
 
-If you're looking for a Android-specific setup, please check out `main` branch [here](https://github.com/bumble-tech/appyx-starter-kit).
+* A  [**full description**](https://github.com/Ifsttar/NoiseCapture/wiki) of the whole OnoMap SDI, including the NoiseCapture App, is given in the [wiki pages](https://github.com/Ifsttar/NoiseCapture/wiki).
+* An **user guide**, for the use of the NoiseCapture App, is proposed within the NoiseCapture App (see the 'Help' page in the menu of NoiseCapture App).
 
-Feel free to download it and modify it to your needs.
+## Features
 
+NoiseCapture App features are divided into 3 parts:
 
-## Appyx
+ - Measurement - Once the sound level calibration is done, the user start the measurement in order to record each second the LAeq, an average sound energy over a period of 1s. The spectrum repartition of the sound are analysed and stored using the Fourrier transform. The device location are recorded while measuring the sound level. The user has the hability to provide his own feedback about the feeling of the noise environment.
 
-What's Appyx?
+ - Extented report - Advanced statistics are computed locally on the phone and shown to the user. For each user's measurement the locations of the noise levels are displayed in a map.
 
-See the project page:
-https://bumble-tech.github.io/appyx/
+ - Share results with the community - Anonymous results are transfered to Virtual Hubs (web server) and post-processed in order to build a noise map that merge all community results. Participative noise maps can be displayed within the NoiseCapture App, or online at https://onomap.noise-planet.org/.
 
+## Developments
+NoiseCapture App is a collaboration between the [Environmental Acoustic Research unit](http://www.umrae.fr/en/) ([Ifsttar](http://www.ifsttar.fr)) and the [Lab-STICC](http://www.lab-sticc.fr/) CNRS. If you need more information about the project developped by the Environmental Acoustic Research unit and the Lab-STICC, on this topic, go to [http://www.noise-planet.org](http://noise-planet.org).
+
+## Download
+
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+     alt="Get it on F-Droid"
+     height="80">](https://f-droid.org/packages/org.noise_planet.noisecapture/)
+[<img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png"
+     alt="Get it on Google Play"
+     height="80">](https://play.google.com/store/apps/details?id=org.noise_planet.noisecapture)
+
+## Funding
+This application was developed under the initial funding the European project [ENERGIC-OD](http://www.energic-od.eu/), with the help of the [GEOPAL](http://www.geopal.org/accueil) program.
 
 ## License
+NoiseCapture App is released under the GENERAL PUBLIC LICENSE Version 3. Please refer to GPLv3 for more details.
 
-<pre>
-Copyright 2023 Bumble.
+## Follow us
+Follow the developement of NoiseCapture App (and more...) on Twitter at @Noise_Planet
+[![Twitter URL](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/Noise_Planet)
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-</pre>
