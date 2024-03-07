@@ -2,8 +2,12 @@ package org.noise_planet.noisecapture.shared.child
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -15,8 +19,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.dp
 import com.bumble.appyx.components.backstack.BackStack
 import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
@@ -43,6 +52,9 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
 
     @Composable
     fun spectrogram(spectrumCanvasState : SpectrogramViewModel) {
+        val textMeasurer = rememberTextMeasurer()
+        val text = formatFrequency(SpectrogramBitmap.frequencyLegendPositionLinear.last())
+
         Canvas(modifier = Modifier.fillMaxSize()) {
             val canvasSize = IntSize(SPECTROGRAM_STRIP_WIDTH, size.height.toInt())
             spectrumCanvasState.spectrogramCanvasSize = size
@@ -63,6 +75,19 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         }
     }
 
+
+    fun formatFrequency(frequency: Int): String {
+        return if (frequency > 1000) {
+            if(frequency%1000 > 0) {
+                val subKilo = (frequency%1000).toString().trimEnd('0')
+                "${frequency/1000}.$subKilo kHz"
+            } else {
+                "${frequency/1000} kHz"
+            }
+        } else {
+            "$frequency Hz"
+        }
+    }
 
     @Composable
     override fun View(modifier: Modifier) {
@@ -123,7 +148,6 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
             println("Release audio")
             audioSource.release()
         }
-
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colors.background
