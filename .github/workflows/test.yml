@@ -29,7 +29,7 @@ jobs:
   
   
   Android:
-    if: ${{ inputs.shouldRunKmp == 'true' && inputs.shouldRunAndroid == 'true' }}
+    if: ${{ inputs.shouldRunKmp == 'true' || inputs.shouldRunAndroid == 'true' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -41,7 +41,7 @@ jobs:
       - run: ./gradlew :androidApp:cleanTestDebugUnitTest :shared:testDebugUnitTest
 
   iOS:
-    if: ${{ inputs.shouldRunKmp == 'true' && inputs.shouldRunIos == 'true' }}
+    if: ${{ inputs.shouldRunKmp == 'true' || inputs.shouldRunIos == 'true' }}
     runs-on: macos-13
     timeout-minutes: 60
     steps:
