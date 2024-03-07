@@ -13,29 +13,28 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.unit.IntSize
 import com.bumble.appyx.components.backstack.BackStack
 import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
-import kotlinx.coroutines.Runnable
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.koin.core.logger.Logger
-import org.noise_planet.noisecapture.AudioSamples
 import org.noise_planet.noisecapture.AudioSource
 import org.noise_planet.noisecapture.shared.MeasurementService
-import org.noise_planet.noisecapture.shared.MeasurementServiceData
 import org.noise_planet.noisecapture.shared.ScreenData
+import org.noise_planet.noisecapture.shared.signal.SpectrumData
 import org.noise_planet.noisecapture.shared.ui.SpectrogramBitmap
 import org.noise_planet.noisecapture.toImageBitmap
+import kotlin.math.min
 import kotlin.math.round
 
 const val FFT_SIZE = 4096
 const val FFT_HOP = 2048
 const val WINDOW_TIME = 0.125
+const val SPECTROGRAM_STRIP_WIDTH = 32
 
 class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<ScreenData>,
                         private val audioSource: AudioSource, private val logger: Logger) : Node(buildContext) {
@@ -46,8 +45,10 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
 
     @Composable
     override fun View(modifier: Modifier) {
+        var spectrogramCanvasSize = Size.Zero
         var noiseLevel by remember { mutableStateOf(0.0) }
         var spectrumBitmapState by remember { mutableStateOf(ByteArray(1)) }
+        val completeImageBitmap by remember { mutableStateOf(ArrayList<ImageBitmap>())}
 
         lifecycleScope.launch {
             println("Launch lifecycle")
@@ -59,11 +60,37 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                         measurementServiceData->
                     noiseLevel = measurementServiceData.laeq
                     if(spectrogramBitmapData.size.width > 1) {
-                        spectrogramBitmapData.pushSpectrumToSpectrogramData(
-                            measurementServiceData.spectrumDataList,
-                            SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG,
-                            mindB, rangedB, measurementService!!.sampleRate.toDouble())
-                        spectrumBitmapState = spectrogramBitmapData.byteArray.copyOf()
+                        var indexToProcess = 0
+                        var bitmapChanged = false
+                        while(indexToProcess < measurementServiceData.spectrumDataList.size) {
+                            val subListSizeToCompleteStrip = min(
+                                spectrogramBitmapData.size.width -
+                                        spectrogramBitmapData.offset,
+                                measurementServiceData.spectrumDataList.size - indexToProcess
+                            )
+                            if(subListSizeToCompleteStrip == 0) {
+                                // spectrogram band complete, store bitmap
+                                completeImageBitmap.add(spectrogramBitmapData.byteArray.toImageBitmap())
+                                if((completeImageBitmap.size - 1) * SPECTROGRAM_STRIP_WIDTH > spectrogramCanvasSize.width) {
+                                    // remove offscreen bitmaps
+                                    completeImageBitmap.removeAt(0)
+                                }
+                                spectrogramBitmapData = SpectrogramBitmap.createSpectrogram(spectrogramBitmapData.size)
+                                bitmapChanged = false
+                                continue
+                            }
+                            spectrogramBitmapData.pushSpectrumToSpectrogramData(
+                                    measurementServiceData.spectrumDataList.subList(indexToProcess,
+                                        indexToProcess + subListSizeToCompleteStrip),
+                                    SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG,
+                                    mindB, rangedB, measurementService!!.sampleRate.toDouble()
+                                )
+                            bitmapChanged = true
+                            indexToProcess += subListSizeToCompleteStrip
+                        }
+                        if(bitmapChanged) {
+                            spectrumBitmapState = spectrogramBitmapData.byteArray.copyOf()
+                        }
                     }
                 }
             }
@@ -79,13 +106,22 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
             Column(Modifier.fillMaxWidth()) {
                 Text("${round(noiseLevel * 100)/100} dB(A)")
                 Canvas(modifier = Modifier.fillMaxSize()) {
-                    val canvasSize = IntSize(size.width.toInt(), size.height.toInt())
+                    val canvasSize = IntSize(SPECTROGRAM_STRIP_WIDTH, size.height.toInt())
+                    spectrogramCanvasSize = size
                     if(spectrogramBitmapData.size != canvasSize) {
                         // reset buffer on resize or first draw
                         spectrogramBitmapData = SpectrogramBitmap.createSpectrogram(canvasSize)
+                        completeImageBitmap.clear()
                     } else {
-                        if(spectrumBitmapState.size > 1) {
-                            drawImage(spectrumBitmapState.toImageBitmap())
+                        if(spectrumBitmapState.size == spectrogramBitmapData.byteArray.size) {
+                            drawImage(spectrumBitmapState.toImageBitmap(),
+                                topLeft = Offset(size.width - spectrogramBitmapData.offset, 0F))
+                        }
+                        completeImageBitmap.reversed().forEachIndexed { index, imageBitmap ->
+                            val bitmapX = size.width - ((index + 1) * SPECTROGRAM_STRIP_WIDTH
+                                    + spectrogramBitmapData.offset).toFloat()
+                            drawImage(imageBitmap,
+                                topLeft = Offset(bitmapX, 0F))
                         }
                     }
                 }

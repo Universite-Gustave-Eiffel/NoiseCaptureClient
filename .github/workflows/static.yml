@@ -40,7 +40,7 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
       - uses: gradle/wrapper-validation-action@v1
-      - uses: gradle/gradle-build-action@v2
+      - uses: gradle/gradle-build-action@v3
         with:
           cache-read-only: ${{ env.MAIN_BRANCH != 'true' }}
       - name: Build
@@ -58,3 +58,11 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Clean
+        run: rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            webApp/build
+          key: ${{ runner.os }}-noisecapturejs

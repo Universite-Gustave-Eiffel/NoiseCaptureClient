@@ -122,7 +122,11 @@ class SpectrogramBitmap {
 
     }
 
-    data class SpectrogramDataModel(val size: IntSize, val byteArray: ByteArray) {
+    /**
+     * @constructor
+     * @si
+     */
+    data class SpectrogramDataModel(val size: IntSize, val byteArray: ByteArray, var offset : Int = 0) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other == null || this::class != other::class) return false
@@ -143,12 +147,7 @@ class SpectrogramBitmap {
                                                                scaleMode: SCALE_MODE,
                                                                mindB : Double, rangedB : Double,
                                                                sampleRate: Double) {
-            // move pixels to the bottom of the array
-            val destinationOffset = bmpHeader.size + size.width * Int.SIZE_BYTES * fftResults.size
-            val startIndex = bmpHeader.size
-            val stopIndex = (size.width * (size.height - fftResults.size)) * Int.SIZE_BYTES
-            byteArray.copyInto(byteArray, destinationOffset, startIndex, stopIndex)
-            // generate column of pixels
+            // generate columns of pixels
             // merge power of each frequencies following the destination bitmap resolution
             val hertzBySpectrumCell = sampleRate / FFT_SIZE.toDouble()
             val frequencyLegendPosition = when (scaleMode) {
@@ -157,8 +156,8 @@ class SpectrogramBitmap {
             }
             fftResults.forEachIndexed { index, fftResult ->
                 var lastProcessFrequencyIndex = 0
-                val freqByPixel = fftResult.spectrum.size / size.width.toDouble()
-                for (pixel in 0..<size.width) {
+                val freqByPixel = fftResult.spectrum.size / size.height.toDouble()
+                for (pixel in 0..<size.height) {
                     var freqStart: Int
                     var freqEnd: Int
                     if (scaleMode == SCALE_MODE.SCALE_LOG) {
@@ -166,7 +165,7 @@ class SpectrogramBitmap {
                         val fMax = sampleRate / 2
                         val fMin = frequencyLegendPosition[0]
                         val r = fMax / fMin.toDouble()
-                        val f = fMin * 10.0.pow(pixel * log10(r) / size.width)
+                        val f = fMin * 10.0.pow(pixel * log10(r) / size.height)
                         val nextFrequencyIndex =
                             min(fftResult.spectrum.size, (f / hertzBySpectrumCell).toInt())
                         freqEnd =
@@ -191,10 +190,12 @@ class SpectrogramBitmap {
                         )
                     )
                     val pixelColor = colorRamp[colorIndex].toArgb()
+                    val columnOffset = offset % size.width
                     val pixelIndex = bmpHeader.size + size.width * Int.SIZE_BYTES *
-                            (fftResults.size - 1 - index) + pixel * Int.SIZE_BYTES
+                            pixel + columnOffset * Int.SIZE_BYTES
                     pixelColor.toLittleEndianBytes().copyInto(byteArray, pixelIndex)
                 }
+                offset += 1
             }
         }
     }
