@@ -4,7 +4,7 @@ name: Deploy NoiseCapture as a static website
 on:
   # Runs on pushes targeting the default branch
   push:
-    branches: ["appyx"]
+    branches: ["main"]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
