@@ -102,7 +102,7 @@ class SpectrogramBitmap {
             "#F75500".toComposeColor(),
             "#FB2A00".toComposeColor(),
         )
-        fun createSpectrogram(size: IntSize) : SpectrogramDataModel {
+        fun createSpectrogram(size: IntSize, scaleMode: SCALE_MODE, sampleRate: Double) : SpectrogramDataModel {
             val byteArray = ByteArray(bmpHeader.size + Int.SIZE_BYTES * size.width * size.height)
             bmpHeader.copyInto(byteArray)
             // fill with changing header data
@@ -111,7 +111,7 @@ class SpectrogramBitmap {
             (rawPixelSize+bmpHeader.size).toLittleEndianBytes().copyInto(byteArray, sizeIndex)
             size.width.toLittleEndianBytes().copyInto(byteArray, widthIndex)
             size.height.toLittleEndianBytes().copyInto(byteArray, heightIndex)
-            return SpectrogramDataModel(size, byteArray)
+            return SpectrogramDataModel(size, byteArray, scaleMode = scaleMode, sampleRate = sampleRate)
         }
 
         /**
@@ -126,7 +126,9 @@ class SpectrogramBitmap {
      * @constructor
      * @si
      */
-    data class SpectrogramDataModel(val size: IntSize, val byteArray: ByteArray, var offset : Int = 0) {
+    data class SpectrogramDataModel(val size: IntSize, val byteArray: ByteArray,
+                                    var offset : Int = 0, val scaleMode: SCALE_MODE,
+                                    val sampleRate: Double) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other == null || this::class != other::class) return false
@@ -144,9 +146,7 @@ class SpectrogramBitmap {
         }
 
         fun pushSpectrumToSpectrogramData(fftResults : List<SpectrumData>,
-                                                               scaleMode: SCALE_MODE,
-                                                               mindB : Double, rangedB : Double,
-                                                               sampleRate: Double) {
+                                           mindB : Double, rangedB : Double) {
             // generate columns of pixels
             // merge power of each frequencies following the destination bitmap resolution
             val hertzBySpectrumCell = sampleRate / FFT_SIZE.toDouble()
