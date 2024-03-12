@@ -45,6 +45,8 @@ import org.noise_planet.noisecapture.shared.MeasurementService
 import org.noise_planet.noisecapture.shared.ScreenData
 import org.noise_planet.noisecapture.shared.ui.SpectrogramBitmap
 import org.noise_planet.noisecapture.toImageBitmap
+import kotlin.math.ceil
+import kotlin.math.floor
 import kotlin.math.log
 import kotlin.math.log10
 import kotlin.math.max
@@ -70,6 +72,8 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
             SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG -> SpectrogramBitmap.frequencyLegendPositionLog
             else -> SpectrogramBitmap.frequencyLegendPositionLinear
         }
+        val timeXLabelMeasure = textMeasurer.measure(" +99s ")
+        val timeXLabelHeight = timeXLabelMeasure.size.height
         val maxYLabelWidth =
             frequencyLegendPosition.maxOf { frequency ->
                 val text = formatFrequency(frequency)
@@ -77,10 +81,13 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
             }
         Canvas(modifier = Modifier.fillMaxSize() ) {
             drawRect(color = Color.Black, size=size)
-            val canvasSize = IntSize(SPECTROGRAM_STRIP_WIDTH, size.height.toInt())
             val tickLength = 4.dp.toPx()
+            val tickStroke = 2.dp
+            val legendHeight = timeXLabelHeight+tickLength
+            val canvasSize = IntSize(SPECTROGRAM_STRIP_WIDTH, (size.height - legendHeight).toInt())
             val legendWidth = maxYLabelWidth+tickLength
-            spectrumCanvasState.spectrogramCanvasSize = Size(size.width - legendWidth, size.height)
+            spectrumCanvasState.spectrogramCanvasSize = Size(size.width - legendWidth, size.height
+                    - legendHeight)
             if(spectrumCanvasState.currentStripData.size != canvasSize) {
                 // reset buffer on resize or first draw
                 spectrumCanvasState.currentStripData = SpectrogramBitmap.createSpectrogram(
@@ -91,21 +98,23 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                     drawImage(
                         spectrumCanvasState.currentStripData.byteArray.toImageBitmap(),
                         topLeft = Offset(
-                            size.width - spectrumCanvasState.currentStripData.offset,
+                            size.width - spectrumCanvasState.currentStripData.offset - legendWidth,
                             0F
                         )
                     )
                     spectrumCanvasState.cachedStrips.reversed()
                         .forEachIndexed { index, imageBitmap ->
-                            val bitmapX = size.width - ((index + 1) * SPECTROGRAM_STRIP_WIDTH
+                            val bitmapX = size.width - legendWidth - ((index + 1) * SPECTROGRAM_STRIP_WIDTH
                                     + spectrumCanvasState.currentStripData.offset).toFloat()
                             drawImage(
                                 imageBitmap,
                                 topLeft = Offset(bitmapX, 0F)
                             )
                         }
-                    drawRect(color = Color.Black, size = Size(legendWidth, size.height))
-                    // draw legend
+                    // black background of legend
+                    drawRect(color = Color.Black, size = Size(legendWidth, size.height),
+                        topLeft = Offset(size.width - legendWidth, 0F))
+                    // draw Y axe labels
                     val fMax = spectrumCanvasState.currentStripData.sampleRate / 2
                     val fMin = frequencyLegendPosition[0].toDouble()
                     val r = fMax / fMin
@@ -126,18 +135,46 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                         }
                         drawLine(
                             color = Color.White, start = Offset(
-                                legendWidth-tickLength,
-                                tickHeightPos.toFloat()
+                                size.width - legendWidth,
+                                tickHeightPos.toFloat() - tickStroke.toPx()/2
                             ),
                             end = Offset(
-                                legendWidth,
-                                tickHeightPos.toFloat()
+                                size.width - legendWidth + tickLength,
+                                tickHeightPos.toFloat() - tickStroke.toPx()/2
                             ),
-                            strokeWidth = 2.dp.toPx()
+                            strokeWidth = tickStroke.toPx()
                         )
-                        val textPos = min(sheight - textSize.size.height,
+                        val textPos = min((size.height - textSize.size.height).toInt(),
                             max(0, tickHeightPos - textSize.size.height / 2))
-                        drawText(textMeasurer, text, topLeft = Offset(legendWidth-textSize.size.width-tickLength, textPos.toFloat()))
+                        drawText(textMeasurer, text, topLeft = Offset(size.width - legendWidth + tickLength, textPos.toFloat()))
+                    }
+                    // draw X axe labels
+                    val xLegendWidth = (size.width - legendWidth)
+                    val maxLabelsOnXAxe = ceil(xLegendWidth / timeXLabelMeasure.size.width).toInt()
+                    // One pixel per time step
+                    val timePerPixel = FFT_HOP / spectrumCanvasState.currentStripData.sampleRate
+                    val timeBetweenLabels = floor((xLegendWidth * timePerPixel) / maxLabelsOnXAxe)
+                    // start with 1 second then increase values
+                    (1.. maxLabelsOnXAxe).forEach { labelIndex ->
+                        val timeValue = (1 + timeBetweenLabels * (labelIndex - 1)).toInt()
+                        val xPos = (xLegendWidth - timeValue / timePerPixel).toFloat()
+                        drawLine(
+                            color = Color.White, start = Offset(
+                                xPos-tickStroke.toPx()/2,
+                                sheight.toFloat()
+                            ),
+                            end = Offset(
+                                xPos-tickStroke.toPx()/2,
+                                sheight.toFloat() + tickLength
+                            ),
+                            strokeWidth = tickStroke.toPx()
+                        )
+                        val legendText = buildAnnotatedString {
+                            withStyle(style = SpanStyle(color = Color.White)) {
+                                append("+${timeValue}s")
+                            }
+                        }
+                        drawText(textMeasurer,legendText, topLeft = Offset(xPos-textMeasurer.measure(legendText).size.width / 2, sheight.toFloat() + tickLength))
                     }
                 }
             }
@@ -146,7 +183,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
 
 
     fun formatFrequency(frequency: Int): String {
-        return if (frequency > 1000) {
+        return if (frequency >= 1000) {
             if(frequency%1000 > 0) {
                 val subKilo = (frequency%1000).toString().trimEnd('0')
                 "${frequency/1000}.$subKilo kHz"
