@@ -48,7 +48,7 @@ jobs:
         with:
           key: noisecapturejs
           path: |
-            webApp/build
+            $GITHUB_WORKSPACE/webApp/build
       - name: Build
         run: >
           ./gradlew
