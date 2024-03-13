@@ -84,7 +84,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                 textMeasurer.measure(text).size.width
             }
         Canvas(modifier = Modifier.fillMaxSize() ) {
-            drawRect(color = Color.Black, size=size)
+            drawRect(color = SpectrogramBitmap.colorRamp[0], size=size)
             val tickLength = 4.dp.toPx()
             val legendHeight = timeXLabelHeight+tickLength
             val canvasSize = IntSize(SPECTROGRAM_STRIP_WIDTH, (size.height - legendHeight).toInt())
@@ -139,11 +139,10 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
             val tickLength = 4.dp.toPx()
             val tickStroke = 2.dp
             val legendHeight = timeXLabelHeight+tickLength
-            val canvasSize = IntSize(SPECTROGRAM_STRIP_WIDTH, (size.height - legendHeight).toInt())
             val legendWidth = maxYLabelWidth+tickLength
             if(sampleRate > 1) {
                 // black background of legend
-                drawRect(color = Color.Black, size = Size(legendWidth, size.height),
+                drawRect(color = SpectrogramBitmap.colorRamp[0], size = Size(legendWidth, size.height),
                     topLeft = Offset(size.width - legendWidth, 0F))
                 // draw Y axe labels
                 val fMax = sampleRate / 2
@@ -180,13 +179,12 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                 }
                 // draw X axe labels
                 val xLegendWidth = (size.width - legendWidth)
-                val maxLabelsOnXAxe = ceil(xLegendWidth / timeXLabelMeasure.size.width).toInt()
                 // One pixel per time step
                 val timePerPixel = FFT_HOP / sampleRate
-                val timeBetweenLabels = floor((xLegendWidth * timePerPixel) / maxLabelsOnXAxe)
+                val timeBetweenLabels = 5//floor((xLegendWidth * timePerPixel) / maxLabelsOnXAxe)
+                val lastTime = (xLegendWidth * timePerPixel).toInt()
                 // start with 1 second then increase values
-                (1.. maxLabelsOnXAxe).forEach { labelIndex ->
-                    val timeValue = (1 + timeBetweenLabels * (labelIndex - 1)).toInt()
+                (timeBetweenLabels..lastTime  step timeBetweenLabels).forEach { timeValue ->
                     val xPos = (xLegendWidth - timeValue / timePerPixel).toFloat()
                     drawLine(
                         color = Color.White, start = Offset(
@@ -204,7 +202,8 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                             append("+${timeValue}s")
                         }
                     }
-                    drawText(textMeasurer,legendText, topLeft = Offset(xPos-textMeasurer.measure(legendText).size.width / 2, sheight.toFloat() + tickLength))
+                    val xTextPos = max(0F, xPos-textMeasurer.measure(legendText).size.width / 2)
+                    drawText(textMeasurer,legendText, topLeft = Offset(xTextPos, sheight.toFloat() + tickLength))
                 }
             }
         }
