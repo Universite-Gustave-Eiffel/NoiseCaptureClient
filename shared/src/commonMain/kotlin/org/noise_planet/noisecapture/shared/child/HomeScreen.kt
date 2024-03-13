@@ -10,14 +10,6 @@ import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CenterFocusWeak
-import androidx.compose.material.icons.outlined.Help
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Map
-import androidx.compose.material.icons.outlined.Mic
-import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.ShowChart
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -27,8 +19,7 @@ import com.bumble.appyx.components.backstack.operation.push
 import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
 import org.noise_planet.noisecapture.shared.ScreenData
-import org.noise_planet.noisecapture.shared.ui.theme.rememberClinicalNotes
-import org.noise_planet.noisecapture.shared.ui.theme.rememberOverview
+import org.noise_planet.noisecapture.shared.ui.theme.*
 
 class HomeScreen(buildContext: BuildContext,
                  val backStack: BackStack<ScreenData>) : Node(buildContext) {
@@ -39,23 +30,23 @@ class HomeScreen(buildContext: BuildContext,
             color = MaterialTheme.colors.background
         ) {
             val menuItems = arrayOf(
-                MenuItem("Test label", Icons.Outlined.Mic,
+                MenuItem("Test label", Mic,
                     onClick = { backStack.push(ScreenData.PermissionTarget) }),
-                MenuItem("Measurement History", rememberOverview(),
+                MenuItem("Measurement History", overview(),
                     onClick = {}),
-                MenuItem("Measurement feedback", rememberClinicalNotes(),
+                MenuItem("Measurement feedback", clinicalNotes(),
                     onClick = {}),
-                MenuItem("Measurement statistics", Icons.Outlined.ShowChart,
+                MenuItem("Measurement statistics", ShowChart,
                     onClick = {}),
-                MenuItem("Last measurement map", Icons.Outlined.Map,
+                MenuItem("Last measurement map", Map,
                     onClick = {}),
-                MenuItem("Help", Icons.Outlined.Help,
+                MenuItem("Help", Help,
                     onClick = {}),
-                MenuItem("About", Icons.Outlined.Info,
+                MenuItem("About", Info,
                     onClick = {}),
-                MenuItem("Calibration", Icons.Default.CenterFocusWeak,
+                MenuItem("Calibration", CenterFocusWeak,
                     onClick = {}),
-                MenuItem("Settings", Icons.Outlined.Settings,
+                MenuItem("Settings", Settings,
                     onClick = {})
             )
 

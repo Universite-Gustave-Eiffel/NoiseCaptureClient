@@ -7,7 +7,7 @@ plugins {
 
 kotlin {
     js(IR) {
-        moduleName = "appyx-starter-kit-web"
+        moduleName = "NoiseCaptureWeb"
         browser()
         binaries.executable()
     }

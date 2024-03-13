@@ -48,7 +48,8 @@ class MeasurementService(val sampleRate: Int) {
             if (windowDataCursor == windowLength) {
                 // window complete
                 val laeq = spectrumChannel.processSamplesWeightA(windowData)
-                val thirdOctave = spectrumChannel.processSamples(windowData)
+                val thirdOctave = DoubleArray(0)
+                //val thirdOctave = spectrumChannel.processSamples(windowData)
                 val fftSpectrum = windowAnalysis.pushSamples(samples.epoch, windowData).toList()
                 measurementServiceDataList.add(
                     MeasurementServiceData(
