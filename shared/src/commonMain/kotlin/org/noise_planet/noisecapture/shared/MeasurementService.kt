@@ -12,11 +12,12 @@ import org.noise_planet.noisecapture.shared.signal.get48000HZ
 import kotlin.math.min
 import kotlin.math.pow
 
-class MeasurementService(val sampleRate: Int) {
+class MeasurementService(val sampleRate: Int, dbGain : Double) {
     private var windowLength = (sampleRate * WINDOW_TIME).toInt()
     private var windowData = FloatArray(windowLength)
     private var windowDataCursor = 0
-    private var windowAnalysis = WindowAnalysis(sampleRate, FFT_SIZE, FFT_HOP)
+    val gain = (10.0.pow(dbGain / 20.0)).toFloat()
+
     private val spectrumChannel: SpectrumChannel = SpectrumChannel().apply {
         this.loadConfiguration(
             when (sampleRate) {
@@ -26,9 +27,10 @@ class MeasurementService(val sampleRate: Int) {
         )
     }
 
+
+
     suspend fun processSamples(samples: AudioSamples): List<MeasurementServiceData> {
         val measurementServiceDataList = ArrayList<MeasurementServiceData>()
-        val gain = (10.0.pow(105 / 20.0)).toFloat()
         var samplesProcessed = 0
         while (samplesProcessed < samples.samples.size) {
             while (windowDataCursor < windowLength &&
@@ -50,12 +52,10 @@ class MeasurementService(val sampleRate: Int) {
                 val laeq = spectrumChannel.processSamplesWeightA(windowData)
                 val thirdOctave = DoubleArray(0)
                 //val thirdOctave = spectrumChannel.processSamples(windowData)
-                val fftSpectrum = windowAnalysis.pushSamples(samples.epoch, windowData).toList()
                 measurementServiceDataList.add(
                     MeasurementServiceData(
                         samples.epoch,
                         laeq,
-                        fftSpectrum,
                         thirdOctave
                     )
                 )
@@ -64,10 +64,7 @@ class MeasurementService(val sampleRate: Int) {
         }
         return measurementServiceDataList
     }
-
-
 }
-data class MeasurementServiceData(val epoch : Long, val laeq: Double,
-                                  val spectrumDataList : List<SpectrumData>,
-                                  val thirdOctave : DoubleArray)
+
+data class MeasurementServiceData(val epoch : Long, val laeq: Double, val thirdOctave : DoubleArray)
 

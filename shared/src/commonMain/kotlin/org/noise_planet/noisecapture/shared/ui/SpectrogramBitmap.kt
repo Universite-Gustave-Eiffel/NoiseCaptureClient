@@ -146,7 +146,7 @@ class SpectrogramBitmap {
         }
 
         fun pushSpectrumToSpectrogramData(fftResults : List<SpectrumData>,
-                                           mindB : Double, rangedB : Double) {
+                                           mindB : Double, rangedB : Double, gain : Double) {
             // generate columns of pixels
             // merge power of each frequencies following the destination bitmap resolution
             val hertzBySpectrumCell = sampleRate / FFT_SIZE.toDouble()
@@ -182,7 +182,7 @@ class SpectrogramBitmap {
                     for (idFreq in freqStart..<freqEnd) {
                         sumVal += 10.0.pow(fftResult.spectrum[idFreq] / 10.0)
                     }
-                    sumVal = max(0.0, 10 * log10(sumVal))
+                    sumVal = max(0.0, 10 * log10(sumVal) + gain)
                     val colorIndex = min(
                         colorRamp.size - 1, max(
                             0, (((sumVal - mindB) / rangedB) *
