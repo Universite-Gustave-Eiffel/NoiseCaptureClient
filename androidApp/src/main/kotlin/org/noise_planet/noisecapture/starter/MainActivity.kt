@@ -12,7 +12,9 @@ import org.koin.android.logger.AndroidLogger
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.noise_planet.noisecapture.AndroidAudioSource
+import org.noise_planet.noisecapture.AndroidDatabase
 import org.noise_planet.noisecapture.AudioSource
+import org.noise_planet.noisecapture.DatabaseDriverFactory
 import org.noise_planet.noisecapture.shared.initKoin
 import org.noise_planet.noisecapture.shared.root.RootNode
 import org.noise_planet.noisecapture.shared.ui.theme.AppyxStarterKitTheme
@@ -31,6 +33,7 @@ class MainActivity : NodeActivity() {
                     single<Context> { applicationContext }
                     single<Activity> { this@MainActivity }
                     single<AudioSource> { AndroidAudioSource() }
+                    single<DatabaseDriverFactory> { AndroidDatabase(applicationContext) }
                 }
             )
         ).logger(AndroidLogger())

@@ -1,0 +1,13 @@
+-- record definition
+
+CREATE TABLE record(record_id INTEGER PRIMARY KEY, record_utc INTEGER, upload_id TEXT, leq_mean REAL,
+time_length INTEGER, description TEXT, photo_uri TEXT, pleasantness INTEGER,
+calibration_gain REAL DEFAULT 0,noiseparty_tag TEXT, calibration_method INTEGER DEFAULT 0,
+microphone_device_id TEXT,microphone_device_settings TEXT);
+
+ CREATE TABLE leq(record_id INTEGER, leq_id INTEGER PRIMARY KEY, leq_utc INTEGER,
+   laeq REAL,lceq REAL, FOREIGN KEY(record_id) REFERENCES record(record_id) ON DELETE CASCADE);
+
+ CREATE TABLE position(record_id INTEGER, latitude REAL,
+  longitude REAL, bearing REAL, altitude REAL, speed REAL, accuracy REAL, location_utc INTEGER,
+   FOREIGN KEY(record_id) REFERENCES record(record_id) ON DELETE CASCADE);
