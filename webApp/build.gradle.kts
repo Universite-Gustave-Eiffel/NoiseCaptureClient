@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.KotlinJsCompile
-
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.compose")
@@ -12,7 +10,6 @@ kotlin {
         binaries.executable()
     }
     sourceSets {
-        @Suppress("UNUSED_VARIABLE")
         val commonMain by getting {
             dependencies {
                 implementation(compose.runtime)
