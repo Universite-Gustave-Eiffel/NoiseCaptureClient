@@ -32,7 +32,7 @@ class MainActivity : NodeActivity() {
                 module {
                     single<Context> { applicationContext }
                     single<Activity> { this@MainActivity }
-                    single<AudioSource> { AndroidAudioSource() }
+                    single<AudioSource> { AndroidAudioSource(applicationContext) }
                     single<DatabaseDriverFactory> { AndroidDatabase(applicationContext) }
                 }
             )

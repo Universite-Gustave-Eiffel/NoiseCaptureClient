@@ -1,18 +1,29 @@
 package org.noise_planet.noisecapture
 
 import android.annotation.SuppressLint
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.media.AudioFormat
 import android.media.AudioRecord
+import android.media.AudioRecord.ERROR
+import android.media.AudioRecord.ERROR_BAD_VALUE
+import android.media.AudioRecord.ERROR_INVALID_OPERATION
 import android.media.MediaRecorder
+import android.os.Binder
+import android.os.IBinder
 import android.os.Process
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.consumeAsFlow
+import java.io.EOFException
+import java.lang.IllegalStateException
 import java.lang.Integer.max
 import java.util.concurrent.atomic.AtomicBoolean
 const val BUFFER_SIZE_TIME = 0.1
-class AndroidAudioSource : AudioSource, Runnable {
+class AndroidAudioSource(private val context : Context) : AudioSource, Runnable, ServiceConnection {
     private lateinit var audioRecord: AudioRecord
     private var bufferSize = -1
     private var sampleRate = -1
@@ -20,7 +31,7 @@ class AndroidAudioSource : AudioSource, Runnable {
     val audioSamplesChannel = Channel<AudioSamples>(onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     @SuppressLint("MissingPermission")
-    override suspend fun setup(): Flow<AudioSamples> {
+    override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
         if(this.bufferSize == -1) {
             val mSampleRates = intArrayOf(48000, 44100)
             val channel = AudioFormat.CHANNEL_IN_MONO
@@ -44,7 +55,28 @@ class AndroidAudioSource : AudioSource, Runnable {
                 break
             }
         }
-        return audioSamplesChannel.consumeAsFlow()
+    }
+
+    override fun onServiceDisconnected(name: ComponentName?) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun setup(): Flow<AudioSamples> {
+        val intent = Intent(context, MeasurementService::class.java)
+        if(context.bindService(intent, this, Context.BIND_AUTO_CREATE)) {
+            return audioSamplesChannel.consumeAsFlow()
+        } else {
+            throw IllegalStateException("Could not bind Android service AndroidAudioSource")
+        }
+    }
+
+    fun readErrorCodeToString(errorCode : Int) : String {
+        return when(errorCode) {
+            ERROR_INVALID_OPERATION -> "ERROR_INVALID_OPERATION"
+            ERROR_BAD_VALUE -> "ERROR_BAD_VALUE"
+            ERROR -> "Other Error"
+            else -> "Unknown error"
+        }
     }
 
     override fun run() {
@@ -65,8 +97,21 @@ class AndroidAudioSource : AudioSource, Runnable {
                 AudioRecord.READ_BLOCKING
             )
             if (read < buffer.size) {
-                buffer = buffer.copyOfRange(0, read)
-                audioSamplesChannel.trySend(AudioSamples(System.currentTimeMillis(), buffer, AudioSamples.ErrorCode.OK, sampleRate))
+                if(read > 0) {
+                    buffer = buffer.copyOfRange(0, read)
+                    audioSamplesChannel.trySend(
+                        AudioSamples(
+                            System.currentTimeMillis(),
+                            buffer,
+                            AudioSamples.ErrorCode.OK,
+                            sampleRate
+                        )
+                    )
+                } else {
+                    audioSamplesChannel.close(EOFException("End of audio stream "+readErrorCodeToString(read)))
+                    recording.set(false)
+                    break
+                }
             } else {
                 audioSamplesChannel.trySend(AudioSamples(System.currentTimeMillis(), buffer.clone(), AudioSamples.ErrorCode.OK, sampleRate))
             }
