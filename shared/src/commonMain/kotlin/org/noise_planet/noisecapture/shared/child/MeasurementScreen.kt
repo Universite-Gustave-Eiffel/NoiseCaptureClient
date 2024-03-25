@@ -18,7 +18,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -107,6 +109,39 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
             }
         }
     }
+    companion object {
+        data class LegendElement(val text : AnnotatedString, val textSize : IntSize, val xPos : Float, val textPos : Float)
+    }
+    fun makeXLegend(textMeasurer: TextMeasurer, timeValue : Double, legendWidth : Float,
+                    timePerPixel : Double) : LegendElement {
+        val xPos = (legendWidth - timeValue / timePerPixel).toFloat()
+        val legendText = buildAnnotatedString {
+            withStyle(style = SpanStyle(color = Color.White)) {
+                append("+${timeValue.toInt()}s")
+            }
+        }
+        val textLayout = textMeasurer.measure(legendText)
+        val textPos = min(legendWidth-textLayout.size.width,
+            max(0F, xPos - textLayout.size.width / 2))
+        return LegendElement(legendText, textLayout.size, xPos, textPos)
+    }
+
+    private fun recursiveLegendBuild(textMeasurer: TextMeasurer, timeValue : Double, legendWidth : Float,
+                                     timePerPixel : Double, minX : Float, maxX : Float, timeValueLeft : Double,
+                                     timeValueRight : Double, feedElements: ArrayList<LegendElement>) {
+        val legendElement = makeXLegend(textMeasurer, timeValue, legendWidth, timePerPixel)
+        if(legendElement.textPos > minX && legendElement.xPos + legendElement.textSize.width / 2 < maxX) {
+            feedElements.add(legendElement)
+            // left legend, + x seconds
+            recursiveLegendBuild(textMeasurer, round(timeValue + (timeValueLeft - timeValue) / 2),
+                legendWidth, timePerPixel, minX, legendElement.textPos, timeValueLeft, timeValue,
+                feedElements)
+            // right legend, - x seconds
+            recursiveLegendBuild(textMeasurer, round(timeValue - (timeValue - timeValueRight) / 2),
+                legendWidth, timePerPixel, legendElement.textPos + legendElement.textSize.width,
+                maxX, timeValue, timeValueRight, feedElements)
+        }
+    }
 
 
     @Composable
@@ -169,29 +204,29 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                 val xLegendWidth = (size.width - legendWidth)
                 // One pixel per time step
                 val timePerPixel = FFT_HOP / sampleRate
-                val timeBetweenLabels = 5//floor((xLegendWidth * timePerPixel) / maxLabelsOnXAxe)
-                val lastTime = (xLegendWidth * timePerPixel).toInt()
-                // start with 1 second then increase values
-                (timeBetweenLabels..lastTime  step timeBetweenLabels).forEach { timeValue ->
-                    val xPos = (xLegendWidth - timeValue / timePerPixel).toFloat()
+                val lastTime = xLegendWidth * timePerPixel
+                val legendElements = ArrayList<LegendElement>()
+                val rightLegend = makeXLegend(textMeasurer, 0.0, xLegendWidth, timePerPixel)
+                val leftLegend =  makeXLegend(textMeasurer, lastTime, xLegendWidth, timePerPixel)
+                legendElements.add(leftLegend)
+                legendElements.add(rightLegend)
+                recursiveLegendBuild(textMeasurer, lastTime / 2, xLegendWidth, timePerPixel,
+                    leftLegend.textSize.width.toFloat(),
+                    rightLegend.xPos-rightLegend.textSize.width, lastTime, 0.0, legendElements)
+                legendElements.forEach {legendElement ->
+                    val tickPos = max(tickStroke.toPx() / 2F, min(xLegendWidth-tickStroke.toPx(), legendElement.xPos - tickStroke.toPx() / 2F))
                     drawLine(
                         color = Color.White, start = Offset(
-                            xPos-tickStroke.toPx()/2,
+                            tickPos,
                             sheight.toFloat()
                         ),
                         end = Offset(
-                            xPos-tickStroke.toPx()/2,
+                            tickPos,
                             sheight + tickLength
                         ),
                         strokeWidth = tickStroke.toPx()
                     )
-                    val legendText = buildAnnotatedString {
-                        withStyle(style = SpanStyle(color = Color.White)) {
-                            append("+${timeValue}s")
-                        }
-                    }
-                    val xTextPos = max(0F, xPos-textMeasurer.measure(legendText).size.width / 2)
-                    drawText(textMeasurer,legendText, topLeft = Offset(xTextPos, sheight.toFloat() + tickLength))
+                    drawText(textMeasurer,legendElement.text, topLeft = Offset(legendElement.textPos, sheight.toFloat() + tickLength))
                 }
             }
         }
