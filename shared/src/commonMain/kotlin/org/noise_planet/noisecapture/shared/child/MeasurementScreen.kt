@@ -112,8 +112,8 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
     companion object {
         data class LegendElement(val text : AnnotatedString, val textSize : IntSize, val xPos : Float, val textPos : Float)
     }
-    fun makeXLegend(textMeasurer: TextMeasurer, timeValue : Double, legendWidth : Float,
-                    timePerPixel : Double) : LegendElement {
+    private fun makeXLegend(textMeasurer: TextMeasurer, timeValue : Double, legendWidth : Float,
+                            timePerPixel : Double) : LegendElement {
         val xPos = (legendWidth - timeValue / timePerPixel).toFloat()
         val legendText = buildAnnotatedString {
             withStyle(style = SpanStyle(color = Color.White)) {
@@ -251,7 +251,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         var bitmapOffset by remember { mutableStateOf(0) }
         var noiseLevel by remember { mutableStateOf(0.0) }
         var sampleRate by remember { mutableStateOf( DEFAULT_SAMPLE_RATE ) }
-        var spectrumCanvasState by remember { mutableStateOf(
+        val spectrumCanvasState by remember { mutableStateOf(
             SpectrogramViewModel(SpectrogramBitmap.SpectrogramDataModel(IntSize(1, 1),
                 ByteArray(Int.SIZE_BYTES),0 ,SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG, 1.0), ArrayList(), Size.Zero)) }
 
