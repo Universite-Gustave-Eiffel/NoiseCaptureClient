@@ -33,7 +33,7 @@ import com.bumble.appyx.navigation.node.Node
 import kotlinx.coroutines.launch
 import org.koin.core.logger.Logger
 import org.noise_planet.noisecapture.AudioSource
-import org.noise_planet.noisecapture.shared.MeasurementService
+import org.noise_planet.noisecapture.shared.AcousticIndicatorsProcessing
 import org.noise_planet.noisecapture.shared.ScreenData
 import org.noise_planet.noisecapture.shared.signal.WindowAnalysis
 import org.noise_planet.noisecapture.shared.ui.SpectrogramBitmap
@@ -45,7 +45,6 @@ import kotlin.math.round
 
 const val FFT_SIZE = 4096
 const val FFT_HOP = 2048
-const val WINDOW_TIME = 0.125
 const val SPECTROGRAM_STRIP_WIDTH = 32
 const val REFERENCE_LEGEND_TEXT = " +99s "
 const val DEFAULT_SAMPLE_RATE = 48000.0
@@ -55,7 +54,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
     private var rangedB = 40.0
     private var mindB = 0.0
     private var dbGain = 105.0
-    private var measurementService : MeasurementService? = null
+    private var acousticIndicatorsProcessing : AcousticIndicatorsProcessing? = null
     private var fftTool : WindowAnalysis? = null
     private val scaleMode = SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG
 
@@ -258,12 +257,12 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         lifecycleScope.launch {
             println("Launch lifecycle")
             audioSource.setup().collect {samples ->
-                if(measurementService == null) {
-                    measurementService = MeasurementService(samples.sampleRate, dbGain)
+                if(acousticIndicatorsProcessing == null) {
+                    acousticIndicatorsProcessing = AcousticIndicatorsProcessing(samples.sampleRate, dbGain)
                     fftTool = WindowAnalysis(samples.sampleRate, FFT_SIZE, FFT_HOP)
                     sampleRate = samples.sampleRate.toDouble()
                 }
-                measurementService!!.processSamples(samples).forEach {
+                acousticIndicatorsProcessing!!.processSamples(samples).forEach {
                         measurementServiceData->
                     noiseLevel = measurementServiceData.laeq
                 }
@@ -290,7 +289,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                                 SpectrogramBitmap.createSpectrogram(
                                     spectrumCanvasState.currentStripData.size,
                                     spectrumCanvasState.currentStripData.scaleMode,
-                                    measurementService!!.sampleRate.toDouble())
+                                    acousticIndicatorsProcessing!!.sampleRate.toDouble())
                             continue
                         }
                         spectrumCanvasState.currentStripData.pushSpectrumToSpectrogramData(

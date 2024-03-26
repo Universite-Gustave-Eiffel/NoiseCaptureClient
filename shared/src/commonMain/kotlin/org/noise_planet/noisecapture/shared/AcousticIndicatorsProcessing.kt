@@ -1,18 +1,15 @@
 package org.noise_planet.noisecapture.shared
 
 import org.noise_planet.noisecapture.AudioSamples
-import org.noise_planet.noisecapture.shared.child.FFT_HOP
-import org.noise_planet.noisecapture.shared.child.FFT_SIZE
-import org.noise_planet.noisecapture.shared.child.WINDOW_TIME
 import org.noise_planet.noisecapture.shared.signal.SpectrumChannel
-import org.noise_planet.noisecapture.shared.signal.SpectrumData
-import org.noise_planet.noisecapture.shared.signal.WindowAnalysis
 import org.noise_planet.noisecapture.shared.signal.get44100HZ
 import org.noise_planet.noisecapture.shared.signal.get48000HZ
 import kotlin.math.min
 import kotlin.math.pow
 
-class MeasurementService(val sampleRate: Int, dbGain : Double) {
+const val WINDOW_TIME = 0.125
+
+class AcousticIndicatorsProcessing(val sampleRate: Int, dbGain : Double) {
     private var windowLength = (sampleRate * WINDOW_TIME).toInt()
     private var windowData = FloatArray(windowLength)
     private var windowDataCursor = 0
@@ -29,8 +26,8 @@ class MeasurementService(val sampleRate: Int, dbGain : Double) {
 
 
 
-    suspend fun processSamples(samples: AudioSamples): List<MeasurementServiceData> {
-        val measurementServiceDataList = ArrayList<MeasurementServiceData>()
+    fun processSamples(samples: AudioSamples): List<AcousticIndicatorsData> {
+        val acousticIndicatorsDataList = ArrayList<AcousticIndicatorsData>()
         var samplesProcessed = 0
         while (samplesProcessed < samples.samples.size) {
             while (windowDataCursor < windowLength &&
@@ -52,8 +49,8 @@ class MeasurementService(val sampleRate: Int, dbGain : Double) {
                 val laeq = spectrumChannel.processSamplesWeightA(windowData)
                 val thirdOctave = DoubleArray(0)
                 //val thirdOctave = spectrumChannel.processSamples(windowData)
-                measurementServiceDataList.add(
-                    MeasurementServiceData(
+                acousticIndicatorsDataList.add(
+                    AcousticIndicatorsData(
                         samples.epoch,
                         laeq,
                         thirdOctave
@@ -62,9 +59,9 @@ class MeasurementService(val sampleRate: Int, dbGain : Double) {
                 windowDataCursor = 0
             }
         }
-        return measurementServiceDataList
+        return acousticIndicatorsDataList
     }
 }
 
-data class MeasurementServiceData(val epoch : Long, val laeq: Double, val thirdOctave : DoubleArray)
+data class AcousticIndicatorsData(val epoch : Long, val laeq: Double, val thirdOctave : DoubleArray)
 
