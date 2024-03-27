@@ -25,6 +25,16 @@ class MainActivity : NodeActivity() {
         stopKoin()
     }
 
+    override fun onRestart() {
+        super.onRestart()
+        println("onRestart")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        println("OnStop")
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val koinApplication = initKoin(

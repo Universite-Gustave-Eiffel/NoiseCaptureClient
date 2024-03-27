@@ -45,12 +45,17 @@ class AndroidAudioSource(private val context : Context) : AudioSource, ServiceCo
     }
 
     override suspend fun setup(): Flow<AudioSamples> {
-        val intent = Intent(context, MeasurementService::class.java)
-        return if(context.bindService(intent, this, Context.BIND_AUTO_CREATE)) {
-            audioSamplesChannel.consumeAsFlow()
+        if(measurementService == null) {
+            val intent = Intent(context, MeasurementService::class.java)
+            return if (context.bindService(intent, this, Context.BIND_AUTO_CREATE)) {
+                audioSamplesChannel.consumeAsFlow()
+            } else {
+                println("Bind failed")
+                emptyFlow()
+            }
         } else {
-            println("Bind failed")
-            emptyFlow()
+            measurementService!!.addAudioCallBack(::onSamples)
+            return audioSamplesChannel.consumeAsFlow()
         }
     }
 
@@ -64,7 +69,9 @@ class AndroidAudioSource(private val context : Context) : AudioSource, ServiceCo
     }
 
     override fun release() {
-        measurementService!!.removeAudioCallBack(::onSamples)
+        if(measurementService != null) {
+            measurementService!!.removeAudioCallBack(::onSamples)
+        }
     }
 
     override fun getMicrophoneLocation(): AudioSource.MicrophoneLocation {

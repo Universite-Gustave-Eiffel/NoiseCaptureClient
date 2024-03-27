@@ -28,8 +28,13 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.bumble.appyx.components.backstack.BackStack
+import com.bumble.appyx.navigation.lifecycle.DefaultPlatformLifecycleObserver
+import com.bumble.appyx.navigation.lifecycle.Lifecycle
 import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import org.koin.core.logger.Logger
 import org.noise_planet.noisecapture.AudioSource
@@ -51,7 +56,7 @@ const val REFERENCE_LEGEND_TEXT = " +99s "
 const val DEFAULT_SAMPLE_RATE = 48000.0
 
 class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<ScreenData>,
-                        private val audioSource: AudioSource, private val logger: Logger) : Node(buildContext) {
+                        private val audioSource: AudioSource, private val logger: Logger) : Node(buildContext), DefaultPlatformLifecycleObserver {
     private var rangedB = 40.0
     private var mindB = 0.0
     private var dbGain = 105.0
@@ -255,6 +260,23 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         }
     }
 
+
+    override fun onStop() {
+        println("Appyx onStop")
+    }
+
+    override fun onPause() {
+        println("Appyx onPause")
+    }
+
+    override fun onResume() {
+        println("Appyx onResume")
+    }
+
+    override fun onStart() {
+        println("Appyx onStart")
+    }
+
     @Composable
     override fun View(modifier: Modifier) {
         var bitmapOffset by remember { mutableStateOf(0) }
@@ -264,6 +286,11 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
             SpectrogramViewModel(SpectrogramBitmap.SpectrogramDataModel(IntSize(1, 1),
                 ByteArray(Int.SIZE_BYTES),0 ,SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG, 1.0), ArrayList(), Size.Zero)) }
 
+//        lifecycleScope.launch {
+//            lifecycle.asPlatformFlow(this@MeasurementScreen).collect {
+//
+//            }
+//        }
         lifecycleScope.launch {
             println("Launch lifecycle")
             audioSource.setup().collect {samples ->
@@ -336,3 +363,10 @@ data class SpectrogramViewModel(var currentStripData : SpectrogramBitmap.Spectro
 
 data class LegendElement(val text : AnnotatedString, val textSize : IntSize, val xPos : Float,
                          val textPos : Float, val depth : Int)
+
+
+fun Lifecycle.asPlatformFlow(observer : DefaultPlatformLifecycleObserver): Flow<Lifecycle.State> =
+    callbackFlow {
+        addObserver(observer)
+        awaitClose { removeObserver(observer) }
+    }
