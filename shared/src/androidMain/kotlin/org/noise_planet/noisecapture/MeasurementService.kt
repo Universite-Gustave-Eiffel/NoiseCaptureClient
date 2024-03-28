@@ -16,10 +16,8 @@ import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import android.os.Process
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
-import java.io.EOFException
 import java.util.concurrent.atomic.AtomicBoolean
 
 
@@ -149,9 +147,11 @@ class MeasurementService : Service() {
     }
 
     public fun addAudioCallBack(audioCallBack: AudioCallBack) {
-        audioCallBacks.add(audioCallBack)
-        if(!recording.get()) {
-            audioThread.startAudioRecord()
+        if(!audioCallBacks.contains(audioCallBack)) {
+            audioCallBacks.add(audioCallBack)
+            if (!recording.get()) {
+                audioThread.startAudioRecord()
+            }
         }
     }
 
@@ -182,13 +182,12 @@ class MeasurementService : Service() {
     }
 
     override fun onDestroy() {
+        println("Destroy MeasurementService")
+
         recording.set(false)
 
         // Cancel the persistent notification.
         mNM!!.cancel(NOTIFICATION)
-
-        // Tell the user we stopped.
-        Toast.makeText(this, "Measurement service stopped", Toast.LENGTH_SHORT).show()
     }
 
     /**

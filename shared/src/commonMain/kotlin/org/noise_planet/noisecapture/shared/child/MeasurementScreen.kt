@@ -28,8 +28,13 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.bumble.appyx.components.backstack.BackStack
+import com.bumble.appyx.navigation.lifecycle.DefaultPlatformLifecycleObserver
+import com.bumble.appyx.navigation.lifecycle.Lifecycle
 import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import org.koin.core.logger.Logger
 import org.noise_planet.noisecapture.AudioSource
@@ -50,7 +55,7 @@ const val REFERENCE_LEGEND_TEXT = " +99s "
 const val DEFAULT_SAMPLE_RATE = 48000.0
 
 class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<ScreenData>,
-                        private val audioSource: AudioSource, private val logger: Logger) : Node(buildContext) {
+                        private val audioSource: AudioSource, private val logger: Logger) : Node(buildContext), DefaultPlatformLifecycleObserver {
     private var rangedB = 40.0
     private var mindB = 0.0
     private var dbGain = 105.0
@@ -108,11 +113,9 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
             }
         }
     }
-    companion object {
-        data class LegendElement(val text : AnnotatedString, val textSize : IntSize, val xPos : Float, val textPos : Float)
-    }
+
     private fun makeXLegend(textMeasurer: TextMeasurer, timeValue : Double, legendWidth : Float,
-                            timePerPixel : Double) : LegendElement {
+                            timePerPixel : Double, depth: Int) : LegendElement {
         val xPos = (legendWidth - timeValue / timePerPixel).toFloat()
         val legendText = buildAnnotatedString {
             withStyle(style = SpanStyle(color = Color.White)) {
@@ -122,23 +125,23 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         val textLayout = textMeasurer.measure(legendText)
         val textPos = min(legendWidth-textLayout.size.width,
             max(0F, xPos - textLayout.size.width / 2))
-        return LegendElement(legendText, textLayout.size, xPos, textPos)
+        return LegendElement(legendText, textLayout.size, xPos, textPos, depth)
     }
 
     private fun recursiveLegendBuild(textMeasurer: TextMeasurer, timeValue : Double, legendWidth : Float,
                                      timePerPixel : Double, minX : Float, maxX : Float, timeValueLeft : Double,
-                                     timeValueRight : Double, feedElements: ArrayList<LegendElement>) {
-        val legendElement = makeXLegend(textMeasurer, timeValue, legendWidth, timePerPixel)
+                                     timeValueRight : Double, feedElements: ArrayList<LegendElement>, depth: Int) {
+        val legendElement = makeXLegend(textMeasurer, timeValue, legendWidth, timePerPixel, depth)
         if(legendElement.textPos > minX && legendElement.xPos + legendElement.textSize.width / 2 < maxX) {
             feedElements.add(legendElement)
             // left legend, + x seconds
             recursiveLegendBuild(textMeasurer, round(timeValue + (timeValueLeft - timeValue) / 2),
                 legendWidth, timePerPixel, minX, legendElement.textPos, timeValueLeft, timeValue,
-                feedElements)
+                feedElements, depth + 1)
             // right legend, - x seconds
             recursiveLegendBuild(textMeasurer, round(timeValue - (timeValue - timeValueRight) / 2),
                 legendWidth, timePerPixel, legendElement.textPos + legendElement.textSize.width,
-                maxX, timeValue, timeValueRight, feedElements)
+                maxX, timeValue, timeValueRight, feedElements, depth + 1)
         }
     }
 
@@ -205,13 +208,24 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                 val timePerPixel = FFT_HOP / sampleRate
                 val lastTime = xLegendWidth * timePerPixel
                 val legendElements = ArrayList<LegendElement>()
-                val rightLegend = makeXLegend(textMeasurer, 0.0, xLegendWidth, timePerPixel)
-                val leftLegend =  makeXLegend(textMeasurer, lastTime, xLegendWidth, timePerPixel)
+                val rightLegend = makeXLegend(textMeasurer, 0.0, xLegendWidth, timePerPixel, 0)
+                val leftLegend =  makeXLegend(textMeasurer, lastTime, xLegendWidth, timePerPixel, 0)
                 legendElements.add(leftLegend)
                 legendElements.add(rightLegend)
                 recursiveLegendBuild(textMeasurer, lastTime / 2, xLegendWidth, timePerPixel,
                     leftLegend.textSize.width.toFloat(),
-                    rightLegend.xPos-rightLegend.textSize.width, lastTime, 0.0, legendElements)
+                    rightLegend.xPos-rightLegend.textSize.width, lastTime, 0.0, legendElements, 0)
+                // find depth index with maximum number of elements (to generate same intervals on legend)
+                val legendDepthCount = IntArray(legendElements.maxOf { it.depth }+1) { 0 }
+                legendElements.forEach {
+                    legendDepthCount[it.depth] += 1
+                }
+                val maxElementsDepth = legendDepthCount.foldIndexed(Pair(-1,0)) { index, acc, i ->
+                    if(acc.second < i) Pair(index, i) else acc
+                }
+                legendElements.removeAll {
+                    it.depth > maxElementsDepth.first
+                }
                 legendElements.forEach {legendElement ->
                     val tickPos = max(tickStroke.toPx() / 2F, min(xLegendWidth-tickStroke.toPx(), legendElement.xPos - tickStroke.toPx() / 2F))
                     drawLine(
@@ -245,6 +259,23 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         }
     }
 
+
+    override fun onStop() {
+        println("Appyx onStop")
+    }
+
+    override fun onPause() {
+        println("Appyx onPause")
+    }
+
+    override fun onResume() {
+        println("Appyx onResume")
+    }
+
+    override fun onStart() {
+        println("Appyx onStart")
+    }
+
     @Composable
     override fun View(modifier: Modifier) {
         var bitmapOffset by remember { mutableStateOf(0) }
@@ -254,6 +285,11 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
             SpectrogramViewModel(SpectrogramBitmap.SpectrogramDataModel(IntSize(1, 1),
                 ByteArray(Int.SIZE_BYTES),0 ,SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG, 1.0), ArrayList(), Size.Zero)) }
 
+//        lifecycleScope.launch {
+//            lifecycle.asPlatformFlow(this@MeasurementScreen).collect {
+//
+//            }
+//        }
         lifecycleScope.launch {
             println("Launch lifecycle")
             audioSource.setup().collect {samples ->
@@ -323,3 +359,13 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
 data class SpectrogramViewModel(var currentStripData : SpectrogramBitmap.SpectrogramDataModel,
                                 val cachedStrips : ArrayList<ImageBitmap>,
                                 var spectrogramCanvasSize : Size)
+
+data class LegendElement(val text : AnnotatedString, val textSize : IntSize, val xPos : Float,
+                         val textPos : Float, val depth : Int)
+
+
+fun Lifecycle.asPlatformFlow(observer : DefaultPlatformLifecycleObserver): Flow<Lifecycle.State> =
+    callbackFlow {
+        addObserver(observer)
+        awaitClose { removeObserver(observer) }
+    }
