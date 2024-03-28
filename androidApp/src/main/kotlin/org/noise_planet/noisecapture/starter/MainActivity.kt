@@ -42,7 +42,7 @@ class MainActivity : NodeActivity() {
                 module {
                     single<Context> { applicationContext }
                     single<Activity> { this@MainActivity }
-                    single<AudioSource> { AndroidAudioSource(applicationContext) }
+                    factory<AudioSource> { AndroidAudioSource(applicationContext) }
                     single<DatabaseDriverFactory> { AndroidDatabase(applicationContext) }
                 }
             )
