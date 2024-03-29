@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 typealias AudioCallBack = (audioSamples : AudioSamples) -> Unit
 
-class MeasurementService : Service() {
+class AndroidMeasurementService : Service() {
     private val binder: IBinder = LocalBinder()
     private val audioCallBacks = ArrayList<AudioCallBack>()
     private var mNM: NotificationManager? = null
@@ -40,8 +40,8 @@ class MeasurementService : Service() {
     private val NOTIFICATION: Int = 1
 
     inner class LocalBinder : Binder() {
-        val service: MeasurementService
-            get() = this@MeasurementService
+        val service: AndroidMeasurementService
+            get() = this@AndroidMeasurementService
     }
 
     companion object {
@@ -187,7 +187,7 @@ class MeasurementService : Service() {
         recording.set(false)
 
         // Cancel the persistent notification.
-        mNM!!.cancel(NOTIFICATION)
+        mNM?.cancel(NOTIFICATION)
     }
 
     /**

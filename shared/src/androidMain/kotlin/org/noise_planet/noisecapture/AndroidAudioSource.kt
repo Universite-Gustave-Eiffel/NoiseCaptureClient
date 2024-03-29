@@ -14,12 +14,12 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.emptyFlow
-import org.noise_planet.noisecapture.MeasurementService.LocalBinder
+import org.noise_planet.noisecapture.AndroidMeasurementService.LocalBinder
 
 const val BUFFER_SIZE_TIME = 0.1
 class AndroidAudioSource(private val context : Context) : AudioSource, ServiceConnection {
     private val audioSamplesChannel = Channel<AudioSamples>(onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    private var measurementService : MeasurementService? = null
+    private var androidMeasurementService : AndroidMeasurementService? = null
 
     @SuppressLint("MissingPermission")
     override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -30,14 +30,14 @@ class AndroidAudioSource(private val context : Context) : AudioSource, ServiceCo
         // service that we know is running in our own process, we can
         // cast its IBinder to a concrete class and directly access it.
         if(service != null) {
-            measurementService = (service as LocalBinder).service
-            measurementService!!.addAudioCallBack(::onSamples)
+            androidMeasurementService = (service as LocalBinder).service
+            androidMeasurementService!!.addAudioCallBack(::onSamples)
         }
     }
 
     override fun onServiceDisconnected(name: ComponentName?) {
-        measurementService!!.removeAudioCallBack(::onSamples)
-        measurementService = null
+        androidMeasurementService!!.removeAudioCallBack(::onSamples)
+        androidMeasurementService = null
     }
 
     private fun onSamples(audioSamples: AudioSamples) {
@@ -45,8 +45,8 @@ class AndroidAudioSource(private val context : Context) : AudioSource, ServiceCo
     }
 
     override suspend fun setup(): Flow<AudioSamples> {
-        if(measurementService == null) {
-            val intent = Intent(context, MeasurementService::class.java)
+        if(androidMeasurementService == null) {
+            val intent = Intent(context, AndroidMeasurementService::class.java)
             return if (context.bindService(intent, this, Context.BIND_AUTO_CREATE)) {
                 audioSamplesChannel.consumeAsFlow()
             } else {
@@ -54,7 +54,7 @@ class AndroidAudioSource(private val context : Context) : AudioSource, ServiceCo
                 emptyFlow()
             }
         } else {
-            measurementService!!.addAudioCallBack(::onSamples)
+            androidMeasurementService!!.addAudioCallBack(::onSamples)
             return audioSamplesChannel.consumeAsFlow()
         }
     }
@@ -69,9 +69,10 @@ class AndroidAudioSource(private val context : Context) : AudioSource, ServiceCo
     }
 
     override fun release() {
-        if(measurementService != null) {
-            measurementService!!.removeAudioCallBack(::onSamples)
+        if(androidMeasurementService != null) {
+            androidMeasurementService!!.removeAudioCallBack(::onSamples)
         }
+        context.unbindService(this)
     }
 
     override fun getMicrophoneLocation(): AudioSource.MicrophoneLocation {
