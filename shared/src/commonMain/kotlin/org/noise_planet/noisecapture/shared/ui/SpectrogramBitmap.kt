@@ -1,12 +1,10 @@
 package org.noise_planet.noisecapture.shared.ui
 
-import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.IntSize
-import org.noise_planet.noisecapture.shared.child.FFT_SIZE
+import org.noise_planet.noisecapture.shared.FFT_SIZE
 import org.noise_planet.noisecapture.shared.signal.SpectrumData
-import org.noise_planet.noisecapture.toImageBitmap
 import kotlin.math.floor
 import kotlin.math.log10
 import kotlin.math.max
@@ -145,7 +143,7 @@ class SpectrogramBitmap {
             return result
         }
 
-        fun pushSpectrumToSpectrogramData(fftResults : List<SpectrumData>,
+        fun pushSpectrumToSpectrogramData(fftResult : SpectrumData,
                                            mindB : Double, rangedB : Double, gain : Double) {
             // generate columns of pixels
             // merge power of each frequencies following the destination bitmap resolution
@@ -154,49 +152,47 @@ class SpectrogramBitmap {
                 SCALE_MODE.SCALE_LOG -> frequencyLegendPositionLog
                 else -> frequencyLegendPositionLinear
             }
-            fftResults.forEachIndexed { index, fftResult ->
-                var lastProcessFrequencyIndex = 0
-                val freqByPixel = fftResult.spectrum.size / size.height.toDouble()
-                for (pixel in 0..<size.height) {
-                    var freqStart: Int
-                    var freqEnd: Int
-                    if (scaleMode == SCALE_MODE.SCALE_LOG) {
-                        freqStart = lastProcessFrequencyIndex
-                        val fMax = sampleRate / 2
-                        val fMin = frequencyLegendPosition[0]
-                        val r = fMax / fMin.toDouble()
-                        val f = fMin * 10.0.pow(pixel * log10(r) / size.height)
-                        val nextFrequencyIndex =
-                            min(fftResult.spectrum.size, (f / hertzBySpectrumCell).toInt())
-                        freqEnd =
-                            min(fftResult.spectrum.size, (f / hertzBySpectrumCell).toInt() + 1)
-                        lastProcessFrequencyIndex = min(fftResult.spectrum.size, nextFrequencyIndex)
-                    } else {
-                        freqStart = floor(pixel * freqByPixel).toInt()
-                        freqEnd = min(
-                            (pixel + 1) * freqByPixel,
-                            fftResult.spectrum.size.toDouble()
-                        ).toInt()
-                    }
-                    var sumVal = 0.0
-                    for (idFreq in freqStart..<freqEnd) {
-                        sumVal += 10.0.pow(fftResult.spectrum[idFreq] / 10.0)
-                    }
-                    sumVal = max(0.0, 10 * log10(sumVal) + gain)
-                    val colorIndex = min(
-                        colorRamp.size - 1, max(
-                            0, (((sumVal - mindB) / rangedB) *
-                                    colorRamp.size).toInt()
-                        )
-                    )
-                    val pixelColor = colorRamp[colorIndex].toArgb()
-                    val columnOffset = offset % size.width
-                    val pixelIndex = bmpHeader.size + size.width * Int.SIZE_BYTES *
-                            pixel + columnOffset * Int.SIZE_BYTES
-                    pixelColor.toLittleEndianBytes().copyInto(byteArray, pixelIndex)
+            var lastProcessFrequencyIndex = 0
+            val freqByPixel = fftResult.spectrum.size / size.height.toDouble()
+            for (pixel in 0..<size.height) {
+                var freqStart: Int
+                var freqEnd: Int
+                if (scaleMode == SCALE_MODE.SCALE_LOG) {
+                    freqStart = lastProcessFrequencyIndex
+                    val fMax = sampleRate / 2
+                    val fMin = frequencyLegendPosition[0]
+                    val r = fMax / fMin.toDouble()
+                    val f = fMin * 10.0.pow(pixel * log10(r) / size.height)
+                    val nextFrequencyIndex =
+                        min(fftResult.spectrum.size, (f / hertzBySpectrumCell).toInt())
+                    freqEnd =
+                        min(fftResult.spectrum.size, (f / hertzBySpectrumCell).toInt() + 1)
+                    lastProcessFrequencyIndex = min(fftResult.spectrum.size, nextFrequencyIndex)
+                } else {
+                    freqStart = floor(pixel * freqByPixel).toInt()
+                    freqEnd = min(
+                        (pixel + 1) * freqByPixel,
+                        fftResult.spectrum.size.toDouble()
+                    ).toInt()
                 }
-                offset += 1
+                var sumVal = 0.0
+                for (idFreq in freqStart..<freqEnd) {
+                    sumVal += 10.0.pow(fftResult.spectrum[idFreq] / 10.0)
+                }
+                sumVal = max(0.0, 10 * log10(sumVal) + gain)
+                val colorIndex = min(
+                    colorRamp.size - 1, max(
+                        0, (((sumVal - mindB) / rangedB) *
+                                colorRamp.size).toInt()
+                    )
+                )
+                val pixelColor = colorRamp[colorIndex].toArgb()
+                val columnOffset = offset % size.width
+                val pixelIndex = bmpHeader.size + size.width * Int.SIZE_BYTES *
+                        pixel + columnOffset * Int.SIZE_BYTES
+                pixelColor.toLittleEndianBytes().copyInto(byteArray, pixelIndex)
             }
+            offset += 1
         }
     }
 }

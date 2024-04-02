@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -37,10 +38,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import org.koin.core.logger.Logger
-import org.noise_planet.noisecapture.AudioSource
-import org.noise_planet.noisecapture.shared.AcousticIndicatorsProcessing
+import org.noise_planet.noisecapture.shared.FFT_HOP
+import org.noise_planet.noisecapture.shared.MeasurementService
 import org.noise_planet.noisecapture.shared.ScreenData
-import org.noise_planet.noisecapture.shared.signal.WindowAnalysis
 import org.noise_planet.noisecapture.shared.ui.SpectrogramBitmap
 import org.noise_planet.noisecapture.toImageBitmap
 import kotlin.math.log10
@@ -48,19 +48,15 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.round
 
-const val FFT_SIZE = 4096
-const val FFT_HOP = 2048
 const val SPECTROGRAM_STRIP_WIDTH = 32
 const val REFERENCE_LEGEND_TEXT = " +99s "
 const val DEFAULT_SAMPLE_RATE = 48000.0
 
 class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<ScreenData>,
-                        private val audioSource: AudioSource, private val logger: Logger) : Node(buildContext), DefaultPlatformLifecycleObserver {
+                        private val measurementService: MeasurementService, private val logger: Logger) : Node(buildContext), DefaultPlatformLifecycleObserver {
     private var rangedB = 40.0
     private var mindB = 0.0
     private var dbGain = 105.0
-    private var acousticIndicatorsProcessing : AcousticIndicatorsProcessing? = null
-    private var fftTool : WindowAnalysis? = null
     private val scaleMode = SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG
 
     @Composable
@@ -281,65 +277,38 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         var bitmapOffset by remember { mutableStateOf(0) }
         var noiseLevel by remember { mutableStateOf(0.0) }
         var sampleRate by remember { mutableStateOf( DEFAULT_SAMPLE_RATE ) }
+        val composableScope = rememberCoroutineScope()
         val spectrumCanvasState by remember { mutableStateOf(
             SpectrogramViewModel(SpectrogramBitmap.SpectrogramDataModel(IntSize(1, 1),
                 ByteArray(Int.SIZE_BYTES),0 ,SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG, 1.0), ArrayList(), Size.Zero)) }
-
-//        lifecycleScope.launch {
-//            lifecycle.asPlatformFlow(this@MeasurementScreen).collect {
-//
-//            }
-//        }
-        lifecycleScope.launch {
-            println("Launch lifecycle")
-            audioSource.setup().collect {samples ->
-                if(acousticIndicatorsProcessing == null) {
-                    acousticIndicatorsProcessing = AcousticIndicatorsProcessing(samples.sampleRate, dbGain)
-                    fftTool = WindowAnalysis(samples.sampleRate, FFT_SIZE, FFT_HOP)
-                    sampleRate = samples.sampleRate.toDouble()
-                }
-                acousticIndicatorsProcessing!!.processSamples(samples).forEach {
-                        measurementServiceData->
-                    noiseLevel = measurementServiceData.laeq
-                }
-                val spectrumDataList = fftTool!!.pushSamples(samples.epoch, samples.samples).toList()
-                if(spectrumCanvasState.currentStripData.size.width > 1) {
-                    var indexToProcess = 0
-                    while(indexToProcess < spectrumDataList.size) {
-                        val subListSizeToCompleteStrip = min(
-                            spectrumCanvasState.currentStripData.size.width -
-                                    spectrumCanvasState.currentStripData.offset,
-                            spectrumDataList.size - indexToProcess
-                        )
-                        if(subListSizeToCompleteStrip == 0) {
-                            // spectrogram band complete, store bitmap
-                            spectrumCanvasState.cachedStrips.add(
-                                spectrumCanvasState.currentStripData.byteArray.toImageBitmap())
-                            if((spectrumCanvasState.cachedStrips.size - 1) *
-                                SPECTROGRAM_STRIP_WIDTH >
-                                spectrumCanvasState.spectrogramCanvasSize.width) {
-                                // remove offscreen bitmaps
-                                spectrumCanvasState.cachedStrips.removeAt(0)
-                            }
-                            spectrumCanvasState.currentStripData =
-                                SpectrogramBitmap.createSpectrogram(
-                                    spectrumCanvasState.currentStripData.size,
-                                    spectrumCanvasState.currentStripData.scaleMode,
-                                    acousticIndicatorsProcessing!!.sampleRate.toDouble())
-                            continue
-                        }
-                        spectrumCanvasState.currentStripData.pushSpectrumToSpectrogramData(
-                            spectrumDataList.subList(indexToProcess,
-                                indexToProcess + subListSizeToCompleteStrip),
-                            mindB, rangedB, dbGain)
-                        bitmapOffset = spectrumCanvasState.currentStripData.offset
-                        indexToProcess += subListSizeToCompleteStrip
-                    }
-                }
+        composableScope.launch {
+            measurementService.collectAudioIndicators().collect {
+                noiseLevel = it.laeq
             }
-        }.invokeOnCompletion {
-            println("Release audio")
-            audioSource.release()
+        }
+        composableScope.launch {
+            println("Launch spectrum lifecycle")
+            measurementService.collectSpectrumData().collect() {
+                spectrumCanvasState.currentStripData.pushSpectrumToSpectrogramData(it, mindB, rangedB,
+                    dbGain)
+                if(spectrumCanvasState.currentStripData.offset == SPECTROGRAM_STRIP_WIDTH) {
+                    // spectrogram band complete, store bitmap
+                    spectrumCanvasState.cachedStrips.add(
+                        spectrumCanvasState.currentStripData.byteArray.toImageBitmap())
+                    if((spectrumCanvasState.cachedStrips.size - 1) *
+                        SPECTROGRAM_STRIP_WIDTH >
+                        spectrumCanvasState.spectrogramCanvasSize.width) {
+                        // remove offscreen bitmaps
+                        spectrumCanvasState.cachedStrips.removeAt(0)
+                    }
+                    spectrumCanvasState.currentStripData =
+                        SpectrogramBitmap.createSpectrogram(
+                            spectrumCanvasState.currentStripData.size,
+                            spectrumCanvasState.currentStripData.scaleMode,
+                            it.sampleRate.toDouble())
+                }
+                bitmapOffset = spectrumCanvasState.currentStripData.offset
+            }
         }
         Surface(
             modifier = Modifier.fillMaxSize(),

@@ -113,7 +113,7 @@ class WindowAnalysis(val sampleRate : Int, val windowSize : Int, val windowHop :
      * @see <a href="https://www.dsprelated.com/freebooks/sasp/Filling_FFT_Input_Buffer.html">Filling the FFT Input Buffer</a>
      */
     private fun processWindow(window: Window) : SpectrumData{
-        return SpectrumData(window.epoch, processWindowFloat(window))
+        return SpectrumData(window.epoch, processWindowFloat(window), sampleRate)
     }
 
     fun processWindowFloat(window: Window) : FloatArray {
@@ -171,7 +171,7 @@ data class Window(val epoch : Long, val samples : FloatArray) {
     }
 }
 
-data class SpectrumData(val epoch : Long, val spectrum : FloatArray) {
+data class SpectrumData(val epoch : Long, val spectrum : FloatArray, val sampleRate: Int) {
 
     enum class BASE_METHOD { B10, B2 }
     enum class OCTAVE_WINDOW { RECTANGULAR, FRACTIONAL}
@@ -225,7 +225,7 @@ data class SpectrumData(val epoch : Long, val spectrum : FloatArray) {
      * @base Octave base 10 or base 2
      * @octaveWindow Rectangular association of frequency band or fractional close to done by a filter
      */
-    fun thirdOctaveProcessing(sampleRate: Int, firstFrequencyBand : Double,
+    fun thirdOctaveProcessing(firstFrequencyBand : Double,
                               lastFrequencyBand : Double, base : BASE_METHOD = BASE_METHOD.B10,
                               bandDivision : Double = 3.0,
                               octaveWindow: OCTAVE_WINDOW = OCTAVE_WINDOW.FRACTIONAL): Array<ThirdOctave> {
