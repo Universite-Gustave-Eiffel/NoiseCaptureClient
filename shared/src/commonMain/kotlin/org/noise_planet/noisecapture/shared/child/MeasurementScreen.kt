@@ -7,13 +7,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
+import androidx.compose.material.TabRow
 import androidx.compose.material.Text
+import androidx.compose.material3.Tab
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -289,25 +292,32 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         composableScope.launch {
             println("Launch spectrum lifecycle")
             measurementService.collectSpectrumData().collect() {
-                spectrumCanvasState.currentStripData.pushSpectrumToSpectrogramData(it, mindB, rangedB,
-                    dbGain)
-                if(spectrumCanvasState.currentStripData.offset == SPECTROGRAM_STRIP_WIDTH) {
-                    // spectrogram band complete, store bitmap
-                    spectrumCanvasState.cachedStrips.add(
-                        spectrumCanvasState.currentStripData.byteArray.toImageBitmap())
-                    if((spectrumCanvasState.cachedStrips.size - 1) *
-                        SPECTROGRAM_STRIP_WIDTH >
-                        spectrumCanvasState.spectrogramCanvasSize.width) {
-                        // remove offscreen bitmaps
-                        spectrumCanvasState.cachedStrips.removeAt(0)
+                if (spectrumCanvasState.currentStripData.size.width > 1) {
+                    spectrumCanvasState.currentStripData.pushSpectrumToSpectrogramData(
+                        it, mindB, rangedB,
+                        dbGain
+                    )
+                    if (spectrumCanvasState.currentStripData.offset == SPECTROGRAM_STRIP_WIDTH) {
+                        // spectrogram band complete, store bitmap
+                        spectrumCanvasState.cachedStrips.add(
+                            spectrumCanvasState.currentStripData.byteArray.toImageBitmap()
+                        )
+                        if ((spectrumCanvasState.cachedStrips.size - 1) *
+                            SPECTROGRAM_STRIP_WIDTH >
+                            spectrumCanvasState.spectrogramCanvasSize.width
+                        ) {
+                            // remove offscreen bitmaps
+                            spectrumCanvasState.cachedStrips.removeAt(0)
+                        }
+                        spectrumCanvasState.currentStripData =
+                            SpectrogramBitmap.createSpectrogram(
+                                spectrumCanvasState.currentStripData.size,
+                                spectrumCanvasState.currentStripData.scaleMode,
+                                it.sampleRate.toDouble()
+                            )
                     }
-                    spectrumCanvasState.currentStripData =
-                        SpectrogramBitmap.createSpectrogram(
-                            spectrumCanvasState.currentStripData.size,
-                            spectrumCanvasState.currentStripData.scaleMode,
-                            it.sampleRate.toDouble())
+                    bitmapOffset = spectrumCanvasState.currentStripData.offset
                 }
-                bitmapOffset = spectrumCanvasState.currentStripData.offset
             }
         }
         Surface(
@@ -316,9 +326,30 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         ) {
             Column(Modifier.fillMaxWidth()) {
                 Text("${round(noiseLevel * 100)/100} dB(A)")
-                Box(Modifier.fillMaxSize()) {
-                    spectrogram(spectrumCanvasState, bitmapOffset)
-                    spectrogramLegend(scaleMode, sampleRate)
+                var state by remember { mutableStateOf(0) }
+                val titles = listOf("Spectrum", "Spectrogram", "Map")
+                Column {
+                    TabRow(selectedTabIndex = state) {
+                        titles.forEachIndexed { index, title ->
+                            Tab(
+                                text = { Text(title) },
+                                selected = state == index,
+                                onClick = { state = index }
+                            )
+                        }
+                    }
+                    when(state) {
+                        1 -> Box(Modifier.fillMaxSize()) {
+                                spectrogram(spectrumCanvasState, bitmapOffset)
+                                spectrogramLegend(scaleMode, sampleRate)
+                            }
+                        else -> Text(
+                            modifier = Modifier.align(Alignment.CenterHorizontally),
+                            text = "Text tab ${state + 1} selected",
+                            style = MaterialTheme.typography.body1
+                        )
+                    }
+
                 }
             }
         }
