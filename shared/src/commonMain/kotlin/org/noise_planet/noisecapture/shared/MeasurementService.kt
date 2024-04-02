@@ -32,6 +32,7 @@ class MeasurementService(private val audioSource: AudioSource, private val logge
     private var onAcousticIndicatorsData: AcousticIndicatorsCallback? = null
     private var onSpectrumData: SpectrumDataCallback? = null
     private var audioJob : Job? = null
+    private var dbGain = 105.0
 
 
     @OptIn(DelicateCoroutinesApi::class)
@@ -41,13 +42,21 @@ class MeasurementService(private val audioSource: AudioSource, private val logge
         }
         audioJob = GlobalScope.launch {
             audioSource.setup().collect {audioSamples ->
-                val spectrumObserver = onSpectrumData
-                if(spectrumObserver != null) {
+                if(onSpectrumData != null) {
                     if(fftTool == null) {
                         fftTool = WindowAnalysis(audioSamples.sampleRate, FFT_SIZE, FFT_HOP)
                     }
-                    fftTool?.pushSamples(audioSamples.epoch, audioSamples.samples)?.forEach {
-                        spectrumObserver(it)
+                    fftTool?.pushSamples(audioSamples.epoch, audioSamples.samples)?.forEach { spectrumData ->
+                        onSpectrumData?.let { callback -> callback(spectrumData) }
+                    }
+                }
+                if(onAcousticIndicatorsData != null) {
+                    if(acousticIndicatorsProcessing == null) {
+                        acousticIndicatorsProcessing = AcousticIndicatorsProcessing(
+                            audioSamples.sampleRate, dbGain)
+                    }
+                    acousticIndicatorsProcessing?.processSamples(audioSamples)?.forEach { acousticIndicators ->
+                        onAcousticIndicatorsData?.let { callback -> callback(acousticIndicators) }
                     }
                 }
             }
