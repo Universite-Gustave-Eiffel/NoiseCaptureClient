@@ -90,7 +90,7 @@ class MainActivity : NodeActivity() {
                     single<Context> { applicationContext }
                     single<Activity> { this@MainActivity }
                     single<MeasurementService> {
-                        val measurementService = MeasurementService(AndroidAudioSource(), androidLogger)
+                        val measurementService = MeasurementService(AndroidAudioSource(logger), androidLogger)
                         measurementService.storageObservers.add(::onStorageStateChange)
                         measurementService}
                     single<DatabaseDriverFactory> { AndroidDatabase(applicationContext) }

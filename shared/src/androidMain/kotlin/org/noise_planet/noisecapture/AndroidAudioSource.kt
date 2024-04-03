@@ -12,15 +12,16 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.consumeAsFlow
+import org.koin.core.logger.Logger
 import java.util.concurrent.atomic.AtomicBoolean
 
 const val BUFFER_SIZE_TIME = 0.1
-class AndroidAudioSource() : AudioSource {
+class AndroidAudioSource(val logger : Logger) : AudioSource {
     private val recording = AtomicBoolean(false)
 
     override suspend fun setup(): Flow<AudioSamples> {
         val audioSamplesChannel = Channel<AudioSamples>(onBufferOverflow = BufferOverflow.DROP_OLDEST)
-        val audioThread = AudioThread(recording, audioSamplesChannel)
+        val audioThread = AudioThread(recording, audioSamplesChannel, logger)
         audioThread.startAudioRecord()
         return audioSamplesChannel.consumeAsFlow()
     }
@@ -44,7 +45,7 @@ class AndroidAudioSource() : AudioSource {
 
 }
 
-class AudioThread(val recording: AtomicBoolean, val audioSamplesChannel : Channel<AudioSamples>) : Runnable {
+class AudioThread(val recording: AtomicBoolean, val audioSamplesChannel : Channel<AudioSamples>, val logger : Logger) : Runnable {
 
     private lateinit var audioRecord: AudioRecord
     private var bufferSize = -1
@@ -88,38 +89,57 @@ class AudioThread(val recording: AtomicBoolean, val audioSamplesChannel : Channe
         } catch (ex: SecurityException) {
             // Ignore
         }
-        audioRecord.startRecording()
-        println("Capture microphone")
-        var buffer = FloatArray(bufferSize / 4)
-        while(recording.get()) {
-            val read: Int = audioRecord.read(
-                buffer, 0, buffer.size,
-                AudioRecord.READ_BLOCKING
-            )
-            if (read < buffer.size) {
-                if(read > 0) {
-                    buffer = buffer.copyOfRange(0, read)
-                    audioSamplesChannel.trySend(AudioSamples(
-                        System.currentTimeMillis(),
-                        buffer,
-                        AudioSamples.ErrorCode.OK,
-                        sampleRate
-                    ))
+        try {
+            audioRecord.startRecording()
+            println("Capture microphone")
+            var buffer = FloatArray(bufferSize / 4)
+            while (recording.get()) {
+                val read: Int = audioRecord.read(
+                    buffer, 0, buffer.size,
+                    AudioRecord.READ_BLOCKING
+                )
+                if (read < buffer.size) {
+                    if (read > 0) {
+                        buffer = buffer.copyOfRange(0, read)
+                        audioSamplesChannel.trySend(
+                            AudioSamples(
+                                System.currentTimeMillis(),
+                                buffer,
+                                AudioSamples.ErrorCode.OK,
+                                sampleRate
+                            )
+                        )
+                    } else {
+                        audioSamplesChannel.trySend(
+                            AudioSamples(
+                                System.currentTimeMillis(),
+                                buffer.clone(), AudioSamples.ErrorCode.ABORTED, sampleRate
+                            )
+                        )
+                        recording.set(false)
+                        break
+                    }
                 } else {
-                    audioSamplesChannel.trySend(AudioSamples(System.currentTimeMillis(),
-                        buffer.clone(), AudioSamples.ErrorCode.ABORTED, sampleRate))
-                    recording.set(false)
-                    break
+                    audioSamplesChannel.trySend(
+                        AudioSamples(
+                            System.currentTimeMillis(),
+                            buffer.clone(), AudioSamples.ErrorCode.OK, sampleRate
+                        )
+                    )
                 }
-            } else {
-                audioSamplesChannel.trySend(AudioSamples(System.currentTimeMillis(),
-                    buffer.clone(), AudioSamples.ErrorCode.OK, sampleRate))
             }
+            bufferSize = -1
+            audioSamplesChannel.trySend(
+                AudioSamples(
+                    System.currentTimeMillis(), FloatArray(0),
+                    AudioSamples.ErrorCode.ABORTED, sampleRate
+                )
+            )
+            audioRecord.stop()
+        } catch (e : IllegalStateException) {
+            logger.error("${e.localizedMessage}\n${e.stackTraceToString()}")
         }
-        bufferSize = -1
-        audioSamplesChannel.trySend( AudioSamples(System.currentTimeMillis(), FloatArray(0),
-                AudioSamples.ErrorCode.ABORTED, sampleRate))
-        audioRecord.stop()
+        recording.set(false)
         println("Release microphone")
     }
 
