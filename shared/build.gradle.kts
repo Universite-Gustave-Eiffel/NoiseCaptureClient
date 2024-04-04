@@ -5,6 +5,7 @@ plugins {
     id("com.android.library")
     id("com.google.devtools.ksp")
     id("kotlin-parcelize")
+    id("app.cash.sqldelight") version "2.0.1"
 }
 
 kotlin {
@@ -45,7 +46,6 @@ kotlin {
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 implementation(compose.components.resources)
                 implementation(libs.koin.core)
-                implementation(compose.materialIconsExtended)
             }
         }
         @Suppress("UNUSED_VARIABLE")
@@ -65,10 +65,22 @@ kotlin {
             iosX64Main.dependsOn(this)
             iosArm64Main.dependsOn(this)
             iosSimulatorArm64Main.dependsOn(this)
+            dependencies {
+                implementation(libs.sqldelight.native.driver)
+            }
         }
         val jsMain by getting() {
             dependencies {
                 implementation(libs.kotlin.browser)
+                implementation(libs.sqldelight.driver)
+                implementation(npm("sql.js", "1.6.2"))
+                implementation(devNpm("copy-webpack-plugin", "9.1.0"))
+            }
+        }
+        val androidMain by getting() {
+            dependencies {
+                implementation(libs.sqldelight.android.driver)
+                implementation(libs.androidx.sqlite.framework)
             }
         }
     }
@@ -95,4 +107,12 @@ dependencies {
     add("kspIosArm64", libs.appyx.mutable.ui.processor)
     add("kspIosX64", libs.appyx.mutable.ui.processor)
     add("kspIosSimulatorArm64", libs.appyx.mutable.ui.processor)
+}
+
+sqldelight {
+    databases {
+        create("Storage") {
+            packageName.set("org.noise_planet.noisecapture")
+        }
+    }
 }

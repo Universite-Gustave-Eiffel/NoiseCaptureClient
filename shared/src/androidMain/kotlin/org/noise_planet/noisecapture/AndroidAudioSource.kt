@@ -3,24 +3,57 @@ package org.noise_planet.noisecapture
 import android.annotation.SuppressLint
 import android.media.AudioFormat
 import android.media.AudioRecord
+import android.media.AudioRecord.ERROR
+import android.media.AudioRecord.ERROR_BAD_VALUE
+import android.media.AudioRecord.ERROR_INVALID_OPERATION
 import android.media.MediaRecorder
 import android.os.Process
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.consumeAsFlow
-import java.lang.Integer.max
+import org.koin.core.logger.Logger
 import java.util.concurrent.atomic.AtomicBoolean
+
 const val BUFFER_SIZE_TIME = 0.1
-class AndroidAudioSource : AudioSource, Runnable {
+class AndroidAudioSource(val logger : Logger) : AudioSource {
+    private val recording = AtomicBoolean(false)
+
+    override suspend fun setup(): Flow<AudioSamples> {
+        val audioSamplesChannel = Channel<AudioSamples>(onBufferOverflow = BufferOverflow.DROP_OLDEST)
+        val audioThread = AudioThread(recording, audioSamplesChannel, logger)
+        audioThread.startAudioRecord()
+        return audioSamplesChannel.consumeAsFlow()
+    }
+
+    fun readErrorCodeToString(errorCode : Int) : String {
+        return when(errorCode) {
+            ERROR_INVALID_OPERATION -> "ERROR_INVALID_OPERATION"
+            ERROR_BAD_VALUE -> "ERROR_BAD_VALUE"
+            ERROR -> "Other Error"
+            else -> "Unknown error"
+        }
+    }
+
+    override fun release() {
+        recording.set(false)
+    }
+
+    override fun getMicrophoneLocation(): AudioSource.MicrophoneLocation {
+        return AudioSource.MicrophoneLocation.LOCATION_UNKNOWN
+    }
+
+}
+
+class AudioThread(val recording: AtomicBoolean, val audioSamplesChannel : Channel<AudioSamples>, val logger : Logger) : Runnable {
+
     private lateinit var audioRecord: AudioRecord
     private var bufferSize = -1
     private var sampleRate = -1
-    private val recording = AtomicBoolean(false)
-    val audioSamplesChannel = Channel<AudioSamples>(onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    private var thread : Thread? = null
 
     @SuppressLint("MissingPermission")
-    override suspend fun setup(): Flow<AudioSamples> {
+    fun startAudioRecord() {
         if(this.bufferSize == -1) {
             val mSampleRates = intArrayOf(48000, 44100)
             val channel = AudioFormat.CHANNEL_IN_MONO
@@ -28,11 +61,11 @@ class AndroidAudioSource : AudioSource, Runnable {
             for (tryRate in mSampleRates) {
                 this.sampleRate = tryRate
                 val minimalBufferSize = AudioRecord.getMinBufferSize(sampleRate, channel, encoding)
-                if (minimalBufferSize == AudioRecord.ERROR_BAD_VALUE || minimalBufferSize == AudioRecord.ERROR) {
+                if (minimalBufferSize == ERROR_BAD_VALUE || minimalBufferSize == ERROR) {
                     continue
                 }
                 this.bufferSize =
-                    max(minimalBufferSize, (BUFFER_SIZE_TIME * sampleRate * 4).toInt())
+                    Integer.max(minimalBufferSize, (BUFFER_SIZE_TIME * sampleRate * 4).toInt())
                 audioRecord = AudioRecord(
                     MediaRecorder.AudioSource.VOICE_RECOGNITION,
                     sampleRate,
@@ -40,11 +73,11 @@ class AndroidAudioSource : AudioSource, Runnable {
                     encoding,
                     bufferSize
                 )
-                Thread(this).start()
+                thread = Thread(this)
+                thread!!.start()
                 break
             }
         }
-        return audioSamplesChannel.consumeAsFlow()
     }
 
     override fun run() {
@@ -56,35 +89,58 @@ class AndroidAudioSource : AudioSource, Runnable {
         } catch (ex: SecurityException) {
             // Ignore
         }
-        audioRecord.startRecording()
-        println("Capture microphone")
-        var buffer = FloatArray(bufferSize / 4)
-        while(recording.get()) {
-            val read: Int = audioRecord.read(
-                buffer, 0, buffer.size,
-                AudioRecord.READ_BLOCKING
-            )
-            if (read < buffer.size) {
-                buffer = buffer.copyOfRange(0, read)
-                audioSamplesChannel.trySend(AudioSamples(System.currentTimeMillis(), buffer, AudioSamples.ErrorCode.OK, sampleRate))
-            } else {
-                audioSamplesChannel.trySend(AudioSamples(System.currentTimeMillis(), buffer.clone(), AudioSamples.ErrorCode.OK, sampleRate))
+        try {
+            audioRecord.startRecording()
+            println("Capture microphone")
+            var buffer = FloatArray(bufferSize / 4)
+            while (recording.get()) {
+                val read: Int = audioRecord.read(
+                    buffer, 0, buffer.size,
+                    AudioRecord.READ_BLOCKING
+                )
+                if (read < buffer.size) {
+                    if (read > 0) {
+                        buffer = buffer.copyOfRange(0, read)
+                        audioSamplesChannel.trySend(
+                            AudioSamples(
+                                System.currentTimeMillis(),
+                                buffer,
+                                AudioSamples.ErrorCode.OK,
+                                sampleRate
+                            )
+                        )
+                    } else {
+                        audioSamplesChannel.trySend(
+                            AudioSamples(
+                                System.currentTimeMillis(),
+                                buffer.clone(), AudioSamples.ErrorCode.ABORTED, sampleRate
+                            )
+                        )
+                        recording.set(false)
+                        break
+                    }
+                } else {
+                    audioSamplesChannel.trySend(
+                        AudioSamples(
+                            System.currentTimeMillis(),
+                            buffer.clone(), AudioSamples.ErrorCode.OK, sampleRate
+                        )
+                    )
+                }
             }
+            bufferSize = -1
+            audioSamplesChannel.trySend(
+                AudioSamples(
+                    System.currentTimeMillis(), FloatArray(0),
+                    AudioSamples.ErrorCode.ABORTED, sampleRate
+                )
+            )
+            audioRecord.stop()
+        } catch (e : IllegalStateException) {
+            logger.error("${e.localizedMessage}\n${e.stackTraceToString()}")
         }
-        bufferSize = -1
-        audioSamplesChannel.trySend(AudioSamples(System.currentTimeMillis(), FloatArray(0),
-            AudioSamples.ErrorCode.ABORTED, sampleRate))
+        recording.set(false)
         println("Release microphone")
     }
 
-    override fun release() {
-        if(audioRecord.recordingState == AudioRecord.RECORDSTATE_RECORDING) {
-            audioRecord.stop()
-        }
-        recording.set(false)
-    }
-
-    override fun getMicrophoneLocation(): AudioSource.MicrophoneLocation {
-        return AudioSource.MicrophoneLocation.LOCATION_UNKNOWN
-    }
 }

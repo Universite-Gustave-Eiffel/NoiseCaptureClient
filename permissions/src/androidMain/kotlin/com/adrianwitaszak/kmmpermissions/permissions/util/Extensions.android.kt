@@ -38,16 +38,7 @@ internal fun checkPermissions(
     val isAllGranted: Boolean = status.all { it == PackageManager.PERMISSION_GRANTED }
     if (isAllGranted) return PermissionState.GRANTED
 
-    val isAllRequestRationale: Boolean = try {
-        permissions.all {
-            !activity.value.shouldShowRequestPermissionRationale(it)
-        }
-    } catch (t: Throwable) {
-        t.printStackTrace()
-        true
-    }
-    return if (isAllRequestRationale) PermissionState.NOT_DETERMINED
-    else PermissionState.DENIED
+    return PermissionState.DENIED
 }
 
 internal fun Activity.providePermissions(

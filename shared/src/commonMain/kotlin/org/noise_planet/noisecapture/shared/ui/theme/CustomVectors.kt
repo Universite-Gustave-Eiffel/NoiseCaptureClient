@@ -1,5 +1,8 @@
 package org.noise_planet.noisecapture.shared.ui.theme
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.materialIcon
+import androidx.compose.material.icons.materialPath
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
@@ -12,7 +15,7 @@ import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun rememberClinicalNotes(): ImageVector {
+fun clinicalNotes(): ImageVector {
     return remember {
         ImageVector.Builder(
             name = "clinical_notes",
@@ -161,7 +164,7 @@ fun rememberClinicalNotes(): ImageVector {
 
 
 @Composable
-fun rememberCalibrate(): ImageVector {
+fun calibrate(): ImageVector {
     return remember {
         ImageVector.Builder(name = "Calibration", defaultWidth = 40.0.dp, defaultHeight = 40.0.dp,
             viewportWidth = 40.0f, viewportHeight = 40.0f).apply {
@@ -362,7 +365,7 @@ fun rememberCalibrate(): ImageVector {
 
 
 @Composable
-fun rememberOverview(): ImageVector {
+fun overview(): ImageVector {
     return remember {
         ImageVector.Builder(name = "overview",
             defaultWidth = 24.0.dp, defaultHeight = 24.0.dp, viewportWidth = 960.0f,
@@ -440,3 +443,461 @@ fun rememberOverview(): ImageVector {
         }.build()
     }
 }
+
+
+public val ShowChart: ImageVector
+    get() {
+        if (_showChart != null) {
+            return _showChart!!
+        }
+        _showChart = materialIcon(name = "Outlined.ShowChart") {
+            materialPath {
+                moveTo(3.5f, 18.49f)
+                lineToRelative(6.0f, -6.01f)
+                lineToRelative(4.0f, 4.0f)
+                lineTo(22.0f, 6.92f)
+                lineToRelative(-1.41f, -1.41f)
+                lineToRelative(-7.09f, 7.97f)
+                lineToRelative(-4.0f, -4.0f)
+                lineTo(2.0f, 16.99f)
+                lineToRelative(1.5f, 1.5f)
+                close()
+            }
+        }
+        return _showChart!!
+    }
+
+private var _showChart: ImageVector? = null
+
+
+public val Map: ImageVector
+    get() {
+        if (_map != null) {
+            return _map!!
+        }
+        _map = materialIcon(name = "Outlined.Map") {
+            materialPath {
+                moveTo(20.5f, 3.0f)
+                lineToRelative(-0.16f, 0.03f)
+                lineTo(15.0f, 5.1f)
+                lineTo(9.0f, 3.0f)
+                lineTo(3.36f, 4.9f)
+                curveToRelative(-0.21f, 0.07f, -0.36f, 0.25f, -0.36f, 0.48f)
+                lineTo(3.0f, 20.5f)
+                curveToRelative(0.0f, 0.28f, 0.22f, 0.5f, 0.5f, 0.5f)
+                lineToRelative(0.16f, -0.03f)
+                lineTo(9.0f, 18.9f)
+                lineToRelative(6.0f, 2.1f)
+                lineToRelative(5.64f, -1.9f)
+                curveToRelative(0.21f, -0.07f, 0.36f, -0.25f, 0.36f, -0.48f)
+                lineTo(21.0f, 3.5f)
+                curveToRelative(0.0f, -0.28f, -0.22f, -0.5f, -0.5f, -0.5f)
+                close()
+                moveTo(10.0f, 5.47f)
+                lineToRelative(4.0f, 1.4f)
+                verticalLineToRelative(11.66f)
+                lineToRelative(-4.0f, -1.4f)
+                lineTo(10.0f, 5.47f)
+                close()
+                moveTo(5.0f, 6.46f)
+                lineToRelative(3.0f, -1.01f)
+                verticalLineToRelative(11.7f)
+                lineToRelative(-3.0f, 1.16f)
+                lineTo(5.0f, 6.46f)
+                close()
+                moveTo(19.0f, 17.54f)
+                lineToRelative(-3.0f, 1.01f)
+                lineTo(16.0f, 6.86f)
+                lineToRelative(3.0f, -1.16f)
+                verticalLineToRelative(11.84f)
+                close()
+            }
+        }
+        return _map!!
+    }
+
+private var _map: ImageVector? = null
+
+
+public val Help: ImageVector
+    get() {
+        if (_help != null) {
+            return _help!!
+        }
+        _help = materialIcon(name = "Outlined.Help") {
+            materialPath {
+                moveTo(12.0f, 2.0f)
+                curveTo(6.48f, 2.0f, 2.0f, 6.48f, 2.0f, 12.0f)
+                reflectiveCurveToRelative(4.48f, 10.0f, 10.0f, 10.0f)
+                reflectiveCurveToRelative(10.0f, -4.48f, 10.0f, -10.0f)
+                reflectiveCurveTo(17.52f, 2.0f, 12.0f, 2.0f)
+                close()
+                moveTo(13.0f, 19.0f)
+                horizontalLineToRelative(-2.0f)
+                verticalLineToRelative(-2.0f)
+                horizontalLineToRelative(2.0f)
+                verticalLineToRelative(2.0f)
+                close()
+                moveTo(15.07f, 11.25f)
+                lineToRelative(-0.9f, 0.92f)
+                curveTo(13.45f, 12.9f, 13.0f, 13.5f, 13.0f, 15.0f)
+                horizontalLineToRelative(-2.0f)
+                verticalLineToRelative(-0.5f)
+                curveToRelative(0.0f, -1.1f, 0.45f, -2.1f, 1.17f, -2.83f)
+                lineToRelative(1.24f, -1.26f)
+                curveToRelative(0.37f, -0.36f, 0.59f, -0.86f, 0.59f, -1.41f)
+                curveToRelative(0.0f, -1.1f, -0.9f, -2.0f, -2.0f, -2.0f)
+                reflectiveCurveToRelative(-2.0f, 0.9f, -2.0f, 2.0f)
+                lineTo(8.0f, 9.0f)
+                curveToRelative(0.0f, -2.21f, 1.79f, -4.0f, 4.0f, -4.0f)
+                reflectiveCurveToRelative(4.0f, 1.79f, 4.0f, 4.0f)
+                curveToRelative(0.0f, 0.88f, -0.36f, 1.68f, -0.93f, 2.25f)
+                close()
+            }
+        }
+        return _help!!
+    }
+
+private var _help: ImageVector? = null
+
+
+public val Info: ImageVector
+    get() {
+        if (_info != null) {
+            return _info!!
+        }
+        _info = materialIcon(name = "Outlined.Info") {
+            materialPath {
+                moveTo(11.0f, 7.0f)
+                horizontalLineToRelative(2.0f)
+                verticalLineToRelative(2.0f)
+                horizontalLineToRelative(-2.0f)
+                close()
+                moveTo(11.0f, 11.0f)
+                horizontalLineToRelative(2.0f)
+                verticalLineToRelative(6.0f)
+                horizontalLineToRelative(-2.0f)
+                close()
+                moveTo(12.0f, 2.0f)
+                curveTo(6.48f, 2.0f, 2.0f, 6.48f, 2.0f, 12.0f)
+                reflectiveCurveToRelative(4.48f, 10.0f, 10.0f, 10.0f)
+                reflectiveCurveToRelative(10.0f, -4.48f, 10.0f, -10.0f)
+                reflectiveCurveTo(17.52f, 2.0f, 12.0f, 2.0f)
+                close()
+                moveTo(12.0f, 20.0f)
+                curveToRelative(-4.41f, 0.0f, -8.0f, -3.59f, -8.0f, -8.0f)
+                reflectiveCurveToRelative(3.59f, -8.0f, 8.0f, -8.0f)
+                reflectiveCurveToRelative(8.0f, 3.59f, 8.0f, 8.0f)
+                reflectiveCurveToRelative(-3.59f, 8.0f, -8.0f, 8.0f)
+                close()
+            }
+        }
+        return _info!!
+    }
+
+private var _info: ImageVector? = null
+
+
+public val CenterFocusWeak: ImageVector
+    get() {
+        if (_centerFocusWeak != null) {
+            return _centerFocusWeak!!
+        }
+        _centerFocusWeak = materialIcon(name = "Filled.CenterFocusWeak") {
+            materialPath {
+                moveTo(5.0f, 15.0f)
+                lineTo(3.0f, 15.0f)
+                verticalLineToRelative(4.0f)
+                curveToRelative(0.0f, 1.1f, 0.9f, 2.0f, 2.0f, 2.0f)
+                horizontalLineToRelative(4.0f)
+                verticalLineToRelative(-2.0f)
+                lineTo(5.0f, 19.0f)
+                verticalLineToRelative(-4.0f)
+                close()
+                moveTo(5.0f, 5.0f)
+                horizontalLineToRelative(4.0f)
+                lineTo(9.0f, 3.0f)
+                lineTo(5.0f, 3.0f)
+                curveToRelative(-1.1f, 0.0f, -2.0f, 0.9f, -2.0f, 2.0f)
+                verticalLineToRelative(4.0f)
+                horizontalLineToRelative(2.0f)
+                lineTo(5.0f, 5.0f)
+                close()
+                moveTo(19.0f, 3.0f)
+                horizontalLineToRelative(-4.0f)
+                verticalLineToRelative(2.0f)
+                horizontalLineToRelative(4.0f)
+                verticalLineToRelative(4.0f)
+                horizontalLineToRelative(2.0f)
+                lineTo(21.0f, 5.0f)
+                curveToRelative(0.0f, -1.1f, -0.9f, -2.0f, -2.0f, -2.0f)
+                close()
+                moveTo(19.0f, 19.0f)
+                horizontalLineToRelative(-4.0f)
+                verticalLineToRelative(2.0f)
+                horizontalLineToRelative(4.0f)
+                curveToRelative(1.1f, 0.0f, 2.0f, -0.9f, 2.0f, -2.0f)
+                verticalLineToRelative(-4.0f)
+                horizontalLineToRelative(-2.0f)
+                verticalLineToRelative(4.0f)
+                close()
+                moveTo(12.0f, 8.0f)
+                curveToRelative(-2.21f, 0.0f, -4.0f, 1.79f, -4.0f, 4.0f)
+                reflectiveCurveToRelative(1.79f, 4.0f, 4.0f, 4.0f)
+                reflectiveCurveToRelative(4.0f, -1.79f, 4.0f, -4.0f)
+                reflectiveCurveToRelative(-1.79f, -4.0f, -4.0f, -4.0f)
+                close()
+                moveTo(12.0f, 14.0f)
+                curveToRelative(-1.1f, 0.0f, -2.0f, -0.9f, -2.0f, -2.0f)
+                reflectiveCurveToRelative(0.9f, -2.0f, 2.0f, -2.0f)
+                reflectiveCurveToRelative(2.0f, 0.9f, 2.0f, 2.0f)
+                reflectiveCurveToRelative(-0.9f, 2.0f, -2.0f, 2.0f)
+                close()
+            }
+        }
+        return _centerFocusWeak!!
+    }
+
+private var _centerFocusWeak: ImageVector? = null
+
+
+public val Settings: ImageVector
+    get() {
+        if (_settings != null) {
+            return _settings!!
+        }
+        _settings = materialIcon(name = "Outlined.Settings") {
+            materialPath {
+                moveTo(19.43f, 12.98f)
+                curveToRelative(0.04f, -0.32f, 0.07f, -0.64f, 0.07f, -0.98f)
+                curveToRelative(0.0f, -0.34f, -0.03f, -0.66f, -0.07f, -0.98f)
+                lineToRelative(2.11f, -1.65f)
+                curveToRelative(0.19f, -0.15f, 0.24f, -0.42f, 0.12f, -0.64f)
+                lineToRelative(-2.0f, -3.46f)
+                curveToRelative(-0.09f, -0.16f, -0.26f, -0.25f, -0.44f, -0.25f)
+                curveToRelative(-0.06f, 0.0f, -0.12f, 0.01f, -0.17f, 0.03f)
+                lineToRelative(-2.49f, 1.0f)
+                curveToRelative(-0.52f, -0.4f, -1.08f, -0.73f, -1.69f, -0.98f)
+                lineToRelative(-0.38f, -2.65f)
+                curveTo(14.46f, 2.18f, 14.25f, 2.0f, 14.0f, 2.0f)
+                horizontalLineToRelative(-4.0f)
+                curveToRelative(-0.25f, 0.0f, -0.46f, 0.18f, -0.49f, 0.42f)
+                lineToRelative(-0.38f, 2.65f)
+                curveToRelative(-0.61f, 0.25f, -1.17f, 0.59f, -1.69f, 0.98f)
+                lineToRelative(-2.49f, -1.0f)
+                curveToRelative(-0.06f, -0.02f, -0.12f, -0.03f, -0.18f, -0.03f)
+                curveToRelative(-0.17f, 0.0f, -0.34f, 0.09f, -0.43f, 0.25f)
+                lineToRelative(-2.0f, 3.46f)
+                curveToRelative(-0.13f, 0.22f, -0.07f, 0.49f, 0.12f, 0.64f)
+                lineToRelative(2.11f, 1.65f)
+                curveToRelative(-0.04f, 0.32f, -0.07f, 0.65f, -0.07f, 0.98f)
+                curveToRelative(0.0f, 0.33f, 0.03f, 0.66f, 0.07f, 0.98f)
+                lineToRelative(-2.11f, 1.65f)
+                curveToRelative(-0.19f, 0.15f, -0.24f, 0.42f, -0.12f, 0.64f)
+                lineToRelative(2.0f, 3.46f)
+                curveToRelative(0.09f, 0.16f, 0.26f, 0.25f, 0.44f, 0.25f)
+                curveToRelative(0.06f, 0.0f, 0.12f, -0.01f, 0.17f, -0.03f)
+                lineToRelative(2.49f, -1.0f)
+                curveToRelative(0.52f, 0.4f, 1.08f, 0.73f, 1.69f, 0.98f)
+                lineToRelative(0.38f, 2.65f)
+                curveToRelative(0.03f, 0.24f, 0.24f, 0.42f, 0.49f, 0.42f)
+                horizontalLineToRelative(4.0f)
+                curveToRelative(0.25f, 0.0f, 0.46f, -0.18f, 0.49f, -0.42f)
+                lineToRelative(0.38f, -2.65f)
+                curveToRelative(0.61f, -0.25f, 1.17f, -0.59f, 1.69f, -0.98f)
+                lineToRelative(2.49f, 1.0f)
+                curveToRelative(0.06f, 0.02f, 0.12f, 0.03f, 0.18f, 0.03f)
+                curveToRelative(0.17f, 0.0f, 0.34f, -0.09f, 0.43f, -0.25f)
+                lineToRelative(2.0f, -3.46f)
+                curveToRelative(0.12f, -0.22f, 0.07f, -0.49f, -0.12f, -0.64f)
+                lineToRelative(-2.11f, -1.65f)
+                close()
+                moveTo(17.45f, 11.27f)
+                curveToRelative(0.04f, 0.31f, 0.05f, 0.52f, 0.05f, 0.73f)
+                curveToRelative(0.0f, 0.21f, -0.02f, 0.43f, -0.05f, 0.73f)
+                lineToRelative(-0.14f, 1.13f)
+                lineToRelative(0.89f, 0.7f)
+                lineToRelative(1.08f, 0.84f)
+                lineToRelative(-0.7f, 1.21f)
+                lineToRelative(-1.27f, -0.51f)
+                lineToRelative(-1.04f, -0.42f)
+                lineToRelative(-0.9f, 0.68f)
+                curveToRelative(-0.43f, 0.32f, -0.84f, 0.56f, -1.25f, 0.73f)
+                lineToRelative(-1.06f, 0.43f)
+                lineToRelative(-0.16f, 1.13f)
+                lineToRelative(-0.2f, 1.35f)
+                horizontalLineToRelative(-1.4f)
+                lineToRelative(-0.19f, -1.35f)
+                lineToRelative(-0.16f, -1.13f)
+                lineToRelative(-1.06f, -0.43f)
+                curveToRelative(-0.43f, -0.18f, -0.83f, -0.41f, -1.23f, -0.71f)
+                lineToRelative(-0.91f, -0.7f)
+                lineToRelative(-1.06f, 0.43f)
+                lineToRelative(-1.27f, 0.51f)
+                lineToRelative(-0.7f, -1.21f)
+                lineToRelative(1.08f, -0.84f)
+                lineToRelative(0.89f, -0.7f)
+                lineToRelative(-0.14f, -1.13f)
+                curveToRelative(-0.03f, -0.31f, -0.05f, -0.54f, -0.05f, -0.74f)
+                reflectiveCurveToRelative(0.02f, -0.43f, 0.05f, -0.73f)
+                lineToRelative(0.14f, -1.13f)
+                lineToRelative(-0.89f, -0.7f)
+                lineToRelative(-1.08f, -0.84f)
+                lineToRelative(0.7f, -1.21f)
+                lineToRelative(1.27f, 0.51f)
+                lineToRelative(1.04f, 0.42f)
+                lineToRelative(0.9f, -0.68f)
+                curveToRelative(0.43f, -0.32f, 0.84f, -0.56f, 1.25f, -0.73f)
+                lineToRelative(1.06f, -0.43f)
+                lineToRelative(0.16f, -1.13f)
+                lineToRelative(0.2f, -1.35f)
+                horizontalLineToRelative(1.39f)
+                lineToRelative(0.19f, 1.35f)
+                lineToRelative(0.16f, 1.13f)
+                lineToRelative(1.06f, 0.43f)
+                curveToRelative(0.43f, 0.18f, 0.83f, 0.41f, 1.23f, 0.71f)
+                lineToRelative(0.91f, 0.7f)
+                lineToRelative(1.06f, -0.43f)
+                lineToRelative(1.27f, -0.51f)
+                lineToRelative(0.7f, 1.21f)
+                lineToRelative(-1.07f, 0.85f)
+                lineToRelative(-0.89f, 0.7f)
+                lineToRelative(0.14f, 1.13f)
+                close()
+                moveTo(12.0f, 8.0f)
+                curveToRelative(-2.21f, 0.0f, -4.0f, 1.79f, -4.0f, 4.0f)
+                reflectiveCurveToRelative(1.79f, 4.0f, 4.0f, 4.0f)
+                reflectiveCurveToRelative(4.0f, -1.79f, 4.0f, -4.0f)
+                reflectiveCurveToRelative(-1.79f, -4.0f, -4.0f, -4.0f)
+                close()
+                moveTo(12.0f, 14.0f)
+                curveToRelative(-1.1f, 0.0f, -2.0f, -0.9f, -2.0f, -2.0f)
+                reflectiveCurveToRelative(0.9f, -2.0f, 2.0f, -2.0f)
+                reflectiveCurveToRelative(2.0f, 0.9f, 2.0f, 2.0f)
+                reflectiveCurveToRelative(-0.9f, 2.0f, -2.0f, 2.0f)
+                close()
+            }
+        }
+        return _settings!!
+    }
+
+private var _settings: ImageVector? = null
+
+
+public val Mic: ImageVector
+    get() {
+        if (_mic != null) {
+            return _mic!!
+        }
+        _mic = materialIcon(name = "Outlined.Mic") {
+            materialPath {
+                moveTo(12.0f, 14.0f)
+                curveToRelative(1.66f, 0.0f, 3.0f, -1.34f, 3.0f, -3.0f)
+                verticalLineTo(5.0f)
+                curveToRelative(0.0f, -1.66f, -1.34f, -3.0f, -3.0f, -3.0f)
+                reflectiveCurveTo(9.0f, 3.34f, 9.0f, 5.0f)
+                verticalLineToRelative(6.0f)
+                curveTo(9.0f, 12.66f, 10.34f, 14.0f, 12.0f, 14.0f)
+                close()
+            }
+            materialPath {
+                moveTo(17.0f, 11.0f)
+                curveToRelative(0.0f, 2.76f, -2.24f, 5.0f, -5.0f, 5.0f)
+                reflectiveCurveToRelative(-5.0f, -2.24f, -5.0f, -5.0f)
+                horizontalLineTo(5.0f)
+                curveToRelative(0.0f, 3.53f, 2.61f, 6.43f, 6.0f, 6.92f)
+                verticalLineTo(21.0f)
+                horizontalLineToRelative(2.0f)
+                verticalLineToRelative(-3.08f)
+                curveToRelative(3.39f, -0.49f, 6.0f, -3.39f, 6.0f, -6.92f)
+                horizontalLineTo(17.0f)
+                close()
+            }
+        }
+        return _mic!!
+    }
+
+private var _mic: ImageVector? = null
+
+public val QuestionMark: ImageVector
+    get() {
+        if (_questionMark != null) {
+            return _questionMark!!
+        }
+        _questionMark = materialIcon(name = "Outlined.QuestionMark") {
+            materialPath {
+                moveTo(11.07f, 12.85f)
+                curveToRelative(0.77f, -1.39f, 2.25f, -2.21f, 3.11f, -3.44f)
+                curveToRelative(0.91f, -1.29f, 0.4f, -3.7f, -2.18f, -3.7f)
+                curveToRelative(-1.69f, 0.0f, -2.52f, 1.28f, -2.87f, 2.34f)
+                lineTo(6.54f, 6.96f)
+                curveTo(7.25f, 4.83f, 9.18f, 3.0f, 11.99f, 3.0f)
+                curveToRelative(2.35f, 0.0f, 3.96f, 1.07f, 4.78f, 2.41f)
+                curveToRelative(0.7f, 1.15f, 1.11f, 3.3f, 0.03f, 4.9f)
+                curveToRelative(-1.2f, 1.77f, -2.35f, 2.31f, -2.97f, 3.45f)
+                curveToRelative(-0.25f, 0.46f, -0.35f, 0.76f, -0.35f, 2.24f)
+                horizontalLineToRelative(-2.89f)
+                curveTo(10.58f, 15.22f, 10.46f, 13.95f, 11.07f, 12.85f)
+                close()
+                moveTo(14.0f, 20.0f)
+                curveToRelative(0.0f, 1.1f, -0.9f, 2.0f, -2.0f, 2.0f)
+                reflectiveCurveToRelative(-2.0f, -0.9f, -2.0f, -2.0f)
+                curveToRelative(0.0f, -1.1f, 0.9f, -2.0f, 2.0f, -2.0f)
+                reflectiveCurveTo(14.0f, 18.9f, 14.0f, 20.0f)
+                close()
+            }
+        }
+        return _questionMark!!
+    }
+
+private var _questionMark: ImageVector? = null
+
+
+public val Check: ImageVector
+    get() {
+        if (_check != null) {
+            return _check!!
+        }
+        _check = materialIcon(name = "Filled.Check") {
+            materialPath {
+                moveTo(9.0f, 16.17f)
+                lineTo(4.83f, 12.0f)
+                lineToRelative(-1.42f, 1.41f)
+                lineTo(9.0f, 19.0f)
+                lineTo(21.0f, 7.0f)
+                lineToRelative(-1.41f, -1.41f)
+                close()
+            }
+        }
+        return _check!!
+    }
+
+private var _check: ImageVector? = null
+
+public val Close: ImageVector
+    get() {
+        if (_close != null) {
+            return _close!!
+        }
+        _close = materialIcon(name = "Outlined.Close") {
+            materialPath {
+                moveTo(19.0f, 6.41f)
+                lineTo(17.59f, 5.0f)
+                lineTo(12.0f, 10.59f)
+                lineTo(6.41f, 5.0f)
+                lineTo(5.0f, 6.41f)
+                lineTo(10.59f, 12.0f)
+                lineTo(5.0f, 17.59f)
+                lineTo(6.41f, 19.0f)
+                lineTo(12.0f, 13.41f)
+                lineTo(17.59f, 19.0f)
+                lineTo(19.0f, 17.59f)
+                lineTo(13.41f, 12.0f)
+                lineTo(19.0f, 6.41f)
+                close()
+            }
+        }
+        return _close!!
+    }
+
+private var _close: ImageVector? = null

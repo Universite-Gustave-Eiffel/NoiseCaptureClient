@@ -1,72 +1,123 @@
 package org.noise_planet.noisecapture.shared
 
-import org.noise_planet.noisecapture.AudioSamples
-import org.noise_planet.noisecapture.shared.child.FFT_HOP
-import org.noise_planet.noisecapture.shared.child.FFT_SIZE
-import org.noise_planet.noisecapture.shared.child.WINDOW_TIME
-import org.noise_planet.noisecapture.shared.signal.SpectrumChannel
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.launch
+import org.koin.core.logger.Logger
+import org.noise_planet.noisecapture.AudioSource
 import org.noise_planet.noisecapture.shared.signal.SpectrumData
 import org.noise_planet.noisecapture.shared.signal.WindowAnalysis
-import org.noise_planet.noisecapture.shared.signal.get44100HZ
-import org.noise_planet.noisecapture.shared.signal.get48000HZ
-import kotlin.math.min
-import kotlin.math.pow
+import kotlin.properties.Delegates
+import kotlin.reflect.KProperty
 
-class MeasurementService(val sampleRate: Int) {
-    private var windowLength = (sampleRate * WINDOW_TIME).toInt()
-    private var windowData = FloatArray(windowLength)
-    private var windowDataCursor = 0
-    private var windowAnalysis = WindowAnalysis(sampleRate, FFT_SIZE, FFT_HOP)
-    private val spectrumChannel: SpectrumChannel = SpectrumChannel().apply {
-        this.loadConfiguration(
-            when (sampleRate) {
-                48000 -> get48000HZ()
-                else -> get44100HZ()
-            }
-        )
+typealias AcousticIndicatorsCallback = (acousticIndicatorsData: AcousticIndicatorsData) -> Unit
+typealias SpectrumDataCallback = (spectrumData: SpectrumData) -> Unit
+
+const val FFT_SIZE = 4096
+const val FFT_HOP = 2048
+
+class MeasurementService(private val audioSource: AudioSource, private val logger: Logger) {
+    var storageObservers = mutableListOf<(property: KProperty<*>, oldValue: Boolean, newValue: Boolean) -> Unit>()
+    private var storageActivated : Boolean by Delegates.observable(false) { property, oldValue, newValue ->
+        storageObservers.forEach {
+            it(property, oldValue, newValue)
+        }
     }
+    private var acousticIndicatorsProcessing : AcousticIndicatorsProcessing? = null
+    private var fftTool : WindowAnalysis? = null
+    private var onAcousticIndicatorsData: AcousticIndicatorsCallback? = null
+    private var onSpectrumData: SpectrumDataCallback? = null
+    private var audioJob : Job? = null
+    private var dbGain = 105.0
 
-    suspend fun processSamples(samples: AudioSamples): List<MeasurementServiceData> {
-        val measurementServiceDataList = ArrayList<MeasurementServiceData>()
-        val gain = (10.0.pow(105 / 20.0)).toFloat()
-        var samplesProcessed = 0
-        while (samplesProcessed < samples.samples.size) {
-            while (windowDataCursor < windowLength &&
-                samplesProcessed < samples.samples.size
-            ) {
-                val remainingToProcess = min(
-                    windowLength - windowDataCursor,
-                    samples.samples.size - samplesProcessed
-                )
-                for (i in 0..<remainingToProcess) {
-                    windowData[i + windowDataCursor] =
-                        samples.samples[i + samplesProcessed] * gain
+
+    @OptIn(DelicateCoroutinesApi::class)
+    private fun startAudioRecord() {
+        if(audioJob?.isActive == true) {
+            return
+        }
+        audioJob = GlobalScope.launch {
+            audioSource.setup().collect {audioSamples ->
+                if(onSpectrumData != null) {
+                    if(fftTool == null) {
+                        fftTool = WindowAnalysis(audioSamples.sampleRate, FFT_SIZE, FFT_HOP)
+                    }
+                    fftTool?.pushSamples(audioSamples.epoch, audioSamples.samples)?.forEach { spectrumData ->
+                        onSpectrumData?.let { callback -> callback(spectrumData) }
+                    }
                 }
-                windowDataCursor += remainingToProcess
-                samplesProcessed += remainingToProcess
-            }
-            if (windowDataCursor == windowLength) {
-                // window complete
-                val laeq = spectrumChannel.processSamplesWeightA(windowData)
-                val thirdOctave = spectrumChannel.processSamples(windowData)
-                val fftSpectrum = windowAnalysis.pushSamples(samples.epoch, windowData).toList()
-                measurementServiceDataList.add(
-                    MeasurementServiceData(
-                        samples.epoch,
-                        laeq,
-                        fftSpectrum,
-                        thirdOctave
-                    )
-                )
-                windowDataCursor = 0
+                if(onAcousticIndicatorsData != null) {
+                    if(acousticIndicatorsProcessing == null) {
+                        acousticIndicatorsProcessing = AcousticIndicatorsProcessing(
+                            audioSamples.sampleRate, dbGain)
+                    }
+                    acousticIndicatorsProcessing?.processSamples(audioSamples)?.forEach { acousticIndicators ->
+                        onAcousticIndicatorsData?.let { callback -> callback(acousticIndicators) }
+                    }
+                }
             }
         }
-        return measurementServiceDataList
     }
 
+    private fun stopAudioRecord() {
+        audioJob?.cancel()
+        audioSource.release()
+    }
+
+    /**
+     * Start collecting measurements to be forwarded to observers
+     */
+    fun collectAudioIndicators() : Flow<AcousticIndicatorsData> = callbackFlow {
+        setAudioIndicatorsObserver { trySend(it) }
+        awaitClose {
+            resetAudioIndicatorsObserver()
+        }
+    }
+
+    fun collectSpectrumData() : Flow<SpectrumData> = callbackFlow {
+        setSpectrumDataObserver { trySend(it) }
+        awaitClose {
+            resetSpectrumDataObserver()
+        }
+    }
+
+    fun setSpectrumDataObserver(onSpectrumData : SpectrumDataCallback) {
+        this.onSpectrumData = onSpectrumData
+        startAudioRecord()
+    }
+
+    fun resetSpectrumDataObserver() {
+        onSpectrumData = null
+        if(onAcousticIndicatorsData == null) {
+            stopAudioRecord()
+        }
+    }
+
+    fun setAudioIndicatorsObserver(onAcousticIndicatorsData: AcousticIndicatorsCallback) {
+        startAudioRecord()
+        this.onAcousticIndicatorsData = onAcousticIndicatorsData
+    }
+
+    fun resetAudioIndicatorsObserver() {
+        onAcousticIndicatorsData = null
+        if(onSpectrumData == null) {
+            stopAudioRecord()
+        }
+    }
+
+    /**
+     * Store measurements in database
+     */
+    fun startStorage() {
+        storageActivated = true
+    }
+
+    fun stopStorage() {
+        storageActivated = false
+    }
 
 }
-data class MeasurementServiceData(val epoch : Long, val laeq: Double,
-                                  val spectrumDataList : List<SpectrumData>,
-                                  val thirdOctave : DoubleArray)
-

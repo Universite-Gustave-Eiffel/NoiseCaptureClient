@@ -1,32 +1,30 @@
 package org.noise_planet.noisecapture.shared.child
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.requiredWidth
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
+import androidx.compose.material.TabRow
 import androidx.compose.material.Text
+import androidx.compose.material3.Tab
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -38,41 +36,40 @@ import com.bumble.appyx.navigation.lifecycle.DefaultPlatformLifecycleObserver
 import com.bumble.appyx.navigation.lifecycle.Lifecycle
 import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import org.koin.core.logger.Logger
-import org.noise_planet.noisecapture.AudioSource
+import org.noise_planet.noisecapture.shared.FFT_HOP
 import org.noise_planet.noisecapture.shared.MeasurementService
 import org.noise_planet.noisecapture.shared.ScreenData
 import org.noise_planet.noisecapture.shared.ui.SpectrogramBitmap
 import org.noise_planet.noisecapture.toImageBitmap
-import kotlin.math.ceil
-import kotlin.math.floor
-import kotlin.math.log
 import kotlin.math.log10
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.pow
 import kotlin.math.round
 
-const val FFT_SIZE = 4096
-const val FFT_HOP = 2048
-const val WINDOW_TIME = 0.125
 const val SPECTROGRAM_STRIP_WIDTH = 32
+const val REFERENCE_LEGEND_TEXT = " +99s "
+const val DEFAULT_SAMPLE_RATE = 48000.0
 
 class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<ScreenData>,
-                        private val audioSource: AudioSource, private val logger: Logger) : Node(buildContext) {
+                        private val measurementService: MeasurementService, private val logger: Logger) : Node(buildContext), DefaultPlatformLifecycleObserver {
     private var rangedB = 40.0
     private var mindB = 0.0
-    private var measurementService : MeasurementService? = null
+    private var dbGain = 105.0
+    private val scaleMode = SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG
 
     @Composable
-    fun spectrogram(spectrumCanvasState : SpectrogramViewModel) {
+    fun spectrogram(spectrumCanvasState : SpectrogramViewModel, bitmapOffset : Int) {
         val textMeasurer = rememberTextMeasurer()
         val frequencyLegendPosition = when (spectrumCanvasState.currentStripData.scaleMode) {
             SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG -> SpectrogramBitmap.frequencyLegendPositionLog
             else -> SpectrogramBitmap.frequencyLegendPositionLinear
         }
-        val timeXLabelMeasure = textMeasurer.measure(" +99s ")
+        val timeXLabelMeasure = textMeasurer.measure(REFERENCE_LEGEND_TEXT)
         val timeXLabelHeight = timeXLabelMeasure.size.height
         val maxYLabelWidth =
             frequencyLegendPosition.maxOf { frequency ->
@@ -80,9 +77,8 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                 textMeasurer.measure(text).size.width
             }
         Canvas(modifier = Modifier.fillMaxSize() ) {
-            drawRect(color = Color.Black, size=size)
+            drawRect(color = SpectrogramBitmap.colorRamp[0], size=size)
             val tickLength = 4.dp.toPx()
-            val tickStroke = 2.dp
             val legendHeight = timeXLabelHeight+tickLength
             val canvasSize = IntSize(SPECTROGRAM_STRIP_WIDTH, (size.height - legendHeight).toInt())
             val legendWidth = maxYLabelWidth+tickLength
@@ -91,91 +87,158 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
             if(spectrumCanvasState.currentStripData.size != canvasSize) {
                 // reset buffer on resize or first draw
                 spectrumCanvasState.currentStripData = SpectrogramBitmap.createSpectrogram(
-                    canvasSize, SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG, spectrumCanvasState.currentStripData.sampleRate)
+                    canvasSize, scaleMode, spectrumCanvasState.currentStripData.sampleRate)
                 spectrumCanvasState.cachedStrips.clear()
             } else {
                 if(spectrumCanvasState.currentStripData.sampleRate > 1) {
                     drawImage(
                         spectrumCanvasState.currentStripData.byteArray.toImageBitmap(),
                         topLeft = Offset(
-                            size.width - spectrumCanvasState.currentStripData.offset - legendWidth,
+                            size.width - bitmapOffset - legendWidth,
                             0F
                         )
                     )
                     spectrumCanvasState.cachedStrips.reversed()
                         .forEachIndexed { index, imageBitmap ->
-                            val bitmapX = size.width - legendWidth - ((index + 1) * SPECTROGRAM_STRIP_WIDTH
-                                    + spectrumCanvasState.currentStripData.offset).toFloat()
+                            val bitmapX =
+                                size.width - legendWidth - ((index + 1) * SPECTROGRAM_STRIP_WIDTH
+                                        + bitmapOffset).toFloat()
                             drawImage(
                                 imageBitmap,
                                 topLeft = Offset(bitmapX, 0F)
                             )
                         }
-                    // black background of legend
-                    drawRect(color = Color.Black, size = Size(legendWidth, size.height),
-                        topLeft = Offset(size.width - legendWidth, 0F))
-                    // draw Y axe labels
-                    val fMax = spectrumCanvasState.currentStripData.sampleRate / 2
-                    val fMin = frequencyLegendPosition[0].toDouble()
-                    val r = fMax / fMin
-                    val sheight = spectrumCanvasState.currentStripData.size.height
-                    frequencyLegendPosition.forEachIndexed { index, frequency ->
-                        val text = buildAnnotatedString {
-                            withStyle(style = SpanStyle(color = Color.White)) {
-                                append(formatFrequency(frequency))
-                            }
-                        }
-                        val textSize = textMeasurer.measure(text)
-                        val tickHeightPos = when (spectrumCanvasState.currentStripData.scaleMode) {
-                            SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG -> {
-                                sheight - (log10(frequency / fMin) / ((log10(r) / sheight))).toInt()
-                            }
+                }
+            }
+        }
+    }
 
-                            else -> 0
+    private fun makeXLegend(textMeasurer: TextMeasurer, timeValue : Double, legendWidth : Float,
+                            timePerPixel : Double, depth: Int) : LegendElement {
+        val xPos = (legendWidth - timeValue / timePerPixel).toFloat()
+        val legendText = buildAnnotatedString {
+            withStyle(style = SpanStyle(color = Color.White)) {
+                append("+${timeValue.toInt()}s")
+            }
+        }
+        val textLayout = textMeasurer.measure(legendText)
+        val textPos = min(legendWidth-textLayout.size.width,
+            max(0F, xPos - textLayout.size.width / 2))
+        return LegendElement(legendText, textLayout.size, xPos, textPos, depth)
+    }
+
+    private fun recursiveLegendBuild(textMeasurer: TextMeasurer, timeValue : Double, legendWidth : Float,
+                                     timePerPixel : Double, minX : Float, maxX : Float, timeValueLeft : Double,
+                                     timeValueRight : Double, feedElements: ArrayList<LegendElement>, depth: Int) {
+        val legendElement = makeXLegend(textMeasurer, timeValue, legendWidth, timePerPixel, depth)
+        if(legendElement.textPos > minX && legendElement.xPos + legendElement.textSize.width / 2 < maxX) {
+            feedElements.add(legendElement)
+            // left legend, + x seconds
+            recursiveLegendBuild(textMeasurer, round(timeValue + (timeValueLeft - timeValue) / 2),
+                legendWidth, timePerPixel, minX, legendElement.textPos, timeValueLeft, timeValue,
+                feedElements, depth + 1)
+            // right legend, - x seconds
+            recursiveLegendBuild(textMeasurer, round(timeValue - (timeValue - timeValueRight) / 2),
+                legendWidth, timePerPixel, legendElement.textPos + legendElement.textSize.width,
+                maxX, timeValue, timeValueRight, feedElements, depth + 1)
+        }
+    }
+
+
+    @Composable
+    fun spectrogramLegend(scaleMode: SpectrogramBitmap.Companion.SCALE_MODE, sampleRate: Double) {
+        val textMeasurer = rememberTextMeasurer()
+        val frequencyLegendPosition = when (scaleMode) {
+            SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG -> SpectrogramBitmap.frequencyLegendPositionLog
+            else -> SpectrogramBitmap.frequencyLegendPositionLinear
+        }
+        val timeXLabelMeasure = textMeasurer.measure(REFERENCE_LEGEND_TEXT)
+        val timeXLabelHeight = timeXLabelMeasure.size.height
+        val maxYLabelWidth =
+            frequencyLegendPosition.maxOf { frequency ->
+                val text = formatFrequency(frequency)
+                textMeasurer.measure(text).size.width
+            }
+        Canvas(modifier = Modifier.fillMaxSize() ) {
+            val tickLength = 4.dp.toPx()
+            val tickStroke = 2.dp
+            val legendHeight = timeXLabelHeight+tickLength
+            val legendWidth = maxYLabelWidth+tickLength
+            if(sampleRate > 1) {
+                // black background of legend
+                drawRect(color = SpectrogramBitmap.colorRamp[0], size = Size(legendWidth, size.height),
+                    topLeft = Offset(size.width - legendWidth, 0F))
+                // draw Y axe labels
+                val fMax = sampleRate / 2
+                val fMin = frequencyLegendPosition[0].toDouble()
+                val r = fMax / fMin
+                val sheight = (size.height - legendHeight).toInt()
+                frequencyLegendPosition.forEachIndexed { index, frequency ->
+                    val text = buildAnnotatedString {
+                        withStyle(style = SpanStyle(color = Color.White)) {
+                            append(formatFrequency(frequency))
                         }
-                        drawLine(
-                            color = Color.White, start = Offset(
-                                size.width - legendWidth,
-                                tickHeightPos.toFloat() - tickStroke.toPx()/2
-                            ),
-                            end = Offset(
-                                size.width - legendWidth + tickLength,
-                                tickHeightPos.toFloat() - tickStroke.toPx()/2
-                            ),
-                            strokeWidth = tickStroke.toPx()
-                        )
-                        val textPos = min((size.height - textSize.size.height).toInt(),
-                            max(0, tickHeightPos - textSize.size.height / 2))
-                        drawText(textMeasurer, text, topLeft = Offset(size.width - legendWidth + tickLength, textPos.toFloat()))
                     }
-                    // draw X axe labels
-                    val xLegendWidth = (size.width - legendWidth)
-                    val maxLabelsOnXAxe = ceil(xLegendWidth / timeXLabelMeasure.size.width).toInt()
-                    // One pixel per time step
-                    val timePerPixel = FFT_HOP / spectrumCanvasState.currentStripData.sampleRate
-                    val timeBetweenLabels = floor((xLegendWidth * timePerPixel) / maxLabelsOnXAxe)
-                    // start with 1 second then increase values
-                    (1.. maxLabelsOnXAxe).forEach { labelIndex ->
-                        val timeValue = (1 + timeBetweenLabels * (labelIndex - 1)).toInt()
-                        val xPos = (xLegendWidth - timeValue / timePerPixel).toFloat()
-                        drawLine(
-                            color = Color.White, start = Offset(
-                                xPos-tickStroke.toPx()/2,
-                                sheight.toFloat()
-                            ),
-                            end = Offset(
-                                xPos-tickStroke.toPx()/2,
-                                sheight.toFloat() + tickLength
-                            ),
-                            strokeWidth = tickStroke.toPx()
-                        )
-                        val legendText = buildAnnotatedString {
-                            withStyle(style = SpanStyle(color = Color.White)) {
-                                append("+${timeValue}s")
-                            }
+                    val textSize = textMeasurer.measure(text)
+                    val tickHeightPos = when (scaleMode) {
+                        SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG -> {
+                            sheight - (log10(frequency / fMin) / ((log10(r) / sheight))).toInt()
                         }
-                        drawText(textMeasurer,legendText, topLeft = Offset(xPos-textMeasurer.measure(legendText).size.width / 2, sheight.toFloat() + tickLength))
+                        else -> 0
                     }
+                    drawLine(
+                        color = Color.White, start = Offset(
+                            size.width - legendWidth,
+                            tickHeightPos.toFloat() - tickStroke.toPx()/2
+                        ),
+                        end = Offset(
+                            size.width - legendWidth + tickLength,
+                            tickHeightPos.toFloat() - tickStroke.toPx()/2
+                        ),
+                        strokeWidth = tickStroke.toPx()
+                    )
+                    val textPos = min((size.height - textSize.size.height).toInt(),
+                        max(0, tickHeightPos - textSize.size.height / 2))
+                    drawText(textMeasurer, text, topLeft = Offset(size.width - legendWidth + tickLength, textPos.toFloat()))
+                }
+                // draw X axe labels
+                val xLegendWidth = (size.width - legendWidth)
+                // One pixel per time step
+                val timePerPixel = FFT_HOP / sampleRate
+                val lastTime = xLegendWidth * timePerPixel
+                val legendElements = ArrayList<LegendElement>()
+                val rightLegend = makeXLegend(textMeasurer, 0.0, xLegendWidth, timePerPixel, 0)
+                val leftLegend =  makeXLegend(textMeasurer, lastTime, xLegendWidth, timePerPixel, 0)
+                legendElements.add(leftLegend)
+                legendElements.add(rightLegend)
+                recursiveLegendBuild(textMeasurer, lastTime / 2, xLegendWidth, timePerPixel,
+                    leftLegend.textSize.width.toFloat(),
+                    rightLegend.xPos-rightLegend.textSize.width, lastTime, 0.0, legendElements, 0)
+                // find depth index with maximum number of elements (to generate same intervals on legend)
+                val legendDepthCount = IntArray(legendElements.maxOf { it.depth }+1) { 0 }
+                legendElements.forEach {
+                    legendDepthCount[it.depth] += 1
+                }
+                val maxElementsDepth = legendDepthCount.foldIndexed(Pair(-1,0)) { index, acc, i ->
+                    if(acc.second < i) Pair(index, i) else acc
+                }
+                legendElements.removeAll {
+                    it.depth > maxElementsDepth.first
+                }
+                legendElements.forEach {legendElement ->
+                    val tickPos = max(tickStroke.toPx() / 2F, min(xLegendWidth-tickStroke.toPx(), legendElement.xPos - tickStroke.toPx() / 2F))
+                    drawLine(
+                        color = Color.White, start = Offset(
+                            tickPos,
+                            sheight.toFloat()
+                        ),
+                        end = Offset(
+                            tickPos,
+                            sheight + tickLength
+                        ),
+                        strokeWidth = tickStroke.toPx()
+                    )
+                    drawText(textMeasurer,legendElement.text, topLeft = Offset(legendElement.textPos, sheight.toFloat() + tickLength))
                 }
             }
         }
@@ -195,68 +258,67 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         }
     }
 
+
+    override fun onStop() {
+        println("Appyx onStop")
+    }
+
+    override fun onPause() {
+        println("Appyx onPause")
+    }
+
+    override fun onResume() {
+        println("Appyx onResume")
+    }
+
+    override fun onStart() {
+        println("Appyx onStart")
+    }
+
     @Composable
     override fun View(modifier: Modifier) {
+        var bitmapOffset by remember { mutableStateOf(0) }
         var noiseLevel by remember { mutableStateOf(0.0) }
-        var spectrumCanvasState by remember { mutableStateOf(
+        var sampleRate by remember { mutableStateOf( DEFAULT_SAMPLE_RATE ) }
+        val composableScope = rememberCoroutineScope()
+        val spectrumCanvasState by remember { mutableStateOf(
             SpectrogramViewModel(SpectrogramBitmap.SpectrogramDataModel(IntSize(1, 1),
                 ByteArray(Int.SIZE_BYTES),0 ,SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG, 1.0), ArrayList(), Size.Zero)) }
-
-        lifecycleScope.launch {
-            println("Launch lifecycle")
-            audioSource.setup().collect {samples ->
-                if(measurementService == null) {
-                    measurementService = MeasurementService(samples.sampleRate)
-                }
-                measurementService!!.processSamples(samples).forEach {
-                        measurementServiceData->
-                    noiseLevel = measurementServiceData.laeq
-                    if(spectrumCanvasState.currentStripData.size.width > 1) {
-                        var indexToProcess = 0
-                        var bitmapChanged = false
-                        while(indexToProcess < measurementServiceData.spectrumDataList.size) {
-                            val subListSizeToCompleteStrip = min(
-                                spectrumCanvasState.currentStripData.size.width -
-                                        spectrumCanvasState.currentStripData.offset,
-                                measurementServiceData.spectrumDataList.size - indexToProcess
+        composableScope.launch {
+            measurementService.collectAudioIndicators().collect {
+                noiseLevel = it.laeq
+            }
+        }
+        composableScope.launch {
+            println("Launch spectrum lifecycle")
+            measurementService.collectSpectrumData().collect() {
+                if (spectrumCanvasState.currentStripData.size.width > 1) {
+                    spectrumCanvasState.currentStripData.pushSpectrumToSpectrogramData(
+                        it, mindB, rangedB,
+                        dbGain
+                    )
+                    if (spectrumCanvasState.currentStripData.offset == SPECTROGRAM_STRIP_WIDTH) {
+                        // spectrogram band complete, store bitmap
+                        spectrumCanvasState.cachedStrips.add(
+                            spectrumCanvasState.currentStripData.byteArray.toImageBitmap()
+                        )
+                        if ((spectrumCanvasState.cachedStrips.size - 1) *
+                            SPECTROGRAM_STRIP_WIDTH >
+                            spectrumCanvasState.spectrogramCanvasSize.width
+                        ) {
+                            // remove offscreen bitmaps
+                            spectrumCanvasState.cachedStrips.removeAt(0)
+                        }
+                        spectrumCanvasState.currentStripData =
+                            SpectrogramBitmap.createSpectrogram(
+                                spectrumCanvasState.currentStripData.size,
+                                spectrumCanvasState.currentStripData.scaleMode,
+                                it.sampleRate.toDouble()
                             )
-                            if(subListSizeToCompleteStrip == 0) {
-                                // spectrogram band complete, store bitmap
-                                spectrumCanvasState.cachedStrips.add(
-                                    spectrumCanvasState.currentStripData.byteArray.toImageBitmap())
-                                if((spectrumCanvasState.cachedStrips.size - 1) *
-                                    SPECTROGRAM_STRIP_WIDTH >
-                                    spectrumCanvasState.spectrogramCanvasSize.width) {
-                                    // remove offscreen bitmaps
-                                    spectrumCanvasState.cachedStrips.removeAt(0)
-                                }
-                                spectrumCanvasState.currentStripData =
-                                    SpectrogramBitmap.createSpectrogram(
-                                        spectrumCanvasState.currentStripData.size,
-                                        spectrumCanvasState.currentStripData.scaleMode,
-                                        measurementService!!.sampleRate.toDouble())
-                                bitmapChanged = false
-                                continue
-                            }
-                            spectrumCanvasState.currentStripData.pushSpectrumToSpectrogramData(
-                                    measurementServiceData.spectrumDataList.subList(indexToProcess,
-                                        indexToProcess + subListSizeToCompleteStrip),
-                                    mindB, rangedB)
-                            bitmapChanged = true
-                            indexToProcess += subListSizeToCompleteStrip
-                        }
-                        if(bitmapChanged) {
-                            spectrumCanvasState = SpectrogramViewModel(
-                                spectrumCanvasState.currentStripData,
-                                spectrumCanvasState.cachedStrips,
-                                spectrumCanvasState.spectrogramCanvasSize)
-                        }
                     }
+                    bitmapOffset = spectrumCanvasState.currentStripData.offset
                 }
             }
-        }.invokeOnCompletion {
-            println("Release audio")
-            audioSource.release()
         }
         Surface(
             modifier = Modifier.fillMaxSize(),
@@ -264,7 +326,31 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         ) {
             Column(Modifier.fillMaxWidth()) {
                 Text("${round(noiseLevel * 100)/100} dB(A)")
-                spectrogram(spectrumCanvasState)
+                var state by remember { mutableStateOf(0) }
+                val titles = listOf("Spectrum", "Spectrogram", "Map")
+                Column {
+                    TabRow(selectedTabIndex = state) {
+                        titles.forEachIndexed { index, title ->
+                            Tab(
+                                text = { Text(title) },
+                                selected = state == index,
+                                onClick = { state = index }
+                            )
+                        }
+                    }
+                    when(state) {
+                        1 -> Box(Modifier.fillMaxSize()) {
+                                spectrogram(spectrumCanvasState, bitmapOffset)
+                                spectrogramLegend(scaleMode, sampleRate)
+                            }
+                        else -> Text(
+                            modifier = Modifier.align(Alignment.CenterHorizontally),
+                            text = "Text tab ${state + 1} selected",
+                            style = MaterialTheme.typography.body1
+                        )
+                    }
+
+                }
             }
         }
     }
@@ -273,3 +359,13 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
 data class SpectrogramViewModel(var currentStripData : SpectrogramBitmap.SpectrogramDataModel,
                                 val cachedStrips : ArrayList<ImageBitmap>,
                                 var spectrogramCanvasSize : Size)
+
+data class LegendElement(val text : AnnotatedString, val textSize : IntSize, val xPos : Float,
+                         val textPos : Float, val depth : Int)
+
+
+fun Lifecycle.asPlatformFlow(observer : DefaultPlatformLifecycleObserver): Flow<Lifecycle.State> =
+    callbackFlow {
+        addObserver(observer)
+        awaitClose { removeObserver(observer) }
+    }

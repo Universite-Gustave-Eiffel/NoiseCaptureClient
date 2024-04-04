@@ -142,9 +142,9 @@ class TestWindowAnalysis {
             cursor += windowSize
         }
         spectrumDataArray.forEach { spectrumData ->
-            val thirdOctaveSquare = spectrumData.thirdOctaveProcessing(sampleRate, 50.0, 12000.0,
+            val thirdOctaveSquare = spectrumData.thirdOctaveProcessing(50.0, 12000.0,
                 octaveWindow = SpectrumData.OCTAVE_WINDOW.RECTANGULAR).asList()
-            val thirdOctaveFractional = spectrumData.thirdOctaveProcessing(sampleRate, 50.0,
+            val thirdOctaveFractional = spectrumData.thirdOctaveProcessing(50.0,
                 12000.0, octaveWindow = SpectrumData.OCTAVE_WINDOW.FRACTIONAL).asList()
             val indexOf1000Hz = thirdOctaveSquare.indexOfFirst { t -> t.midFrequency.toInt() == 1000 }
             assertEquals(expectedLevel, thirdOctaveSquare[indexOf1000Hz].spl, 0.01)

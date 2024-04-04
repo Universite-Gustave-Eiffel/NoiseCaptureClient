@@ -18,10 +18,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.QuestionMark
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -37,6 +33,9 @@ import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import org.noise_planet.noisecapture.shared.ui.theme.Check
+import org.noise_planet.noisecapture.shared.ui.theme.Close
+import org.noise_planet.noisecapture.shared.ui.theme.QuestionMark
 
 class PermissionScreen(buildContext: BuildContext,
                        private val permissionsService: PermissionsService,
@@ -153,9 +152,9 @@ internal fun permissionItem(
             )
             Icon(
                 imageVector = when (permissionState) {
-                    PermissionState.GRANTED -> Icons.Default.Check
-                    PermissionState.NOT_DETERMINED -> Icons.Outlined.QuestionMark
-                    else -> Icons.Outlined.Close
+                    PermissionState.GRANTED -> Check
+                    PermissionState.NOT_DETERMINED -> QuestionMark
+                    else -> Close
                 },
                 tint = colorState,
                 contentDescription = null,
