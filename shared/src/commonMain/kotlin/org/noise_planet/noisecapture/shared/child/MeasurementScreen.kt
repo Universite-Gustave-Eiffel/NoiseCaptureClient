@@ -1,5 +1,9 @@
 package org.noise_planet.noisecapture.shared.child
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -7,9 +11,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
+import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
 import androidx.compose.material.Text
-import androidx.compose.material3.Tab
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -326,30 +330,36 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         ) {
             Column(Modifier.fillMaxWidth()) {
                 Text("${round(noiseLevel * 100)/100} dB(A)")
-                var state by remember { mutableStateOf(0) }
-                val titles = listOf("Spectrum", "Spectrogram", "Map")
-                Column {
-                    TabRow(selectedTabIndex = state) {
-                        titles.forEachIndexed { index, title ->
+                var state by remember { mutableStateOf(MeasurementTabState.SPECTRUM) }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    TabRow(selectedTabIndex = state.ordinal) {
+                        MeasurementTabState.entries.forEach { entry ->
                             Tab(
-                                text = { Text(title) },
-                                selected = state == index,
-                                onClick = { state = index }
+                                text = { Text(MEASUREMENT_TAB_LABEL[entry.ordinal]) },
+                                selected = state == entry,
+                                onClick = { state = entry }
                             )
                         }
                     }
-                    when(state) {
-                        1 -> Box(Modifier.fillMaxSize()) {
+                    AnimatedContent(targetState = state, transitionSpec = {
+                        val direction = if(targetState.ordinal > initialState.ordinal) AnimatedContentTransitionScope.SlideDirection.Left else AnimatedContentTransitionScope.SlideDirection.Right
+                        val delay = 400
+                        slideIntoContainer(animationSpec = tween(delay),
+                            towards = direction) togetherWith
+                                slideOutOfContainer(animationSpec = tween(delay),
+                                    towards = direction) }) {
+                        when (it) {
+                            MeasurementTabState.SPECTROGRAM -> Box(Modifier.fillMaxSize()) {
                                 spectrogram(spectrumCanvasState, bitmapOffset)
                                 spectrogramLegend(scaleMode, sampleRate)
                             }
-                        else -> Text(
-                            modifier = Modifier.align(Alignment.CenterHorizontally),
-                            text = "Text tab ${state + 1} selected",
-                            style = MaterialTheme.typography.body1
-                        )
-                    }
 
+                            else -> Box(Modifier.fillMaxSize()) {Text(
+                                text = "Text tab ${MEASUREMENT_TAB_LABEL[it.ordinal]} selected",
+                                style = MaterialTheme.typography.body1
+                            )}
+                        }
+                    }
                 }
             }
         }
@@ -369,3 +379,6 @@ fun Lifecycle.asPlatformFlow(observer : DefaultPlatformLifecycleObserver): Flow<
         addObserver(observer)
         awaitClose { removeObserver(observer) }
     }
+
+enum class MeasurementTabState { SPECTRUM, SPECTROGRAM, MAP}
+val MEASUREMENT_TAB_LABEL = listOf("Spectrum", "Spectrogram", "Map")
