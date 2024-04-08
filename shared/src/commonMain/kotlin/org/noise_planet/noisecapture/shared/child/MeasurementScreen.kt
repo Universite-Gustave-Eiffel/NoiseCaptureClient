@@ -48,6 +48,7 @@ import org.koin.core.logger.Logger
 import org.noise_planet.noisecapture.shared.FFT_HOP
 import org.noise_planet.noisecapture.shared.MeasurementService
 import org.noise_planet.noisecapture.shared.ScreenData
+import org.noise_planet.noisecapture.shared.signal.SpectrumData
 import org.noise_planet.noisecapture.shared.ui.SpectrogramBitmap
 import org.noise_planet.noisecapture.toImageBitmap
 import kotlin.math.log10
@@ -58,6 +59,7 @@ import kotlin.math.round
 const val SPECTROGRAM_STRIP_WIDTH = 32
 const val REFERENCE_LEGEND_TEXT = " +99s "
 const val DEFAULT_SAMPLE_RATE = 48000.0
+const val MAXIMUM_CACHED_SPECTRUM = 128
 
 class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<ScreenData>,
                         private val measurementService: MeasurementService, private val logger: Logger) : Node(buildContext), DefaultPlatformLifecycleObserver {
@@ -69,17 +71,10 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
     @Composable
     fun spectrogram(spectrumCanvasState : SpectrogramViewModel, bitmapOffset : Int) {
         val textMeasurer = rememberTextMeasurer()
-        val frequencyLegendPosition = when (spectrumCanvasState.currentStripData.scaleMode) {
-            SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG -> SpectrogramBitmap.frequencyLegendPositionLog
-            else -> SpectrogramBitmap.frequencyLegendPositionLinear
-        }
         val timeXLabelMeasure = textMeasurer.measure(REFERENCE_LEGEND_TEXT)
         val timeXLabelHeight = timeXLabelMeasure.size.height
-        val maxYLabelWidth =
-            frequencyLegendPosition.maxOf { frequency ->
-                val text = formatFrequency(frequency)
-                textMeasurer.measure(text).size.width
-            }
+        val text = formatFrequency(20000)
+        val maxYLabelWidth = textMeasurer.measure(text).size.width
         Canvas(modifier = Modifier.fillMaxSize() ) {
             drawRect(color = SpectrogramBitmap.colorRamp[0], size=size)
             val tickLength = 4.dp.toPx()
@@ -152,10 +147,11 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
     @Composable
     fun spectrogramLegend(scaleMode: SpectrogramBitmap.Companion.SCALE_MODE, sampleRate: Double) {
         val textMeasurer = rememberTextMeasurer()
-        val frequencyLegendPosition = when (scaleMode) {
+        var frequencyLegendPosition = when (scaleMode) {
             SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG -> SpectrogramBitmap.frequencyLegendPositionLog
             else -> SpectrogramBitmap.frequencyLegendPositionLinear
         }
+        frequencyLegendPosition = frequencyLegendPosition.filter { f -> f < sampleRate / 2 }.toIntArray()
         val timeXLabelMeasure = textMeasurer.measure(REFERENCE_LEGEND_TEXT)
         val timeXLabelHeight = timeXLabelMeasure.size.height
         val maxYLabelWidth =
@@ -175,7 +171,6 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                 // draw Y axe labels
                 val fMax = sampleRate / 2
                 val fMin = frequencyLegendPosition[0].toDouble()
-                val r = fMax / fMin
                 val sheight = (size.height - legendHeight).toInt()
                 frequencyLegendPosition.forEachIndexed { index, frequency ->
                     val text = buildAnnotatedString {
@@ -186,9 +181,9 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                     val textSize = textMeasurer.measure(text)
                     val tickHeightPos = when (scaleMode) {
                         SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG -> {
-                            sheight - (log10(frequency / fMin) / ((log10(r) / sheight))).toInt()
+                            sheight - (log10(frequency / fMin) / ((log10(fMax / fMin) / sheight))).toInt()
                         }
-                        else -> 0
+                        else -> (sheight - frequency / fMax * sheight).toInt()
                     }
                     drawLine(
                         color = Color.White, start = Offset(
@@ -279,6 +274,33 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         println("Appyx onStart")
     }
 
+    fun processSpectrum(spectrumCanvasState: SpectrogramViewModel, it : SpectrumData) : Int {
+        spectrumCanvasState.currentStripData.pushSpectrumToSpectrogramData(
+            it, mindB, rangedB,
+            dbGain
+        )
+        if (spectrumCanvasState.currentStripData.offset == SPECTROGRAM_STRIP_WIDTH) {
+            // spectrogram band complete, store bitmap
+            spectrumCanvasState.cachedStrips.add(
+                spectrumCanvasState.currentStripData.byteArray.toImageBitmap()
+            )
+            if ((spectrumCanvasState.cachedStrips.size - 1) *
+                SPECTROGRAM_STRIP_WIDTH >
+                spectrumCanvasState.spectrogramCanvasSize.width
+            ) {
+                // remove offscreen bitmaps
+                spectrumCanvasState.cachedStrips.removeAt(0)
+            }
+            spectrumCanvasState.currentStripData =
+                SpectrogramBitmap.createSpectrogram(
+                    spectrumCanvasState.currentStripData.size,
+                    spectrumCanvasState.currentStripData.scaleMode,
+                    it.sampleRate.toDouble()
+                )
+        }
+        return spectrumCanvasState.currentStripData.offset
+    }
+
     @Composable
     override fun View(modifier: Modifier) {
         var bitmapOffset by remember { mutableStateOf(0) }
@@ -295,32 +317,19 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         }
         composableScope.launch {
             println("Launch spectrum lifecycle")
+            val unprocessedSpectrum = ArrayDeque<SpectrumData>()
             measurementService.collectSpectrumData().collect() {
                 if (spectrumCanvasState.currentStripData.size.width > 1) {
-                    spectrumCanvasState.currentStripData.pushSpectrumToSpectrogramData(
-                        it, mindB, rangedB,
-                        dbGain
-                    )
-                    if (spectrumCanvasState.currentStripData.offset == SPECTROGRAM_STRIP_WIDTH) {
-                        // spectrogram band complete, store bitmap
-                        spectrumCanvasState.cachedStrips.add(
-                            spectrumCanvasState.currentStripData.byteArray.toImageBitmap()
-                        )
-                        if ((spectrumCanvasState.cachedStrips.size - 1) *
-                            SPECTROGRAM_STRIP_WIDTH >
-                            spectrumCanvasState.spectrogramCanvasSize.width
-                        ) {
-                            // remove offscreen bitmaps
-                            spectrumCanvasState.cachedStrips.removeAt(0)
-                        }
-                        spectrumCanvasState.currentStripData =
-                            SpectrogramBitmap.createSpectrogram(
-                                spectrumCanvasState.currentStripData.size,
-                                spectrumCanvasState.currentStripData.scaleMode,
-                                it.sampleRate.toDouble()
-                            )
+                    while (!unprocessedSpectrum.isEmpty()) {
+                        bitmapOffset = processSpectrum(spectrumCanvasState,
+                            unprocessedSpectrum.removeFirst())
                     }
-                    bitmapOffset = spectrumCanvasState.currentStripData.offset
+                    bitmapOffset = processSpectrum(spectrumCanvasState, it)
+                } else {
+                    unprocessedSpectrum.add(it)
+                    if(unprocessedSpectrum.size > MAXIMUM_CACHED_SPECTRUM) {
+                        unprocessedSpectrum.removeFirst()
+                    }
                 }
             }
         }
