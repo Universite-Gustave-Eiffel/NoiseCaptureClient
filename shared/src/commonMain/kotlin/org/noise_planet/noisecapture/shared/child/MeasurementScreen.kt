@@ -18,7 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,6 +42,7 @@ import com.bumble.appyx.navigation.lifecycle.DefaultPlatformLifecycleObserver
 import com.bumble.appyx.navigation.lifecycle.Lifecycle
 import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -235,11 +235,8 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                 legendElements.forEach {
                     legendDepthCount[it.depth] += 1
                 }
-                val maxElementsDepth = legendDepthCount.foldIndexed(Pair(-1,0)) { index, acc, i ->
-                    if(acc.second < i) Pair(index, i) else acc
-                }
                 legendElements.removeAll {
-                    it.depth > maxElementsDepth.first
+                    it.depth > 0 && legendDepthCount[it.depth] != it.depth*2
                 }
                 legendElements.forEach {legendElement ->
                     val tickPos = max(tickStroke.toPx() / 2F, min(xLegendWidth-tickStroke.toPx(), legendElement.xPos - tickStroke.toPx() / 2F))
@@ -343,68 +340,42 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         return spectrumCanvasState.currentStripData.offset
     }
 
-//    @Composable
-//    override fun View(modifier: Modifier) {
-//        var sampleRate by remember { mutableStateOf( DEFAULT_SAMPLE_RATE ) }
-//        var bitmapOffset by remember { mutableStateOf(0) }
-//        lifecycleScope.launch {
-//            println("Launch spectrum lifecycle")
-//            val unprocessedSpectrum = ArrayDeque<SpectrumData>()
-//            measurementService.collectSpectrumData().collect() {
-//                sampleRate = it.sampleRate.toDouble()
-//                if (spectrumCanvasState.currentStripData.size.width > 1) {
-//                    while (!unprocessedSpectrum.isEmpty()) {
-//                        bitmapOffset = processSpectrum(spectrumCanvasState,
-//                            unprocessedSpectrum.removeFirst())
-//                    }
-//                    bitmapOffset = processSpectrum(spectrumCanvasState, it)
-//                } else {
-//                    unprocessedSpectrum.add(it)
-//                    if(unprocessedSpectrum.size > MAXIMUM_CACHED_SPECTRUM) {
-//                        unprocessedSpectrum.removeFirst()
-//                    }
-//                }
-//            }
-//        }
-//        Surface(
-//            modifier = Modifier.fillMaxSize(),
-//            color = MaterialTheme.colors.background
-//        ) {
-//            Column(Modifier.fillMaxWidth()) {
-//                Box(Modifier.fillMaxSize()) {
-//                    spectrogram(spectrumCanvasState, bitmapOffset)
-//                    spectrogramLegend(scaleMode, 48000.0)
-//                }
-//            }
-//        }
-//    }
-
     @Composable
     override fun View(modifier: Modifier) {
         var bitmapOffset by remember { mutableStateOf(0) }
         var noiseLevel by remember { mutableStateOf(0.0) }
         var sampleRate by remember { mutableStateOf( DEFAULT_SAMPLE_RATE ) }
-        val composableScope = rememberCoroutineScope()
-        composableScope.launch {
-            measurementService.collectAudioIndicators().collect {
-                noiseLevel = it.laeq
-            }
-        }
-        composableScope.launch {
-            println("Launch spectrum lifecycle")
-            val unprocessedSpectrum = ArrayDeque<SpectrumData>()
-            measurementService.collectSpectrumData().collect() {
-                sampleRate = it.sampleRate.toDouble()
-                if (spectrumCanvasState.currentStripData.size.width > 1) {
-                    while (!unprocessedSpectrum.isEmpty()) {
-                        bitmapOffset = processSpectrum(spectrumCanvasState,
-                            unprocessedSpectrum.removeFirst())
+        var indicatorCollectJob : Job? = null
+        var spectrumCollectJob : Job? = null
+        lifecycleScope.launch {
+            lifecycle.asEventFlow().collect { event ->
+                if(event == Lifecycle.Event.ON_PAUSE) {
+                    indicatorCollectJob?.cancel()
+                    spectrumCollectJob?.cancel()
+                } else if(event == Lifecycle.Event.ON_RESUME) {
+                    indicatorCollectJob = lifecycleScope.launch {
+                        measurementService.collectAudioIndicators().collect {
+                            noiseLevel = it.laeq
+                        }
                     }
-                    bitmapOffset = processSpectrum(spectrumCanvasState, it)
-                } else {
-                    unprocessedSpectrum.add(it)
-                    if(unprocessedSpectrum.size > MAXIMUM_CACHED_SPECTRUM) {
-                        unprocessedSpectrum.removeFirst()
+                    spectrumCollectJob = lifecycleScope.launch {
+                        println("Launch spectrum lifecycle")
+                        val unprocessedSpectrum = ArrayDeque<SpectrumData>()
+                        measurementService.collectSpectrumData().collect() {
+                            sampleRate = it.sampleRate.toDouble()
+                            if (spectrumCanvasState.currentStripData.size.width > 1) {
+                                while (!unprocessedSpectrum.isEmpty()) {
+                                    bitmapOffset = processSpectrum(spectrumCanvasState,
+                                        unprocessedSpectrum.removeFirst())
+                                }
+                                bitmapOffset = processSpectrum(spectrumCanvasState, it)
+                            } else {
+                                unprocessedSpectrum.add(it)
+                                if(unprocessedSpectrum.size > MAXIMUM_CACHED_SPECTRUM) {
+                                    unprocessedSpectrum.removeFirst()
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -414,7 +385,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
             color = MaterialTheme.colors.background
         ) {
             Column(Modifier.fillMaxWidth()) {
-                //Text("${round(noiseLevel * 100)/100} dB(A)")
+                //Text("${round(noiseLevel * 10)/10} dB(A)")
                 var state by remember { mutableStateOf(MeasurementTabState.SPECTRUM) }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     TabRow(selectedTabIndex = state.ordinal) {
@@ -458,9 +429,39 @@ data class SpectrogramViewModel(var currentStripData : SpectrogramBitmap.Spectro
 data class LegendElement(val text : AnnotatedString, val textSize : IntSize, val xPos : Float,
                          val textPos : Float, val depth : Int)
 
+fun interface SinglePointPlatformLifeCycleObserver : DefaultPlatformLifecycleObserver {
+    fun onEvent(event: Lifecycle.Event)
 
-fun Lifecycle.asPlatformFlow(observer : DefaultPlatformLifecycleObserver): Flow<Lifecycle.State> =
+    override fun onCreate() {
+        onEvent(Lifecycle.Event.ON_CREATE)
+    }
+
+    override fun onDestroy() {
+        onEvent(Lifecycle.Event.ON_DESTROY)
+    }
+
+    override fun onPause() {
+        onEvent(Lifecycle.Event.ON_PAUSE)
+    }
+
+    override fun onResume() {
+        onEvent(Lifecycle.Event.ON_RESUME)
+    }
+
+    override fun onStart() {
+        onEvent(Lifecycle.Event.ON_START)
+    }
+
+    override fun onStop() {
+        onEvent(Lifecycle.Event.ON_STOP)
+    }
+
+
+}
+
+fun Lifecycle.asEventFlow(): Flow<Lifecycle.Event> =
     callbackFlow {
+        val observer = SinglePointPlatformLifeCycleObserver{event -> trySend(event) }
         addObserver(observer)
         awaitClose { removeObserver(observer) }
     }
