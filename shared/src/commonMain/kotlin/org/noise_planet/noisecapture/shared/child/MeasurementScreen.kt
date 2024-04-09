@@ -26,6 +26,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextMeasurer
@@ -33,7 +34,9 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.bumble.appyx.components.backstack.BackStack
 import com.bumble.appyx.navigation.lifecycle.DefaultPlatformLifecycleObserver
@@ -67,6 +70,8 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
     private var mindB = 0.0
     private var dbGain = 105.0
     private val scaleMode = SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG
+    val spectrumCanvasState  = SpectrogramViewModel(SpectrogramBitmap.SpectrogramDataModel(IntSize(1, 1),
+        ByteArray(Int.SIZE_BYTES),0 ,SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG, 1.0), ArrayList(), Size.Zero)
 
     @Composable
     fun spectrogram(spectrumCanvasState : SpectrogramViewModel, bitmapOffset : Int) {
@@ -143,10 +148,12 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         }
     }
 
+    fun buildLegendBitmap(size: Size, density: Density, scaleMode: SpectrogramBitmap.Companion.SCALE_MODE,
+                               sampleRate: Double, textMeasurer: TextMeasurer): LegendBitmap {
+        val drawScope = CanvasDrawScope()
+        val bitmap = ImageBitmap(size.width.toInt(), size.height.toInt())
+        val canvas = androidx.compose.ui.graphics.Canvas(bitmap)
 
-    @Composable
-    fun spectrogramLegend(scaleMode: SpectrogramBitmap.Companion.SCALE_MODE, sampleRate: Double) {
-        val textMeasurer = rememberTextMeasurer()
         var frequencyLegendPosition = when (scaleMode) {
             SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG -> SpectrogramBitmap.frequencyLegendPositionLog
             else -> SpectrogramBitmap.frequencyLegendPositionLinear
@@ -159,11 +166,21 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                 val text = formatFrequency(frequency)
                 textMeasurer.measure(text).size.width
             }
-        Canvas(modifier = Modifier.fillMaxSize() ) {
+        var bottomLegendSize = Size(0F, 0F)
+        var rightLegendSize = Size(0F, 0F)
+        drawScope.draw(
+            density = density,
+            layoutDirection = LayoutDirection.Ltr,
+            canvas = canvas,
+            size = size,
+        ) {
+
             val tickLength = 4.dp.toPx()
             val tickStroke = 2.dp
             val legendHeight = timeXLabelHeight+tickLength
             val legendWidth = maxYLabelWidth+tickLength
+            bottomLegendSize = Size(size.width-legendWidth, legendHeight)
+            rightLegendSize = Size(legendHeight, size.height - legendHeight)
             if(sampleRate > 1) {
                 // black background of legend
                 drawRect(color = SpectrogramBitmap.colorRamp[0], size = Size(legendWidth, size.height),
@@ -241,6 +258,31 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                 }
             }
         }
+        return LegendBitmap(bitmap, size, bottomLegendSize, rightLegendSize)
+    }
+
+
+    @Composable
+    fun spectrogramLegend(scaleMode: SpectrogramBitmap.Companion.SCALE_MODE, sampleRate: Double) {
+        val textMeasurer = rememberTextMeasurer()
+        var preparedLegendBitmap by remember {
+            mutableStateOf(
+                LegendBitmap(
+                    ImageBitmap(1, 1),
+                    Size(0F, 0F), Size(0F, 0F), Size(0F, 0F)
+                )
+            )
+        }
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            if (preparedLegendBitmap.imageSize != size) {
+                preparedLegendBitmap = buildLegendBitmap(
+                    size, Density(density), scaleMode,
+                    sampleRate, textMeasurer
+                )
+            } else {
+                drawImage(preparedLegendBitmap.imageBitmap)
+            }
+        }
     }
 
 
@@ -301,15 +343,48 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         return spectrumCanvasState.currentStripData.offset
     }
 
+//    @Composable
+//    override fun View(modifier: Modifier) {
+//        var sampleRate by remember { mutableStateOf( DEFAULT_SAMPLE_RATE ) }
+//        var bitmapOffset by remember { mutableStateOf(0) }
+//        lifecycleScope.launch {
+//            println("Launch spectrum lifecycle")
+//            val unprocessedSpectrum = ArrayDeque<SpectrumData>()
+//            measurementService.collectSpectrumData().collect() {
+//                sampleRate = it.sampleRate.toDouble()
+//                if (spectrumCanvasState.currentStripData.size.width > 1) {
+//                    while (!unprocessedSpectrum.isEmpty()) {
+//                        bitmapOffset = processSpectrum(spectrumCanvasState,
+//                            unprocessedSpectrum.removeFirst())
+//                    }
+//                    bitmapOffset = processSpectrum(spectrumCanvasState, it)
+//                } else {
+//                    unprocessedSpectrum.add(it)
+//                    if(unprocessedSpectrum.size > MAXIMUM_CACHED_SPECTRUM) {
+//                        unprocessedSpectrum.removeFirst()
+//                    }
+//                }
+//            }
+//        }
+//        Surface(
+//            modifier = Modifier.fillMaxSize(),
+//            color = MaterialTheme.colors.background
+//        ) {
+//            Column(Modifier.fillMaxWidth()) {
+//                Box(Modifier.fillMaxSize()) {
+//                    spectrogram(spectrumCanvasState, bitmapOffset)
+//                    spectrogramLegend(scaleMode, 48000.0)
+//                }
+//            }
+//        }
+//    }
+
     @Composable
     override fun View(modifier: Modifier) {
         var bitmapOffset by remember { mutableStateOf(0) }
         var noiseLevel by remember { mutableStateOf(0.0) }
         var sampleRate by remember { mutableStateOf( DEFAULT_SAMPLE_RATE ) }
         val composableScope = rememberCoroutineScope()
-        val spectrumCanvasState by remember { mutableStateOf(
-            SpectrogramViewModel(SpectrogramBitmap.SpectrogramDataModel(IntSize(1, 1),
-                ByteArray(Int.SIZE_BYTES),0 ,SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG, 1.0), ArrayList(), Size.Zero)) }
         composableScope.launch {
             measurementService.collectAudioIndicators().collect {
                 noiseLevel = it.laeq
@@ -319,6 +394,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
             println("Launch spectrum lifecycle")
             val unprocessedSpectrum = ArrayDeque<SpectrumData>()
             measurementService.collectSpectrumData().collect() {
+                sampleRate = it.sampleRate.toDouble()
                 if (spectrumCanvasState.currentStripData.size.width > 1) {
                     while (!unprocessedSpectrum.isEmpty()) {
                         bitmapOffset = processSpectrum(spectrumCanvasState,
@@ -338,7 +414,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
             color = MaterialTheme.colors.background
         ) {
             Column(Modifier.fillMaxWidth()) {
-                Text("${round(noiseLevel * 100)/100} dB(A)")
+                //Text("${round(noiseLevel * 100)/100} dB(A)")
                 var state by remember { mutableStateOf(MeasurementTabState.SPECTRUM) }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     TabRow(selectedTabIndex = state.ordinal) {
@@ -391,3 +467,4 @@ fun Lifecycle.asPlatformFlow(observer : DefaultPlatformLifecycleObserver): Flow<
 
 enum class MeasurementTabState { SPECTRUM, SPECTROGRAM, MAP}
 val MEASUREMENT_TAB_LABEL = listOf("Spectrum", "Spectrogram", "Map")
+data class LegendBitmap(val imageBitmap: ImageBitmap, val imageSize: Size, val bottomLegendSize: Size, val rightLegendSize: Size)

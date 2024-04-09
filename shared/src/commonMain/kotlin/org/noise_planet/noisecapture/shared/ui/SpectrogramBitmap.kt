@@ -76,7 +76,7 @@ class SpectrogramBitmap {
         }
 
         val frequencyLegendPositionLog =
-            intArrayOf(63, 125, 250, 500, 1000, 2000, 4000, 8000, 16000, 20000)
+            intArrayOf(63, 125, 250, 500, 1000, 2000, 4000, 8000, 16000, 24000)
 
         val frequencyLegendPositionLinear = IntArray(24) { it * 1000 + 1000}
 
