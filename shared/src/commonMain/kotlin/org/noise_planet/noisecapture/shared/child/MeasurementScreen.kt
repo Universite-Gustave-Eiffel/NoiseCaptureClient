@@ -43,9 +43,6 @@ import com.bumble.appyx.navigation.lifecycle.Lifecycle
 import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import org.koin.core.logger.Logger
 import org.noise_planet.noisecapture.shared.FFT_HOP
@@ -53,10 +50,12 @@ import org.noise_planet.noisecapture.shared.MeasurementService
 import org.noise_planet.noisecapture.shared.ScreenData
 import org.noise_planet.noisecapture.shared.signal.SpectrumData
 import org.noise_planet.noisecapture.shared.ui.SpectrogramBitmap
+import org.noise_planet.noisecapture.shared.ui.asEventFlow
 import org.noise_planet.noisecapture.toImageBitmap
 import kotlin.math.log10
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.pow
 import kotlin.math.round
 
 const val SPECTROGRAM_STRIP_WIDTH = 32
@@ -88,7 +87,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
             val legendWidth = maxYLabelWidth+tickLength
             spectrumCanvasState.spectrogramCanvasSize = Size(size.width - legendWidth, size.height
                     - legendHeight)
-            if(spectrumCanvasState.currentStripData.size != canvasSize) {
+            if(spectrumCanvasState.currentStripData.size.height != canvasSize.height) {
                 // reset buffer on resize or first draw
                 spectrumCanvasState.currentStripData = SpectrogramBitmap.createSpectrogram(
                     canvasSize, scaleMode, spectrumCanvasState.currentStripData.sampleRate)
@@ -122,7 +121,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         val xPos = (legendWidth - timeValue / timePerPixel).toFloat()
         val legendText = buildAnnotatedString {
             withStyle(style = SpanStyle(color = Color.White)) {
-                append("+${timeValue.toInt()}s")
+                append("+${round(timeValue).toInt()}s")
             }
         }
         val textLayout = textMeasurer.measure(legendText)
@@ -138,11 +137,11 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         if(legendElement.textPos > minX && legendElement.xPos + legendElement.textSize.width / 2 < maxX) {
             feedElements.add(legendElement)
             // left legend, + x seconds
-            recursiveLegendBuild(textMeasurer, round(timeValue + (timeValueLeft - timeValue) / 2),
+            recursiveLegendBuild(textMeasurer, timeValue + (timeValueLeft - timeValue) / 2,
                 legendWidth, timePerPixel, minX, legendElement.textPos, timeValueLeft, timeValue,
                 feedElements, depth + 1)
             // right legend, - x seconds
-            recursiveLegendBuild(textMeasurer, round(timeValue - (timeValue - timeValueRight) / 2),
+            recursiveLegendBuild(textMeasurer, timeValue - (timeValue - timeValueRight) / 2,
                 legendWidth, timePerPixel, legendElement.textPos + legendElement.textSize.width,
                 maxX, timeValue, timeValueRight, feedElements, depth + 1)
         }
@@ -223,8 +222,8 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                 val timePerPixel = FFT_HOP / sampleRate
                 val lastTime = xLegendWidth * timePerPixel
                 val legendElements = ArrayList<LegendElement>()
-                val rightLegend = makeXLegend(textMeasurer, 0.0, xLegendWidth, timePerPixel, 0)
-                val leftLegend =  makeXLegend(textMeasurer, lastTime, xLegendWidth, timePerPixel, 0)
+                val rightLegend = makeXLegend(textMeasurer, 0.0, xLegendWidth, timePerPixel, -1)
+                val leftLegend =  makeXLegend(textMeasurer, lastTime, xLegendWidth, timePerPixel, -1)
                 legendElements.add(leftLegend)
                 legendElements.add(rightLegend)
                 recursiveLegendBuild(textMeasurer, lastTime / 2, xLegendWidth, timePerPixel,
@@ -233,10 +232,12 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                 // find depth index with maximum number of elements (to generate same intervals on legend)
                 val legendDepthCount = IntArray(legendElements.maxOf { it.depth }+1) { 0 }
                 legendElements.forEach {
-                    legendDepthCount[it.depth] += 1
+                    if(it.depth >= 0) {
+                        legendDepthCount[it.depth] += 1
+                    }
                 }
                 legendElements.removeAll {
-                    it.depth > 0 && legendDepthCount[it.depth] != it.depth*2
+                    it.depth > 0 && legendDepthCount[it.depth] != (2.0.pow(it.depth)).toInt()
                 }
                 legendElements.forEach {legendElement ->
                     val tickPos = max(tickStroke.toPx() / 2F, min(xLegendWidth-tickStroke.toPx(), legendElement.xPos - tickStroke.toPx() / 2F))
@@ -347,36 +348,41 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         var sampleRate by remember { mutableStateOf( DEFAULT_SAMPLE_RATE ) }
         var indicatorCollectJob : Job? = null
         var spectrumCollectJob : Job? = null
+        val launchMeasurementJob = fun () {
+            indicatorCollectJob = lifecycleScope.launch {
+                measurementService.collectAudioIndicators().collect {
+                    noiseLevel = it.laeq
+                }
+            }
+            spectrumCollectJob = lifecycleScope.launch {
+                println("Launch spectrum lifecycle")
+                val unprocessedSpectrum = ArrayDeque<SpectrumData>()
+                measurementService.collectSpectrumData().collect() {
+                    sampleRate = it.sampleRate.toDouble()
+                    if (spectrumCanvasState.currentStripData.size.width > 1) {
+                        while (!unprocessedSpectrum.isEmpty()) {
+                            bitmapOffset = processSpectrum(spectrumCanvasState,
+                                unprocessedSpectrum.removeFirst())
+                        }
+                        bitmapOffset = processSpectrum(spectrumCanvasState, it)
+                    } else {
+                        unprocessedSpectrum.add(it)
+                        if(unprocessedSpectrum.size > MAXIMUM_CACHED_SPECTRUM) {
+                            unprocessedSpectrum.removeFirst()
+                        }
+                    }
+                }
+            }
+        }
         lifecycleScope.launch {
+            launchMeasurementJob()
             lifecycle.asEventFlow().collect { event ->
                 if(event == Lifecycle.Event.ON_PAUSE) {
                     indicatorCollectJob?.cancel()
                     spectrumCollectJob?.cancel()
-                } else if(event == Lifecycle.Event.ON_RESUME) {
-                    indicatorCollectJob = lifecycleScope.launch {
-                        measurementService.collectAudioIndicators().collect {
-                            noiseLevel = it.laeq
-                        }
-                    }
-                    spectrumCollectJob = lifecycleScope.launch {
-                        println("Launch spectrum lifecycle")
-                        val unprocessedSpectrum = ArrayDeque<SpectrumData>()
-                        measurementService.collectSpectrumData().collect() {
-                            sampleRate = it.sampleRate.toDouble()
-                            if (spectrumCanvasState.currentStripData.size.width > 1) {
-                                while (!unprocessedSpectrum.isEmpty()) {
-                                    bitmapOffset = processSpectrum(spectrumCanvasState,
-                                        unprocessedSpectrum.removeFirst())
-                                }
-                                bitmapOffset = processSpectrum(spectrumCanvasState, it)
-                            } else {
-                                unprocessedSpectrum.add(it)
-                                if(unprocessedSpectrum.size > MAXIMUM_CACHED_SPECTRUM) {
-                                    unprocessedSpectrum.removeFirst()
-                                }
-                            }
-                        }
-                    }
+                } else if(event == Lifecycle.Event.ON_RESUME &&
+                    (indicatorCollectJob == null || indicatorCollectJob?.isActive == false)) {
+                    launchMeasurementJob()
                 }
             }
         }
@@ -428,43 +434,6 @@ data class SpectrogramViewModel(var currentStripData : SpectrogramBitmap.Spectro
 
 data class LegendElement(val text : AnnotatedString, val textSize : IntSize, val xPos : Float,
                          val textPos : Float, val depth : Int)
-
-fun interface SinglePointPlatformLifeCycleObserver : DefaultPlatformLifecycleObserver {
-    fun onEvent(event: Lifecycle.Event)
-
-    override fun onCreate() {
-        onEvent(Lifecycle.Event.ON_CREATE)
-    }
-
-    override fun onDestroy() {
-        onEvent(Lifecycle.Event.ON_DESTROY)
-    }
-
-    override fun onPause() {
-        onEvent(Lifecycle.Event.ON_PAUSE)
-    }
-
-    override fun onResume() {
-        onEvent(Lifecycle.Event.ON_RESUME)
-    }
-
-    override fun onStart() {
-        onEvent(Lifecycle.Event.ON_START)
-    }
-
-    override fun onStop() {
-        onEvent(Lifecycle.Event.ON_STOP)
-    }
-
-
-}
-
-fun Lifecycle.asEventFlow(): Flow<Lifecycle.Event> =
-    callbackFlow {
-        val observer = SinglePointPlatformLifeCycleObserver{event -> trySend(event) }
-        addObserver(observer)
-        awaitClose { removeObserver(observer) }
-    }
 
 enum class MeasurementTabState { SPECTRUM, SPECTROGRAM, MAP}
 val MEASUREMENT_TAB_LABEL = listOf("Spectrum", "Spectrogram", "Map")
