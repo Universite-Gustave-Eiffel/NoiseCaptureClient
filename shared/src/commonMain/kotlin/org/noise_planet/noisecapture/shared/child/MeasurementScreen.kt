@@ -7,8 +7,10 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.Colors
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Tab
@@ -23,7 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 import androidx.compose.ui.text.AnnotatedString
@@ -36,6 +37,8 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import com.bumble.appyx.components.backstack.BackStack
 import com.bumble.appyx.navigation.lifecycle.DefaultPlatformLifecycleObserver
@@ -50,6 +53,7 @@ import org.noise_planet.noisecapture.shared.MeasurementService
 import org.noise_planet.noisecapture.shared.ScreenData
 import org.noise_planet.noisecapture.shared.signal.SpectrumData
 import org.noise_planet.noisecapture.shared.ui.SpectrogramBitmap
+import org.noise_planet.noisecapture.shared.ui.SpectrogramBitmap.Companion.toComposeColor
 import org.noise_planet.noisecapture.shared.ui.asEventFlow
 import org.noise_planet.noisecapture.toImageBitmap
 import kotlin.math.log10
@@ -62,12 +66,33 @@ const val SPECTROGRAM_STRIP_WIDTH = 32
 const val REFERENCE_LEGEND_TEXT = " +99s "
 const val DEFAULT_SAMPLE_RATE = 48000.0
 const val MAXIMUM_CACHED_SPECTRUM = 128
+const val MIN_SHOWN_DBA_VALUE = 20.0
+const val MAX_SHOWN_DBA_VALUE = 120.0
+val NOISE_LEVEL_FONT_SIZE = TextUnit(50F, TextUnitType.Sp)
 
 class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<ScreenData>,
                         private val measurementService: MeasurementService, private val logger: Logger) : Node(buildContext), DefaultPlatformLifecycleObserver {
     private var rangedB = 40.0
     private var mindB = 0.0
     private var dbGain = 105.0
+
+    val noiseColorRamp = arrayOf(
+        "#FF0000".toComposeColor(),
+        "#FF8000".toComposeColor(),
+        "#FFFF00".toComposeColor(),
+        "#99FF00".toComposeColor(),
+        "#00FF00".toComposeColor()
+    )
+
+    fun getColorIndex(noiseLevel: Double) = when {
+        noiseLevel > 75.0 -> 0
+        noiseLevel > 65 -> 1
+        noiseLevel > 55 -> 2
+        noiseLevel > 45 -> 3
+        else -> 4
+    }
+
+
     private val scaleMode = SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG
     val spectrumCanvasState  = SpectrogramViewModel(SpectrogramBitmap.SpectrogramDataModel(IntSize(1, 1),
         ByteArray(Int.SIZE_BYTES),0 ,SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG, 1.0), ArrayList(), Size.Zero)
@@ -77,8 +102,8 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
     @Composable
     fun spectrogram(spectrumCanvasState : SpectrogramViewModel, bitmapOffset : Int) {
         Canvas(modifier = Modifier.fillMaxSize() ) {
-            drawRect(color = SpectrogramBitmap.colorRamp[0], size=size)
             val canvasSize = IntSize(SPECTROGRAM_STRIP_WIDTH, (size.height - preparedLegendBitmap.bottomLegendSize.height).toInt())
+            drawRect(color = SpectrogramBitmap.colorRamp[0], size=Size(size.width - preparedLegendBitmap.rightLegendSize.width, canvasSize.height.toFloat()))
             spectrumCanvasState.spectrogramCanvasSize = Size(size.width - preparedLegendBitmap.rightLegendSize.width, size.height
                     - preparedLegendBitmap.bottomLegendSize.height)
             if(spectrumCanvasState.currentStripData.size.height != canvasSize.height) {
@@ -114,7 +139,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                             timePerPixel : Double, depth: Int) : LegendElement {
         val xPos = (legendWidth - timeValue / timePerPixel).toFloat()
         val legendText = buildAnnotatedString {
-            withStyle(style = SpanStyle(color = Color.White)) {
+            withStyle(style = SpanStyle()) {
                 append("+${round(timeValue).toInt()}s")
             }
         }
@@ -142,7 +167,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
     }
 
     fun buildLegendBitmap(size: Size, density: Density, scaleMode: SpectrogramBitmap.Companion.SCALE_MODE,
-                               sampleRate: Double, textMeasurer: TextMeasurer): LegendBitmap {
+                               sampleRate: Double, textMeasurer: TextMeasurer, colors: Colors): LegendBitmap {
         val drawScope = CanvasDrawScope()
         val bitmap = ImageBitmap(size.width.toInt(), size.height.toInt())
         val canvas = androidx.compose.ui.graphics.Canvas(bitmap)
@@ -176,7 +201,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
             rightLegendSize = Size(legendHeight, size.height - legendHeight)
             if(sampleRate > 1) {
                 // black background of legend
-                drawRect(color = SpectrogramBitmap.colorRamp[0], size = Size(legendWidth, size.height),
+                drawRect(color = colors.background, size = Size(legendWidth, size.height),
                     topLeft = Offset(size.width - legendWidth, 0F))
                 // draw Y axe labels
                 val fMax = sampleRate / 2
@@ -184,7 +209,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                 val sheight = (size.height - legendHeight).toInt()
                 frequencyLegendPosition.forEachIndexed { index, frequency ->
                     val text = buildAnnotatedString {
-                        withStyle(style = SpanStyle(color = Color.White)) {
+                        withStyle(style = SpanStyle()) {
                             append(formatFrequency(frequency))
                         }
                     }
@@ -196,7 +221,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                         else -> (sheight - frequency / fMax * sheight).toInt()
                     }
                     drawLine(
-                        color = Color.White, start = Offset(
+                        color = colors.onPrimary, start = Offset(
                             size.width - legendWidth,
                             tickHeightPos.toFloat() - tickStroke.toPx()/2
                         ),
@@ -236,7 +261,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                 legendElements.forEach {legendElement ->
                     val tickPos = max(tickStroke.toPx() / 2F, min(xLegendWidth-tickStroke.toPx(), legendElement.xPos - tickStroke.toPx() / 2F))
                     drawLine(
-                        color = Color.White, start = Offset(
+                        color = colors.onPrimary, start = Offset(
                             tickPos,
                             sheight.toFloat()
                         ),
@@ -256,12 +281,13 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
 
     @Composable
     fun spectrogramLegend(scaleMode: SpectrogramBitmap.Companion.SCALE_MODE, sampleRate: Double) {
+        val colors = MaterialTheme.colors
         val textMeasurer = rememberTextMeasurer()
         Canvas(modifier = Modifier.fillMaxSize()) {
             if (preparedLegendBitmap.imageSize != size) {
                 preparedLegendBitmap = buildLegendBitmap(
                     size, Density(density), scaleMode,
-                    sampleRate, textMeasurer
+                    sampleRate, textMeasurer, colors
                 )
             }
             drawImage(preparedLegendBitmap.imageBitmap)
@@ -309,17 +335,32 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         return spectrumCanvasState.currentStripData.offset
     }
 
+    fun buildNoiseLevelText(noiseLevel : Double) : AnnotatedString = buildAnnotatedString {
+        if(noiseLevel > MIN_SHOWN_DBA_VALUE && noiseLevel < MAX_SHOWN_DBA_VALUE) {
+            withStyle(style = SpanStyle(color = noiseColorRamp[getColorIndex(noiseLevel)], fontSize = NOISE_LEVEL_FONT_SIZE)) {
+                append("${round(noiseLevel * 10) / 10}")
+            }
+        } else {
+            withStyle(style = SpanStyle()) {
+                append("-")
+            }
+        }
+    }
+
+
+
+
     @Composable
     override fun View(modifier: Modifier) {
         var bitmapOffset by remember { mutableStateOf(0) }
-        var noiseLevel by remember { mutableStateOf(0.0) }
+        var noiseLevel by remember { mutableStateOf(buildNoiseLevelText(0.0)) }
         var sampleRate by remember { mutableStateOf( DEFAULT_SAMPLE_RATE ) }
         var indicatorCollectJob : Job? = null
         var spectrumCollectJob : Job? = null
         val launchMeasurementJob = fun () {
             indicatorCollectJob = lifecycleScope.launch {
                 measurementService.collectAudioIndicators().collect {
-                    noiseLevel = it.laeq
+                    noiseLevel = buildNoiseLevelText(it.laeq)
                 }
             }
             spectrumCollectJob = lifecycleScope.launch {
@@ -359,7 +400,12 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
             color = MaterialTheme.colors.background
         ) {
             Column(Modifier.fillMaxWidth()) {
-                //Text("${round(noiseLevel * 10)/10} dB(A)")
+                Row(Modifier.fillMaxWidth()) {
+                    Text(buildAnnotatedString {
+                        withStyle(SpanStyle(fontSize = TextUnit(15F, TextUnitType.Sp)))
+                        {append("dB(A)")} }, modifier = Modifier.align(Alignment.Bottom))
+                    Text(noiseLevel)
+                }
                 var state by remember { mutableStateOf(MeasurementTabState.SPECTRUM) }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     TabRow(selectedTabIndex = state.ordinal) {
