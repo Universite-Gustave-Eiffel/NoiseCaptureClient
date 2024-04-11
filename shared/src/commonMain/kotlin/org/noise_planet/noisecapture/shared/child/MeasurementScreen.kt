@@ -72,21 +72,15 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
     val spectrumCanvasState  = SpectrogramViewModel(SpectrogramBitmap.SpectrogramDataModel(IntSize(1, 1),
         ByteArray(Int.SIZE_BYTES),0 ,SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG, 1.0), ArrayList(), Size.Zero)
 
+    var preparedLegendBitmap = LegendBitmap( ImageBitmap(1, 1), Size(0F, 0F), Size(0F, 0F), Size(0F, 0F) )
+
     @Composable
     fun spectrogram(spectrumCanvasState : SpectrogramViewModel, bitmapOffset : Int) {
-        val textMeasurer = rememberTextMeasurer()
-        val timeXLabelMeasure = textMeasurer.measure(REFERENCE_LEGEND_TEXT)
-        val timeXLabelHeight = timeXLabelMeasure.size.height
-        val text = formatFrequency(20000)
-        val maxYLabelWidth = textMeasurer.measure(text).size.width
         Canvas(modifier = Modifier.fillMaxSize() ) {
             drawRect(color = SpectrogramBitmap.colorRamp[0], size=size)
-            val tickLength = 4.dp.toPx()
-            val legendHeight = timeXLabelHeight+tickLength
-            val canvasSize = IntSize(SPECTROGRAM_STRIP_WIDTH, (size.height - legendHeight).toInt())
-            val legendWidth = maxYLabelWidth+tickLength
-            spectrumCanvasState.spectrogramCanvasSize = Size(size.width - legendWidth, size.height
-                    - legendHeight)
+            val canvasSize = IntSize(SPECTROGRAM_STRIP_WIDTH, (size.height - preparedLegendBitmap.bottomLegendSize.height).toInt())
+            spectrumCanvasState.spectrogramCanvasSize = Size(size.width - preparedLegendBitmap.rightLegendSize.width, size.height
+                    - preparedLegendBitmap.bottomLegendSize.height)
             if(spectrumCanvasState.currentStripData.size.height != canvasSize.height) {
                 // reset buffer on resize or first draw
                 spectrumCanvasState.currentStripData = SpectrogramBitmap.createSpectrogram(
@@ -97,14 +91,14 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                     drawImage(
                         spectrumCanvasState.currentStripData.byteArray.toImageBitmap(),
                         topLeft = Offset(
-                            size.width - bitmapOffset - legendWidth,
+                            size.width - bitmapOffset - preparedLegendBitmap.rightLegendSize.width,
                             0F
                         )
                     )
                     spectrumCanvasState.cachedStrips.reversed()
                         .forEachIndexed { index, imageBitmap ->
                             val bitmapX =
-                                size.width - legendWidth - ((index + 1) * SPECTROGRAM_STRIP_WIDTH
+                                size.width - preparedLegendBitmap.rightLegendSize.width - ((index + 1) * SPECTROGRAM_STRIP_WIDTH
                                         + bitmapOffset).toFloat()
                             drawImage(
                                 imageBitmap,
@@ -263,23 +257,14 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
     @Composable
     fun spectrogramLegend(scaleMode: SpectrogramBitmap.Companion.SCALE_MODE, sampleRate: Double) {
         val textMeasurer = rememberTextMeasurer()
-        var preparedLegendBitmap by remember {
-            mutableStateOf(
-                LegendBitmap(
-                    ImageBitmap(1, 1),
-                    Size(0F, 0F), Size(0F, 0F), Size(0F, 0F)
-                )
-            )
-        }
         Canvas(modifier = Modifier.fillMaxSize()) {
             if (preparedLegendBitmap.imageSize != size) {
                 preparedLegendBitmap = buildLegendBitmap(
                     size, Density(density), scaleMode,
                     sampleRate, textMeasurer
                 )
-            } else {
-                drawImage(preparedLegendBitmap.imageBitmap)
             }
+            drawImage(preparedLegendBitmap.imageBitmap)
         }
     }
 
@@ -295,23 +280,6 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         } else {
             "$frequency Hz"
         }
-    }
-
-
-    override fun onStop() {
-        println("Appyx onStop")
-    }
-
-    override fun onPause() {
-        println("Appyx onPause")
-    }
-
-    override fun onResume() {
-        println("Appyx onResume")
-    }
-
-    override fun onStart() {
-        println("Appyx onStart")
     }
 
     fun processSpectrum(spectrumCanvasState: SpectrogramViewModel, it : SpectrumData) : Int {
@@ -374,8 +342,8 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                 }
             }
         }
+        launchMeasurementJob()
         lifecycleScope.launch {
-            launchMeasurementJob()
             lifecycle.asEventFlow().collect { event ->
                 if(event == Lifecycle.Event.ON_PAUSE) {
                     indicatorCollectJob?.cancel()
