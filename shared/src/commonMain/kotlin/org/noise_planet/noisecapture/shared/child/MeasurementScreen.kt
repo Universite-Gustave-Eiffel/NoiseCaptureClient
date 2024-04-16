@@ -1,15 +1,14 @@
 package org.noise_planet.noisecapture.shared.child
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.Colors
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -350,6 +349,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
 
 
 
+    @OptIn(ExperimentalFoundationApi::class)
     @Composable
     override fun View(modifier: Modifier) {
         var bitmapOffset by remember { mutableStateOf(0) }
@@ -406,36 +406,50 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                         {append("dB(A)")} }, modifier = Modifier.align(Alignment.Bottom))
                     Text(noiseLevel)
                 }
-                var state by remember { mutableStateOf(MeasurementTabState.SPECTRUM) }
+                val pagerState = rememberPagerState(pageCount = { MeasurementTabState.entries.size })
+
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    TabRow(selectedTabIndex = state.ordinal) {
+                    TabRow(selectedTabIndex = pagerState.currentPage) {
                         MeasurementTabState.entries.forEach { entry ->
                             Tab(
                                 text = { Text(MEASUREMENT_TAB_LABEL[entry.ordinal]) },
-                                selected = state == entry,
-                                onClick = { state = entry }
+                                selected = pagerState.currentPage == entry.ordinal,
+                                onClick = { lifecycleScope.launch {pagerState.scrollToPage(entry.ordinal)} }
                             )
                         }
                     }
-                    AnimatedContent(targetState = state, transitionSpec = {
-                        val direction = if(targetState.ordinal > initialState.ordinal) AnimatedContentTransitionScope.SlideDirection.Left else AnimatedContentTransitionScope.SlideDirection.Right
-                        val delay = 400
-                        slideIntoContainer(animationSpec = tween(delay),
-                            towards = direction) togetherWith
-                                slideOutOfContainer(animationSpec = tween(delay),
-                                    towards = direction) }) {
-                        when (it) {
+                    HorizontalPager(state = pagerState) {page->
+                        when (MeasurementTabState.entries[page]) {
                             MeasurementTabState.SPECTROGRAM -> Box(Modifier.fillMaxSize()) {
                                 spectrogram(spectrumCanvasState, bitmapOffset)
                                 spectrogramLegend(scaleMode, sampleRate)
                             }
 
                             else -> Box(Modifier.fillMaxSize()) {Text(
-                                text = "Text tab ${MEASUREMENT_TAB_LABEL[it.ordinal]} selected",
+                                text = "Text tab ${MEASUREMENT_TAB_LABEL[page]} selected",
                                 style = MaterialTheme.typography.body1
                             )}
                         }
                     }
+//                    AnimatedContent(targetState = state, transitionSpec = {
+//                        val direction = if(targetState.ordinal > initialState.ordinal) AnimatedContentTransitionScope.SlideDirection.Left else AnimatedContentTransitionScope.SlideDirection.Right
+//                        val delay = 400
+//                        slideIntoContainer(animationSpec = tween(delay),
+//                            towards = direction) togetherWith
+//                                slideOutOfContainer(animationSpec = tween(delay),
+//                                    towards = direction) }) {
+//                        when (it) {
+//                            MeasurementTabState.SPECTROGRAM -> Box(Modifier.fillMaxSize()) {
+//                                spectrogram(spectrumCanvasState, bitmapOffset)
+//                                spectrogramLegend(scaleMode, sampleRate)
+//                            }
+//
+//                            else -> Box(Modifier.fillMaxSize()) {Text(
+//                                text = "Text tab ${MEASUREMENT_TAB_LABEL[it.ordinal]} selected",
+//                                style = MaterialTheme.typography.body1
+//                            )}
+//                        }
+//                    }
                 }
             }
         }
