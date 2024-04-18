@@ -16,9 +16,11 @@ import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -197,11 +199,8 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
             val legendHeight = timeXLabelHeight+tickLength
             val legendWidth = maxYLabelWidth+tickLength
             bottomLegendSize = Size(size.width-legendWidth, legendHeight)
-            rightLegendSize = Size(legendHeight, size.height - legendHeight)
+            rightLegendSize = Size(legendWidth, size.height - legendHeight)
             if(sampleRate > 1) {
-                // black background of legend
-                drawRect(color = colors.background, size = Size(legendWidth, size.height),
-                    topLeft = Offset(size.width - legendWidth, 0F))
                 // draw Y axe labels
                 val fMax = sampleRate / 2
                 val fMin = frequencyLegendPosition[0].toDouble()
@@ -395,6 +394,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                 }
             }
         }
+        val animationScope = rememberCoroutineScope()
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colors.background
@@ -414,7 +414,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                             Tab(
                                 text = { Text(MEASUREMENT_TAB_LABEL[entry.ordinal]) },
                                 selected = pagerState.currentPage == entry.ordinal,
-                                onClick = { lifecycleScope.launch {pagerState.scrollToPage(entry.ordinal)} }
+                                onClick = { animationScope.launch {pagerState.animateScrollToPage(entry.ordinal)} }
                             )
                         }
                     }
@@ -431,25 +431,6 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                             )}
                         }
                     }
-//                    AnimatedContent(targetState = state, transitionSpec = {
-//                        val direction = if(targetState.ordinal > initialState.ordinal) AnimatedContentTransitionScope.SlideDirection.Left else AnimatedContentTransitionScope.SlideDirection.Right
-//                        val delay = 400
-//                        slideIntoContainer(animationSpec = tween(delay),
-//                            towards = direction) togetherWith
-//                                slideOutOfContainer(animationSpec = tween(delay),
-//                                    towards = direction) }) {
-//                        when (it) {
-//                            MeasurementTabState.SPECTROGRAM -> Box(Modifier.fillMaxSize()) {
-//                                spectrogram(spectrumCanvasState, bitmapOffset)
-//                                spectrogramLegend(scaleMode, sampleRate)
-//                            }
-//
-//                            else -> Box(Modifier.fillMaxSize()) {Text(
-//                                text = "Text tab ${MEASUREMENT_TAB_LABEL[it.ordinal]} selected",
-//                                style = MaterialTheme.typography.body1
-//                            )}
-//                        }
-//                    }
                 }
             }
         }
