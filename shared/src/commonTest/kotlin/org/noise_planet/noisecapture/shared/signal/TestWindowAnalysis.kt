@@ -1,11 +1,13 @@
 package org.noise_planet.noisecapture.shared.signal
 
 import kotlinx.coroutines.test.runTest
+import kotlin.math.log10
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class TestWindowAnalysis {
 
@@ -149,6 +151,25 @@ class TestWindowAnalysis {
             val indexOf1000Hz = thirdOctaveSquare.indexOfFirst { t -> t.midFrequency.toInt() == 1000 }
             assertEquals(expectedLevel, thirdOctaveSquare[indexOf1000Hz].spl, 0.01)
             assertEquals(expectedLevel, thirdOctaveFractional[indexOf1000Hz].spl, 0.01)
+        }
+    }
+
+    @Test
+    fun testFastLevelDecayRateTest() {
+        // generate noise levels each 125 ms
+        val cutoffTime = 5
+        val timeInterval=0.125
+        val levels = DoubleArray((8/timeInterval).toInt()) { t -> if(t*timeInterval < cutoffTime) 94.0 else -99.0 }
+        // fast level should reach input noise in 0.6 seconds
+        // fast level decay should be at the rate of 34.7 dB/s
+        val levelDisplayWeightedDecay = LevelDisplayWeightedDecay(FAST_DECAY_RATE, timeInterval)
+        var previousValue = 0.0
+        levels.forEachIndexed { i , it->
+            val dbValue = levelDisplayWeightedDecay.getWeightedValue(it)
+            if(i*timeInterval >= cutoffTime) {
+                assertEquals(FAST_DECAY_RATE, (dbValue-previousValue)/timeInterval, 0.01)
+            }
+            previousValue = dbValue
         }
     }
 }

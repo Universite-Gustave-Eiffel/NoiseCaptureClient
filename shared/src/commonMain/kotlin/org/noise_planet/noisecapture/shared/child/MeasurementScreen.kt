@@ -52,6 +52,9 @@ import org.koin.core.logger.Logger
 import org.noise_planet.noisecapture.shared.FFT_HOP
 import org.noise_planet.noisecapture.shared.MeasurementService
 import org.noise_planet.noisecapture.shared.ScreenData
+import org.noise_planet.noisecapture.shared.WINDOW_TIME
+import org.noise_planet.noisecapture.shared.signal.FAST_DECAY_RATE
+import org.noise_planet.noisecapture.shared.signal.LevelDisplayWeightedDecay
 import org.noise_planet.noisecapture.shared.signal.SpectrumData
 import org.noise_planet.noisecapture.shared.ui.SpectrogramBitmap
 import org.noise_planet.noisecapture.shared.ui.SpectrogramBitmap.Companion.toComposeColor
@@ -358,8 +361,9 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         var spectrumCollectJob : Job? = null
         val launchMeasurementJob = fun () {
             indicatorCollectJob = lifecycleScope.launch {
+                val levelDisplay = LevelDisplayWeightedDecay(FAST_DECAY_RATE, WINDOW_TIME)
                 measurementService.collectAudioIndicators().collect {
-                    noiseLevel = buildNoiseLevelText(it.laeq)
+                    noiseLevel = buildNoiseLevelText(levelDisplay.getWeightedValue(it.laeq))
                 }
             }
             spectrumCollectJob = lifecycleScope.launch {

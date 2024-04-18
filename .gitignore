@@ -16,3 +16,23 @@ build/
 local.properties
 venv/
 yarn.lock
+iosApp/Podfile.lock
+iosApp/Pods/*
+iosApp/iosApp.xcworkspace/*
+iosApp/iosApp.xcodeproj/*
+!iosApp/iosApp.xcodeproj/project.pbxproj
+shared/shared.podspec
+androidApp/release
+
+# IntelliJ .idea folder
+.idea/workspace.xml
+.idea/misc.xml
+.idea/caches
+.idea/compiler.xml
+.idea/artifacts
+.idea/deploymentTargetDropDown.xml
+.idea/androidTestResultsUserPreferences.xml
+.idea/assetWizardSettings.xml
+.idea/modules.xml
+.idea/appInsightsSettings.xml
+gradle.xml
