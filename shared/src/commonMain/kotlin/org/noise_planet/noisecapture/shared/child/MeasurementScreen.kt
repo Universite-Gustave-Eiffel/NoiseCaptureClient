@@ -2,13 +2,17 @@ package org.noise_planet.noisecapture.shared.child
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Colors
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -16,7 +20,6 @@ import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,9 +27,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -69,9 +74,9 @@ import kotlin.math.round
 const val SPECTROGRAM_STRIP_WIDTH = 32
 const val REFERENCE_LEGEND_TEXT = " +99s "
 const val DEFAULT_SAMPLE_RATE = 48000.0
-const val MAXIMUM_CACHED_SPECTRUM = 128
-const val MIN_SHOWN_DBA_VALUE = 20.0
-const val MAX_SHOWN_DBA_VALUE = 120.0
+const val MAXIMUM_CACHED_SPECTRUM = 1280
+const val MIN_SHOWN_DBA_VALUE = 5.0
+const val MAX_SHOWN_DBA_VALUE = 140.0
 val NOISE_LEVEL_FONT_SIZE = TextUnit(50F, TextUnitType.Sp)
 
 class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<ScreenData>,
@@ -348,6 +353,56 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         }
     }
 
+    @Composable
+    fun vueMeter(modifier: Modifier, settings: VueMeterSettings, value : Double) {
+        val color = MaterialTheme.colors
+        val textMeasurer = rememberTextMeasurer()
+        Box(modifier = modifier) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                // x axis labels
+                var maxHeight = 0
+                settings.xLabels.forEach { value ->
+                    val textLayoutResult = textMeasurer.measure(buildAnnotatedString {
+                        withStyle(
+                            SpanStyle(
+                                fontSize = TextUnit(
+                                    10F,
+                                    TextUnitType.Sp
+                                )
+                            )
+                        )
+                        { append("$value") }
+                    })
+                    maxHeight = max(textLayoutResult.size.height, maxHeight)
+                    val labelRatio =
+                        (value - settings.minimum) / (settings.maximum - settings.minimum)
+                    val xPosition = min(
+                        size.width - textLayoutResult.size.width,
+                        max(
+                            0F,
+                            (size.width * labelRatio - textLayoutResult.size.width / 2).toFloat()
+                        )
+                    )
+                    drawText(textLayoutResult, topLeft = Offset(xPosition, 0F))
+                }
+                val barHeight = size.height - maxHeight
+                drawRoundRect(
+                    color = color.background,
+                    topLeft = Offset(0F, maxHeight.toFloat()),
+                    cornerRadius = CornerRadius(barHeight / 2, barHeight / 2),
+                    size = Size(size.width, barHeight)
+                )
+                val valueRatio = (value-settings.minimum)/(settings.maximum-settings.minimum)
+                drawRoundRect(
+                    color = noiseColorRamp[getColorIndex(value)],
+                    topLeft = Offset(0F, maxHeight.toFloat()),
+                    cornerRadius = CornerRadius(barHeight / 2, barHeight / 2),
+                    size = Size((size.width * valueRatio).toFloat(), barHeight)
+                )
+            }
+        }
+    }
+
 
 
 
@@ -355,7 +410,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
     @Composable
     override fun View(modifier: Modifier) {
         var bitmapOffset by remember { mutableStateOf(0) }
-        var noiseLevel by remember { mutableStateOf(buildNoiseLevelText(0.0)) }
+        var noiseLevel by remember { mutableStateOf(0.0) }
         var sampleRate by remember { mutableStateOf( DEFAULT_SAMPLE_RATE ) }
         var indicatorCollectJob : Job? = null
         var spectrumCollectJob : Job? = null
@@ -363,7 +418,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
             indicatorCollectJob = lifecycleScope.launch {
                 val levelDisplay = LevelDisplayWeightedDecay(FAST_DECAY_RATE, WINDOW_TIME)
                 measurementService.collectAudioIndicators().collect {
-                    noiseLevel = buildNoiseLevelText(levelDisplay.getWeightedValue(it.laeq))
+                    noiseLevel = levelDisplay.getWeightedValue(it.laeq)
                 }
             }
             spectrumCollectJob = lifecycleScope.launch {
@@ -399,17 +454,66 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
             }
         }
         val animationScope = rememberCoroutineScope()
+
+        val rightRoundedSquareShape: Shape = RoundedCornerShape(
+            topStart = 0.dp,
+            topEnd = 40.dp,
+            bottomStart = 0.dp,
+            bottomEnd = 40.dp
+        )
+        val vueMeterSettings = VueMeterSettings(20.0,120.0,
+            IntArray(6){v->((v+ 1)*20.0).toInt()})
         Surface(
             modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colors.background
+            color = MaterialTheme.colors.primary
         ) {
             Column(Modifier.fillMaxWidth()) {
-                Row(Modifier.fillMaxWidth()) {
-                    Text(buildAnnotatedString {
-                        withStyle(SpanStyle(fontSize = TextUnit(15F, TextUnitType.Sp)))
-                        {append("dB(A)")} }, modifier = Modifier.align(Alignment.Bottom))
-                    Text(noiseLevel)
-                }
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+
+                            Surface(
+                                Modifier.padding(top = 20.dp, bottom = 10.dp).weight(1F),
+                                color = MaterialTheme.colors.background,
+                                shape = rightRoundedSquareShape,
+                                elevation = 10.dp
+                            ) {
+                                Box() {
+                                    Text(
+                                        buildAnnotatedString {
+                                            withStyle(
+                                                SpanStyle(
+                                                    fontSize = TextUnit(
+                                                        18F,
+                                                        TextUnitType.Sp
+                                                    )
+                                                )
+                                            )
+                                            { append("dB(A)") }
+                                        },
+                                        modifier = Modifier.align(Alignment.BottomStart)
+                                            .padding(start = 10.dp)
+                                    )
+                                    Text(buildNoiseLevelText(noiseLevel), modifier = Modifier.padding(end = 20.dp).align(Alignment.CenterEnd))
+                                }
+                            }
+                        Row(
+                            Modifier.align(Alignment.CenterVertically),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            listOf(MeasurementStatistics("Min", "-"),
+                                MeasurementStatistics("Avg", "-"),
+                                MeasurementStatistics("Max", "-")).forEach {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(10.dp)) {
+                                    Text(it.label)
+                                    Text(it.value)
+                                }
+                            }
+                        }
+                    }
+
+                vueMeter(Modifier.fillMaxWidth().height(50.dp).padding(start = 30.dp, end = 30.dp),
+                    vueMeterSettings,
+                    noiseLevel
+                )
                 val pagerState = rememberPagerState(pageCount = { MeasurementTabState.entries.size })
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -429,7 +533,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                                 spectrogramLegend(scaleMode, sampleRate)
                             }
 
-                            else -> Box(Modifier.fillMaxSize()) {Text(
+                            else -> Surface(Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {Text(
                                 text = "Text tab ${MEASUREMENT_TAB_LABEL[page]} selected",
                                 style = MaterialTheme.typography.body1
                             )}
@@ -451,3 +555,27 @@ data class LegendElement(val text : AnnotatedString, val textSize : IntSize, val
 enum class MeasurementTabState { SPECTRUM, SPECTROGRAM, MAP}
 val MEASUREMENT_TAB_LABEL = listOf("Spectrum", "Spectrogram", "Map")
 data class LegendBitmap(val imageBitmap: ImageBitmap, val imageSize: Size, val bottomLegendSize: Size, val rightLegendSize: Size)
+
+data class MeasurementStatistics(val label : String, val value : String)
+
+data class VueMeterSettings(val minimum : Double, val maximum : Double, val xLabels : IntArray) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as VueMeterSettings
+
+        if (minimum != other.minimum) return false
+        if (maximum != other.maximum) return false
+        if (!xLabels.contentEquals(other.xLabels)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = minimum.hashCode()
+        result = 31 * result + maximum.hashCode()
+        result = 31 * result + xLabels.contentHashCode()
+        return result
+    }
+}
