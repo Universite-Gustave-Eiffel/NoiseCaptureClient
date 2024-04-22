@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
@@ -360,6 +360,20 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
     }
 
     @Composable
+    fun spectrumPlot(modifier: Modifier, settings: SpectrumSettings, values : SpectrumData) {
+        val thirdOctaves = values.thirdOctaveProcessing(settings.frequencyMin, settings.frequencyMax)
+        val thirdOctaveGain = 10*log10(10.0.pow(dbGain/10.0)/thirdOctaves.size)
+        Canvas(modifier) {
+            val barHeight = size.height / thirdOctaves.size
+            thirdOctaves.forEachIndexed { index, thirdOctave ->
+                val splRatio = (thirdOctave.spl+thirdOctaveGain-settings.minimumX)/(settings.maximumX-settings.minimumX)
+                drawRect(color = Color.Blue, topLeft = Offset(0F, barHeight*index),
+                    size=Size((size.width*splRatio).toFloat(), barHeight))
+            }
+        }
+    }
+
+    @Composable
     fun vueMeter(modifier: Modifier, settings: VueMeterSettings, value : Double) {
         val color = MaterialTheme.colors
         val textMeasurer = rememberTextMeasurer()
@@ -479,10 +493,11 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
 
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
-    fun measurementPager(bitmapOffset: Int, sampleRate: Double) {
+    fun measurementPager(bitmapOffset: Int, sampleRate: Double, spectrumData: SpectrumData) {
 
         val animationScope = rememberCoroutineScope()
         val pagerState = rememberPagerState(pageCount = { MeasurementTabState.entries.size })
+        val spectrumSettings = SpectrumSettings(MIN_SHOWN_DBA_VALUE, MAX_SHOWN_DBA_VALUE, 100.0, 16000.0)
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             TabRow(selectedTabIndex = pagerState.currentPage) {
@@ -500,6 +515,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                         spectrogram(spectrumCanvasState, bitmapOffset)
                         spectrogramLegend(scaleMode, sampleRate)
                     }
+                    MeasurementTabState.SPECTRUM -> spectrumPlot(Modifier.fillMaxSize(), spectrumSettings, spectrumData)
 
                     else -> Surface(Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {Text(
                         text = "Text tab ${MEASUREMENT_TAB_LABEL[page]} selected",
@@ -517,6 +533,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         var bitmapOffset by remember { mutableStateOf(0) }
         var noiseLevel by remember { mutableStateOf(0.0) }
         var sampleRate by remember { mutableStateOf( DEFAULT_SAMPLE_RATE ) }
+        var spectrumDataState by remember { mutableStateOf( SpectrumData(0, FloatArray(0), DEFAULT_SAMPLE_RATE.toInt()) ) }
         var indicatorCollectJob : Job? = null
         var spectrumCollectJob : Job? = null
         val launchMeasurementJob = fun () {
@@ -528,10 +545,11 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
             }
             spectrumCollectJob = lifecycleScope.launch {
                 println("Launch spectrum lifecycle")
-                measurementService.collectSpectrumData().collect() {
-                    sampleRate = it.sampleRate.toDouble()
+                measurementService.collectSpectrumData().collect() { spectrumData ->
+                    sampleRate = spectrumData.sampleRate.toDouble()
+                    spectrumDataState = spectrumData
                     if (spectrumCanvasState.currentStripData.size.width > 1) {
-                        bitmapOffset = processSpectrum(spectrumCanvasState, it)
+                        bitmapOffset = processSpectrum(spectrumCanvasState, spectrumData)
                     }
                 }
             }
@@ -560,13 +578,13 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                             measurementHeader(noiseLevel)
                         }
                         Column(modifier = Modifier) {
-                            measurementPager(bitmapOffset, sampleRate)
+                            measurementPager(bitmapOffset, sampleRate, spectrumDataState)
                         }
                     }
                 } else {
                     Column(modifier = Modifier.fillMaxSize()) {
                         measurementHeader(noiseLevel)
-                        measurementPager(bitmapOffset, sampleRate)
+                        measurementPager(bitmapOffset, sampleRate, spectrumDataState)
                     }
                 }
             }
@@ -586,6 +604,8 @@ val MEASUREMENT_TAB_LABEL = listOf("Spectrum", "Spectrogram", "Map")
 data class LegendBitmap(val imageBitmap: ImageBitmap, val imageSize: Size, val bottomLegendSize: Size, val rightLegendSize: Size)
 
 data class MeasurementStatistics(val label : String, val value : String)
+
+data class SpectrumSettings(val minimumX : Double, val maximumX : Double, val frequencyMin : Double, val frequencyMax : Double)
 
 data class VueMeterSettings(val minimum : Double, val maximum : Double, val xLabels : IntArray) {
     override fun equals(other: Any?): Boolean {

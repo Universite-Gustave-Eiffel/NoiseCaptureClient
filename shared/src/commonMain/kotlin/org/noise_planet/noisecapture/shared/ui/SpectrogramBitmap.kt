@@ -178,7 +178,7 @@ class SpectrogramBitmap {
                 for (idFreq in freqStart..<freqEnd) {
                     sumVal += 10.0.pow(fftResult.spectrum[idFreq] / 10.0)
                 }
-                sumVal = max(0.0, 10 * log10(sumVal) + gain)
+                sumVal = max(0.0, 10 * log10(sumVal/(freqEnd-freqStart)) + gain)
                 val colorIndex = min(
                     colorRamp.size - 1, max(
                         0, (((sumVal - mindB) / rangedB) *
