@@ -4,12 +4,17 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,18 +35,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.PlatformSpanStyle
-import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.drawText
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.withStyle
@@ -411,7 +412,108 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         }
     }
 
+    @Composable
+    fun measurementHeader(noiseLevel: Double) {
+        val rightRoundedSquareShape: Shape = RoundedCornerShape(
+            topStart = 0.dp,
+            topEnd = 40.dp,
+            bottomStart = 0.dp,
+            bottomEnd = 40.dp
+        )
+        val vueMeterSettings = VueMeterSettings(20.0,120.0,
+            IntArray(6){v->((v+ 1)*20.0).toInt()})
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Surface(
+                    Modifier.padding(top = 20.dp, bottom = 10.dp).weight(1F),
+                    color = MaterialTheme.colors.background,
+                    shape = rightRoundedSquareShape,
+                    elevation = 10.dp
+                ) {
+                    Box(modifier = Modifier.padding(10.dp)) {
+                        Text(
+                            buildAnnotatedString {
+                                withStyle(
+                                    SpanStyle(
+                                        fontSize = TextUnit(
+                                            18F,
+                                            TextUnitType.Sp
+                                        ),
+                                    )
+                                )
+                                { append("dB(A)") }
+                            },
+                            modifier = Modifier.align(Alignment.CenterStart)
+                        )
+                        Text(
+                            buildNoiseLevelText(noiseLevel),
+                            modifier = Modifier.align(Alignment.BottomEnd)
+                        )
+                    }
+                }
+                Row(
+                    Modifier.align(Alignment.CenterVertically),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    listOf(
+                        MeasurementStatistics("Min", "-"),
+                        MeasurementStatistics("Avg", "-"),
+                        MeasurementStatistics("Max", "-")
+                    ).forEach {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(10.dp)
+                        ) {
+                            Text(it.label)
+                            Text(it.value)
+                        }
+                    }
+                }
+            }
 
+            vueMeter(
+                Modifier.fillMaxWidth().height(50.dp).padding(start = 30.dp, end = 30.dp),
+                vueMeterSettings,
+                noiseLevel
+            )
+        }
+    }
+
+    @OptIn(ExperimentalFoundationApi::class)
+    @Composable
+    fun measurementPager(bitmapOffset: Int, sampleRate: Double) {
+
+        val animationScope = rememberCoroutineScope()
+        val pagerState = rememberPagerState(pageCount = { MeasurementTabState.entries.size })
+
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            TabRow(selectedTabIndex = pagerState.currentPage) {
+                MeasurementTabState.entries.forEach { entry ->
+                    Tab(
+                        text = { Text(MEASUREMENT_TAB_LABEL[entry.ordinal]) },
+                        selected = pagerState.currentPage == entry.ordinal,
+                        onClick = { animationScope.launch {pagerState.animateScrollToPage(entry.ordinal)} }
+                    )
+                }
+            }
+            HorizontalPager(state = pagerState) {page->
+                when (MeasurementTabState.entries[page]) {
+                    MeasurementTabState.SPECTROGRAM -> Box(Modifier.fillMaxSize()) {
+                        spectrogram(spectrumCanvasState, bitmapOffset)
+                        spectrogramLegend(scaleMode, sampleRate)
+                    }
+
+                    else -> Surface(Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {Text(
+                        text = "Text tab ${MEASUREMENT_TAB_LABEL[page]} selected",
+                        style = MaterialTheme.typography.body1
+                    )}
+                }
+            }
+        }
+    }
 
 
     @OptIn(ExperimentalFoundationApi::class)
@@ -451,90 +553,21 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                 }
             }
         }
-        val animationScope = rememberCoroutineScope()
 
-        val rightRoundedSquareShape: Shape = RoundedCornerShape(
-            topStart = 0.dp,
-            topEnd = 40.dp,
-            bottomStart = 0.dp,
-            bottomEnd = 40.dp
-        )
-        val vueMeterSettings = VueMeterSettings(20.0,120.0,
-            IntArray(6){v->((v+ 1)*20.0).toInt()})
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colors.primary
         ) {
-            Column(Modifier.fillMaxWidth()) {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-
-                            Surface(
-                                Modifier.padding(top = 20.dp, bottom = 10.dp).weight(1F),
-                                color = MaterialTheme.colors.background,
-                                shape = rightRoundedSquareShape,
-                                elevation = 10.dp
-                            ) {
-                                Box(modifier = Modifier.padding(10.dp)) {
-                                    Text(
-                                        buildAnnotatedString {
-                                            withStyle(
-                                                SpanStyle(
-                                                    fontSize = TextUnit(
-                                                        18F,
-                                                        TextUnitType.Sp
-                                                    ),
-                                                )
-                                            )
-                                            { append("dB(A)") }
-                                        },
-                                        modifier = Modifier.align(Alignment.CenterStart)
-                                    )
-                                    Text(buildNoiseLevelText(noiseLevel), modifier = Modifier.align(Alignment.BottomEnd))
-                                }
-                            }
-                        Row(
-                            Modifier.align(Alignment.CenterVertically),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            listOf(MeasurementStatistics("Min", "-"),
-                                MeasurementStatistics("Avg", "-"),
-                                MeasurementStatistics("Max", "-")).forEach {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(10.dp)) {
-                                    Text(it.label)
-                                    Text(it.value)
-                                }
-                            }
-                        }
+            BoxWithConstraints {
+                if(maxWidth > maxHeight) {
+                    Row(modifier = Modifier.fillMaxSize()) {
+                        measurementHeader(noiseLevel)
+                        measurementPager(bitmapOffset, sampleRate)
                     }
-
-                vueMeter(Modifier.fillMaxWidth().height(50.dp).padding(start = 30.dp, end = 30.dp),
-                    vueMeterSettings,
-                    noiseLevel
-                )
-                val pagerState = rememberPagerState(pageCount = { MeasurementTabState.entries.size })
-
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    TabRow(selectedTabIndex = pagerState.currentPage) {
-                        MeasurementTabState.entries.forEach { entry ->
-                            Tab(
-                                text = { Text(MEASUREMENT_TAB_LABEL[entry.ordinal]) },
-                                selected = pagerState.currentPage == entry.ordinal,
-                                onClick = { animationScope.launch {pagerState.animateScrollToPage(entry.ordinal)} }
-                            )
-                        }
-                    }
-                    HorizontalPager(state = pagerState) {page->
-                        when (MeasurementTabState.entries[page]) {
-                            MeasurementTabState.SPECTROGRAM -> Box(Modifier.fillMaxSize()) {
-                                spectrogram(spectrumCanvasState, bitmapOffset)
-                                spectrogramLegend(scaleMode, sampleRate)
-                            }
-
-                            else -> Surface(Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {Text(
-                                text = "Text tab ${MEASUREMENT_TAB_LABEL[page]} selected",
-                                style = MaterialTheme.typography.body1
-                            )}
-                        }
+                } else {
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        measurementHeader(noiseLevel)
+                        measurementPager(bitmapOffset, sampleRate)
                     }
                 }
             }
