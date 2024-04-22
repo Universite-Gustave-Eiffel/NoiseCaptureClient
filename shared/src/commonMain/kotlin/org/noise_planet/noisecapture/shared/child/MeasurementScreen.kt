@@ -30,15 +30,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.PlatformSpanStyle
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
@@ -74,7 +79,6 @@ import kotlin.math.round
 const val SPECTROGRAM_STRIP_WIDTH = 32
 const val REFERENCE_LEGEND_TEXT = " +99s "
 const val DEFAULT_SAMPLE_RATE = 48000.0
-const val MAXIMUM_CACHED_SPECTRUM = 1280
 const val MIN_SHOWN_DBA_VALUE = 5.0
 const val MAX_SHOWN_DBA_VALUE = 140.0
 val NOISE_LEVEL_FONT_SIZE = TextUnit(50F, TextUnitType.Sp)
@@ -117,6 +121,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                     - preparedLegendBitmap.bottomLegendSize.height)
             if(spectrumCanvasState.currentStripData.size.height != canvasSize.height) {
                 // reset buffer on resize or first draw
+                println("Clear ${spectrumCanvasState.cachedStrips.size} strips ${spectrumCanvasState.currentStripData.size.height} != ${canvasSize.height}")
                 spectrumCanvasState.currentStripData = SpectrogramBitmap.createSpectrogram(
                     canvasSize, scaleMode, spectrumCanvasState.currentStripData.sampleRate)
                 spectrumCanvasState.cachedStrips.clear()
@@ -341,14 +346,17 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         return spectrumCanvasState.currentStripData.offset
     }
 
+    @Composable
     fun buildNoiseLevelText(noiseLevel : Double) : AnnotatedString = buildAnnotatedString {
-        if(noiseLevel > MIN_SHOWN_DBA_VALUE && noiseLevel < MAX_SHOWN_DBA_VALUE) {
-            withStyle(style = SpanStyle(color = noiseColorRamp[getColorIndex(noiseLevel)], fontSize = NOISE_LEVEL_FONT_SIZE)) {
-                append("${round(noiseLevel * 10) / 10}")
-            }
-        } else {
-            withStyle(style = SpanStyle()) {
-                append("-")
+        val inRangeNoise = noiseLevel > MIN_SHOWN_DBA_VALUE && noiseLevel < MAX_SHOWN_DBA_VALUE
+        withStyle(style = SpanStyle(
+            color = if(inRangeNoise) noiseColorRamp[getColorIndex(noiseLevel)] else MaterialTheme.colors.onPrimary,
+            fontSize = NOISE_LEVEL_FONT_SIZE,
+            baselineShift = BaselineShift.None
+        )) {
+            when {
+                inRangeNoise -> append("${round(noiseLevel * 10) / 10}")
+                else -> append("-")
             }
         }
     }
@@ -423,20 +431,10 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
             }
             spectrumCollectJob = lifecycleScope.launch {
                 println("Launch spectrum lifecycle")
-                val unprocessedSpectrum = ArrayDeque<SpectrumData>()
                 measurementService.collectSpectrumData().collect() {
                     sampleRate = it.sampleRate.toDouble()
                     if (spectrumCanvasState.currentStripData.size.width > 1) {
-                        while (!unprocessedSpectrum.isEmpty()) {
-                            bitmapOffset = processSpectrum(spectrumCanvasState,
-                                unprocessedSpectrum.removeFirst())
-                        }
                         bitmapOffset = processSpectrum(spectrumCanvasState, it)
-                    } else {
-                        unprocessedSpectrum.add(it)
-                        if(unprocessedSpectrum.size > MAXIMUM_CACHED_SPECTRUM) {
-                            unprocessedSpectrum.removeFirst()
-                        }
                     }
                 }
             }
@@ -476,7 +474,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                                 shape = rightRoundedSquareShape,
                                 elevation = 10.dp
                             ) {
-                                Box() {
+                                Box(modifier = Modifier.padding(10.dp)) {
                                     Text(
                                         buildAnnotatedString {
                                             withStyle(
@@ -484,15 +482,14 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                                                     fontSize = TextUnit(
                                                         18F,
                                                         TextUnitType.Sp
-                                                    )
+                                                    ),
                                                 )
                                             )
                                             { append("dB(A)") }
                                         },
-                                        modifier = Modifier.align(Alignment.BottomStart)
-                                            .padding(start = 10.dp)
+                                        modifier = Modifier.align(Alignment.CenterStart)
                                     )
-                                    Text(buildNoiseLevelText(noiseLevel), modifier = Modifier.padding(end = 20.dp).align(Alignment.CenterEnd))
+                                    Text(buildNoiseLevelText(noiseLevel), modifier = Modifier.align(Alignment.BottomEnd))
                                 }
                             }
                         Row(
