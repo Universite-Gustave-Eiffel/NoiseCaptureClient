@@ -7,14 +7,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -366,49 +363,47 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
     fun vueMeter(modifier: Modifier, settings: VueMeterSettings, value : Double) {
         val color = MaterialTheme.colors
         val textMeasurer = rememberTextMeasurer()
-        Box(modifier = modifier) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                // x axis labels
-                var maxHeight = 0
-                settings.xLabels.forEach { value ->
-                    val textLayoutResult = textMeasurer.measure(buildAnnotatedString {
-                        withStyle(
-                            SpanStyle(
-                                fontSize = TextUnit(
-                                    10F,
-                                    TextUnitType.Sp
-                                )
+        Canvas(modifier = modifier) {
+            // x axis labels
+            var maxHeight = 0
+            settings.xLabels.forEach { value ->
+                val textLayoutResult = textMeasurer.measure(buildAnnotatedString {
+                    withStyle(
+                        SpanStyle(
+                            fontSize = TextUnit(
+                                10F,
+                                TextUnitType.Sp
                             )
                         )
-                        { append("$value") }
-                    })
-                    maxHeight = max(textLayoutResult.size.height, maxHeight)
-                    val labelRatio =
-                        (value - settings.minimum) / (settings.maximum - settings.minimum)
-                    val xPosition = min(
-                        size.width - textLayoutResult.size.width,
-                        max(
-                            0F,
-                            (size.width * labelRatio - textLayoutResult.size.width / 2).toFloat()
-                        )
                     )
-                    drawText(textLayoutResult, topLeft = Offset(xPosition, 0F))
-                }
-                val barHeight = size.height - maxHeight
-                drawRoundRect(
-                    color = color.background,
-                    topLeft = Offset(0F, maxHeight.toFloat()),
-                    cornerRadius = CornerRadius(barHeight / 2, barHeight / 2),
-                    size = Size(size.width, barHeight)
+                    { append("$value") }
+                })
+                maxHeight = max(textLayoutResult.size.height, maxHeight)
+                val labelRatio =
+                    (value - settings.minimum) / (settings.maximum - settings.minimum)
+                val xPosition = min(
+                    size.width - textLayoutResult.size.width,
+                    max(
+                        0F,
+                        (size.width * labelRatio - textLayoutResult.size.width / 2).toFloat()
+                    )
                 )
-                val valueRatio = (value-settings.minimum)/(settings.maximum-settings.minimum)
-                drawRoundRect(
-                    color = noiseColorRamp[getColorIndex(value)],
-                    topLeft = Offset(0F, maxHeight.toFloat()),
-                    cornerRadius = CornerRadius(barHeight / 2, barHeight / 2),
-                    size = Size((size.width * valueRatio).toFloat(), barHeight)
-                )
+                drawText(textLayoutResult, topLeft = Offset(xPosition, 0F))
             }
+            val barHeight = size.height - maxHeight
+            drawRoundRect(
+                color = color.background,
+                topLeft = Offset(0F, maxHeight.toFloat()),
+                cornerRadius = CornerRadius(barHeight / 2, barHeight / 2),
+                size = Size(size.width, barHeight)
+            )
+            val valueRatio = (value-settings.minimum)/(settings.maximum-settings.minimum)
+            drawRoundRect(
+                color = noiseColorRamp[getColorIndex(value)],
+                topLeft = Offset(0F, maxHeight.toFloat()),
+                cornerRadius = CornerRadius(barHeight / 2, barHeight / 2),
+                size = Size((size.width * valueRatio).toFloat(), barHeight)
+            )
         }
     }
 
@@ -422,9 +417,8 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         )
         val vueMeterSettings = VueMeterSettings(20.0,120.0,
             IntArray(6){v->((v+ 1)*20.0).toInt()})
-        Column(modifier = Modifier.fillMaxWidth()) {
+        Column() {
             Row(
-                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Surface(
@@ -433,7 +427,8 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                     shape = rightRoundedSquareShape,
                     elevation = 10.dp
                 ) {
-                    Box(modifier = Modifier.padding(10.dp)) {
+                    Row(modifier = Modifier.padding(10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween) {
                         Text(
                             buildAnnotatedString {
                                 withStyle(
@@ -446,11 +441,11 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                                 )
                                 { append("dB(A)") }
                             },
-                            modifier = Modifier.align(Alignment.CenterStart)
+                            modifier = Modifier.align(Alignment.CenterVertically)
                         )
                         Text(
                             buildNoiseLevelText(noiseLevel),
-                            modifier = Modifier.align(Alignment.BottomEnd)
+                            modifier = Modifier.align(Alignment.CenterVertically)
                         )
                     }
                 }
@@ -561,8 +556,12 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
             BoxWithConstraints {
                 if(maxWidth > maxHeight) {
                     Row(modifier = Modifier.fillMaxSize()) {
-                        measurementHeader(noiseLevel)
-                        measurementPager(bitmapOffset, sampleRate)
+                        Column(modifier = Modifier.fillMaxWidth(.5F)) {
+                            measurementHeader(noiseLevel)
+                        }
+                        Column(modifier = Modifier) {
+                            measurementPager(bitmapOffset, sampleRate)
+                        }
                     }
                 } else {
                     Column(modifier = Modifier.fillMaxSize()) {
