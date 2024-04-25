@@ -1,9 +1,14 @@
 package org.noise_planet.noisecapture.shared.signal
 
 import kotlinx.coroutines.test.runTest
+import org.noise_planet.noisecapture.AudioSamples
+import org.noise_planet.noisecapture.shared.AcousticIndicatorsProcessing
+import org.noise_planet.noisecapture.shared.WINDOW_TIME
+import kotlin.math.PI
 import kotlin.math.log10
 import kotlin.math.min
 import kotlin.math.pow
+import kotlin.math.sin
 import kotlin.math.sqrt
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -171,5 +176,26 @@ class TestWindowAnalysis {
             }
             previousValue = dbValue
         }
+    }
+
+
+    @Test
+    fun testAndroidSpecNoiseLevel() = runTest {
+        val sampleRate = 48000
+        val expectedLevel = 90.0
+        val peak = (2500 * sqrt(2.0)).toInt().toShort()
+
+        val angularFrequency = 2.0 * PI * 1000 / sampleRate
+        val signal = FloatArray((sampleRate* WINDOW_TIME).toInt()) {
+            (sin(it * angularFrequency).toFloat() * peak) / 32768F
+        }
+
+        val acousticIndicatorProcessing = AcousticIndicatorsProcessing(sampleRate)
+        val processed = acousticIndicatorProcessing.processSamples(
+            AudioSamples(0, signal,
+            AudioSamples.ErrorCode.OK, sampleRate)
+        )
+        val averageLeq = processed.map{indicators -> indicators.leq}.average()
+        assertEquals(expectedLevel, averageLeq, 0.01)
     }
 }

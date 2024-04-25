@@ -32,8 +32,6 @@ class MeasurementService(private val audioSource: AudioSource, private val logge
     private var onAcousticIndicatorsData: AcousticIndicatorsCallback? = null
     private var onSpectrumData: SpectrumDataCallback? = null
     private var audioJob : Job? = null
-    private var dbGain = 105.0
-
 
     @OptIn(DelicateCoroutinesApi::class)
     private fun startAudioRecord() {
@@ -53,7 +51,7 @@ class MeasurementService(private val audioSource: AudioSource, private val logge
                 if(onAcousticIndicatorsData != null || storageActivated) {
                     if(acousticIndicatorsProcessing == null) {
                         acousticIndicatorsProcessing = AcousticIndicatorsProcessing(
-                            audioSamples.sampleRate, dbGain)
+                            audioSamples.sampleRate)
                     }
                     acousticIndicatorsProcessing?.processSamples(audioSamples)?.forEach {
                         acousticIndicators ->

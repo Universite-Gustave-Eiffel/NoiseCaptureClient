@@ -57,6 +57,7 @@ import com.bumble.appyx.navigation.node.Node
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.koin.core.logger.Logger
+import org.noise_planet.noisecapture.shared.ANDROID_GAIN
 import org.noise_planet.noisecapture.shared.FFT_HOP
 import org.noise_planet.noisecapture.shared.MeasurementService
 import org.noise_planet.noisecapture.shared.ScreenData
@@ -85,7 +86,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                         private val measurementService: MeasurementService, private val logger: Logger) : Node(buildContext), DefaultPlatformLifecycleObserver {
     private var rangedB = 40.0
     private var mindB = 0.0
-    private var dbGain = 105.0
+    private var dbGain = ANDROID_GAIN
 
     val noiseColorRamp = arrayOf(
         "#FF0000".toComposeColor(),
@@ -497,7 +498,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
 
         val animationScope = rememberCoroutineScope()
         val pagerState = rememberPagerState(pageCount = { MeasurementTabState.entries.size })
-        val spectrumSettings = SpectrumSettings(MIN_SHOWN_DBA_VALUE, MAX_SHOWN_DBA_VALUE, 100.0, 16000.0)
+        val spectrumSettings = SpectrumSettings(MIN_SHOWN_DBA_VALUE - 20, MAX_SHOWN_DBA_VALUE - 20, 100.0, 16000.0)
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             TabRow(selectedTabIndex = pagerState.currentPage) {
