@@ -193,27 +193,52 @@ data class SpectrumData(val epoch : Long, val spectrum : FloatArray, val sampleR
         return result
     }
 
-    private fun getBands(bandIndex : Int, g : Double, bandDivision : Double) : Triple<Double, Double, Double> {
-        val fMid = g.pow(bandIndex / bandDivision) * 1000.0
-        val fMax = g.pow(1.0 / (2.0 * bandDivision)) * fMid
-        val fMin = g.pow(-1.0 / (2.0 * bandDivision)) * fMid
-        return Triple(fMin, fMid, fMax)
-    }
+    companion object {
 
-    private fun getBandIndexByFrequency(targetFrequency : Double, g : Double, bandDivision : Double) : Int {
-        var frequencyBandIndex = 0
-        var (fMin, fMid, fMax) = getBands(frequencyBandIndex, g, bandDivision)
-        while (!(fMin < targetFrequency && targetFrequency < fMax)) {
-            if(targetFrequency < fMin) {
-                frequencyBandIndex -= 1
-            } else if (targetFrequency > fMax) {
-                frequencyBandIndex += 1
-            }
-            val bandInfo = getBands(frequencyBandIndex, g, bandDivision)
-            fMin = bandInfo.first
-            fMax = bandInfo.third
+        private fun getBands(bandIndex : Int, g : Double, bandDivision : Double) : Triple<Double, Double, Double> {
+            val fMid = g.pow(bandIndex / bandDivision) * 1000.0
+            val fMax = g.pow(1.0 / (2.0 * bandDivision)) * fMid
+            val fMin = g.pow(-1.0 / (2.0 * bandDivision)) * fMid
+            return Triple(fMin, fMid, fMax)
         }
-        return frequencyBandIndex
+
+        private fun getBandIndexByFrequency(
+            targetFrequency: Double,
+            g: Double,
+            bandDivision: Double
+        ): Int {
+            var frequencyBandIndex = 0
+            var (fMin, fMid, fMax) = getBands(frequencyBandIndex, g, bandDivision)
+            while (!(fMin < targetFrequency && targetFrequency < fMax)) {
+                if (targetFrequency < fMin) {
+                    frequencyBandIndex -= 1
+                } else if (targetFrequency > fMax) {
+                    frequencyBandIndex += 1
+                }
+                val bandInfo = getBands(frequencyBandIndex, g, bandDivision)
+                fMin = bandInfo.first
+                fMax = bandInfo.third
+            }
+            return frequencyBandIndex
+        }
+
+        /**
+         * Create (third-)octave array from the specified parameters (without spl values)
+         */
+        fun emptyFrequencyBands(firstFrequencyBand : Double,
+                                lastFrequencyBand : Double, base : BASE_METHOD = BASE_METHOD.B10,
+                                bandDivision : Double = 3.0) : Array<FrequencyBand> {
+            val g = when (base) {
+                BASE_METHOD.B10 -> 10.0.pow(3.0 / 10.0)
+                BASE_METHOD.B2 -> 2.0
+            }
+            val firstBandIndex = getBandIndexByFrequency(firstFrequencyBand, g, bandDivision)
+            val lastBandIndex = getBandIndexByFrequency(lastFrequencyBand, g, bandDivision)
+            return Array(lastBandIndex - firstBandIndex) {bandIndex ->
+                val (fMin, fMid, fMax) = getBands(bandIndex + firstBandIndex, g, bandDivision)
+                FrequencyBand(fMin, fMid, fMax, 0.0)
+            }
+        }
     }
 
     /**
@@ -228,18 +253,13 @@ data class SpectrumData(val epoch : Long, val spectrum : FloatArray, val sampleR
     fun thirdOctaveProcessing(firstFrequencyBand : Double,
                               lastFrequencyBand : Double, base : BASE_METHOD = BASE_METHOD.B10,
                               bandDivision : Double = 3.0,
-                              octaveWindow: OCTAVE_WINDOW = OCTAVE_WINDOW.FRACTIONAL): Array<ThirdOctave> {
+                              octaveWindow: OCTAVE_WINDOW = OCTAVE_WINDOW.FRACTIONAL): Array<FrequencyBand> {
         val g = when (base) {
             BASE_METHOD.B10 -> 10.0.pow(3.0 / 10.0)
             BASE_METHOD.B2 -> 2.0
         }
         val freqByCell: Double = (spectrum.size.toDouble() * 2) / sampleRate
-        val firstBandIndex = getBandIndexByFrequency(firstFrequencyBand, g, bandDivision)
-        val lastBandIndex = getBandIndexByFrequency(lastFrequencyBand, g, bandDivision)
-        val thirdOctave = Array(lastBandIndex - firstBandIndex) {bandIndex ->
-            val (fMin, fMid, fMax) = getBands(bandIndex + firstBandIndex, g, bandDivision)
-            ThirdOctave(fMin, fMid, fMax, 0.0)
-        }
+        val thirdOctave = emptyFrequencyBands(firstFrequencyBand, lastFrequencyBand, base, bandDivision)
         if(octaveWindow == OCTAVE_WINDOW.FRACTIONAL) {
             for (band in thirdOctave) {
                 for (cellIndex in spectrum.indices) {
@@ -275,4 +295,4 @@ data class SpectrumData(val epoch : Long, val spectrum : FloatArray, val sampleR
     }
 }
 
-data class ThirdOctave(val minFrequency : Double, val midFrequency : Double, val maxFrequency : Double, var spl : Double)
+data class FrequencyBand(val minFrequency : Double, val midFrequency : Double, val maxFrequency : Double, var spl : Double)

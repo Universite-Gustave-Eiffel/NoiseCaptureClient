@@ -66,6 +66,7 @@ import org.noise_planet.noisecapture.shared.signal.FAST_DECAY_RATE
 import org.noise_planet.noisecapture.shared.signal.LevelDisplayWeightedDecay
 import org.noise_planet.noisecapture.shared.signal.SpectrumData
 import org.noise_planet.noisecapture.shared.ui.SpectrogramBitmap
+import org.noise_planet.noisecapture.shared.ui.SpectrogramBitmap.Companion.createSpectrogram
 import org.noise_planet.noisecapture.shared.ui.SpectrogramBitmap.Companion.toComposeColor
 import org.noise_planet.noisecapture.shared.ui.asEventFlow
 import org.noise_planet.noisecapture.toImageBitmap
@@ -81,6 +82,8 @@ const val DEFAULT_SAMPLE_RATE = 48000.0
 const val MIN_SHOWN_DBA_VALUE = 5.0
 const val MAX_SHOWN_DBA_VALUE = 140.0
 val NOISE_LEVEL_FONT_SIZE = TextUnit(50F, TextUnitType.Sp)
+const val MIN_FREQUENCY_SPECTRUM = 100.0
+const val MAX_FREQUENCY_SPECTRUM = 16000.0
 
 class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<ScreenData>,
                         private val measurementService: MeasurementService, private val logger: Logger) : Node(buildContext), DefaultPlatformLifecycleObserver {
@@ -361,15 +364,19 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
     }
 
     @Composable
-    fun spectrumPlot(modifier: Modifier, settings: SpectrumSettings, values : SpectrumData) {
-        val thirdOctaves = values.thirdOctaveProcessing(settings.frequencyMin, settings.frequencyMax)
-        val thirdOctaveGain = 10*log10(10.0.pow(dbGain/10.0)/thirdOctaves.size)
+    fun spectrumPlot(modifier: Modifier, settings: SpectrumSettings, values : SpectrumPlotData) {
+        val surfaceColor = MaterialTheme.colors.onSurface
         Canvas(modifier) {
-            val barHeight = size.height / thirdOctaves.size
-            thirdOctaves.forEachIndexed { index, thirdOctave ->
-                val splRatio = (thirdOctave.spl+thirdOctaveGain-settings.minimumX)/(settings.maximumX-settings.minimumX)
+            val barHeight = size.height / values.spl.size
+            val weightedBarWidth = 10.dp.toPx()
+            values.spl.forEachIndexed { index, spl ->
+                val splRatio = (spl-settings.minimumX)/(settings.maximumX-settings.minimumX)
+                val splWeighted = max(spl, values.splWeighted[index])
+                val splWeightedRatio  = (splWeighted-settings.minimumX)/(settings.maximumX-settings.minimumX)
                 drawRect(color = Color.Blue, topLeft = Offset(0F, barHeight*index),
                     size=Size((size.width*splRatio).toFloat(), barHeight))
+                drawRect(color = surfaceColor, topLeft = Offset((size.width*splWeightedRatio).toFloat(), barHeight*index),
+                    size=Size(weightedBarWidth, barHeight))
             }
         }
     }
@@ -494,11 +501,11 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
 
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
-    fun measurementPager(bitmapOffset: Int, sampleRate: Double, spectrumData: SpectrumData) {
+    fun measurementPager(bitmapOffset: Int, sampleRate: Double, spectrumData: SpectrumPlotData) {
 
         val animationScope = rememberCoroutineScope()
         val pagerState = rememberPagerState(pageCount = { MeasurementTabState.entries.size })
-        val spectrumSettings = SpectrumSettings(MIN_SHOWN_DBA_VALUE - 20, MAX_SHOWN_DBA_VALUE - 20, 100.0, 16000.0)
+        val spectrumSettings = SpectrumSettings(MIN_SHOWN_DBA_VALUE - 20, MAX_SHOWN_DBA_VALUE - 20, MIN_FREQUENCY_SPECTRUM, MAX_FREQUENCY_SPECTRUM)
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             TabRow(selectedTabIndex = pagerState.currentPage) {
@@ -534,7 +541,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         var bitmapOffset by remember { mutableStateOf(0) }
         var noiseLevel by remember { mutableStateOf(0.0) }
         var sampleRate by remember { mutableStateOf( DEFAULT_SAMPLE_RATE ) }
-        var spectrumDataState by remember { mutableStateOf( SpectrumData(0, FloatArray(0), DEFAULT_SAMPLE_RATE.toInt()) ) }
+        var spectrumDataState by remember { mutableStateOf( SpectrumPlotData(DoubleArray(0), DoubleArray(0))) }
         var indicatorCollectJob : Job? = null
         var spectrumCollectJob : Job? = null
         val launchMeasurementJob = fun () {
@@ -546,9 +553,15 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
             }
             spectrumCollectJob = lifecycleScope.launch {
                 println("Launch spectrum lifecycle")
+                val frequencyBands = SpectrumData.emptyFrequencyBands(MIN_FREQUENCY_SPECTRUM, MAX_FREQUENCY_SPECTRUM)
+                val levelDisplay = Array(frequencyBands.size) {LevelDisplayWeightedDecay(FAST_DECAY_RATE, WINDOW_TIME)}
                 measurementService.collectSpectrumData().collect() { spectrumData ->
                     sampleRate = spectrumData.sampleRate.toDouble()
-                    spectrumDataState = spectrumData
+                    val thirdOctaves = spectrumData.thirdOctaveProcessing(MIN_FREQUENCY_SPECTRUM, MAX_FREQUENCY_SPECTRUM)
+                    val thirdOctaveGain = 10*log10(10.0.pow(dbGain/10.0)/thirdOctaves.size)
+                    val splArray = DoubleArray(thirdOctaves.size) {index -> thirdOctaves[index].spl+thirdOctaveGain}
+                    val splWeightedArray = DoubleArray(thirdOctaves.size) {index -> levelDisplay[index].getWeightedValue(thirdOctaves[index].spl)+thirdOctaveGain}
+                    spectrumDataState = SpectrumPlotData(splArray, splWeightedArray)
                     if (spectrumCanvasState.currentStripData.size.width > 1) {
                         bitmapOffset = processSpectrum(spectrumCanvasState, spectrumData)
                     }
@@ -607,6 +620,8 @@ data class LegendBitmap(val imageBitmap: ImageBitmap, val imageSize: Size, val b
 data class MeasurementStatistics(val label : String, val value : String)
 
 data class SpectrumSettings(val minimumX : Double, val maximumX : Double, val frequencyMin : Double, val frequencyMax : Double)
+
+data class SpectrumPlotData(val spl : DoubleArray, val splWeighted : DoubleArray)
 
 data class VueMeterSettings(val minimum : Double, val maximum : Double, val xLabels : IntArray) {
     override fun equals(other: Any?): Boolean {
