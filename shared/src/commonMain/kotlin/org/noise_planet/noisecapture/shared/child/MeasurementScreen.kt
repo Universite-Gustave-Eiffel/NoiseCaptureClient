@@ -31,8 +31,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 import androidx.compose.ui.text.AnnotatedString
@@ -66,7 +68,6 @@ import org.noise_planet.noisecapture.shared.signal.FAST_DECAY_RATE
 import org.noise_planet.noisecapture.shared.signal.LevelDisplayWeightedDecay
 import org.noise_planet.noisecapture.shared.signal.SpectrumData
 import org.noise_planet.noisecapture.shared.ui.SpectrogramBitmap
-import org.noise_planet.noisecapture.shared.ui.SpectrogramBitmap.Companion.createSpectrogram
 import org.noise_planet.noisecapture.shared.ui.SpectrogramBitmap.Companion.toComposeColor
 import org.noise_planet.noisecapture.shared.ui.asEventFlow
 import org.noise_planet.noisecapture.toImageBitmap
@@ -81,7 +82,11 @@ const val REFERENCE_LEGEND_TEXT = " +99s "
 const val DEFAULT_SAMPLE_RATE = 48000.0
 const val MIN_SHOWN_DBA_VALUE = 5.0
 const val MAX_SHOWN_DBA_VALUE = 140.0
+const val MIN_SHOWN_DBA_VALUE_SPECTRUM = -10.0
+const val MAX_SHOWN_DBA_VALUE_SPECTRUM = 90.0
 val NOISE_LEVEL_FONT_SIZE = TextUnit(50F, TextUnitType.Sp)
+val SPECTRUM_PLOT_SQUARE_WIDTH = 10.dp
+val SPECTRUM_PLOT_SQUARE_OFFSET = 1.dp
 const val MIN_FREQUENCY_SPECTRUM = 100.0
 const val MAX_FREQUENCY_SPECTRUM = 16000.0
 
@@ -91,13 +96,12 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
     private var mindB = 0.0
     private var dbGain = ANDROID_GAIN
 
-    val noiseColorRamp = arrayOf(
-        "#FF0000".toComposeColor(),
-        "#FF8000".toComposeColor(),
-        "#FFFF00".toComposeColor(),
-        "#99FF00".toComposeColor(),
-        "#00FF00".toComposeColor()
-    )
+    val noiseColorRampSpl : List<Pair<Float, Color>> = listOf(
+        Pair(75F, "#FF0000".toComposeColor()), // >= 75 dB
+        Pair(65F, "#FF8000".toComposeColor()), // >= 65 dB
+        Pair(55F, "#FFFF00".toComposeColor()), // >= 55 dB
+        Pair(45F, "#99FF00".toComposeColor()), // >= 45 dB
+        Pair(Float.NEGATIVE_INFINITY, "#00FF00".toComposeColor())) // < 45 dB
 
     fun getColorIndex(noiseLevel: Double) = when {
         noiseLevel > 75.0 -> 0
@@ -351,8 +355,9 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
     @Composable
     fun buildNoiseLevelText(noiseLevel : Double) : AnnotatedString = buildAnnotatedString {
         val inRangeNoise = noiseLevel > MIN_SHOWN_DBA_VALUE && noiseLevel < MAX_SHOWN_DBA_VALUE
+        val colorIndex = noiseColorRampSpl.indexOfFirst { pair -> pair.first < noiseLevel }
         withStyle(style = SpanStyle(
-            color = if(inRangeNoise) noiseColorRamp[getColorIndex(noiseLevel)] else MaterialTheme.colors.onPrimary,
+            color = if(inRangeNoise) noiseColorRampSpl[colorIndex].second else MaterialTheme.colors.onPrimary,
             fontSize = NOISE_LEVEL_FONT_SIZE,
             baselineShift = BaselineShift.None
         )) {
@@ -366,16 +371,29 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
     @Composable
     fun spectrumPlot(modifier: Modifier, settings: SpectrumSettings, values : SpectrumPlotData) {
         val surfaceColor = MaterialTheme.colors.onSurface
+        // color ramp 0F left side of spectrum
+        // 1F right side of spectrum
+        val spectrumColorRamp = List(noiseColorRampSpl.size) {
+            index ->
+            val pair = noiseColorRampSpl[noiseColorRampSpl.size - 1 - index]
+            val linearIndex = max(0.0,((pair.first - settings.minimumX) /
+                    (settings.maximumX-settings.minimumX)))
+            Pair(linearIndex.toFloat(), pair.second)
+        }.toTypedArray()
         Canvas(modifier) {
-            val barHeight = size.height / values.spl.size
+            val barHeight = size.height / values.spl.size - SPECTRUM_PLOT_SQUARE_OFFSET.toPx()
+            val pathEffect = PathEffect.dashPathEffect(floatArrayOf(SPECTRUM_PLOT_SQUARE_WIDTH.toPx(), SPECTRUM_PLOT_SQUARE_OFFSET.toPx()))
             val weightedBarWidth = 10.dp.toPx()
             values.spl.forEachIndexed { index, spl ->
+                val barYOffset = (barHeight + SPECTRUM_PLOT_SQUARE_OFFSET.toPx())*index
                 val splRatio = (spl-settings.minimumX)/(settings.maximumX-settings.minimumX)
                 val splWeighted = max(spl, values.splWeighted[index])
                 val splWeightedRatio  = (splWeighted-settings.minimumX)/(settings.maximumX-settings.minimumX)
-                drawRect(color = Color.Blue, topLeft = Offset(0F, barHeight*index),
-                    size=Size((size.width*splRatio).toFloat(), barHeight))
-                drawRect(color = surfaceColor, topLeft = Offset((size.width*splWeightedRatio).toFloat(), barHeight*index),
+                val splGradient = Brush.horizontalGradient(*spectrumColorRamp, startX = 0F, endX = size.width)
+                drawLine(brush = splGradient, start = Offset(0F, barYOffset + barHeight / 2),
+                    end = Offset((size.width*splRatio).toFloat(), barYOffset + barHeight / 2),
+                    strokeWidth = barHeight, pathEffect = pathEffect)
+                drawRect(color = surfaceColor, topLeft = Offset((size.width*splWeightedRatio).toFloat()-weightedBarWidth, barYOffset),
                     size=Size(weightedBarWidth, barHeight))
             }
         }
@@ -420,8 +438,9 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                 size = Size(size.width, barHeight)
             )
             val valueRatio = (value-settings.minimum)/(settings.maximum-settings.minimum)
+            val colorIndex = noiseColorRampSpl.indexOfFirst { pair -> pair.first < value }
             drawRoundRect(
-                color = noiseColorRamp[getColorIndex(value)],
+                color = noiseColorRampSpl[colorIndex].second,
                 topLeft = Offset(0F, maxHeight.toFloat()),
                 cornerRadius = CornerRadius(barHeight / 2, barHeight / 2),
                 size = Size((size.width * valueRatio).toFloat(), barHeight)
@@ -505,7 +524,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
 
         val animationScope = rememberCoroutineScope()
         val pagerState = rememberPagerState(pageCount = { MeasurementTabState.entries.size })
-        val spectrumSettings = SpectrumSettings(MIN_SHOWN_DBA_VALUE - 20, MAX_SHOWN_DBA_VALUE - 20, MIN_FREQUENCY_SPECTRUM, MAX_FREQUENCY_SPECTRUM)
+        val spectrumSettings = SpectrumSettings(MIN_SHOWN_DBA_VALUE_SPECTRUM, MAX_SHOWN_DBA_VALUE_SPECTRUM, MIN_FREQUENCY_SPECTRUM, MAX_FREQUENCY_SPECTRUM)
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             TabRow(selectedTabIndex = pagerState.currentPage) {
