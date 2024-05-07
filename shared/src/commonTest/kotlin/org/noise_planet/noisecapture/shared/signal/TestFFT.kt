@@ -258,6 +258,13 @@ class TestFFT {
             assertEquals(expectedLevel, levels[it.toInt()], 1e-8)
         }
     }
+
+    @Test
+    fun testBluestein() {
+        val bluestein = Bluestein(16)
+        println(bluestein.chirp.joinToString(","))
+
+    }
 }
 
 

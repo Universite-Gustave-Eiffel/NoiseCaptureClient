@@ -44,6 +44,7 @@ class MeasurementService(private val audioSource: AudioSource, private val logge
                     if(fftTool == null) {
                         fftTool = WindowAnalysis(audioSamples.sampleRate, FFT_SIZE, FFT_HOP)
                     }
+                    println("${audioSamples.samples.size}")
                     fftTool?.pushSamples(audioSamples.epoch, audioSamples.samples)?.forEach { spectrumData ->
                         onSpectrumData?.let { callback -> callback(spectrumData) }
                     }

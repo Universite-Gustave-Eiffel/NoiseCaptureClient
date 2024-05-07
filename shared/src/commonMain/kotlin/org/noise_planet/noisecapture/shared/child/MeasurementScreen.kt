@@ -82,7 +82,7 @@ const val REFERENCE_LEGEND_TEXT = " +99s "
 const val DEFAULT_SAMPLE_RATE = 48000.0
 const val MIN_SHOWN_DBA_VALUE = 5.0
 const val MAX_SHOWN_DBA_VALUE = 140.0
-const val MIN_SHOWN_DBA_VALUE_SPECTRUM = -10.0
+const val MIN_SHOWN_DBA_VALUE_SPECTRUM = 5.0
 const val MAX_SHOWN_DBA_VALUE_SPECTRUM = 90.0
 val NOISE_LEVEL_FONT_SIZE = TextUnit(50F, TextUnitType.Sp)
 val SPECTRUM_PLOT_SQUARE_WIDTH = 10.dp
@@ -568,16 +568,20 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                 val levelDisplay = LevelDisplayWeightedDecay(FAST_DECAY_RATE, WINDOW_TIME)
                 measurementService.collectAudioIndicators().collect {
                     noiseLevel = levelDisplay.getWeightedValue(it.laeq)
+                    //val indexOf1000Hz = it.nominalFrequencies.indexOfFirst { t -> t.toInt() == 1000 }
+                    //println("1000 hz -> ${round((it.thirdOctave[indexOf1000Hz])*10)/10} dB")
                 }
             }
             spectrumCollectJob = lifecycleScope.launch {
                 println("Launch spectrum lifecycle")
                 val frequencyBands = SpectrumData.emptyFrequencyBands(MIN_FREQUENCY_SPECTRUM, MAX_FREQUENCY_SPECTRUM)
                 val levelDisplay = Array(frequencyBands.size) {LevelDisplayWeightedDecay(FAST_DECAY_RATE, WINDOW_TIME)}
+                val thirdOctaveGain = 10*log10(10.0.pow(dbGain/10.0)/frequencyBands.size)
                 measurementService.collectSpectrumData().collect() { spectrumData ->
                     sampleRate = spectrumData.sampleRate.toDouble()
                     val thirdOctaves = spectrumData.thirdOctaveProcessing(MIN_FREQUENCY_SPECTRUM, MAX_FREQUENCY_SPECTRUM)
-                    val thirdOctaveGain = 10*log10(10.0.pow(dbGain/10.0)/thirdOctaves.size)
+                    val indexOf1000Hz = thirdOctaves.indexOfFirst { t -> t.midFrequency.toInt() == 1000 }
+                    //println("1000 hz -> ${round((thirdOctaves[indexOf1000Hz].spl+thirdOctaveGain)*10)/10} dB")
                     val splArray = DoubleArray(thirdOctaves.size) {index -> thirdOctaves[index].spl+thirdOctaveGain}
                     val splWeightedArray = DoubleArray(thirdOctaves.size) {index -> levelDisplay[index].getWeightedValue(thirdOctaves[index].spl)+thirdOctaveGain}
                     spectrumDataState = SpectrumPlotData(splArray, splWeightedArray)

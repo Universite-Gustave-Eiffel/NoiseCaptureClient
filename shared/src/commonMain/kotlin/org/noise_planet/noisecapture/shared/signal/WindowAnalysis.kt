@@ -10,9 +10,6 @@ import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-const val SPECTRUM_REPLAY = 10
-const val SPECTRUM_CACHE = 10
-
 /**
  * Computation of STFT (Short Time Fourier Transform)
  * @sampleRate Sample rate to compute epoch
@@ -254,10 +251,6 @@ data class SpectrumData(val epoch : Long, val spectrum : FloatArray, val sampleR
                               lastFrequencyBand : Double, base : BASE_METHOD = BASE_METHOD.B10,
                               bandDivision : Double = 3.0,
                               octaveWindow: OCTAVE_WINDOW = OCTAVE_WINDOW.FRACTIONAL): Array<FrequencyBand> {
-        val g = when (base) {
-            BASE_METHOD.B10 -> 10.0.pow(3.0 / 10.0)
-            BASE_METHOD.B2 -> 2.0
-        }
         val freqByCell: Double = (spectrum.size.toDouble() * 2) / sampleRate
         val thirdOctave = emptyFrequencyBands(firstFrequencyBand, lastFrequencyBand, base, bandDivision)
         if(octaveWindow == OCTAVE_WINDOW.FRACTIONAL) {

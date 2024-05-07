@@ -1,5 +1,6 @@
 package org.noise_planet.noisecapture.shared
 
+import kotlinx.coroutines.runBlocking
 import org.noise_planet.noisecapture.AudioSamples
 import org.noise_planet.noisecapture.shared.signal.SpectrumChannel
 import org.noise_planet.noisecapture.shared.signal.get44100HZ
@@ -23,6 +24,7 @@ class AcousticIndicatorsProcessing(val sampleRate: Int, val dbGain : Double = AN
     private var windowLength = (sampleRate * WINDOW_TIME).toInt()
     private var windowData = FloatArray(windowLength)
     private var windowDataCursor = 0
+    private val nominalFrequencies : List<Double>
 
     private val spectrumChannel: SpectrumChannel = SpectrumChannel().apply {
         this.loadConfiguration(
@@ -31,6 +33,7 @@ class AcousticIndicatorsProcessing(val sampleRate: Int, val dbGain : Double = AN
                 else -> get44100HZ()
             }
         )
+        this@AcousticIndicatorsProcessing.nominalFrequencies = this.getNominalFrequency()
     }
 
 
@@ -58,17 +61,20 @@ class AcousticIndicatorsProcessing(val sampleRate: Int, val dbGain : Double = AN
                 val rms = sqrt(windowData.fold(0.0) {acc, sample -> acc + sample*sample } / windowData.size)
                 val leq = dbGain + 20 * log10(rms)
                 val laeq = dbGain + spectrumChannel.processSamplesWeightA(windowData)
-                val thirdOctave = DoubleArray(0)
-                //val thirdOctave = spectrumChannel.processSamples(windowData)
-                acousticIndicatorsDataList.add(
-                    AcousticIndicatorsData(
-                        samples.epoch,
-                        leq,
-                        laeq,
-                        rms,
-                        thirdOctave
+                //val thirdOctave = DoubleArray(0)
+                runBlocking {
+                    val thirdOctave = spectrumChannel.processSamples(windowData)
+                    acousticIndicatorsDataList.add(
+                        AcousticIndicatorsData(
+                            samples.epoch,
+                            leq,
+                            laeq,
+                            rms,
+                            thirdOctave,
+                            nominalFrequencies
+                        )
                     )
-                )
+                }
                 windowDataCursor = 0
             }
         }
@@ -76,5 +82,7 @@ class AcousticIndicatorsProcessing(val sampleRate: Int, val dbGain : Double = AN
     }
 }
 
-data class AcousticIndicatorsData(val epoch : Long, val leq: Double, val laeq: Double,val rms : Double, val thirdOctave : DoubleArray)
+data class AcousticIndicatorsData(val epoch : Long, val leq: Double, val laeq: Double,
+                                  val rms : Double, val thirdOctave : DoubleArray,
+                                  val nominalFrequencies : List<Double>)
 
