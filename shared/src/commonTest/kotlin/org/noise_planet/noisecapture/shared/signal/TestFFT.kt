@@ -3,6 +3,7 @@ package org.noise_planet.noisecapture.shared.signal
 import kotlinx.coroutines.test.runTest
 import kotlin.math.PI
 import kotlin.math.ceil
+import kotlin.math.cos
 import kotlin.math.log10
 import kotlin.math.log2
 import kotlin.math.pow
@@ -10,6 +11,7 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.time.measureTime
 
 class TestFFT {
 
@@ -291,6 +293,39 @@ class TestFFT {
         expected_fft.forEachIndexed { index, it ->
             assertEquals(it, got[index], 1e-8, message = "Index $index")
         }
+    }
+
+    @Test
+    fun benchBluestein() = runTest {
+        val input = DoubleArray(60000*2) { cos(it.toDouble()) }
+        val bluestein = Bluestein(input.size/2)
+        val timings = LongArray(64) {
+            measureTime {
+                bluestein.fft(input)
+            }.inWholeMilliseconds
+        }
+        val timings2 = LongArray(64) {
+            measureTime {
+                val dim = nextPowerOfTwo(input.size)
+                fft(dim/2, DoubleArray(dim))
+            }.inWholeMilliseconds
+        }
+        val sc = SpectrumChannel()
+        sc.loadConfiguration(get48000HZ(), true)
+        val timings3 = LongArray(64) {
+            measureTime {
+                sc.processSamples(FloatArray(input.size / 2), false).sum()
+            }.inWholeMilliseconds
+        }
+        println("min ${timings.min()} max ${timings.max()}" +
+                " median ${timings.sorted()
+                    [if(timings.size % 2==0) timings.size / 2 - 1 else timings.size / 2 ]}")
+        println("min ${timings2.min()} max ${timings2.max()}" +
+                " median ${timings2.sorted()
+                    [if(timings2.size % 2==0) timings2.size / 2 - 1 else timings2.size / 2 ]}")
+        println("min ${timings3.min()} max ${timings3.max()}" +
+                " median ${timings3.sorted()
+                    [if(timings3.size % 2==0) timings3.size / 2 - 1 else timings3.size / 2 ]}")
     }
 }
 
