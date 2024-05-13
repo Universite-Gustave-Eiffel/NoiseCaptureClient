@@ -11,6 +11,10 @@ import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
 
+/**
+ * Chirp transform for non power of two fft
+ * @see https://gist.github.com/fnielsen/99b981b9da34ae3d5035
+ */
 class Bluestein(val window_length : Int) {
     companion object {
         operator fun Double.plus(other: Complex) = Complex(this + other.real, other.imag)
@@ -19,10 +23,7 @@ class Bluestein(val window_length : Int) {
             this * other.real - this * other.imag,
             this * other.imag + this * other.real
         )
-        operator fun Double.div(other: Complex) = Complex(
-            (this * other.real + this * other.imag) / (other.real * other.real + other.imag * other.imag),
-            (this * other.imag - this * other.real) / (other.real * other.real + other.imag * other.imag)
-        )
+        operator fun Double.div(other: Complex) = Complex(this,0.0) / other
 
         data class Complex(val real: Double, val imag: Double) {
             operator fun plus(other: Complex) = Complex(real + other.real, imag + other.imag)
@@ -71,10 +72,61 @@ class Bluestein(val window_length : Int) {
     val n = window_length
     val m = n
     val w = (Complex(0.0, -2.0) * PI / m.toDouble()).exp()
+    val a = 1.0
     val chirp = ((1-n)..<max(m, n)).foldIndexed(DoubleArray((max(m, n)-(1 - n))*2)) {
         index, realImagArray, i -> val c = w.pow(i.toDouble().pow(2) / 2.0)
         realImagArray[index*2] = c.real
         realImagArray[index*2+1] = c.imag
         realImagArray
+    }
+    val n2 = nextPowerOfTwo(m + n - 1)
+    val ichirp = (0..< n2).foldIndexed(DoubleArray(n2*2)) {
+            index, realImagArray, i ->
+        if(i < m+n-1) {
+            val c = 1.0 / Complex(chirp[index*2], chirp[index*2+1])
+            realImagArray[index*2] = c.real
+            realImagArray[index*2+1] = c.imag
+        }
+        realImagArray
+    }
+
+    init {
+        fft(ichirp.size/2, ichirp)
+    }
+
+    fun fft(x : DoubleArray) : DoubleArray {
+        require(x.size == window_length * 2)
+        val xp = (0..< n2).foldIndexed(DoubleArray(n2*2)) {
+                index, realImagArray, i ->
+            if(i < n) {
+                val realIndex = index*2
+                val imIndex = index*2+1
+                val chirpOffset = (n-1)*2
+                val c = Complex(x[realIndex], x[imIndex]) * a.pow(-i) * Complex(chirp[chirpOffset+realIndex], chirp[chirpOffset+imIndex])
+                realImagArray[index*2] = c.real
+                realImagArray[index*2+1] = c.imag
+            }
+            realImagArray
+        }
+        fft(xp.size/2, xp)
+        val r =  (0..< n2).foldIndexed(DoubleArray(n2*2)) {
+                index, realImagArray, i ->
+                val realIndex = index*2
+                val imIndex = index*2+1
+                val c = Complex(xp[realIndex], xp[imIndex]) * Complex(ichirp[realIndex], ichirp[imIndex])
+                realImagArray[index*2] = c.real
+                realImagArray[index*2+1] = c.imag
+                realImagArray
+        }
+        iFFT(r.size/2, r)
+        return (n-1..< m+n-1).foldIndexed(DoubleArray(window_length*2)) {
+                index, realImagArray, i ->
+            val realIndex = i*2
+            val imIndex = i*2+1
+            val c = Complex(r[realIndex], r[imIndex]) * Complex(chirp[realIndex], chirp[imIndex])
+            realImagArray[index*2] = c.real
+            realImagArray[index*2+1] = c.imag
+            realImagArray
+        }
     }
 }
