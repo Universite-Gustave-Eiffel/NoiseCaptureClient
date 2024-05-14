@@ -1,5 +1,6 @@
 package org.noise_planet.noisecapture.shared.signal
 
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.max

@@ -40,7 +40,6 @@ kotlin {
                 implementation(libs.kotlinx.datetime)
                 api(compose.runtime)
                 api(compose.foundation)
-                api(compose.material3)
                 implementation(libs.appyx.navigation)
                 api(libs.appyx.components.backstack)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)

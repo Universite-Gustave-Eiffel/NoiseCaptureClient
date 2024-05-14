@@ -32,8 +32,6 @@ class MeasurementService(private val audioSource: AudioSource, private val logge
     private var onAcousticIndicatorsData: AcousticIndicatorsCallback? = null
     private var onSpectrumData: SpectrumDataCallback? = null
     private var audioJob : Job? = null
-    private var dbGain = 105.0
-
 
     @OptIn(DelicateCoroutinesApi::class)
     private fun startAudioRecord() {
@@ -50,13 +48,19 @@ class MeasurementService(private val audioSource: AudioSource, private val logge
                         onSpectrumData?.let { callback -> callback(spectrumData) }
                     }
                 }
-                if(onAcousticIndicatorsData != null) {
+                if(onAcousticIndicatorsData != null || storageActivated) {
                     if(acousticIndicatorsProcessing == null) {
                         acousticIndicatorsProcessing = AcousticIndicatorsProcessing(
-                            audioSamples.sampleRate, dbGain)
+                            audioSamples.sampleRate)
                     }
-                    acousticIndicatorsProcessing?.processSamples(audioSamples)?.forEach { acousticIndicators ->
-                        onAcousticIndicatorsData?.let { callback -> callback(acousticIndicators) }
+                    acousticIndicatorsProcessing!!.processSamples(audioSamples).forEach {
+                        acousticIndicators ->
+                        if(onAcousticIndicatorsData != null) {
+                            onAcousticIndicatorsData?.let { callback -> callback(acousticIndicators) }
+                        }
+                        if(storageActivated) {
+
+                        }
                     }
                 }
             }
@@ -90,9 +94,15 @@ class MeasurementService(private val audioSource: AudioSource, private val logge
         startAudioRecord()
     }
 
+    fun canReleaseAudio() : Boolean {
+        return !storageActivated &&
+                onAcousticIndicatorsData == null &&
+                onAcousticIndicatorsData == null
+    }
+
     fun resetSpectrumDataObserver() {
         onSpectrumData = null
-        if(onAcousticIndicatorsData == null) {
+        if(canReleaseAudio()) {
             stopAudioRecord()
         }
     }
@@ -104,7 +114,7 @@ class MeasurementService(private val audioSource: AudioSource, private val logge
 
     fun resetAudioIndicatorsObserver() {
         onAcousticIndicatorsData = null
-        if(onSpectrumData == null) {
+        if(canReleaseAudio()) {
             stopAudioRecord()
         }
     }

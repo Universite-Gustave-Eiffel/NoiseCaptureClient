@@ -19,12 +19,12 @@ private val DarkColorPalette = darkColors(
 )
 
 private val LightColorPalette = lightColors(
-    primary = md_yellow_A700,
+    primary = md_blue_grey_gwendall_darker,
     primaryVariant = md_yellow_A400,
     secondary = md_yellow_A400,
-    background = md_yellow_50,
-    surface = md_yellow_50,
-    onPrimary = md_blue_grey_900,
+    background = md_blue_grey_gwendall,
+    surface = md_blue_grey_gwendall,
+    onPrimary = md_blue_grey_gwendall_text,
     onSecondary = md_blue_grey_900,
     onBackground = md_blue_grey_900,
     onSurface = md_blue_grey_900,

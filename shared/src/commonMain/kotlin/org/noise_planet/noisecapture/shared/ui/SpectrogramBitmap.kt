@@ -76,10 +76,9 @@ class SpectrogramBitmap {
         }
 
         val frequencyLegendPositionLog =
-            intArrayOf(63, 125, 250, 500, 1000, 2000, 4000, 8000, 16000)
+            intArrayOf(63, 125, 250, 500, 1000, 2000, 4000, 8000, 16000, 24000)
 
-        val frequencyLegendPositionLinear =
-            intArrayOf(0, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 10000, 12500, 16000)
+        val frequencyLegendPositionLinear = IntArray(24) { it * 1000 + 1000}
 
         val colorRamp = arrayOf(
             "#303030".toComposeColor(),
@@ -179,7 +178,7 @@ class SpectrogramBitmap {
                 for (idFreq in freqStart..<freqEnd) {
                     sumVal += 10.0.pow(fftResult.spectrum[idFreq] / 10.0)
                 }
-                sumVal = max(0.0, 10 * log10(sumVal) + gain)
+                sumVal = max(0.0, 10 * log10(sumVal/(freqEnd-freqStart)) + gain)
                 val colorIndex = min(
                     colorRamp.size - 1, max(
                         0, (((sumVal - mindB) / rangedB) *

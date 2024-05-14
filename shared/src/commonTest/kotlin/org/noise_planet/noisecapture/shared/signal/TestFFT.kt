@@ -3,6 +3,7 @@ package org.noise_planet.noisecapture.shared.signal
 import kotlinx.coroutines.test.runTest
 import kotlin.math.PI
 import kotlin.math.ceil
+import kotlin.math.cos
 import kotlin.math.log10
 import kotlin.math.log2
 import kotlin.math.pow
@@ -10,6 +11,7 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.time.measureTime
 
 class TestFFT {
 
@@ -257,6 +259,73 @@ class TestFFT {
         frequencyPeaks.forEach {
             assertEquals(expectedLevel, levels[it.toInt()], 1e-8)
         }
+    }
+
+    @Test
+    fun testBluestein() {
+        val input = doubleArrayOf(
+            -6.0, 0.0, -5.0, 0.0, -4.0, 0.0, -3.0, 0.0, -2.0, 0.0, -1.0, 0.0,
+            0.0, 0.0, 1.0, 0.0, 2.0, 0.0, 3.0, 0.0, 4.0, 0.0, 5.0, 0.0
+        )
+        val bluestein = Bluestein(input.size / 2)
+        val expected_chirp = doubleArrayOf(0.965925826289071,-0.2588190451025107,0.5000000000000081,
+            -0.8660254037844339,-0.7071067811865438,-0.7071067811865512,-0.5000000000000047,
+            0.8660254037844359,0.9659258262890694,-0.2588190451025166,-1.0,-3.920107718544707E-15,
+            0.9659258262890689,-0.2588190451025185,-0.5000000000000012,0.8660254037844379,
+            -0.7071067811865468,-0.7071067811865482,0.5000000000000003,-0.8660254037844385,
+            0.9659258262890683,-0.2588190451025207,1.0,-0.0,0.9659258262890683,-0.2588190451025207,
+            0.5000000000000003,-0.8660254037844385,-0.7071067811865468,-0.7071067811865482,
+            -0.5000000000000012,0.8660254037844379,0.9659258262890689,-0.2588190451025185,-1.0,
+            -3.920107718544707E-15,0.9659258262890694,-0.2588190451025166,-0.5000000000000047,
+            0.8660254037844359,-0.7071067811865438,-0.7071067811865512,0.5000000000000081,
+            -0.8660254037844339,0.965925826289071,-0.2588190451025107)
+        assertEquals(expected_chirp.size, bluestein.chirp.size)
+        expected_chirp.forEachIndexed { index, it ->
+            assertEquals(it, bluestein.chirp[index], 1e-8)
+        }
+        val expected_fft = doubleArrayOf(
+            -6.0, 0.0, -6.0, 22.39230485, -6.0, 10.39230485, -6.0, 6.0, -6.0, 3.46410162,
+            -6.0, 1.60769515, -6.0, -0.0, -6.0, -1.60769515, -6.0, -3.46410162, -6.0, -6.0,
+            -6.0, -10.39230485, -6.0, -22.39230485
+        )
+        val got = bluestein.fft(input)
+        assertEquals(expected_fft.size, got.size)
+        expected_fft.forEachIndexed { index, it ->
+            assertEquals(it, got[index], 1e-8, message = "Index $index")
+        }
+    }
+
+    @Test
+    fun benchBluestein() = runTest {
+        val input = DoubleArray(60000*2) { cos(it.toDouble()) }
+        val bluestein = Bluestein(input.size/2)
+        val timings = LongArray(64) {
+            measureTime {
+                bluestein.fft(input)
+            }.inWholeMilliseconds
+        }
+        val timings2 = LongArray(64) {
+            measureTime {
+                val dim = nextPowerOfTwo(input.size)
+                fft(dim/2, DoubleArray(dim))
+            }.inWholeMilliseconds
+        }
+        val sc = SpectrumChannel()
+        sc.loadConfiguration(get48000HZ(), true)
+        val timings3 = LongArray(64) {
+            measureTime {
+                sc.processSamples(FloatArray(input.size / 2), false).sum()
+            }.inWholeMilliseconds
+        }
+        println("min ${timings.min()} max ${timings.max()}" +
+                " median ${timings.sorted()
+                    [if(timings.size % 2==0) timings.size / 2 - 1 else timings.size / 2 ]}")
+        println("min ${timings2.min()} max ${timings2.max()}" +
+                " median ${timings2.sorted()
+                    [if(timings2.size % 2==0) timings2.size / 2 - 1 else timings2.size / 2 ]}")
+        println("min ${timings3.min()} max ${timings3.max()}" +
+                " median ${timings3.sorted()
+                    [if(timings3.size % 2==0) timings3.size / 2 - 1 else timings3.size / 2 ]}")
     }
 }
 
