@@ -3,6 +3,8 @@ package org.noise_planet.noisecapture.shared.signal
 import kotlinx.coroutines.test.runTest
 import org.noise_planet.noisecapture.AudioSamples
 import org.noise_planet.noisecapture.shared.AcousticIndicatorsProcessing
+import org.noise_planet.noisecapture.shared.FFT_HOP
+import org.noise_planet.noisecapture.shared.FFT_SIZE
 import org.noise_planet.noisecapture.shared.WINDOW_TIME
 import kotlin.math.PI
 import kotlin.math.log10
@@ -148,14 +150,14 @@ class TestWindowAnalysis {
             spectrumDataArray.addAll(wa.pushSamples(epoch, windowBuffer))
             cursor += windowSize
         }
-        spectrumDataArray.forEach { spectrumData ->
+        spectrumDataArray.forEachIndexed { index, spectrumData ->
             val thirdOctaveSquare = spectrumData.thirdOctaveProcessing(50.0, 12000.0,
                 octaveWindow = SpectrumData.OCTAVE_WINDOW.RECTANGULAR).asList()
             val thirdOctaveFractional = spectrumData.thirdOctaveProcessing(50.0,
                 12000.0, octaveWindow = SpectrumData.OCTAVE_WINDOW.FRACTIONAL).asList()
             val indexOf1000Hz = thirdOctaveSquare.indexOfFirst { t -> t.midFrequency.toInt() == 1000 }
-            assertEquals(expectedLevel, thirdOctaveSquare[indexOf1000Hz].spl, 0.01)
-            assertEquals(expectedLevel, thirdOctaveFractional[indexOf1000Hz].spl, 0.01)
+            assertEquals(expectedLevel, thirdOctaveSquare[indexOf1000Hz].spl, 0.01, message = "[$index]")
+            assertEquals(expectedLevel, thirdOctaveFractional[indexOf1000Hz].spl, 0.01, message = "[$index]")
         }
     }
 

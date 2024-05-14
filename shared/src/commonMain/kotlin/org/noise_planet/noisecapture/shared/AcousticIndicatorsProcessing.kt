@@ -1,6 +1,5 @@
 package org.noise_planet.noisecapture.shared
 
-import kotlinx.coroutines.runBlocking
 import org.noise_planet.noisecapture.AudioSamples
 import org.noise_planet.noisecapture.shared.signal.SpectrumChannel
 import org.noise_planet.noisecapture.shared.signal.get44100HZ
@@ -37,8 +36,7 @@ class AcousticIndicatorsProcessing(val sampleRate: Int, val dbGain : Double = AN
     }
 
 
-
-    fun processSamples(samples: AudioSamples): List<AcousticIndicatorsData> {
+    suspend fun processSamples(samples: AudioSamples): List<AcousticIndicatorsData> {
         val acousticIndicatorsDataList = ArrayList<AcousticIndicatorsData>()
         var samplesProcessed = 0
         while (samplesProcessed < samples.samples.size) {
@@ -58,23 +56,25 @@ class AcousticIndicatorsProcessing(val sampleRate: Int, val dbGain : Double = AN
             }
             if (windowDataCursor == windowLength) {
                 // window complete
-                val rms = sqrt(windowData.fold(0.0) {acc, sample -> acc + sample*sample } / windowData.size)
+                val rms =
+                    sqrt(windowData.fold(0.0) { acc, sample -> acc + sample * sample } / windowData.size)
                 val leq = dbGain + 20 * log10(rms)
                 val laeq = dbGain + spectrumChannel.processSamplesWeightA(windowData)
-                //val thirdOctave = DoubleArray(0)
-                runBlocking {
-                    val thirdOctave = spectrumChannel.processSamples(windowData)
-                    acousticIndicatorsDataList.add(
-                        AcousticIndicatorsData(
-                            samples.epoch,
-                            leq,
-                            laeq,
-                            rms,
-                            thirdOctave,
-                            nominalFrequencies
-                        )
-                    )
+                val thirdOctave = spectrumChannel.processSamples(windowData)
+                val thirdOctaveGain = 10 * log10(10.0.pow(dbGain / 10.0) / thirdOctave.size)
+                thirdOctave.forEachIndexed { index, value ->
+                    thirdOctave[index] = value + thirdOctaveGain
                 }
+                acousticIndicatorsDataList.add(
+                    AcousticIndicatorsData(
+                        samples.epoch,
+                        leq,
+                        laeq,
+                        rms,
+                        thirdOctave,
+                        nominalFrequencies
+                    )
+                )
                 windowDataCursor = 0
             }
         }

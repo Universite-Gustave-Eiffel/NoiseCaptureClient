@@ -420,7 +420,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
                 })
                 maxHeight = max(textLayoutResult.size.height, maxHeight)
                 val labelRatio =
-                    (value - settings.minimum) / (settings.maximum - settings.minimum)
+                    max(0.0, (value - settings.minimum) / (settings.maximum - settings.minimum))
                 val xPosition = min(
                     size.width - textLayoutResult.size.width,
                     max(
@@ -524,7 +524,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
 
         val animationScope = rememberCoroutineScope()
         val pagerState = rememberPagerState(pageCount = { MeasurementTabState.entries.size })
-        val spectrumSettings = SpectrumSettings(MIN_SHOWN_DBA_VALUE_SPECTRUM, MAX_SHOWN_DBA_VALUE_SPECTRUM, MIN_FREQUENCY_SPECTRUM, MAX_FREQUENCY_SPECTRUM)
+        val spectrumSettings = SpectrumSettings(MIN_SHOWN_DBA_VALUE_SPECTRUM, MAX_SHOWN_DBA_VALUE_SPECTRUM)
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             TabRow(selectedTabIndex = pagerState.currentPage) {
@@ -566,25 +566,20 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
         val launchMeasurementJob = fun () {
             indicatorCollectJob = lifecycleScope.launch {
                 val levelDisplay = LevelDisplayWeightedDecay(FAST_DECAY_RATE, WINDOW_TIME)
+                var levelDisplayBands : Array<LevelDisplayWeightedDecay>? = null
                 measurementService.collectAudioIndicators().collect {
+                    if(levelDisplayBands == null) {
+                        levelDisplayBands = Array(it.nominalFrequencies.size) {LevelDisplayWeightedDecay(FAST_DECAY_RATE, WINDOW_TIME)}
+                    }
                     noiseLevel = levelDisplay.getWeightedValue(it.laeq)
-                    //val indexOf1000Hz = it.nominalFrequencies.indexOfFirst { t -> t.toInt() == 1000 }
-                    //println("1000 hz -> ${round((it.thirdOctave[indexOf1000Hz])*10)/10} dB")
+                    val splWeightedArray = DoubleArray(it.nominalFrequencies.size) {index -> levelDisplayBands!![index].getWeightedValue(it.thirdOctave[index])}
+                    spectrumDataState = SpectrumPlotData(it.thirdOctave, splWeightedArray)
                 }
             }
             spectrumCollectJob = lifecycleScope.launch {
                 println("Launch spectrum lifecycle")
-                val frequencyBands = SpectrumData.emptyFrequencyBands(MIN_FREQUENCY_SPECTRUM, MAX_FREQUENCY_SPECTRUM)
-                val levelDisplay = Array(frequencyBands.size) {LevelDisplayWeightedDecay(FAST_DECAY_RATE, WINDOW_TIME)}
-                val thirdOctaveGain = 10*log10(10.0.pow(dbGain/10.0)/frequencyBands.size)
                 measurementService.collectSpectrumData().collect() { spectrumData ->
                     sampleRate = spectrumData.sampleRate.toDouble()
-                    val thirdOctaves = spectrumData.thirdOctaveProcessing(MIN_FREQUENCY_SPECTRUM, MAX_FREQUENCY_SPECTRUM)
-                    val indexOf1000Hz = thirdOctaves.indexOfFirst { t -> t.midFrequency.toInt() == 1000 }
-                    //println("1000 hz -> ${round((thirdOctaves[indexOf1000Hz].spl+thirdOctaveGain)*10)/10} dB")
-                    val splArray = DoubleArray(thirdOctaves.size) {index -> thirdOctaves[index].spl+thirdOctaveGain}
-                    val splWeightedArray = DoubleArray(thirdOctaves.size) {index -> levelDisplay[index].getWeightedValue(thirdOctaves[index].spl)+thirdOctaveGain}
-                    spectrumDataState = SpectrumPlotData(splArray, splWeightedArray)
                     if (spectrumCanvasState.currentStripData.size.width > 1) {
                         bitmapOffset = processSpectrum(spectrumCanvasState, spectrumData)
                     }
@@ -642,7 +637,7 @@ data class LegendBitmap(val imageBitmap: ImageBitmap, val imageSize: Size, val b
 
 data class MeasurementStatistics(val label : String, val value : String)
 
-data class SpectrumSettings(val minimumX : Double, val maximumX : Double, val frequencyMin : Double, val frequencyMax : Double)
+data class SpectrumSettings(val minimumX : Double, val maximumX : Double)
 
 data class SpectrumPlotData(val spl : DoubleArray, val splWeighted : DoubleArray)
 
