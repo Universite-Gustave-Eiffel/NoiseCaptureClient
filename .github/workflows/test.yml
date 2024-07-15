@@ -41,9 +41,8 @@ jobs:
       - run: ./gradlew :androidApp:cleanTestDebugUnitTest :shared:testDebugUnitTest
 
   iOS:
-    #if: ${{ inputs.shouldRunKmp == 'true' || inputs.shouldRunIos == 'true' }}
-    if: false # not ready for ios (linux dev env)
-    runs-on: macos-13
+    if: ${{ inputs.shouldRunKmp == 'true' || inputs.shouldRunIos == 'true' }}
+    runs-on: macos-latest
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v3
