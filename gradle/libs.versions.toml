@@ -12,8 +12,8 @@ androidx-test-espresso-core = "3.5.1"
 androidx-test-junit = "1.1.5"
 appyx = "2.0.1"
 compose-ui-test-junit4 = "1.6.2"
-compose-compiler = "1.5.10"
-compose-plugin = "1.5.12"
+compose-compiler = "1.6.11"
+compose-plugin = "1.6.11"
 core-ktx = "1.12.0"
 coroutines = "1.8.0"
 junit = "4.13.2"
@@ -23,7 +23,6 @@ kotlin = "1.9.22"
 ksp = "1.9.22-1.0.17"
 koin-core = "3.5.6"
 appcompat = "1.6.1"
-kotxresources= "0.4.0"
 kotxdatetime = "0.5.0"
 kotlinWrappersVersion = "1.0.0-pre.700"
 sqliteFramework = "2.4.0"
@@ -50,8 +49,7 @@ kotlin-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-co
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin-core" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
-kotlinx-resources-test =  { module = "com.goncalossilva:resources", version.ref = "kotxresources" }
-kotlinx-datetime =  { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotxdatetime" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotxdatetime" }
 kotlin-browser = { module = "org.jetbrains.kotlin-wrappers:kotlin-browser", version.ref = "kotlinWrappersVersion" }
 sqldelight-native-driver = { module = "app.cash.sqldelight:native-driver", version.ref = "androidDriver" }
 sqldelight-driver = { module = "app.cash.sqldelight:web-worker-driver", version.ref = "androidDriver" }
