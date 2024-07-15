@@ -26,8 +26,14 @@ jobs:
 
       - name: Run tests
         run: ./gradlew :shared:cleanTestDebugUnitTest :shared:testDebugUnitTest
-  
-  
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: shared-reports
+          path: |
+            **/build/reports/*
   
   Android:
     if: ${{ inputs.shouldRunKmp == 'true' || inputs.shouldRunAndroid == 'true' }}
@@ -41,6 +47,14 @@ jobs:
 
       - name: Run tests
         run: ./gradlew :androidApp:cleanTestDebugUnitTest :shared:testDebugUnitTest
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: android-reports
+          path: |
+            **/build/reports/*
 
   iOS:
     if: ${{ inputs.shouldRunKmp == 'true' || inputs.shouldRunIos == 'true' }}
@@ -68,7 +82,7 @@ jobs:
 
       - name: Upload reports
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ios-reports
           path: |
