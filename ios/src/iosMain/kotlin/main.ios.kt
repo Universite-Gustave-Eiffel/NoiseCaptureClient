@@ -10,8 +10,6 @@ import org.noise_planet.noisecapture.shared.root.RootNode
 import org.noise_planet.noisecapture.shared.ui.theme.AppyxStarterKitTheme
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
-import org.koin.dsl.module
-import org.noise_planet.noisecapture.AudioSource
 import org.noise_planet.noisecapture.shared.initKoin
 
 val backEvents: Channel<Unit> = Channel()
@@ -34,7 +32,7 @@ fun MainViewController() = ComposeUIViewController {
                 integrationPoint = remember { integrationPoint }
             ) { buildContext ->
                 RootNode(
-                    buildContext = buildContext,
+                    nodeContext = buildContext,
                     koin = koinApplication.koin
                 )
             }

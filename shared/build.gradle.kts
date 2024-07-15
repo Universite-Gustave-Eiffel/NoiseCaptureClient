@@ -100,12 +100,12 @@ android {
 }
 
 dependencies {
-    add("kspCommonMainMetadata", libs.appyx.mutable.ui.processor)
-    add("kspAndroid", libs.appyx.mutable.ui.processor)
-    add("kspJs", libs.appyx.mutable.ui.processor)
-    add("kspIosArm64", libs.appyx.mutable.ui.processor)
-    add("kspIosX64", libs.appyx.mutable.ui.processor)
-    add("kspIosSimulatorArm64", libs.appyx.mutable.ui.processor)
+    add("kspCommonMainMetadata", libs.appyx.processor)
+    add("kspAndroid", libs.appyx.processor)
+    add("kspJs", libs.appyx.processor)
+    add("kspIosArm64", libs.appyx.processor)
+    add("kspIosX64", libs.appyx.processor)
+    add("kspIosSimulatorArm64", libs.appyx.processor)
 }
 
 sqldelight {
