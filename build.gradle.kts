@@ -30,10 +30,6 @@ allprojects {
         autoCorrect = true
     }
 
-//    dependencies {
-//        detektPlugins(rootProject.libs.detekt.formatting)
-//    }
-
     tasks.withType<Detekt>().configureEach {
         jvmTarget = libs.versions.jvm.target.get()
         reports {
