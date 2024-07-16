@@ -14,8 +14,4 @@ interface PermissionsService {
 
         const val PERMISSION_CHECK_FLOW_FREQUENCY = 1000L
     }
-
-    fun DETEKT_ERROR(unused_parameter: Int) {
-        
-    }
 }
