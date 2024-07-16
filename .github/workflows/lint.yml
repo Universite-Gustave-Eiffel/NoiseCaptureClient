@@ -14,4 +14,4 @@ jobs:
       - name: "detekt"
         uses: natiginfo/action-detekt-all@1.23.6
         with:
-          args: --config "config/detekt.yml"
+          args: --config "config/detekt.yml" --includes "**/src/**/kotlin"
