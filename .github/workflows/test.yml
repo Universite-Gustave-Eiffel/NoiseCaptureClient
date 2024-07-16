@@ -45,6 +45,9 @@ jobs:
       - name: Job set up
         uses: ./.github/actions/job-set-up
 
+      - name: Compile Android binary
+        run: ./gradlew :androidApp:clean :androidApp:build
+
       - name: Run tests
         run: ./gradlew :androidApp:cleanTestDebugUnitTest :shared:testDebugUnitTest
 
