@@ -101,9 +101,9 @@ class MainActivity : NodeActivity() {
             AppyxStarterKitTheme {
                 NodeHost(
                     lifecycle = AndroidLifecycle(LocalLifecycleOwner.current.lifecycle),
-                    integrationPoint = appyxV2IntegrationPoint,
+                    integrationPoint = appyxIntegrationPoint,
                 ) {
-                    RootNode(buildContext = it, koin = koinApplication.koin)
+                    RootNode(nodeContext = it, koin = koinApplication.koin)
                 }
             }
         }

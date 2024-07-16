@@ -1,4 +1,3 @@
-
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.compose")
@@ -33,7 +32,7 @@ kotlin {
     }
 
     sourceSets {
-        @Suppress("UNUSED_VARIABLE")
+
         val commonMain by getting {
             dependencies {
                 implementation(projects.permissions)
@@ -47,18 +46,20 @@ kotlin {
                 implementation(libs.koin.core)
             }
         }
-        @Suppress("UNUSED_VARIABLE")
+
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(libs.kotlinx.coroutines.test)
-                implementation(libs.kotlinx.resources.test)
+
+                @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+                implementation(compose.components.resources)
             }
         }
         val iosX64Main by getting
         val iosArm64Main by getting
         val iosSimulatorArm64Main by getting
-        @Suppress("UNUSED_VARIABLE")
+
         val iosMain by creating {
             dependsOn(commonMain)
             iosX64Main.dependsOn(this)
@@ -100,12 +101,12 @@ android {
 }
 
 dependencies {
-    add("kspCommonMainMetadata", libs.appyx.mutable.ui.processor)
-    add("kspAndroid", libs.appyx.mutable.ui.processor)
-    add("kspJs", libs.appyx.mutable.ui.processor)
-    add("kspIosArm64", libs.appyx.mutable.ui.processor)
-    add("kspIosX64", libs.appyx.mutable.ui.processor)
-    add("kspIosSimulatorArm64", libs.appyx.mutable.ui.processor)
+    add("kspCommonMainMetadata", libs.appyx.processor)
+    add("kspAndroid", libs.appyx.processor)
+    add("kspJs", libs.appyx.processor)
+    add("kspIosArm64", libs.appyx.processor)
+    add("kspIosX64", libs.appyx.processor)
+    add("kspIosSimulatorArm64", libs.appyx.processor)
 }
 
 sqldelight {

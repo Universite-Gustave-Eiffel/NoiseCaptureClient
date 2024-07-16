@@ -29,20 +29,22 @@ import androidx.compose.ui.unit.dp
 import com.adrianwitaszak.kmmpermissions.permissions.model.Permission
 import com.adrianwitaszak.kmmpermissions.permissions.model.PermissionState
 import com.adrianwitaszak.kmmpermissions.permissions.service.PermissionsService
-import com.bumble.appyx.navigation.modality.BuildContext
-import com.bumble.appyx.navigation.node.Node
+import com.bumble.appyx.navigation.modality.NodeContext
+import com.bumble.appyx.navigation.node.LeafNode
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import org.noise_planet.noisecapture.shared.ui.theme.Check
 import org.noise_planet.noisecapture.shared.ui.theme.Close
 import org.noise_planet.noisecapture.shared.ui.theme.QuestionMark
 
-class PermissionScreen(buildContext: BuildContext,
-                       private val permissionsService: PermissionsService,
-    private val onNextClick: () -> Unit) : Node(buildContext) {
+class PermissionScreen(
+    nodeContext: NodeContext,
+    private val permissionsService: PermissionsService,
+    private val onNextClick: () -> Unit
+) : LeafNode(nodeContext) {
 
     @Composable
-    override fun View(modifier: Modifier) {
+    override fun Content(modifier: Modifier) {
         val scope = rememberCoroutineScope()
 
             Surface(

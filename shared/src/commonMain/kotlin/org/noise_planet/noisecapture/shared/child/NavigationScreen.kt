@@ -20,7 +20,7 @@ fun NavigationScreen(
     backStack: BackStack<ScreenData>,
     body: @Composable (PaddingValues) -> Unit
 ) {
-    val canBackPress by backStack.canHandeBackPress().collectAsState(false)
+    val canBackPress by backStack.canHandleBackPress().collectAsState(false)
     val currentTitle by backStack.model.output.collectAsState()
     Scaffold(
         topBar = {

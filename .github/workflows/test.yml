@@ -24,9 +24,16 @@ jobs:
       - name: Job set up
         uses: ./.github/actions/job-set-up
 
-      - run: ./gradlew :shared:cleanTestDebugUnitTest :shared:testDebugUnitTest
-  
-  
+      - name: Run tests
+        run: ./gradlew :shared:cleanTestDebugUnitTest :shared:testDebugUnitTest
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: shared-reports
+          path: |
+            **/build/reports/*
   
   Android:
     if: ${{ inputs.shouldRunKmp == 'true' || inputs.shouldRunAndroid == 'true' }}
@@ -38,12 +45,20 @@ jobs:
       - name: Job set up
         uses: ./.github/actions/job-set-up
 
-      - run: ./gradlew :androidApp:cleanTestDebugUnitTest :shared:testDebugUnitTest
+      - name: Run tests
+        run: ./gradlew :androidApp:cleanTestDebugUnitTest :shared:testDebugUnitTest
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: android-reports
+          path: |
+            **/build/reports/*
 
   iOS:
-    #if: ${{ inputs.shouldRunKmp == 'true' || inputs.shouldRunIos == 'true' }}
-    if: false # not ready for ios (linux dev env)
-    runs-on: macos-13
+    if: ${{ inputs.shouldRunKmp == 'true' || inputs.shouldRunIos == 'true' }}
+    runs-on: macos-latest
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v3
@@ -62,13 +77,12 @@ jobs:
         with:
           cache-disabled: true
 
-      - name: iosX64Test
-        # Disable CC due to https://github.com/google/ksp/issues/1463
-        run: ./gradlew iosX64Test --no-configuration-cache
+      - name: run tests
+        run: ./gradlew :shared:cleanIosSimulatorArm64Test :shared:iosSimulatorArm64Test
 
       - name: Upload reports
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ios-reports
           path: |

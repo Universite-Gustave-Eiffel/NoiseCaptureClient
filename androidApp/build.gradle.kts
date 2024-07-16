@@ -65,7 +65,7 @@ dependencies {
     // Appyx
     implementation(libs.appyx.navigation)
     implementation(libs.appyx.components.backstack)
-    ksp(libs.appyx.mutable.ui.processor)
+    ksp(libs.appyx.processor)
 
     // Koin
     implementation(libs.koin.android)

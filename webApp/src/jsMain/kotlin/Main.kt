@@ -67,7 +67,7 @@ fun main() {
                         factory<MeasurementService> { MeasurementService(JsAudioSource(), logger) }
                     } )).logger(logger)
                     RootNode(
-                        buildContext = buildContext,
+                        nodeContext = buildContext,
                         koin = koinApplication.koin
                     )
                 }

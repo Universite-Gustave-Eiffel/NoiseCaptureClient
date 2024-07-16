@@ -10,11 +10,12 @@ import com.bumble.appyx.components.backstack.BackStack
 import com.bumble.appyx.components.backstack.BackStackModel
 import com.bumble.appyx.components.backstack.operation.push
 import com.bumble.appyx.components.backstack.ui.parallax.BackStackParallax
-import com.bumble.appyx.navigation.composable.AppyxComponent
-import com.bumble.appyx.navigation.modality.BuildContext
+import com.bumble.appyx.navigation.composable.AppyxNavigationContainer
+import com.bumble.appyx.navigation.modality.NodeContext
 import com.bumble.appyx.navigation.node.Node
-import com.bumble.appyx.navigation.node.ParentNode
+import com.bumble.appyx.navigation.node.LeafNode
 import org.koin.core.Koin
+import org.koin.core.annotation.KoinInternalApi
 import org.noise_planet.noisecapture.shared.ScreenData
 import org.noise_planet.noisecapture.shared.ScreenData.HomeTarget
 import org.noise_planet.noisecapture.shared.ScreenData.PermissionTarget
@@ -24,26 +25,38 @@ import org.noise_planet.noisecapture.shared.child.NavigationScreen
 import org.noise_planet.noisecapture.shared.child.PermissionScreen
 
 class RootNode(
-    buildContext: BuildContext,
+    nodeContext: NodeContext,
     private val backStack: BackStack<ScreenData> = BackStack(
         model = BackStackModel(
             initialTargets = listOf(HomeTarget),
-            savedStateMap = buildContext.savedStateMap
+            savedStateMap = nodeContext.savedStateMap
         ),
         visualisation = { BackStackParallax(it) }
     ),
     val koin: Koin
-) : ParentNode<ScreenData>(
-    buildContext = buildContext,
+) : Node<ScreenData>(
+    nodeContext = nodeContext,
     appyxComponent = backStack
 ) {
 
-    override fun resolve(interactionTarget: ScreenData, buildContext: BuildContext): Node =
-        when(interactionTarget) {
-            is PermissionTarget -> PermissionScreen(buildContext, koin.get(),
-                ::onPermissionGrantedBeforeMeasurement)
-            is HomeTarget -> HomeScreen(buildContext, backStack)
-            is ScreenData.MeasurementTarget -> MeasurementScreen(buildContext, backStack, koin.get(), koin.logger)
+    @OptIn(KoinInternalApi::class)
+    override fun buildChildNode(navTarget: ScreenData, nodeContext: NodeContext): LeafNode =
+        when(navTarget) {
+            is PermissionTarget -> PermissionScreen(
+                nodeContext,
+                koin.get(),
+                ::onPermissionGrantedBeforeMeasurement
+            )
+            is HomeTarget -> HomeScreen(
+                nodeContext,
+                backStack
+            )
+            is ScreenData.MeasurementTarget -> MeasurementScreen(
+                nodeContext,
+                backStack,
+                koin.get(),
+                koin.logger
+            )
         }
 
     private fun onPermissionGrantedBeforeMeasurement() {
@@ -51,14 +64,14 @@ class RootNode(
     }
 
     @Composable
-    override fun View(modifier: Modifier) {
+    override fun Content(modifier: Modifier) {
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier.fillMaxSize()
         ) {
             NavigationScreen(backStack) {
-                AppyxComponent(
+                AppyxNavigationContainer(
                     appyxComponent = backStack,
                     modifier = Modifier.fillMaxSize()
                 )

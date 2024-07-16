@@ -54,8 +54,8 @@ import androidx.compose.ui.unit.dp
 import com.bumble.appyx.components.backstack.BackStack
 import com.bumble.appyx.navigation.lifecycle.DefaultPlatformLifecycleObserver
 import com.bumble.appyx.navigation.lifecycle.Lifecycle
-import com.bumble.appyx.navigation.modality.BuildContext
-import com.bumble.appyx.navigation.node.Node
+import com.bumble.appyx.navigation.modality.NodeContext
+import com.bumble.appyx.navigation.node.LeafNode
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.koin.core.logger.Logger
@@ -90,8 +90,13 @@ val SPECTRUM_PLOT_SQUARE_OFFSET = 1.dp
 const val MIN_FREQUENCY_SPECTRUM = 100.0
 const val MAX_FREQUENCY_SPECTRUM = 16000.0
 
-class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<ScreenData>,
-                        private val measurementService: MeasurementService, private val logger: Logger) : Node(buildContext), DefaultPlatformLifecycleObserver {
+class MeasurementScreen(
+    nodeContext: NodeContext,
+    val backStack: BackStack<ScreenData>,
+    private val measurementService: MeasurementService,
+    private val logger: Logger
+) : LeafNode(nodeContext), DefaultPlatformLifecycleObserver {
+
     private var rangedB = 40.0
     private var mindB = 0.0
     private var dbGain = ANDROID_GAIN
@@ -556,7 +561,7 @@ class MeasurementScreen(buildContext: BuildContext, val backStack: BackStack<Scr
 
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
-    override fun View(modifier: Modifier) {
+    override fun Content(modifier: Modifier) {
         var bitmapOffset by remember { mutableStateOf(0) }
         var noiseLevel by remember { mutableStateOf(0.0) }
         var sampleRate by remember { mutableStateOf( DEFAULT_SAMPLE_RATE ) }
