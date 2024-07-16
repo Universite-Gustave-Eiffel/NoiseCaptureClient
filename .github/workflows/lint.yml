@@ -1,7 +1,6 @@
 name: detekt
 
-on:
-  push
+on: workflow_call
 
 jobs:
   detekt:
