@@ -87,7 +87,7 @@ kotlin {
 }
 
 android {
-    namespace = "org.noise_planet.noisecapturekmp.shared"
+    namespace = "org.noiseplanet.noisecapturekmp.shared"
     compileSdk = 34
     defaultConfig {
         minSdk = libs.versions.android.min.sdk.get().toInt()
@@ -112,7 +112,7 @@ dependencies {
 sqldelight {
     databases {
         create("Storage") {
-            packageName.set("org.noise_planet.noisecapture")
+            packageName.set("org.noiseplanet.noisecapture")
         }
     }
 }
