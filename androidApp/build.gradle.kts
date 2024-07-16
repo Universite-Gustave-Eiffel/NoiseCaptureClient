@@ -3,6 +3,7 @@ plugins {
     id("com.android.application")
     id("com.google.devtools.ksp")
     id("kotlin-parcelize")
+    id("io.gitlab.arturbosch.detekt") version libs.versions.detekt.get()
 }
 
 android {
