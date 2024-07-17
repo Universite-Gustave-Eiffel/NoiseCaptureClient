@@ -43,7 +43,9 @@ fun NoiseCaptureApp(
             )
         }
     ) { innerPadding ->
-
+        // TODO: Configure NavHost in a separate file
+        // TODO: Handle swipe back gestures on iOS -> encapsulate UINavigationController?
+        // TODO: Handle predictive back gestures on Android and
         NavHost(
             navController = navController,
             startDestination = NavigationRoute.Home.name,
