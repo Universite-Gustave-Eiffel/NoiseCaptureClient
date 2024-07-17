@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">NoiseCapture</string>
+
+    <string name="platform_info_title">Platform information</string>
+
+    <string name="back_button">Back</string>
+</resources>
