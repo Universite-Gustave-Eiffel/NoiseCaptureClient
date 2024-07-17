@@ -3,13 +3,14 @@ plugins {
     id("com.android.application")
     id("com.google.devtools.ksp")
     id("kotlin-parcelize")
+    id("io.gitlab.arturbosch.detekt") version libs.versions.detekt.get()
 }
 
 android {
-    namespace = "org.noise_planet.noisecapture"
+    namespace = "org.noiseplanet.noisecapture"
     compileSdk = libs.versions.android.compile.sdk.get().toInt()
     defaultConfig {
-        applicationId = "org.noise_planet.noisecapturekmp"
+        applicationId = "org.noiseplanet.noisecapturekmp"
         minSdk = libs.versions.android.min.sdk.get().toInt()
         targetSdk = libs.versions.android.target.sdk.get().toInt()
         versionCode = 1

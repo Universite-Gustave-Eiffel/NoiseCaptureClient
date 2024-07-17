@@ -22,7 +22,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppyxStarterKit">
         <activity
-            android:name="org.noise_planet.noisecapture.starter.MainActivity"
+            android:name="org.noiseplanet.noisecapture.starter.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.AppyxStarterKit">
             <intent-filter>
@@ -31,9 +31,9 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".AndroidMeasurementService"
-            android:foregroundServiceType="location|microphone"
-            />
+        <service
+            android:name=".AndroidMeasurementService"
+            android:foregroundServiceType="location|microphone" />
     </application>
 
 </manifest>

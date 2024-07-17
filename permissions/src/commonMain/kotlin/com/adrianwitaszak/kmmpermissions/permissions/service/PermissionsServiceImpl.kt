@@ -1,3 +1,5 @@
+@file:Suppress("TooGenericExceptionCaught")
+
 package com.adrianwitaszak.kmmpermissions.permissions.service
 
 import com.adrianwitaszak.kmmpermissions.permissions.model.Permission
@@ -8,14 +10,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import org.koin.core.logger.Logger
 import org.koin.mp.KoinPlatformTools
 
 internal class PermissionsServiceImpl : PermissionsService, KoinComponent {
-    val logger : Logger  = KoinPlatformTools.defaultLogger()
+    private val logger: Logger = KoinPlatformTools.defaultLogger()
 
-    suspend fun checkPermission(permission: Permission): PermissionState {
+    private suspend fun checkPermission(permission: Permission): PermissionState {
         return try {
             return getPermissionDelegate(permission).getPermissionState()
         } catch (e: Exception) {
@@ -38,8 +39,8 @@ internal class PermissionsServiceImpl : PermissionsService, KoinComponent {
         try {
             getPermissionDelegate(permission).providePermission()
         } catch (e: Exception) {
-            println("Failed to request permission $permission")
-            e.printStackTrace()
+            logger.error("Failed to request permission $permission")
+            logger.error(e.stackTraceToString())
         }
     }
 
@@ -48,8 +49,8 @@ internal class PermissionsServiceImpl : PermissionsService, KoinComponent {
         try {
             getPermissionDelegate(permission).openSettingPage()
         } catch (e: Exception) {
-            println("Failed to open settings for permission $permission")
-            e.printStackTrace()
+            logger.error("Failed to open settings for permission $permission")
+            logger.error(e.stackTraceToString())
         }
     }
 }

@@ -1,3 +1,5 @@
+@file:Suppress("TooGenericExceptionCaught")
+
 package com.adrianwitaszak.kmmpermissions.permissions.util
 
 import android.app.Activity
@@ -28,18 +30,25 @@ internal fun Context.openPage(
 
 internal fun checkPermissions(
     context: Context,
-    activity: Lazy<Activity>,
     permissions: List<String>,
 ): PermissionState {
-    permissions.ifEmpty { return PermissionState.GRANTED } // no permissions needed
+    permissions.ifEmpty {
+        return PermissionState.GRANTED
+    } // no permissions needed
     val status: List<Int> = permissions.map {
         context.checkSelfPermission(it)
     }
-    val isAllGranted: Boolean = status.all { it == PackageManager.PERMISSION_GRANTED }
-    if (isAllGranted) return PermissionState.GRANTED
+    val isAllGranted: Boolean = status.all {
+        it == PackageManager.PERMISSION_GRANTED
+    }
+    if (isAllGranted) {
+        return PermissionState.GRANTED
+    }
 
     return PermissionState.DENIED
 }
+
+private const val REQUEST_PERMISSION_CODE = 100
 
 internal fun Activity.providePermissions(
     permissions: List<String>,
@@ -47,7 +56,9 @@ internal fun Activity.providePermissions(
 ) {
     try {
         ActivityCompat.requestPermissions(
-            this, permissions.toTypedArray(), 100
+            this,
+            permissions.toTypedArray(),
+            REQUEST_PERMISSION_CODE
         )
     } catch (t: Throwable) {
         onError(t)

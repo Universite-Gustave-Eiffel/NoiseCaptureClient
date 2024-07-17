@@ -6,6 +6,7 @@ import android.content.Context
 import android.os.Build
 import com.adrianwitaszak.kmmpermissions.permissions.model.Permission
 import com.adrianwitaszak.kmmpermissions.permissions.model.PermissionState
+import com.adrianwitaszak.kmmpermissions.permissions.util.PermissionRequestException
 import com.adrianwitaszak.kmmpermissions.permissions.util.checkPermissions
 import com.adrianwitaszak.kmmpermissions.permissions.util.openAppSettingsPage
 import com.adrianwitaszak.kmmpermissions.permissions.util.providePermissions
@@ -18,14 +19,15 @@ internal class LocationBackgroundPermissionDelegate(
     override suspend fun getPermissionState(): PermissionState {
         return when (locationForegroundPermissionDelegate.getPermissionState()) {
             PermissionState.GRANTED ->
-                checkPermissions(context, activity, backgroundLocationPermissions)
+                checkPermissions(context, backgroundLocationPermissions)
+
             else -> PermissionState.NOT_DETERMINED
         }
     }
 
     override suspend fun providePermission() {
         activity.value.providePermissions(backgroundLocationPermissions) {
-            throw Exception(
+            throw PermissionRequestException(
                 it.localizedMessage ?: "Failed to request background location permission"
             )
         }
@@ -40,4 +42,6 @@ internal class LocationBackgroundPermissionDelegate(
 private val backgroundLocationPermissions: List<String> =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         listOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-    } else emptyList()
+    } else {
+        emptyList()
+    }

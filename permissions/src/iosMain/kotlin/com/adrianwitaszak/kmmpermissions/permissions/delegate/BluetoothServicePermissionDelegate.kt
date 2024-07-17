@@ -24,9 +24,14 @@ internal class BluetoothServicePermissionDelegate : PermissionDelegate {
             CBCentralManager.authorization == CBManagerAuthorizationAllowedAlways ||
                     CBCentralManager.authorization == CBManagerAuthorizationRestricted
         return if (hasBluetoothPermissionGranted) {
-            if (cbCentralManager.state() == CBManagerStatePoweredOn)
-                PermissionState.GRANTED else PermissionState.DENIED
-        } else PermissionState.NOT_DETERMINED
+            if (cbCentralManager.state() == CBManagerStatePoweredOn) {
+                PermissionState.GRANTED
+            } else {
+                PermissionState.DENIED
+            }
+        } else {
+            PermissionState.NOT_DETERMINED
+        }
     }
 
     override suspend fun providePermission() {

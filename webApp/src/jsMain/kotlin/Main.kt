@@ -1,4 +1,3 @@
-
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.LaunchedEffect
@@ -31,11 +30,11 @@ import kotlinx.coroutines.launch
 import org.jetbrains.skiko.wasm.onWasmReady
 import org.koin.core.logger.PrintLogger
 import org.koin.dsl.module
-import org.noise_planet.noisecapture.JsAudioSource
-import org.noise_planet.noisecapture.shared.MeasurementService
-import org.noise_planet.noisecapture.shared.initKoin
-import org.noise_planet.noisecapture.shared.root.RootNode
-import org.noise_planet.noisecapture.shared.ui.theme.AppyxStarterKitTheme
+import org.noiseplanet.noisecapture.JsAudioSource
+import org.noiseplanet.noisecapture.shared.MeasurementService
+import org.noiseplanet.noisecapture.shared.initKoin
+import org.noiseplanet.noisecapture.shared.root.RootNode
+import org.noiseplanet.noisecapture.shared.ui.theme.AppyxStarterKitTheme
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
@@ -61,11 +60,10 @@ fun main() {
                         .focusRequester(requester)
                         .focusable()
                         .onFocusChanged { hasFocus = it.hasFocus },
-                ) {
-                        buildContext ->
+                ) { buildContext ->
                     val koinApplication = initKoin(additionalModules = listOf(module {
-                        factory<MeasurementService> { MeasurementService(JsAudioSource(), logger) }
-                    } )).logger(logger)
+                        factory<MeasurementService> { MeasurementService(JsAudioSource()) }
+                    })).logger(logger)
                     RootNode(
                         nodeContext = buildContext,
                         koin = koinApplication.koin

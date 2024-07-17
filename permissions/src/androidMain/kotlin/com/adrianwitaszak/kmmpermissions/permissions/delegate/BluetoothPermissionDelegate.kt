@@ -16,7 +16,7 @@ internal class BluetoothPermissionDelegate(
     private val activity: Lazy<Activity>,
 ) : PermissionDelegate {
     override suspend fun getPermissionState(): PermissionState {
-        return checkPermissions(context, activity, bluetoothPermissions)
+        return checkPermissions(context, bluetoothPermissions)
     }
 
     override suspend fun providePermission() {

@@ -6,6 +6,7 @@ import android.content.Context
 import android.os.Build
 import com.adrianwitaszak.kmmpermissions.permissions.model.Permission
 import com.adrianwitaszak.kmmpermissions.permissions.model.PermissionState
+import com.adrianwitaszak.kmmpermissions.permissions.util.PermissionRequestException
 import com.adrianwitaszak.kmmpermissions.permissions.util.checkPermissions
 import com.adrianwitaszak.kmmpermissions.permissions.util.openAppSettingsPage
 import com.adrianwitaszak.kmmpermissions.permissions.util.providePermissions
@@ -15,12 +16,12 @@ internal class LocationForegroundPermissionDelegate(
     private val activity: Lazy<Activity>,
 ) : PermissionDelegate {
     override suspend fun getPermissionState(): PermissionState {
-        return checkPermissions(context, activity, fineLocationPermissions)
+        return checkPermissions(context, fineLocationPermissions)
     }
 
     override suspend fun providePermission() {
         activity.value.providePermissions(fineLocationPermissions) {
-            throw Exception(
+            throw PermissionRequestException(
                 it.localizedMessage ?: "Failed to request foreground location permission"
             )
         }
