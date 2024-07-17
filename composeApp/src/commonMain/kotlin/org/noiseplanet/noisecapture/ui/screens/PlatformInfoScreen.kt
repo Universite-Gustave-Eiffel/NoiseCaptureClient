@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.compose_multiplatform
 import org.jetbrains.compose.resources.painterResource
-import org.noiseplanet.noisecapture.Greeting
+import org.noiseplanet.noisecapture.ui.components.Greeting
 
 /**
  * Gives information about the platform the app is currently running on.

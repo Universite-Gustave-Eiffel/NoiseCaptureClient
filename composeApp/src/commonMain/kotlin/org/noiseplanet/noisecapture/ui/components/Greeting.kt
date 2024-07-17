@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture
+package org.noiseplanet.noisecapture.ui.components
 
 import getPlatform
 
