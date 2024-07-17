@@ -15,4 +15,8 @@
     <string name="menu_about">About</string>
     <string name="menu_calibration">Calibration</string>
     <string name="menu_settings">Settings</string>
+
+    <!--  PermissionScreen  -->
+    <string name="request_permission_title">Permissions</string>
+    <string name="request_permission_explanation">In order to measure the sound level and place it on a map the application need to have access to sensitive sensors. Please tap on "Request" buttons.</string>
 </resources>
