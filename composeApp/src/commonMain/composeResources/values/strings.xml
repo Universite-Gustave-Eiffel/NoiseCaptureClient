@@ -1,7 +1,18 @@
 <resources>
     <string name="app_name">NoiseCapture</string>
+    <string name="back_button">Back</string>
 
+    <!--  PlatformInfoScreen  -->
     <string name="platform_info_title">Platform information</string>
 
-    <string name="back_button">Back</string>
+    <!--  HomeScreen  -->
+    <string name="menu_new_measurement">New measurement</string>
+    <string name="menu_history">Measurements history</string>
+    <string name="menu_feedback">Measurement feedback</string>
+    <string name="menu_statistics">Measurements statistics</string>
+    <string name="menu_map">Last measurement map</string>
+    <string name="menu_help">Help</string>
+    <string name="menu_about">About</string>
+    <string name="menu_calibration">Calibration</string>
+    <string name="menu_settings">Settings</string>
 </resources>

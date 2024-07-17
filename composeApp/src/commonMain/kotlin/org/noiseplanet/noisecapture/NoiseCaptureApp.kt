@@ -5,13 +5,10 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -23,6 +20,10 @@ import org.noiseplanet.noisecapture.ui.screens.HomeScreen
 import org.noiseplanet.noisecapture.ui.screens.PlatformInfoScreen
 
 
+/**
+ * Root component of the app.
+ * Currently handles the navigation stack, and navigation bar management.
+ */
 @Composable
 fun NoiseCaptureApp(
     navController: NavHostController = rememberNavController(),
@@ -44,8 +45,9 @@ fun NoiseCaptureApp(
         }
     ) { innerPadding ->
         // TODO: Configure NavHost in a separate file
+        // TODO: Use ease out curve for slide transitions
         // TODO: Handle swipe back gestures on iOS -> encapsulate UINavigationController?
-        // TODO: Handle predictive back gestures on Android and
+        // TODO: Handle predictive back gestures on Android
         NavHost(
             navController = navController,
             startDestination = NavigationRoute.Home.name,
@@ -63,15 +65,11 @@ fun NoiseCaptureApp(
             },
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
                 .padding(innerPadding)
         ) {
             composable(route = NavigationRoute.Home.name) {
                 HomeScreen(
                     onClick = { navController.navigate(NavigationRoute.PlatformInfo.name) },
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp)
                 )
             }
             composable(route = NavigationRoute.PlatformInfo.name) {
