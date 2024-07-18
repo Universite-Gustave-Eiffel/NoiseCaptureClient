@@ -37,6 +37,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
+import androidx.compose.ui.graphics.drawscope.draw
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextMeasurer
@@ -385,21 +386,55 @@ class MeasurementScreen(
                     (settings.maximumX-settings.minimumX)))
             Pair(linearIndex.toFloat(), pair.second)
         }.toTypedArray()
+        val textMeasurer = rememberTextMeasurer()
+        val legendTexts = remember(values.nominalFrequencies.size) {
+            List(values.nominalFrequencies.size) { frequencyIndex ->
+                val textLayoutResult = textMeasurer.measure(buildAnnotatedString {
+                    withStyle(
+                        SpanStyle(
+                            fontSize = TextUnit(
+                                10F,
+                                TextUnitType.Sp
+                            )
+                        )
+                    )
+                    { append(formatFrequency(values.nominalFrequencies[frequencyIndex].toInt())) }
+                })
+                textLayoutResult
+            }
+        }
         Canvas(modifier) {
             val barHeight = size.height / values.spl.size - SPECTRUM_PLOT_SQUARE_OFFSET.toPx()
             val pathEffect = PathEffect.dashPathEffect(floatArrayOf(SPECTRUM_PLOT_SQUARE_WIDTH.toPx(), SPECTRUM_PLOT_SQUARE_OFFSET.toPx()))
             val weightedBarWidth = 10.dp.toPx()
+            val maxLegendWidth = legendTexts.maxOfOrNull { it.size.width }
+            val barMaxWidth = size.width - (maxLegendWidth ?: 0)
             values.spl.forEachIndexed { index, spl ->
                 val barYOffset = (barHeight + SPECTRUM_PLOT_SQUARE_OFFSET.toPx())*index
                 val splRatio = (spl-settings.minimumX)/(settings.maximumX-settings.minimumX)
                 val splWeighted = max(spl, values.splWeighted[index])
-                val splWeightedRatio  = (splWeighted-settings.minimumX)/(settings.maximumX-settings.minimumX)
+                val splWeightedRatio  = min(1.0, max(0.0, (splWeighted-settings.minimumX)/(settings.maximumX-settings.minimumX)))
                 val splGradient = Brush.horizontalGradient(*spectrumColorRamp, startX = 0F, endX = size.width)
-                drawLine(brush = splGradient, start = Offset(0F, barYOffset + barHeight / 2),
-                    end = Offset((size.width*splRatio).toFloat(), barYOffset + barHeight / 2),
-                    strokeWidth = barHeight, pathEffect = pathEffect)
-                drawRect(color = surfaceColor, topLeft = Offset((size.width*splWeightedRatio).toFloat()-weightedBarWidth, barYOffset),
-                    size=Size(weightedBarWidth, barHeight))
+                drawText(textMeasurer, legendTexts[index].layoutInput.text, topLeft = Offset(0F, barYOffset + barHeight / 2 - legendTexts[index].size.height / 2F))
+                drawLine(
+                    brush = splGradient,
+                    start = Offset((maxLegendWidth ?: 0).toFloat(), barYOffset + barHeight / 2),
+                    end = Offset(max((maxLegendWidth ?: 0).toFloat(),
+                        ((barMaxWidth * splRatio).toFloat() + (maxLegendWidth ?: 0))),
+                        barYOffset + barHeight / 2),
+                    strokeWidth = barHeight,
+                    pathEffect = pathEffect
+                )
+                drawRect(
+                    color = surfaceColor, topLeft = Offset(
+                        max(
+                            (maxLegendWidth ?: 0).toFloat(),
+                            (barMaxWidth * splWeightedRatio).toFloat() - weightedBarWidth + (maxLegendWidth
+                                ?: 0)
+                        ), barYOffset
+                    ),
+                    size = Size(weightedBarWidth, barHeight)
+                )
             }
         }
     }
@@ -565,7 +600,8 @@ class MeasurementScreen(
         var bitmapOffset by remember { mutableStateOf(0) }
         var noiseLevel by remember { mutableStateOf(0.0) }
         var sampleRate by remember { mutableStateOf( DEFAULT_SAMPLE_RATE ) }
-        var spectrumDataState by remember { mutableStateOf( SpectrumPlotData(DoubleArray(0), DoubleArray(0))) }
+        var spectrumDataState by remember { mutableStateOf( SpectrumPlotData(ArrayList(0),
+            DoubleArray(0), DoubleArray(0))) }
         var indicatorCollectJob : Job? = null
         var spectrumCollectJob : Job? = null
         val launchMeasurementJob = fun () {
@@ -578,7 +614,7 @@ class MeasurementScreen(
                     }
                     noiseLevel = levelDisplay.getWeightedValue(it.laeq)
                     val splWeightedArray = DoubleArray(it.nominalFrequencies.size) {index -> levelDisplayBands!![index].getWeightedValue(it.thirdOctave[index])}
-                    spectrumDataState = SpectrumPlotData(it.thirdOctave, splWeightedArray)
+                    spectrumDataState = SpectrumPlotData(it.nominalFrequencies, it.thirdOctave, splWeightedArray)
                 }
             }
             spectrumCollectJob = lifecycleScope.launch {
@@ -644,7 +680,7 @@ data class MeasurementStatistics(val label : String, val value : String)
 
 data class SpectrumSettings(val minimumX : Double, val maximumX : Double)
 
-data class SpectrumPlotData(val spl : DoubleArray, val splWeighted : DoubleArray)
+data class SpectrumPlotData(val nominalFrequencies : List<Double>, val spl : DoubleArray, val splWeighted : DoubleArray)
 
 data class VueMeterSettings(val minimum : Double, val maximum : Double, val xLabels : IntArray) {
     override fun equals(other: Any?): Boolean {
