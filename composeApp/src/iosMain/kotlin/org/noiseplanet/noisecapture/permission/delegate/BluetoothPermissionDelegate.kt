@@ -1,7 +1,7 @@
 package org.noiseplanet.noisecapture.permission.delegate
 
 import org.noiseplanet.noisecapture.permission.PermissionState
-import org.noiseplanet.noisecapture.permission.util.openAppSettingsPage
+import org.noiseplanet.noisecapture.permission.util.openNSUrl
 import platform.CoreBluetooth.CBCentralManager
 import platform.CoreBluetooth.CBManagerAuthorizationAllowedAlways
 import platform.CoreBluetooth.CBManagerAuthorizationDenied
@@ -24,6 +24,6 @@ internal class BluetoothPermissionDelegate : PermissionDelegate {
     }
 
     override fun openSettingPage() {
-        openAppSettingsPage()
+        openNSUrl("App-Prefs:Privacy&path=BLUETOOTH")
     }
 }

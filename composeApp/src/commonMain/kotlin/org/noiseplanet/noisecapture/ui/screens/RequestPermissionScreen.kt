@@ -105,7 +105,10 @@ fun RequestPermissionScreen(
                             modifier = Modifier.padding(horizontal = 8.dp)
                         )
                         Button(
-                            onClick = { permissionService.requestPermission(permission) },
+                            onClick = {
+                                // TODO: Open settings
+                                permissionService.requestPermission(permission)
+                            },
                         ) {
                             androidx.compose.material.Text(
                                 text = "Settings",

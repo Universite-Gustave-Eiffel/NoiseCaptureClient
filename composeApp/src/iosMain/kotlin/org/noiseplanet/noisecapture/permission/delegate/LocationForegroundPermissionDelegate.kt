@@ -1,7 +1,7 @@
 package org.noiseplanet.noisecapture.permission.delegate
 
 import org.noiseplanet.noisecapture.permission.PermissionState
-import org.noiseplanet.noisecapture.permission.util.openAppSettingsPage
+import org.noiseplanet.noisecapture.permission.util.openNSUrl
 import platform.CoreLocation.CLLocationManager
 import platform.CoreLocation.kCLAuthorizationStatusAuthorizedAlways
 import platform.CoreLocation.kCLAuthorizationStatusAuthorizedWhenInUse
@@ -31,6 +31,6 @@ internal class LocationForegroundPermissionDelegate : PermissionDelegate {
     }
 
     override fun openSettingPage() {
-        openAppSettingsPage()
+        openNSUrl("App-Prefs:Privacy&path=LOCATION")
     }
 }
