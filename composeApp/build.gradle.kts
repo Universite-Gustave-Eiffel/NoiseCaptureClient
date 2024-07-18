@@ -72,6 +72,10 @@ kotlin {
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.datetime)
+        }
+        wasmJsMain.dependencies {
+            implementation(libs.kotlin.browser)
         }
     }
 }

@@ -6,7 +6,9 @@ import org.koin.core.module.Module
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import org.noiseplanet.noisecapture.permission.PermissionService
-import org.noiseplanet.noisecapture.permission.getPermissionService
+import org.noiseplanet.noisecapture.permission.PermissionServiceImpl
+import org.noiseplanet.noisecapture.permission.defaultPermissionModule
+import org.noiseplanet.noisecapture.permission.platformPermissionModule
 
 /**
  * Create root Koin application and register modules shared between platforms
@@ -19,7 +21,9 @@ fun initKoin(
             listOf(
                 module {
                     includes(additionalModules)
-                    single<PermissionService> { getPermissionService() }
+                    includes(defaultPermissionModule, platformPermissionModule())
+
+                    single<PermissionService> { PermissionServiceImpl() }
                 }
             )
         )

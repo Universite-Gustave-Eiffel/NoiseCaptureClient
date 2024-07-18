@@ -29,7 +29,7 @@ class MainActivity : ComponentActivity() {
         ).logger(androidLogger)
 
         setContent {
-            App(koin = koinApplication)
+            App()
         }
     }
 }

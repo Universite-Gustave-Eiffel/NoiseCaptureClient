@@ -20,7 +20,7 @@ enum class PermissionState {
      * No permission delegate is available for this permission
      * It has not been implemented or it is no required on this platform
      */
-    NO_PERMISSION_DELEGATE,
+    NOT_IMPLEMENTED,
 
     /**
      * Indicates that the permission has been requested but the user denied the permission

@@ -24,7 +24,7 @@
 #koin-core = "3.5.6"
 #kotlin = "2.0.0"
 #kotlinWrappersVersion = "1.0.0-pre.700"
-#kotxdatetime = "0.5.0"
+
 #ksp = "1.9.24-1.0.20"
 #sqliteFramework = "2.4.0"
 agp = "8.2.0"
@@ -49,6 +49,8 @@ koin = "3.6.0-Beta4"
 koin-compose-multiplatform = "1.2.0-Beta4"
 
 kotlin = "2.0.0"
+kotlin-wrappers = "1.0.0-pre.775"
+kotlinx-datetime = "0.5.0"
 
 detekt = "1.23.6"
 
@@ -74,10 +76,10 @@ coroutines = "1.8.0"
 #junit = { module = "junit:junit", version.ref = "junit" }
 #koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin-android" }
 #koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin-core" }
-#kotlin-browser = { module = "org.jetbrains.kotlin-wrappers:kotlin-browser", version.ref = "kotlinWrappersVersion" }
+
 #kotlin-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 #kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
-#kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotxdatetime" }
+
 #sqldelight-android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "androidDriver" }
 #sqldelight-driver = { module = "app.cash.sqldelight:web-worker-driver", version.ref = "androidDriver" }
 #sqldelight-native-driver = { module = "app.cash.sqldelight:native-driver", version.ref = "androidDriver" }
@@ -98,6 +100,8 @@ koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin-compose-multiplatform" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlin-browser = { module = "org.jetbrains.kotlin-wrappers:kotlin-browser", version.ref = "kotlin-wrappers" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
