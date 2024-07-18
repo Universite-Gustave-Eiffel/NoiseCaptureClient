@@ -19,8 +19,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,6 +29,8 @@ import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.request_permission_explanation
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
+import org.koin.core.logger.Logger
+import org.koin.mp.KoinPlatformTools
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionService
 import org.noiseplanet.noisecapture.permission.PermissionState
@@ -41,6 +43,7 @@ import org.noiseplanet.noisecapture.permission.PermissionState
 @Composable
 fun RequestPermissionScreen(
     permissionService: PermissionService = koinInject(),
+    logger: Logger = KoinPlatformTools.defaultLogger(),
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -71,7 +74,9 @@ fun RequestPermissionScreen(
                 Permission.LOCATION_BACKGROUND,
             )
             items(requiredPermissions) { permission ->
-                val permissionState by mutableStateOf(permissionService.checkPermission(permission))
+                val permissionState: PermissionState by permissionService
+                    .getPermissionStateFlow(permission)
+                    .collectAsState(PermissionState.NOT_DETERMINED)
 
                 Column(
                     modifier = Modifier.fillMaxWidth()
