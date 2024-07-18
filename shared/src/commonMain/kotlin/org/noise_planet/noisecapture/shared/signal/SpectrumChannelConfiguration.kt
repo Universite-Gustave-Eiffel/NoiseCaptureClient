@@ -1,6 +1,6 @@
 package org.noise_planet.noisecapture.shared.signal
 
-
+// generated with https://github.com/Universite-Gustave-Eiffel/Rail4Earth/blob/main/examples/generate_kotlin_config.py
 
 data class SpectrumChannelConfiguration (
     val bandpass: List<Bandpass>,

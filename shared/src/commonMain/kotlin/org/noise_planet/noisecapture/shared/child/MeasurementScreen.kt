@@ -410,7 +410,7 @@ class MeasurementScreen(
             val maxLegendWidth = legendTexts.maxOfOrNull { it.size.width }
             val barMaxWidth = size.width - (maxLegendWidth ?: 0)
             values.spl.forEachIndexed { index, spl ->
-                val barYOffset = (barHeight + SPECTRUM_PLOT_SQUARE_OFFSET.toPx())*index
+                val barYOffset = (barHeight + SPECTRUM_PLOT_SQUARE_OFFSET.toPx())*(values.spl.size - 1 - index)
                 val splRatio = (spl-settings.minimumX)/(settings.maximumX-settings.minimumX)
                 val splWeighted = max(spl, values.splWeighted[index])
                 val splWeightedRatio  = min(1.0, max(0.0, (splWeighted-settings.minimumX)/(settings.maximumX-settings.minimumX)))
