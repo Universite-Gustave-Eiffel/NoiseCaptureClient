@@ -6,7 +6,7 @@ package org.noiseplanet.noisecapture.permission
 internal class IOSPermissionService : PermissionService {
 
     override fun checkPermission(permission: Permission): PermissionState {
-        return PermissionState.DENIED
+        return PermissionState.GRANTED
     }
 
     override fun requestPermission(permission: Permission) {

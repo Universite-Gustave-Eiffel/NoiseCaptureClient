@@ -14,7 +14,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import org.noiseplanet.noisecapture.permission.getPermissionService
 import org.noiseplanet.noisecapture.ui.AppBar
 import org.noiseplanet.noisecapture.ui.NavigationRoute
 import org.noiseplanet.noisecapture.ui.screens.HomeScreen
@@ -80,9 +79,7 @@ fun NoiseCaptureApp(
                 )
             }
             composable(route = NavigationRoute.RequestPermission.name) {
-                RequestPermissionScreen(
-                    getPermissionService()
-                )
+                RequestPermissionScreen()
             }
         }
     }

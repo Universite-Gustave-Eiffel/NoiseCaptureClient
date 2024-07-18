@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.request_permission_explanation
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionService
 import org.noiseplanet.noisecapture.permission.PermissionState
@@ -36,7 +37,7 @@ import org.noiseplanet.noisecapture.permission.PermissionState
  */
 @Composable
 fun RequestPermissionScreen(
-    permissionService: PermissionService,
+    permissionService: PermissionService = koinInject(),
     modifier: Modifier = Modifier,
 ) {
     Surface(
