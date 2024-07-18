@@ -3,7 +3,6 @@ package org.noiseplanet.noisecapture
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
-import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import org.noiseplanet.noisecapture.permission.PermissionService
 import org.noiseplanet.noisecapture.permission.PermissionServiceImpl
@@ -16,18 +15,16 @@ import org.noiseplanet.noisecapture.permission.platformPermissionModule
 fun initKoin(
     additionalModules: List<Module> = emptyList(),
 ): KoinApplication {
-    val koinApplication = koinApplication {
+    return startKoin {
         modules(
-            listOf(
-                module {
-                    includes(additionalModules)
-                    includes(defaultPermissionModule, platformPermissionModule())
+            module {
+                includes(additionalModules)
 
-                    single<PermissionService> { PermissionServiceImpl() }
-                }
-            )
+                single<PermissionService> { PermissionServiceImpl() }
+            },
+            defaultPermissionModule,
+            platformPermissionModule()
         )
         createEagerInstances()
     }
-    return startKoin(koinApplication)
 }

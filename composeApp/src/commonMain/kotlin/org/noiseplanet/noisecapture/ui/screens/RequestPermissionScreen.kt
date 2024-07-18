@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,13 +13,15 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Icon
+import androidx.compose.material.icons.filled.QuestionMark
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -70,26 +73,54 @@ fun RequestPermissionScreen(
             items(requiredPermissions) { permission ->
                 val permissionState by mutableStateOf(permissionService.checkPermission(permission))
 
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Row {
-                        Text(
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        androidx.compose.material.Text(
                             text = permission.name,
                             color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.weight(1f)
                         )
+                        androidx.compose.material.Icon(
+                            imageVector = when (permissionState) {
+                                PermissionState.GRANTED -> Icons.Default.Check
+                                PermissionState.NOT_DETERMINED -> Icons.Default.QuestionMark
+                                else -> Icons.Default.Close
+                            },
+                            tint = when (permissionState) {
+                                PermissionState.GRANTED -> Color.Green
+                                PermissionState.NOT_DETERMINED -> Color.Gray
+                                else -> Color.Red
+                            },
+                            contentDescription = null,
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        )
+                        Button(
+                            onClick = { permissionService.requestPermission(permission) },
+                        ) {
+                            androidx.compose.material.Text(
+                                text = "Settings",
+                                color = androidx.compose.material.MaterialTheme.colors.onPrimary,
+                            )
+                        }
                     }
-                    Icon(
-                        imageVector = when (permissionState) {
-                            PermissionState.GRANTED -> Icons.Default.Check
-                            else -> Icons.Default.Close
-                        },
-                        tint = when (permissionState) {
-                            PermissionState.GRANTED -> Color.Green
-                            else -> Color.Red
-                        },
-                        modifier = Modifier.padding(horizontal = 8.dp),
-                        contentDescription = null,
-                    )
+                    AnimatedVisibility(permissionState.notGranted()) {
+                        Button(
+                            onClick = {
+                                permissionService.requestPermission(permission)
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            androidx.compose.material.Text(
+                                text = "Request",
+                                color = androidx.compose.material.MaterialTheme.colors.onPrimary,
+                            )
+                        }
+                    }
                 }
             }
         }
