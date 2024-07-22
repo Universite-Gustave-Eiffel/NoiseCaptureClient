@@ -71,9 +71,10 @@ internal class JsAudioSource : AudioSource {
         scriptProcessorNode?.disconnect()
 
         try {
-            audioContext?.close()?.catch {
+            audioContext?.close()?.catch { error ->
                 // ignore
-                false.toJsBoolean()
+                println(error)
+                error
             }
         } catch (ignore: Exception) {
             // Ignore
