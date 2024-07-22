@@ -37,9 +37,9 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
-import androidx.compose.ui.graphics.drawscope.draw
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.drawText
@@ -72,6 +72,7 @@ import org.noise_planet.noisecapture.shared.ui.SpectrogramBitmap
 import org.noise_planet.noisecapture.shared.ui.SpectrogramBitmap.Companion.toComposeColor
 import org.noise_planet.noisecapture.shared.ui.asEventFlow
 import org.noise_planet.noisecapture.toImageBitmap
+import kotlin.math.abs
 import kotlin.math.log10
 import kotlin.math.max
 import kotlin.math.min
@@ -102,19 +103,24 @@ class MeasurementScreen(
     private var mindB = 0.0
     private var dbGain = ANDROID_GAIN
 
-    val noiseColorRampSpl : List<Pair<Float, Color>> = listOf(
-        Pair(75F, "#FF0000".toComposeColor()), // >= 75 dB
-        Pair(65F, "#FF8000".toComposeColor()), // >= 65 dB
-        Pair(55F, "#FFFF00".toComposeColor()), // >= 55 dB
-        Pair(45F, "#99FF00".toComposeColor()), // >= 45 dB
-        Pair(Float.NEGATIVE_INFINITY, "#00FF00".toComposeColor())) // < 45 dB
+    companion object {
 
-    fun getColorIndex(noiseLevel: Double) = when {
-        noiseLevel > 75.0 -> 0
-        noiseLevel > 65 -> 1
-        noiseLevel > 55 -> 2
-        noiseLevel > 45 -> 3
-        else -> 4
+        val noiseColorRampSpl : List<Pair<Float, Color>> = listOf(
+            Pair(75F, "#FF0000".toComposeColor()), // >= 75 dB
+            Pair(65F, "#FF8000".toComposeColor()), // >= 65 dB
+            Pair(55F, "#FFFF00".toComposeColor()), // >= 55 dB
+            Pair(45F, "#99FF00".toComposeColor()), // >= 45 dB
+            Pair(Float.NEGATIVE_INFINITY, "#00FF00".toComposeColor())) // < 45 dB
+
+        fun timeAxisFormater(timeValue: Double) : String {
+            return "+${round(timeValue).toInt()}s"
+        }
+
+        fun noiseLevelAxisFormater(timeValue: Double) : String {
+            return "${round(timeValue).toInt()} dB"
+        }
+        val tickStroke = 2.dp
+        val tickLength = 4.dp
     }
 
 
@@ -161,34 +167,71 @@ class MeasurementScreen(
         }
     }
 
-    private fun makeXLegend(textMeasurer: TextMeasurer, timeValue : Double, legendWidth : Float,
-                            timePerPixel : Double, depth: Int) : LegendElement {
-        val xPos = (legendWidth - timeValue / timePerPixel).toFloat()
+    private fun makeXLegend(textMeasurer: TextMeasurer, xValue : Double, legendWidth : Float,
+                            xPerPixel : Double, depth: Int, formater: (x:Double)->String) : LegendElement {
+        val xPos = (legendWidth - xValue / xPerPixel).toFloat()
         val legendText = buildAnnotatedString {
             withStyle(style = SpanStyle()) {
-                append("+${round(timeValue).toInt()}s")
+                append(formater(xValue))
             }
         }
         val textLayout = textMeasurer.measure(legendText)
         val textPos = min(legendWidth-textLayout.size.width,
             max(0F, xPos - textLayout.size.width / 2))
-        return LegendElement(legendText, textLayout.size, xPos, textPos, depth)
+        return LegendElement(textLayout, xPos, textPos, depth)
     }
 
-    private fun recursiveLegendBuild(textMeasurer: TextMeasurer, timeValue : Double, legendWidth : Float,
-                                     timePerPixel : Double, minX : Float, maxX : Float, timeValueLeft : Double,
-                                     timeValueRight : Double, feedElements: ArrayList<LegendElement>, depth: Int) {
-        val legendElement = makeXLegend(textMeasurer, timeValue, legendWidth, timePerPixel, depth)
-        if(legendElement.textPos > minX && legendElement.xPos + legendElement.textSize.width / 2 < maxX) {
+    private fun makeXLabels(textMeasurer: TextMeasurer, leftValue : Double, rightValue : Double, xLegendWidth: Float, formater: (x:Double)->String)  : ArrayList<LegendElement> {
+        val xPerPixel = abs(leftValue - rightValue) / xLegendWidth
+        val legendElements = ArrayList<LegendElement>()
+        val rightLegend = makeXLegend(textMeasurer, rightValue, xLegendWidth, xPerPixel, -1, formater)
+        val leftLegend =  makeXLegend(textMeasurer, leftValue, xLegendWidth, xPerPixel, -1, formater)
+        legendElements.add(leftLegend)
+        legendElements.add(rightLegend)
+        recursiveLegendBuild(textMeasurer, (leftValue - rightValue) / 2, xLegendWidth, xPerPixel,
+            leftLegend.text.size.width.toFloat(),
+            rightLegend.xPos-rightLegend.text.size.width, leftValue, rightValue, legendElements, 0, formater)
+        // find depth index with maximum number of elements (to generate same intervals on legend)
+        val legendDepthCount = IntArray(legendElements.maxOf { it.depth }+1) { 0 }
+        legendElements.forEach {
+            if(it.depth >= 0) {
+                legendDepthCount[it.depth] += 1
+            }
+        }
+        legendElements.removeAll {
+            it.depth > 0 && legendDepthCount[it.depth] != (2.0.pow(it.depth)).toInt()
+        }
+        return legendElements
+    }
+    private fun recursiveLegendBuild(
+        textMeasurer: TextMeasurer,
+        timeValue: Double,
+        legendWidth: Float,
+        timePerPixel: Double,
+        minX: Float,
+        maxX: Float,
+        timeValueLeft: Double,
+        timeValueRight: Double,
+        feedElements: ArrayList<LegendElement>,
+        depth: Int,
+        formater: (x: Double) -> String
+    ) {
+        val legendElement =
+            makeXLegend(textMeasurer, timeValue, legendWidth, timePerPixel, depth, formater)
+        if (legendElement.textPos > minX && legendElement.xPos + legendElement.text.size.width / 2 < maxX) {
             feedElements.add(legendElement)
             // left legend, + x seconds
-            recursiveLegendBuild(textMeasurer, timeValue + (timeValueLeft - timeValue) / 2,
+            recursiveLegendBuild(
+                textMeasurer, timeValue + (timeValueLeft - timeValue) / 2,
                 legendWidth, timePerPixel, minX, legendElement.textPos, timeValueLeft, timeValue,
-                feedElements, depth + 1)
+                feedElements, depth + 1, formater
+            )
             // right legend, - x seconds
-            recursiveLegendBuild(textMeasurer, timeValue - (timeValue - timeValueRight) / 2,
-                legendWidth, timePerPixel, legendElement.textPos + legendElement.textSize.width,
-                maxX, timeValue, timeValueRight, feedElements, depth + 1)
+            recursiveLegendBuild(
+                textMeasurer, timeValue - (timeValue - timeValueRight) / 2,
+                legendWidth, timePerPixel, legendElement.textPos + legendElement.text.size.width,
+                maxX, timeValue, timeValueRight, feedElements, depth + 1, formater
+            )
         }
     }
 
@@ -218,11 +261,8 @@ class MeasurementScreen(
             canvas = canvas,
             size = size,
         ) {
-
-            val tickLength = 4.dp.toPx()
-            val tickStroke = 2.dp
-            val legendHeight = timeXLabelHeight+tickLength
-            val legendWidth = maxYLabelWidth+tickLength
+            val legendHeight = timeXLabelHeight+tickLength.toPx()
+            val legendWidth = maxYLabelWidth+tickLength.toPx()
             bottomLegendSize = Size(size.width-legendWidth, legendHeight)
             rightLegendSize = Size(legendWidth, size.height - legendHeight)
             if(sampleRate > 1) {
@@ -249,38 +289,18 @@ class MeasurementScreen(
                             tickHeightPos.toFloat() - tickStroke.toPx()/2
                         ),
                         end = Offset(
-                            size.width - legendWidth + tickLength,
+                            size.width - legendWidth + tickLength.toPx(),
                             tickHeightPos.toFloat() - tickStroke.toPx()/2
                         ),
                         strokeWidth = tickStroke.toPx()
                     )
                     val textPos = min((size.height - textSize.size.height).toInt(),
                         max(0, tickHeightPos - textSize.size.height / 2))
-                    drawText(textMeasurer, text, topLeft = Offset(size.width - legendWidth + tickLength, textPos.toFloat()))
+                    drawText(textMeasurer, text, topLeft = Offset(size.width - legendWidth + tickLength.toPx(), textPos.toFloat()))
                 }
-                // draw X axe labels
                 val xLegendWidth = (size.width - legendWidth)
-                // One pixel per time step
-                val timePerPixel = FFT_HOP / sampleRate
-                val lastTime = xLegendWidth * timePerPixel
-                val legendElements = ArrayList<LegendElement>()
-                val rightLegend = makeXLegend(textMeasurer, 0.0, xLegendWidth, timePerPixel, -1)
-                val leftLegend =  makeXLegend(textMeasurer, lastTime, xLegendWidth, timePerPixel, -1)
-                legendElements.add(leftLegend)
-                legendElements.add(rightLegend)
-                recursiveLegendBuild(textMeasurer, lastTime / 2, xLegendWidth, timePerPixel,
-                    leftLegend.textSize.width.toFloat(),
-                    rightLegend.xPos-rightLegend.textSize.width, lastTime, 0.0, legendElements, 0)
-                // find depth index with maximum number of elements (to generate same intervals on legend)
-                val legendDepthCount = IntArray(legendElements.maxOf { it.depth }+1) { 0 }
-                legendElements.forEach {
-                    if(it.depth >= 0) {
-                        legendDepthCount[it.depth] += 1
-                    }
-                }
-                legendElements.removeAll {
-                    it.depth > 0 && legendDepthCount[it.depth] != (2.0.pow(it.depth)).toInt()
-                }
+                val legendElements = makeXLabels(textMeasurer, (FFT_HOP / sampleRate)*xLegendWidth,0.0,
+                    xLegendWidth, ::timeAxisFormater)
                 legendElements.forEach {legendElement ->
                     val tickPos = max(tickStroke.toPx() / 2F, min(xLegendWidth-tickStroke.toPx(), legendElement.xPos - tickStroke.toPx() / 2F))
                     drawLine(
@@ -290,11 +310,11 @@ class MeasurementScreen(
                         ),
                         end = Offset(
                             tickPos,
-                            sheight + tickLength
+                            sheight + tickLength.toPx()
                         ),
                         strokeWidth = tickStroke.toPx()
                     )
-                    drawText(textMeasurer,legendElement.text, topLeft = Offset(legendElement.textPos, sheight.toFloat() + tickLength))
+                    drawText(legendElement.text, topLeft = Offset(legendElement.textPos, sheight.toFloat() + tickLength.toPx()))
                 }
             }
         }
@@ -375,17 +395,20 @@ class MeasurementScreen(
     }
 
     @Composable
-    fun spectrumPlot(modifier: Modifier, settings: SpectrumSettings, values : SpectrumPlotData) {
+    fun spectrumPlot(modifier: Modifier, settings: SpectrumSettings, values : SpectrumPlotData, colors: Colors) {
         val surfaceColor = MaterialTheme.colors.onSurface
         // color ramp 0F left side of spectrum
         // 1F right side of spectrum
-        val spectrumColorRamp = List(noiseColorRampSpl.size) {
-            index ->
-            val pair = noiseColorRampSpl[noiseColorRampSpl.size - 1 - index]
-            val linearIndex = max(0.0,((pair.first - settings.minimumX) /
-                    (settings.maximumX-settings.minimumX)))
-            Pair(linearIndex.toFloat(), pair.second)
-        }.toTypedArray()
+        val spectrumColorRamp = remember(settings) {
+            List(noiseColorRampSpl.size) { index ->
+                val pair = noiseColorRampSpl[noiseColorRampSpl.size - 1 - index]
+                val linearIndex = max(
+                    0.0, ((pair.first - settings.minimumX) /
+                            (settings.maximumX - settings.minimumX))
+                )
+                Pair(linearIndex.toFloat(), pair.second)
+            }.toTypedArray()
+        }
         val textMeasurer = rememberTextMeasurer()
         val legendTexts = remember(values.nominalFrequencies.size) {
             List(values.nominalFrequencies.size) { frequencyIndex ->
@@ -404,11 +427,37 @@ class MeasurementScreen(
             }
         }
         Canvas(modifier) {
-            val barHeight = size.height / values.spl.size - SPECTRUM_PLOT_SQUARE_OFFSET.toPx()
-            val pathEffect = PathEffect.dashPathEffect(floatArrayOf(SPECTRUM_PLOT_SQUARE_WIDTH.toPx(), SPECTRUM_PLOT_SQUARE_OFFSET.toPx()))
+            val pathEffect = PathEffect.dashPathEffect(
+                floatArrayOf(
+                    SPECTRUM_PLOT_SQUARE_WIDTH.toPx(),
+                    SPECTRUM_PLOT_SQUARE_OFFSET.toPx()
+                )
+            )
             val weightedBarWidth = 10.dp.toPx()
-            val maxLegendWidth = legendTexts.maxOfOrNull { it.size.width }
-            val barMaxWidth = size.width - (maxLegendWidth ?: 0)
+            val maxYAxisWidth = (legendTexts.maxOfOrNull { it.size.width }) ?:0
+            val barMaxWidth : Float = size.width - maxYAxisWidth
+            val legendElements = makeXLabels(
+                textMeasurer,  settings.maximumX, settings.minimumX, barMaxWidth,
+                ::noiseLevelAxisFormater
+            )
+            val maxXAxisHeight = (legendElements.maxOfOrNull { it.text.size.height }) ?:0
+            val chartHeight = (size.height - maxXAxisHeight - tickLength.toPx())
+            legendElements.forEach {legendElement ->
+                val tickPos = maxYAxisWidth + max(tickStroke.toPx() / 2F, min(barMaxWidth-tickStroke.toPx(), legendElement.xPos - tickStroke.toPx() / 2F))
+                drawLine(
+                    color = colors.onPrimary, start = Offset(
+                        tickPos,
+                        chartHeight
+                    ),
+                    end = Offset(
+                        tickPos,
+                        chartHeight + tickLength.toPx()
+                    ),
+                    strokeWidth = tickStroke.toPx()
+                )
+                drawText(legendElement.text, topLeft = Offset(maxYAxisWidth + legendElement.textPos, chartHeight + tickLength.toPx()))
+            }
+            val barHeight = chartHeight / values.spl.size - SPECTRUM_PLOT_SQUARE_OFFSET.toPx()
             values.spl.forEachIndexed { index, spl ->
                 val barYOffset = (barHeight + SPECTRUM_PLOT_SQUARE_OFFSET.toPx())*(values.spl.size - 1 - index)
                 val splRatio = (spl-settings.minimumX)/(settings.maximumX-settings.minimumX)
@@ -418,9 +467,10 @@ class MeasurementScreen(
                 drawText(textMeasurer, legendTexts[index].layoutInput.text, topLeft = Offset(0F, barYOffset + barHeight / 2 - legendTexts[index].size.height / 2F))
                 drawLine(
                     brush = splGradient,
-                    start = Offset((maxLegendWidth ?: 0).toFloat(), barYOffset + barHeight / 2),
-                    end = Offset(max((maxLegendWidth ?: 0).toFloat(),
-                        ((barMaxWidth * splRatio).toFloat() + (maxLegendWidth ?: 0))),
+                    start = Offset(maxYAxisWidth.toFloat(), barYOffset + barHeight / 2),
+                    end = Offset(max(
+                        maxYAxisWidth.toFloat(),
+                        ((barMaxWidth * splRatio).toFloat() + maxYAxisWidth)),
                         barYOffset + barHeight / 2),
                     strokeWidth = barHeight,
                     pathEffect = pathEffect
@@ -428,9 +478,8 @@ class MeasurementScreen(
                 drawRect(
                     color = surfaceColor, topLeft = Offset(
                         max(
-                            (maxLegendWidth ?: 0).toFloat(),
-                            (barMaxWidth * splWeightedRatio).toFloat() - weightedBarWidth + (maxLegendWidth
-                                ?: 0)
+                            maxYAxisWidth.toFloat(),
+                            (barMaxWidth * splWeightedRatio).toFloat() - weightedBarWidth + maxYAxisWidth
                         ), barYOffset
                     ),
                     size = Size(weightedBarWidth, barHeight)
@@ -582,7 +631,7 @@ class MeasurementScreen(
                         spectrogram(spectrumCanvasState, bitmapOffset)
                         spectrogramLegend(scaleMode, sampleRate)
                     }
-                    MeasurementTabState.SPECTRUM -> spectrumPlot(Modifier.fillMaxSize(), spectrumSettings, spectrumData)
+                    MeasurementTabState.SPECTRUM -> spectrumPlot(Modifier.fillMaxSize(), spectrumSettings, spectrumData, MaterialTheme.colors)
 
                     else -> Surface(Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {Text(
                         text = "Text tab ${MEASUREMENT_TAB_LABEL[page]} selected",
@@ -669,7 +718,7 @@ data class SpectrogramViewModel(var currentStripData : SpectrogramBitmap.Spectro
                                 val cachedStrips : ArrayList<ImageBitmap>,
                                 var spectrogramCanvasSize : Size)
 
-data class LegendElement(val text : AnnotatedString, val textSize : IntSize, val xPos : Float,
+data class LegendElement(val text : TextLayoutResult, val xPos : Float,
                          val textPos : Float, val depth : Int)
 
 enum class MeasurementTabState { SPECTRUM, SPECTROGRAM, MAP}
