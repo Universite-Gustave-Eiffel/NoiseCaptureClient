@@ -106,8 +106,7 @@ fun RequestPermissionScreen(
                         )
                         Button(
                             onClick = {
-                                // TODO: Open settings
-                                permissionService.requestPermission(permission)
+                                permissionService.openSettingsForPermission(permission)
                             },
                         ) {
                             androidx.compose.material.Text(
@@ -116,7 +115,10 @@ fun RequestPermissionScreen(
                             )
                         }
                     }
-                    AnimatedVisibility(permissionState.notGranted()) {
+                    
+                    // If permission state is not yet determined, show a button to trigger
+                    // the permission request popup
+                    AnimatedVisibility(permissionState == PermissionState.NOT_DETERMINED) {
                         Button(
                             onClick = {
                                 permissionService.requestPermission(permission)

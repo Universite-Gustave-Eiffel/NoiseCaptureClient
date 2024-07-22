@@ -24,7 +24,7 @@ internal class AudioRecordPermissionDelegate : PermissionDelegate {
     }
 
     override fun openSettingPage() {
-        openNSUrl("prefs:root=Privacy&path=MICROPHONE")
+        openNSUrl("App-prefs:Privacy&path=MICROPHONE")
     }
 
 }

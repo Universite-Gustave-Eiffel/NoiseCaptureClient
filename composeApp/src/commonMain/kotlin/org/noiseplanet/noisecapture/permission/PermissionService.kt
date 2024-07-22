@@ -30,6 +30,15 @@ interface PermissionService : KoinComponent {
     fun checkPermission(permission: Permission): PermissionState
 
     /**
+     * Opens the settings page corresponding to the given permission.
+     * Should be used when permission has been previously denied since we can't trigger
+     * the permission popup again.
+     *
+     * @param permission Target permission
+     */
+    fun openSettingsForPermission(permission: Permission)
+
+    /**
      * Triggers requesting the given permission to the user
      *
      * @param permission Target permission
@@ -59,14 +68,18 @@ internal class PermissionServiceImpl : PermissionService {
     }
 
     override fun checkPermission(permission: Permission): PermissionState {
-        // Get delegate for this permission
-        val delegate: PermissionDelegate = get(named(permission.name))
-        // Check and return current permission state
-        return delegate.getPermissionState()
+        return getPermissionDelegate(permission).getPermissionState()
     }
 
     override fun requestPermission(permission: Permission) {
-        val delegate: PermissionDelegate = get(named(permission.name))
-        delegate.providePermission()
+        getPermissionDelegate(permission).providePermission()
+    }
+
+    override fun openSettingsForPermission(permission: Permission) {
+        getPermissionDelegate(permission).openSettingPage()
+    }
+
+    private fun getPermissionDelegate(permission: Permission): PermissionDelegate {
+        return get(named(permission.name))
     }
 }
