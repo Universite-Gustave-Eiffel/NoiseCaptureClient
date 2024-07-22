@@ -8,7 +8,7 @@ external class AudioContext {
 
     val destination: AudioDestinationNode
 
-    fun close(): Promise<JsBoolean>
+    fun close(): Promise<*>
     fun createMediaStreamSource(mediaStream: MediaStream): AudioNode
     fun createScriptProcessor(
         bufferSize: Int,
@@ -17,8 +17,7 @@ external class AudioContext {
     ): ScriptProcessorNode
 }
 
-external class AudioDestinationNode :
-    AudioNode {
+external class AudioDestinationNode : AudioNode {
 
     /**
      * [MDN Reference](https://developer.mozilla.org/docs/Web/API/AudioDestinationNode/maxChannelCount)
@@ -39,12 +38,12 @@ external class AudioBuffer {
 open external class AudioNode {
 
     fun connect(
-        destination: AudioNode, output: Int = definedExternally,
+        destination: AudioNode,
+        output: Int = definedExternally,
         input: Int = definedExternally,
     ): AudioNode
 
     fun disconnect()
-
 }
 
 external class AudioProcessingEvent {
@@ -56,4 +55,3 @@ external class ScriptProcessorNode : AudioNode {
 
     var onaudioprocess: (AudioProcessingEvent) -> Unit
 }
-

@@ -21,7 +21,6 @@ internal class JsAudioSource : AudioSource {
     private var micNode: AudioNode? = null
     private var scriptProcessorNode: AudioNode? = null
 
-    //var dummyGainNode : GainNode? = null
     private val audioSamplesChannel = Channel<AudioSamples>(
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
@@ -56,7 +55,7 @@ internal class JsAudioSource : AudioSource {
             }
             micNode!!.connect(scriptProcessorNode)
             scriptProcessorNode.connect(audioContext!!.destination)
-            micNode!!.connect(scriptProcessorNode);
+            micNode!!.connect(scriptProcessorNode)
 
             AudioSource.InitializeErrorCode.INITIALIZE_OK as JsAny
         }, onRejected = { error ->

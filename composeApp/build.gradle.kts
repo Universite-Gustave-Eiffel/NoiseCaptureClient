@@ -21,6 +21,8 @@ kotlin {
                     static = (static ?: mutableListOf()).apply {
                         // Serve sources to debug inside browser
                         add(project.projectDir.path)
+                        add(project.projectDir.path + "/commonMain/")
+                        add(project.projectDir.path + "/wasmJSMain/")
                     }
                 }
             }
@@ -73,9 +75,6 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.datetime)
-        }
-        wasmJsMain.dependencies {
-            implementation(libs.kotlin.browser)
         }
     }
 }
