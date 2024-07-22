@@ -79,7 +79,10 @@ fun NoiseCaptureApp(
                 )
             }
             composable(route = NavigationRoute.RequestPermission.name) {
-                RequestPermissionScreen()
+                // TODO: Navigate to measurements screen
+                RequestPermissionScreen(onClickNextButton = {
+                    navController.popBackStack()
+                })
             }
         }
     }
