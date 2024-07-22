@@ -16,11 +16,11 @@ internal class LocationForegroundPermissionDelegate(
     private val activity: Lazy<Activity>,
 ) : PermissionDelegate {
 
-    override fun getPermissionState(): PermissionState {
+    override suspend fun getPermissionState(): PermissionState {
         return checkPermissions(context, fineLocationPermissions)
     }
 
-    override fun providePermission() {
+    override suspend fun providePermission() {
         activity.value.providePermissions(fineLocationPermissions) {
             throw PermissionRequestException(
                 it.localizedMessage ?: "Failed to request foreground location permission"

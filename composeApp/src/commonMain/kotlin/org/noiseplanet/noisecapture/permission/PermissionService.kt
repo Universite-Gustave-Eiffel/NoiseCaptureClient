@@ -27,7 +27,7 @@ interface PermissionService : KoinComponent {
      * @param permission Target permission
      * @return Current permission state
      */
-    fun checkPermission(permission: Permission): PermissionState
+    suspend fun checkPermission(permission: Permission): PermissionState
 
     /**
      * Opens the settings page corresponding to the given permission.
@@ -43,7 +43,7 @@ interface PermissionService : KoinComponent {
      *
      * @param permission Target permission
      */
-    fun requestPermission(permission: Permission)
+    suspend fun requestPermission(permission: Permission)
 }
 
 
@@ -67,11 +67,11 @@ internal class PermissionServiceImpl : PermissionService {
         }
     }
 
-    override fun checkPermission(permission: Permission): PermissionState {
+    override suspend fun checkPermission(permission: Permission): PermissionState {
         return getPermissionDelegate(permission).getPermissionState()
     }
 
-    override fun requestPermission(permission: Permission) {
+    override suspend fun requestPermission(permission: Permission) {
         getPermissionDelegate(permission).providePermission()
     }
 

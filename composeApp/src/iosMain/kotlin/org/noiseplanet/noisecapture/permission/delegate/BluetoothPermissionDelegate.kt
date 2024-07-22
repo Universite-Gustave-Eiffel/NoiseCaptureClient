@@ -10,7 +10,7 @@ import platform.CoreBluetooth.CBManagerAuthorizationRestricted
 
 internal class BluetoothPermissionDelegate : PermissionDelegate {
 
-    override fun getPermissionState(): PermissionState {
+    override suspend fun getPermissionState(): PermissionState {
         return when (CBCentralManager.authorization) {
             CBManagerAuthorizationNotDetermined -> PermissionState.NOT_DETERMINED
             CBManagerAuthorizationAllowedAlways, CBManagerAuthorizationRestricted -> PermissionState.GRANTED
@@ -19,7 +19,7 @@ internal class BluetoothPermissionDelegate : PermissionDelegate {
         }
     }
 
-    override fun providePermission() {
+    override suspend fun providePermission() {
         CBCentralManager().authorization()
     }
 

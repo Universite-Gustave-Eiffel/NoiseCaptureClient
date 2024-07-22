@@ -9,8 +9,8 @@ import org.noiseplanet.noisecapture.permission.PermissionState
  */
 internal interface PermissionDelegate {
 
-    fun getPermissionState(): PermissionState
-    fun providePermission()
+    suspend fun getPermissionState(): PermissionState
+    suspend fun providePermission()
     fun openSettingPage()
 }
 
@@ -20,11 +20,11 @@ internal interface PermissionDelegate {
  */
 internal class NotImplementedPermissionDelegate : PermissionDelegate {
 
-    override fun getPermissionState(): PermissionState {
+    override suspend fun getPermissionState(): PermissionState {
         return PermissionState.NOT_IMPLEMENTED
     }
 
-    override fun providePermission() {
+    override suspend fun providePermission() {
     }
 
     override fun openSettingPage() {

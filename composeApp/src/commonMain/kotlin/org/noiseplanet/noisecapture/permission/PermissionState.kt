@@ -33,5 +33,6 @@ enum class PermissionState {
     fun notGranted(): Boolean {
         return this != GRANTED
     }
-}
 
+    companion object
+}

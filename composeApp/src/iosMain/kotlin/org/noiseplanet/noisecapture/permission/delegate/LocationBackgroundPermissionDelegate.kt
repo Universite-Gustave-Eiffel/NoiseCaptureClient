@@ -10,7 +10,7 @@ internal class LocationBackgroundPermissionDelegate(
     private val locationForegroundPermissionDelegate: PermissionDelegate,
 ) : PermissionDelegate {
 
-    override fun getPermissionState(): PermissionState {
+    override suspend fun getPermissionState(): PermissionState {
         val foregroundPermissionStatus =
             locationForegroundPermissionDelegate.getPermissionState()
         return when (foregroundPermissionStatus) {
@@ -20,7 +20,7 @@ internal class LocationBackgroundPermissionDelegate(
         }
     }
 
-    override fun providePermission() {
+    override suspend fun providePermission() {
         CLLocationManager().requestAlwaysAuthorization()
     }
 

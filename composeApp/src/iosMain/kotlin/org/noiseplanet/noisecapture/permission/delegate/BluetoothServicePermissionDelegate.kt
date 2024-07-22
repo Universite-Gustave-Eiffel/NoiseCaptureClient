@@ -20,7 +20,7 @@ internal class BluetoothServicePermissionDelegate : PermissionDelegate {
         )
     }
 
-    override fun getPermissionState(): PermissionState {
+    override suspend fun getPermissionState(): PermissionState {
         val hasBluetoothPermissionGranted =
             CBCentralManager.authorization == CBManagerAuthorizationAllowedAlways ||
                 CBCentralManager.authorization == CBManagerAuthorizationRestricted
@@ -35,7 +35,7 @@ internal class BluetoothServicePermissionDelegate : PermissionDelegate {
         }
     }
 
-    override fun providePermission() {
+    override suspend fun providePermission() {
         openSettingPage()
     }
 

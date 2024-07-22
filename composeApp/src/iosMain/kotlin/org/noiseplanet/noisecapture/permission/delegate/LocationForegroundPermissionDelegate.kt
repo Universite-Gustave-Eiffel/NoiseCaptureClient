@@ -13,7 +13,7 @@ internal class LocationForegroundPermissionDelegate : PermissionDelegate {
 
     private var locationManager = CLLocationManager()
 
-    override fun getPermissionState(): PermissionState {
+    override suspend fun getPermissionState(): PermissionState {
         return when (locationManager.authorizationStatus()) {
             kCLAuthorizationStatusAuthorizedAlways,
             kCLAuthorizationStatusAuthorizedWhenInUse,
@@ -26,7 +26,7 @@ internal class LocationForegroundPermissionDelegate : PermissionDelegate {
         }
     }
 
-    override fun providePermission() {
+    override suspend fun providePermission() {
         locationManager.requestWhenInUseAuthorization()
     }
 

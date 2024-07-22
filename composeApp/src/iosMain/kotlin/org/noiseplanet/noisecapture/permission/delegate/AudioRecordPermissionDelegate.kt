@@ -8,7 +8,7 @@ import platform.AVFAudio.AVAudioSessionRecordPermissionGranted
 
 internal class AudioRecordPermissionDelegate : PermissionDelegate {
 
-    override fun getPermissionState(): PermissionState {
+    override suspend fun getPermissionState(): PermissionState {
         return when (AVAudioSession.sharedInstance().recordPermission) {
             AVAudioSessionRecordPermissionGranted -> PermissionState.GRANTED
             AVAudioSessionRecordPermissionDenied -> PermissionState.DENIED
@@ -16,7 +16,7 @@ internal class AudioRecordPermissionDelegate : PermissionDelegate {
         }
     }
 
-    override fun providePermission() {
+    override suspend fun providePermission() {
         AVAudioSession.sharedInstance().requestRecordPermission { granted ->
             // TODO: Fix logger on iOS
             println("Record permission granted: $granted")

@@ -17,7 +17,7 @@ internal class LocationBackgroundPermissionDelegate(
     private val locationForegroundPermissionDelegate: PermissionDelegate,
 ) : PermissionDelegate {
 
-    override fun getPermissionState(): PermissionState {
+    override suspend fun getPermissionState(): PermissionState {
         return when (locationForegroundPermissionDelegate.getPermissionState()) {
             PermissionState.GRANTED ->
                 checkPermissions(context, backgroundLocationPermissions)
@@ -26,7 +26,7 @@ internal class LocationBackgroundPermissionDelegate(
         }
     }
 
-    override fun providePermission() {
+    override suspend fun providePermission() {
         activity.value.providePermissions(backgroundLocationPermissions) {
             throw PermissionRequestException(
                 it.localizedMessage ?: "Failed to request background location permission"

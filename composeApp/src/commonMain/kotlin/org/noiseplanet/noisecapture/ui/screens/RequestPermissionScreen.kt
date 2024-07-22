@@ -23,11 +23,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.request_permission_button_next
 import noisecapture.composeapp.generated.resources.request_permission_button_request
@@ -56,6 +58,8 @@ fun RequestPermissionScreen(
     logger: Logger = KoinPlatformTools.defaultLogger(),
     modifier: Modifier = Modifier,
 ) {
+    val coroutineScope = rememberCoroutineScope()
+
     Surface(
         modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -133,7 +137,9 @@ fun RequestPermissionScreen(
                     AnimatedVisibility(permissionState == PermissionState.NOT_DETERMINED) {
                         Button(
                             onClick = {
-                                permissionService.requestPermission(permission)
+                                coroutineScope.launch {
+                                    permissionService.requestPermission(permission)
+                                }
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) {
