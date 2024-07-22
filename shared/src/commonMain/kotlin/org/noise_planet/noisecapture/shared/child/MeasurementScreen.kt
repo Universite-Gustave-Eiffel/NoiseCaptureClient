@@ -121,6 +121,81 @@ class MeasurementScreen(
         }
         val tickStroke = 2.dp
         val tickLength = 4.dp
+
+
+        fun makeXLegend(textMeasurer: TextMeasurer, xValue : Double, legendWidth : Float,
+                                xPerPixel : Double, depth: Int, formater: (x:Double)->String, ascending: Boolean) : LegendElement {
+            val xPos =
+                when {
+                    ascending -> (xValue / xPerPixel).toFloat()
+                    else -> (legendWidth - xValue / xPerPixel).toFloat()
+                }
+            val legendText = buildAnnotatedString {
+                withStyle(style = SpanStyle()) {
+                    append(formater(xValue))
+                }
+            }
+            val textLayout = textMeasurer.measure(legendText)
+            val textPos = min(legendWidth-textLayout.size.width,
+                max(0F, xPos - textLayout.size.width / 2))
+            return LegendElement(textLayout, xPos, textPos, depth)
+        }
+
+        fun recursiveLegendBuild(
+            textMeasurer: TextMeasurer,
+            timeValue: Double,
+            legendWidth: Float,
+            timePerPixel: Double,
+            minPixel: Float,
+            maxPixel: Float,
+            xLeftValue: Double,
+            xRightValue: Double,
+            feedElements: ArrayList<LegendElement>,
+            depth: Int,
+            formater: (x: Double) -> String
+        ) {
+            val legendElement =
+                makeXLegend(textMeasurer, timeValue, legendWidth, timePerPixel, depth, formater, xLeftValue < xRightValue)
+            if (legendElement.textPos > minPixel && legendElement.xPos + legendElement.text.size.width / 2 < maxPixel) {
+                feedElements.add(legendElement)
+                val axisOrder = if(xLeftValue < xRightValue) 1 else -1
+                // left legend, + x seconds
+                recursiveLegendBuild(
+                    textMeasurer, timeValue + (xLeftValue - timeValue) / 2,
+                    legendWidth, timePerPixel, minPixel, legendElement.textPos, xLeftValue, timeValue,
+                    feedElements, depth + 1, formater
+                )
+                // right legend, - x seconds
+                recursiveLegendBuild(
+                    textMeasurer, timeValue + axisOrder * (timeValue - xRightValue) / 2,
+                    legendWidth, timePerPixel, legendElement.textPos + legendElement.text.size.width,
+                    maxPixel, timeValue, xRightValue, feedElements, depth + 1, formater
+                )
+            }
+        }
+
+        fun makeXLabels(textMeasurer: TextMeasurer, leftValue : Double, rightValue : Double, xLegendWidth: Float, formater: (x:Double)->String)  : ArrayList<LegendElement> {
+            val xPerPixel = abs(leftValue - rightValue) / xLegendWidth
+            val legendElements = ArrayList<LegendElement>()
+            val leftLegend =  makeXLegend(textMeasurer, leftValue, xLegendWidth, xPerPixel, -1, formater, leftValue < rightValue)
+            val rightLegend = makeXLegend(textMeasurer, rightValue, xLegendWidth, xPerPixel, -1, formater, leftValue < rightValue)
+            legendElements.add(leftLegend)
+            legendElements.add(rightLegend)
+            recursiveLegendBuild(textMeasurer, (leftValue - rightValue) / 2, xLegendWidth, xPerPixel,
+                leftLegend.text.size.width.toFloat(),
+                rightLegend.xPos-rightLegend.text.size.width, leftValue, rightValue, legendElements, 0, formater)
+            // find depth index with maximum number of elements (to generate same intervals on legend)
+            val legendDepthCount = IntArray(legendElements.maxOf { it.depth }+1) { 0 }
+            legendElements.forEach {
+                if(it.depth >= 0) {
+                    legendDepthCount[it.depth] += 1
+                }
+            }
+            legendElements.removeAll {
+                it.depth > 0 && legendDepthCount[it.depth] != (2.0.pow(it.depth)).toInt()
+            }
+            return legendElements
+        }
     }
 
 
@@ -164,74 +239,6 @@ class MeasurementScreen(
                         }
                 }
             }
-        }
-    }
-
-    private fun makeXLegend(textMeasurer: TextMeasurer, xValue : Double, legendWidth : Float,
-                            xPerPixel : Double, depth: Int, formater: (x:Double)->String) : LegendElement {
-        val xPos = (legendWidth - xValue / xPerPixel).toFloat()
-        val legendText = buildAnnotatedString {
-            withStyle(style = SpanStyle()) {
-                append(formater(xValue))
-            }
-        }
-        val textLayout = textMeasurer.measure(legendText)
-        val textPos = min(legendWidth-textLayout.size.width,
-            max(0F, xPos - textLayout.size.width / 2))
-        return LegendElement(textLayout, xPos, textPos, depth)
-    }
-
-    private fun makeXLabels(textMeasurer: TextMeasurer, leftValue : Double, rightValue : Double, xLegendWidth: Float, formater: (x:Double)->String)  : ArrayList<LegendElement> {
-        val xPerPixel = abs(leftValue - rightValue) / xLegendWidth
-        val legendElements = ArrayList<LegendElement>()
-        val rightLegend = makeXLegend(textMeasurer, rightValue, xLegendWidth, xPerPixel, -1, formater)
-        val leftLegend =  makeXLegend(textMeasurer, leftValue, xLegendWidth, xPerPixel, -1, formater)
-        legendElements.add(leftLegend)
-        legendElements.add(rightLegend)
-        recursiveLegendBuild(textMeasurer, (leftValue - rightValue) / 2, xLegendWidth, xPerPixel,
-            leftLegend.text.size.width.toFloat(),
-            rightLegend.xPos-rightLegend.text.size.width, leftValue, rightValue, legendElements, 0, formater)
-        // find depth index with maximum number of elements (to generate same intervals on legend)
-        val legendDepthCount = IntArray(legendElements.maxOf { it.depth }+1) { 0 }
-        legendElements.forEach {
-            if(it.depth >= 0) {
-                legendDepthCount[it.depth] += 1
-            }
-        }
-        legendElements.removeAll {
-            it.depth > 0 && legendDepthCount[it.depth] != (2.0.pow(it.depth)).toInt()
-        }
-        return legendElements
-    }
-    private fun recursiveLegendBuild(
-        textMeasurer: TextMeasurer,
-        timeValue: Double,
-        legendWidth: Float,
-        timePerPixel: Double,
-        minX: Float,
-        maxX: Float,
-        timeValueLeft: Double,
-        timeValueRight: Double,
-        feedElements: ArrayList<LegendElement>,
-        depth: Int,
-        formater: (x: Double) -> String
-    ) {
-        val legendElement =
-            makeXLegend(textMeasurer, timeValue, legendWidth, timePerPixel, depth, formater)
-        if (legendElement.textPos > minX && legendElement.xPos + legendElement.text.size.width / 2 < maxX) {
-            feedElements.add(legendElement)
-            // left legend, + x seconds
-            recursiveLegendBuild(
-                textMeasurer, timeValue + (timeValueLeft - timeValue) / 2,
-                legendWidth, timePerPixel, minX, legendElement.textPos, timeValueLeft, timeValue,
-                feedElements, depth + 1, formater
-            )
-            // right legend, - x seconds
-            recursiveLegendBuild(
-                textMeasurer, timeValue - (timeValue - timeValueRight) / 2,
-                legendWidth, timePerPixel, legendElement.textPos + legendElement.text.size.width,
-                maxX, timeValue, timeValueRight, feedElements, depth + 1, formater
-            )
         }
     }
 
@@ -437,7 +444,7 @@ class MeasurementScreen(
             val maxYAxisWidth = (legendTexts.maxOfOrNull { it.size.width }) ?:0
             val barMaxWidth : Float = size.width - maxYAxisWidth
             val legendElements = makeXLabels(
-                textMeasurer,  settings.maximumX, settings.minimumX, barMaxWidth,
+                textMeasurer,  settings.minimumX, settings.maximumX, barMaxWidth,
                 ::noiseLevelAxisFormater
             )
             val maxXAxisHeight = (legendElements.maxOfOrNull { it.text.size.height }) ?:0
