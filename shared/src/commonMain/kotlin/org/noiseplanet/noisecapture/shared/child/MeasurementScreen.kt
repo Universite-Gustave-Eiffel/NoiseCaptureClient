@@ -75,6 +75,7 @@ import org.noiseplanet.noisecapture.shared.ui.SpectrogramBitmap
 import org.noiseplanet.noisecapture.shared.ui.SpectrogramBitmap.Companion.toComposeColor
 import org.noiseplanet.noisecapture.shared.ui.asEventFlow
 import org.noiseplanet.noisecapture.toImageBitmap
+import kotlin.math.abs
 import kotlin.math.log10
 import kotlin.math.max
 import kotlin.math.min
@@ -314,14 +315,14 @@ class MeasurementScreen(
         return PlotBitmapOverlay(bitmap, size, horizontalLegendSize, verticalLegendSize, settings.hashCode())
     }
 
-    fun buildSpectrogramAxisBitmap(size: Size, density: Density, scaleMode: SpectrogramBitmap.Companion.SCALE_MODE,
+    fun buildSpectrogramAxisBitmap(size: Size, density: Density, scaleMode: SpectrogramBitmap.Companion.ScaleMode,
                                    sampleRate: Double, textMeasurer: TextMeasurer, colors: Colors): PlotBitmapOverlay {
         val drawScope = CanvasDrawScope()
         val bitmap = ImageBitmap(size.width.toInt(), size.height.toInt())
         val canvas = androidx.compose.ui.graphics.Canvas(bitmap)
 
         var frequencyLegendPosition = when (scaleMode) {
-            SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG -> SpectrogramBitmap.frequencyLegendPositionLog
+            SpectrogramBitmap.Companion.ScaleMode.SCALE_LOG -> SpectrogramBitmap.frequencyLegendPositionLog
             else -> SpectrogramBitmap.frequencyLegendPositionLinear
         }
         frequencyLegendPosition = frequencyLegendPosition.filter { f -> f < sampleRate / 2 }.toIntArray()
@@ -357,7 +358,7 @@ class MeasurementScreen(
                     }
                     val textSize = textMeasurer.measure(text)
                     val tickHeightPos = when (scaleMode) {
-                        SpectrogramBitmap.Companion.SCALE_MODE.SCALE_LOG -> {
+                        SpectrogramBitmap.Companion.ScaleMode.SCALE_LOG -> {
                             sheight - (log10(frequency / fMin) / ((log10(fMax / fMin) / sheight))).toInt()
                         }
                         else -> (sheight - frequency / fMax * sheight).toInt()
@@ -423,7 +424,7 @@ class MeasurementScreen(
     }
 
     @Composable
-    fun spectrogramAxis(scaleMode: SpectrogramBitmap.Companion.SCALE_MODE, sampleRate: Double) {
+    fun spectrogramAxis(scaleMode: SpectrogramBitmap.Companion.ScaleMode, sampleRate: Double) {
         val colors = MaterialTheme.colors
         val textMeasurer = rememberTextMeasurer()
         Canvas(modifier = Modifier.fillMaxSize()) {

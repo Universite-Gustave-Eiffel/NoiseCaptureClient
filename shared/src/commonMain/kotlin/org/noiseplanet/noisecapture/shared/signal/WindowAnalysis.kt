@@ -232,7 +232,7 @@ data class SpectrumData(val epoch: Long, val spectrum: FloatArray, val sampleRat
          * Create (third-)octave array from the specified parameters (without spl values)
          */
         fun emptyFrequencyBands(firstFrequencyBand : Double,
-                                lastFrequencyBand : Double, base : BASE_METHOD = BASE_METHOD.B10,
+                                lastFrequencyBand : Double, base : BaseMethod = BaseMethod.B10,
                                 bandDivision : Double = 3.0) : Array<FrequencyBand> {
             val g = when (base) {
                 BaseMethod.B10 -> 10.0.pow(3.0 / 10.0)
