@@ -15,7 +15,7 @@ internal class AudioRecordPermissionDelegate(
     private val activity: Lazy<Activity>,
 ) : PermissionDelegate {
     override suspend fun getPermissionState(): PermissionState {
-        return checkPermissions(context, activity, audioRecordPermissions)
+        return checkPermissions(context, audioRecordPermissions)
     }
 
     override suspend fun providePermission() {

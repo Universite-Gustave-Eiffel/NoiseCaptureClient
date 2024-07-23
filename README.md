@@ -1,6 +1,8 @@
 # About NoiseCapture
 
-![Build status](https://github.com/nicolas-f/NoiseCaptureKotlin/actions/workflows/code_review.yml/badge.svg)
+![Build status](https://github.com/Universite-Gustave-Eiffel/NoiseCaptureClient/actions/workflows/code_review.yml/badge.svg)
+![Code style status](https://github.com/Universite-Gustave-Eiffel/NoiseCaptureClient/actions/workflows/lint.yml/badge.svg)
+
 
 **NoiseCapture** is an Android/Ios/Web App dedicated to the measurement of environmental noise.
 
