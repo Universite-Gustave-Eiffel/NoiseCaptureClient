@@ -118,6 +118,8 @@ complexity:
   LongMethod:
     active: true
     threshold: 60
+    ignoreAnnotated:
+      - "Composable"
   LongParameterList:
     active: true
     functionThreshold: 6
@@ -338,6 +340,7 @@ naming:
   MatchingDeclarationName:
     active: true
     mustBeFirst: true
+    excludes: [ '**/**.ios.kt', '**/**.android.kt', '**/**.wasmjs.kt' ]
   MemberNameEqualsClassName:
     active: true
     ignoreOverridden: true

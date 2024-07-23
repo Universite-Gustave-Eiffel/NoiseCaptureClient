@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import getPlatform
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
@@ -39,7 +40,6 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.core.logger.Logger
 import org.koin.mp.KoinPlatformTools
-import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionService
 import org.noiseplanet.noisecapture.permission.PermissionState
 
@@ -81,14 +81,8 @@ fun RequestPermissionScreen(
                     color = MaterialTheme.colorScheme.onSurface,
                 )
             }
-            // TODO: Merge foreground and background location permissions
-            // TODO: Make required permissions platform dependant
-            val requiredPermissions = arrayOf(
-                Permission.RECORD_AUDIO,
-                Permission.LOCATION_SERVICE_ON,
-                Permission.LOCATION_FOREGROUND,
-                Permission.LOCATION_BACKGROUND,
-            )
+
+            val requiredPermissions = getPlatform().requiredPermissions
             items(requiredPermissions) { permission ->
                 val permissionState: PermissionState by permissionService
                     .getPermissionStateFlow(permission)

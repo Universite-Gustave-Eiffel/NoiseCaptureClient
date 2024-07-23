@@ -1,5 +1,6 @@
 import platform.UIKit.UIDevice
 
+@Suppress("MatchingDeclarationName")
 class IOSPlatform : Platform {
 
     override val name: String =
