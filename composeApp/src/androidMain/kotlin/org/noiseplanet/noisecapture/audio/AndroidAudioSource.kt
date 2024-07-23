@@ -16,11 +16,10 @@ internal class AndroidAudioSource(private val logger: Logger) : AudioSource {
     private var audioThread: Thread? = null
     private var audioRecorder: AudioRecorder? = null
 
-    private val audioSamplesChannel = Channel<AudioSamples>(
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
-
     override suspend fun setup(): Flow<AudioSamples> {
+        val audioSamplesChannel = Channel<AudioSamples>(
+            onBufferOverflow = BufferOverflow.DROP_OLDEST
+        )
         // Create a recorder that will process raw incoming audio into audio samples
         // and broadcast it through the channel.
         audioRecorder = AudioRecorder(audioSamplesChannel, logger)
