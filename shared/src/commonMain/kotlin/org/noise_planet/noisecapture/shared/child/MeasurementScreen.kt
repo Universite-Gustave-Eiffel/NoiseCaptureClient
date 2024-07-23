@@ -84,8 +84,8 @@ const val REFERENCE_LEGEND_TEXT = " +99s "
 const val DEFAULT_SAMPLE_RATE = 48000.0
 const val MIN_SHOWN_DBA_VALUE = 5.0
 const val MAX_SHOWN_DBA_VALUE = 140.0
-const val MIN_SHOWN_DBA_VALUE_SPECTRUM = 5.0
-const val MAX_SHOWN_DBA_VALUE_SPECTRUM = 90.0
+const val MIN_SHOWN_DBA_VALUE_SPECTRUM = 0.0
+const val MAX_SHOWN_DBA_VALUE_SPECTRUM = 100.0
 val NOISE_LEVEL_FONT_SIZE = TextUnit(50F, TextUnitType.Sp)
 val SPECTRUM_PLOT_SQUARE_WIDTH = 10.dp
 val SPECTRUM_PLOT_SQUARE_OFFSET = 1.dp
@@ -161,13 +161,13 @@ class MeasurementScreen(
                 val axisOrder = if(xLeftValue < xRightValue) 1 else -1
                 // left legend, + x seconds
                 recursiveLegendBuild(
-                    textMeasurer, timeValue + (xLeftValue - timeValue) / 2,
+                    textMeasurer, xLeftValue + (timeValue-xLeftValue) / 2,
                     legendWidth, timePerPixel, minPixel, legendElement.textPos, xLeftValue, timeValue,
                     feedElements, depth + 1, formater
                 )
                 // right legend, - x seconds
                 recursiveLegendBuild(
-                    textMeasurer, timeValue + axisOrder * (timeValue - xRightValue) / 2,
+                    textMeasurer, timeValue + (xRightValue - timeValue) / 2,
                     legendWidth, timePerPixel, legendElement.textPos + legendElement.text.size.width,
                     maxPixel, timeValue, xRightValue, feedElements, depth + 1, formater
                 )
@@ -181,7 +181,7 @@ class MeasurementScreen(
             val rightLegend = makeXLegend(textMeasurer, rightValue, xLegendWidth, xPerPixel, -1, formater, leftValue < rightValue)
             legendElements.add(leftLegend)
             legendElements.add(rightLegend)
-            recursiveLegendBuild(textMeasurer, (leftValue - rightValue) / 2, xLegendWidth, xPerPixel,
+            recursiveLegendBuild(textMeasurer, abs(leftValue - rightValue) / 2, xLegendWidth, xPerPixel,
                 leftLegend.text.size.width.toFloat(),
                 rightLegend.xPos-rightLegend.text.size.width, leftValue, rightValue, legendElements, 0, formater)
             // find depth index with maximum number of elements (to generate same intervals on legend)
