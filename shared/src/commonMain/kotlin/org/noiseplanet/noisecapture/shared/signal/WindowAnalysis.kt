@@ -20,21 +20,20 @@ class WindowAnalysis(
     val sampleRate: Int,
     val windowSize: Int,
     val windowHop: Int,
-    private val applyHannWindow: Boolean = true,
+    private val applyHannWindow: Boolean = true
 ) {
-
     val circularSamplesBuffer = FloatArray(windowSize)
     var circularBufferCursor = 0
     var samplesUntilWindow = windowSize
+    val bluestein = if(nextPowerOfTwo(windowSize)!=windowSize) BluesteinFloat(windowSize) else null
     val hannWindow: FloatArray? = when (applyHannWindow) {
-        true -> FloatArray(windowSize) {
-            (0.5 * (1 - cos(2 * PI * it / (windowSize - 1)))).toFloat()
-        }
-
+        true ->
+            FloatArray(windowSize) {
+                (0.5 * (1 - cos(2 * PI * it / (windowSize - 1)))).toFloat()
+            }
         else -> null
     }
-
-    // Windowing correction  factors
+    //Windowing correction  factors
     // [1] F. J. Harris, “On the use of windows for harmonic analysis with the discrete fourier
     // transform,”Proceedings of the IEEE, vol. 66, no. 1, pp. 51–83, Jan. 1978.
     val windowCorrectionFactor = when (applyHannWindow) {
@@ -128,26 +127,11 @@ class WindowAnalysis(
         return SpectrumData(window.epoch, processWindowFloat(window), sampleRate)
     }
 
-    fun processWindowFloat(window: Window): FloatArray {
-        // resize array to power of two if window.samples.size is not a power of two
-        val fftWindow: FloatArray = when (val fftWindowSize = nextPowerOfTwo(windowSize)) {
-            windowSize -> window.samples
-            else -> {
-                val paddedWindow = FloatArray(fftWindowSize)
-                // place 0 padding at the center of the window
-                window.samples.copyInto(paddedWindow, 0, windowSize / 2, windowSize)
-                window.samples.copyInto(
-                    paddedWindow,
-                    fftWindowSize - (windowSize / 2),
-                    0,
-                    windowSize / 2
-                )
-                paddedWindow
-            }
-        }
-        val fr = realFFTFloat(fftWindow)
-        val vRef = (((windowSize * windowSize) / 2.0) * windowCorrectionFactor).toFloat()
-        return FloatArray(fr.size / 2) { i: Int -> 10 * log10((fr[(i * 2) + 1] * fr[(i * 2) + 1]) / vRef) }
+    fun processWindowFloat(window: Window) : FloatArray {
+        require(window.samples.size == windowSize)
+        val fr = (bluestein?.fft(window.samples) ?: realFFTFloat(window.samples))
+        val vRef = (((windowSize*windowSize)/2.0)*windowCorrectionFactor).toFloat()
+        return FloatArray(fr.size / 2) { i: Int -> 10 * log10((fr[(i*2)+1]*fr[(i*2)+1]) /vRef) }
     }
 
     fun processWindowDouble(window: Window): DoubleArray {
@@ -252,12 +236,9 @@ data class SpectrumData(val epoch: Long, val spectrum: FloatArray, val sampleRat
         /**
          * Create (third-)octave array from the specified parameters (without spl values)
          */
-        fun emptyFrequencyBands(
-            firstFrequencyBand: Double,
-            lastFrequencyBand: Double,
-            base: BaseMethod = BaseMethod.B10,
-            bandDivision: Double = 3.0,
-        ): Array<FrequencyBand> {
+        fun emptyFrequencyBands(firstFrequencyBand : Double,
+                                lastFrequencyBand : Double, base : BaseMethod = BaseMethod.B10,
+                                bandDivision : Double = 3.0) : Array<FrequencyBand> {
             val g = when (base) {
                 BaseMethod.B10 -> 10.0.pow(3.0 / 10.0)
                 BaseMethod.B2 -> 2.0

@@ -7,6 +7,12 @@ plugins {
     id("app.cash.sqldelight") version "2.0.1"
 }
 
+tasks.withType<Test> {
+    this.testLogging {
+        this.showStandardStreams = true
+    }
+}
+
 kotlin {
     androidTarget {
         compilations.all {
@@ -50,6 +56,8 @@ kotlin {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(libs.kotlinx.coroutines.test)
+                @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+                implementation(compose.uiTest)
 
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class) implementation(
                     compose.components.resources

@@ -42,6 +42,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.drawText
@@ -74,6 +75,7 @@ import org.noiseplanet.noisecapture.shared.ui.SpectrogramBitmap
 import org.noiseplanet.noisecapture.shared.ui.SpectrogramBitmap.Companion.toComposeColor
 import org.noiseplanet.noisecapture.shared.ui.asEventFlow
 import org.noiseplanet.noisecapture.toImageBitmap
+import kotlin.math.abs
 import kotlin.math.log10
 import kotlin.math.max
 import kotlin.math.min
@@ -85,8 +87,8 @@ const val REFERENCE_LEGEND_TEXT = " +99s "
 const val DEFAULT_SAMPLE_RATE = 48000.0
 const val MIN_SHOWN_DBA_VALUE = 5.0
 const val MAX_SHOWN_DBA_VALUE = 140.0
-const val MIN_SHOWN_DBA_VALUE_SPECTRUM = 5.0
-const val MAX_SHOWN_DBA_VALUE_SPECTRUM = 90.0
+const val MIN_SHOWN_DBA_VALUE_SPECTRUM = 0.0
+const val MAX_SHOWN_DBA_VALUE_SPECTRUM = 100.0
 val NOISE_LEVEL_FONT_SIZE = TextUnit(50F, TextUnitType.Sp)
 val SPECTRUM_PLOT_SQUARE_WIDTH = 10.dp
 val SPECTRUM_PLOT_SQUARE_OFFSET = 1.dp
@@ -104,20 +106,99 @@ class MeasurementScreen(
     private var mindB = 0.0
     private var dbGain = ANDROID_GAIN
 
-    val noiseColorRampSpl: List<Pair<Float, Color>> = listOf(
-        Pair(75F, "#FF0000".toComposeColor()), // >= 75 dB
-        Pair(65F, "#FF8000".toComposeColor()), // >= 65 dB
-        Pair(55F, "#FFFF00".toComposeColor()), // >= 55 dB
-        Pair(45F, "#99FF00".toComposeColor()), // >= 45 dB
-        Pair(Float.NEGATIVE_INFINITY, "#00FF00".toComposeColor())
-    ) // < 45 dB
+    companion object {
 
-    fun getColorIndex(noiseLevel: Double) = when {
-        noiseLevel > 75.0 -> 0
-        noiseLevel > 65 -> 1
-        noiseLevel > 55 -> 2
-        noiseLevel > 45 -> 3
-        else -> 4
+        val noiseColorRampSpl : List<Pair<Float, Color>> = listOf(
+            Pair(75F, "#FF0000".toComposeColor()), // >= 75 dB
+            Pair(65F, "#FF8000".toComposeColor()), // >= 65 dB
+            Pair(55F, "#FFFF00".toComposeColor()), // >= 55 dB
+            Pair(45F, "#99FF00".toComposeColor()), // >= 45 dB
+            Pair(Float.NEGATIVE_INFINITY, "#00FF00".toComposeColor())) // < 45 dB
+
+        fun timeAxisFormater(timeValue: Double) : String {
+            return "+${round(timeValue).toInt()}s"
+        }
+
+        fun noiseLevelAxisFormater(timeValue: Double) : String {
+            return "${round(timeValue).toInt()} dB"
+        }
+        val tickStroke = 2.dp
+        val tickLength = 4.dp
+
+
+        fun makeXLegend(textMeasurer: TextMeasurer, xValue : Double, legendWidth : Float,
+                                xPerPixel : Double, depth: Int, formater: (x:Double)->String, ascending: Boolean) : LegendElement {
+            val xPos =
+                when {
+                    ascending -> (xValue / xPerPixel).toFloat()
+                    else -> (legendWidth - xValue / xPerPixel).toFloat()
+                }
+            val legendText = buildAnnotatedString {
+                withStyle(style = SpanStyle()) {
+                    append(formater(xValue))
+                }
+            }
+            val textLayout = textMeasurer.measure(legendText)
+            val textPos = min(legendWidth-textLayout.size.width,
+                max(0F, xPos - textLayout.size.width / 2))
+            return LegendElement(textLayout, xPos, textPos, depth)
+        }
+
+        fun recursiveLegendBuild(
+            textMeasurer: TextMeasurer,
+            timeValue: Double,
+            legendWidth: Float,
+            timePerPixel: Double,
+            minPixel: Float,
+            maxPixel: Float,
+            xLeftValue: Double,
+            xRightValue: Double,
+            feedElements: ArrayList<LegendElement>,
+            depth: Int,
+            formater: (x: Double) -> String
+        ) {
+            val legendElement =
+                makeXLegend(textMeasurer, timeValue, legendWidth, timePerPixel, depth, formater, xLeftValue < xRightValue)
+            if (legendElement.textPos > minPixel && legendElement.xPos + legendElement.text.size.width / 2 < maxPixel) {
+                feedElements.add(legendElement)
+                val axisOrder = if(xLeftValue < xRightValue) 1 else -1
+                // left legend, + x seconds
+                recursiveLegendBuild(
+                    textMeasurer, xLeftValue + (timeValue-xLeftValue) / 2,
+                    legendWidth, timePerPixel, minPixel, legendElement.textPos, xLeftValue, timeValue,
+                    feedElements, depth + 1, formater
+                )
+                // right legend, - x seconds
+                recursiveLegendBuild(
+                    textMeasurer, timeValue + (xRightValue - timeValue) / 2,
+                    legendWidth, timePerPixel, legendElement.textPos + legendElement.text.size.width,
+                    maxPixel, timeValue, xRightValue, feedElements, depth + 1, formater
+                )
+            }
+        }
+
+        fun makeXLabels(textMeasurer: TextMeasurer, leftValue : Double, rightValue : Double, xLegendWidth: Float, formater: (x:Double)->String)  : ArrayList<LegendElement> {
+            val xPerPixel = abs(leftValue - rightValue) / xLegendWidth
+            val legendElements = ArrayList<LegendElement>()
+            val leftLegend =  makeXLegend(textMeasurer, leftValue, xLegendWidth, xPerPixel, -1, formater, leftValue < rightValue)
+            val rightLegend = makeXLegend(textMeasurer, rightValue, xLegendWidth, xPerPixel, -1, formater, leftValue < rightValue)
+            legendElements.add(leftLegend)
+            legendElements.add(rightLegend)
+            recursiveLegendBuild(textMeasurer, abs(leftValue - rightValue) / 2, xLegendWidth, xPerPixel,
+                leftLegend.text.size.width.toFloat(),
+                rightLegend.xPos-rightLegend.text.size.width, leftValue, rightValue, legendElements, 0, formater)
+            // find depth index with maximum number of elements (to generate same intervals on legend)
+            val legendDepthCount = IntArray(legendElements.maxOf { it.depth }+1) { 0 }
+            legendElements.forEach {
+                if(it.depth >= 0) {
+                    legendDepthCount[it.depth] += 1
+                }
+            }
+            legendElements.removeAll {
+                it.depth > 0 && legendDepthCount[it.depth] != (2.0.pow(it.depth)).toInt()
+            }
+            return legendElements
+        }
     }
 
 
@@ -129,48 +210,36 @@ class MeasurementScreen(
         ), ArrayList(), Size.Zero
     )
 
-    var preparedLegendBitmap =
-        LegendBitmap(ImageBitmap(1, 1), Size(0F, 0F), Size(0F, 0F), Size(0F, 0F))
+    var preparedSpectrogramOverlayBitmap = PlotBitmapOverlay( ImageBitmap(1, 1), Size(0F, 0F), Size(0F, 0F), Size(0F, 0F),0 )
+    var preparedSpectrumOverlayBitmap = PlotBitmapOverlay( ImageBitmap(1, 1), Size(0F, 0F), Size(0F, 0F), Size(0F, 0F), 0)
 
     @Composable
-    fun spectrogram(spectrumCanvasState: SpectrogramViewModel, bitmapOffset: Int) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val canvasSize = IntSize(
-                SPECTROGRAM_STRIP_WIDTH,
-                (size.height - preparedLegendBitmap.bottomLegendSize.height).toInt()
-            )
-            drawRect(
-                color = SpectrogramBitmap.colorRamp[0],
-                size = Size(
-                    size.width - preparedLegendBitmap.rightLegendSize.width,
-                    canvasSize.height.toFloat()
-                )
-            )
-            spectrumCanvasState.spectrogramCanvasSize = Size(
-                size.width - preparedLegendBitmap.rightLegendSize.width, size.height
-                    - preparedLegendBitmap.bottomLegendSize.height
-            )
-            if (spectrumCanvasState.currentStripData.size.height != canvasSize.height) {
+    fun spectrogram(spectrumCanvasState : SpectrogramViewModel, bitmapOffset : Int) {
+        Canvas(modifier = Modifier.fillMaxSize() ) {
+            val canvasSize = IntSize(SPECTROGRAM_STRIP_WIDTH, (size.height - preparedSpectrogramOverlayBitmap.horizontalLegendSize.height).toInt())
+            drawRect(color = SpectrogramBitmap.colorRamp[0], size=Size(size.width - preparedSpectrogramOverlayBitmap.verticalLegendSize.width, canvasSize.height.toFloat()))
+            spectrumCanvasState.spectrogramCanvasSize = Size(size.width - preparedSpectrogramOverlayBitmap.verticalLegendSize.width, size.height
+                    - preparedSpectrogramOverlayBitmap.horizontalLegendSize.height)
+            if(spectrumCanvasState.currentStripData.size.height != canvasSize.height) {
                 // reset buffer on resize or first draw
                 println("Clear ${spectrumCanvasState.cachedStrips.size} strips ${spectrumCanvasState.currentStripData.size.height} != ${canvasSize.height}")
                 spectrumCanvasState.currentStripData = SpectrogramBitmap.createSpectrogram(
-                    canvasSize, scaleMode, spectrumCanvasState.currentStripData.sampleRate
-                )
+                    canvasSize, scaleMode, spectrumCanvasState.currentStripData.sampleRate)
                 spectrumCanvasState.cachedStrips.clear()
             } else {
-                if (spectrumCanvasState.currentStripData.sampleRate > 1) {
+                if(spectrumCanvasState.currentStripData.sampleRate > 1) {
                     drawImage(
                         spectrumCanvasState.currentStripData.byteArray.toImageBitmap(),
                         topLeft = Offset(
-                            size.width - bitmapOffset - preparedLegendBitmap.rightLegendSize.width,
+                            size.width - bitmapOffset - preparedSpectrogramOverlayBitmap.verticalLegendSize.width,
                             0F
                         )
                     )
                     spectrumCanvasState.cachedStrips.reversed()
                         .forEachIndexed { index, imageBitmap ->
                             val bitmapX =
-                                size.width - preparedLegendBitmap.rightLegendSize.width - ((index + 1) * SPECTROGRAM_STRIP_WIDTH
-                                    + bitmapOffset).toFloat()
+                                size.width - preparedSpectrogramOverlayBitmap.verticalLegendSize.width - ((index + 1) * SPECTROGRAM_STRIP_WIDTH
+                                        + bitmapOffset).toFloat()
                             drawImage(
                                 imageBitmap,
                                 topLeft = Offset(bitmapX, 0F)
@@ -181,77 +250,73 @@ class MeasurementScreen(
         }
     }
 
-    private fun makeXLegend(
-        textMeasurer: TextMeasurer, timeValue: Double, legendWidth: Float,
-        timePerPixel: Double, depth: Int,
-    ): LegendElement {
-        val xPos = (legendWidth - timeValue / timePerPixel).toFloat()
-        val legendText = buildAnnotatedString {
-            withStyle(style = SpanStyle()) {
-                append("+${round(timeValue).toInt()}s")
+
+
+    fun buildSpectrumAxisBitmap(size: Size, density: Density, settings: SpectrumSettings,
+                                values : SpectrumPlotData, textMeasurer: TextMeasurer,
+                                colors: Colors): PlotBitmapOverlay {
+        val drawScope = CanvasDrawScope()
+        val bitmap = ImageBitmap(size.width.toInt(), size.height.toInt())
+        val canvas = androidx.compose.ui.graphics.Canvas(bitmap)
+        val legendTexts = List(values.nominalFrequencies.size) { frequencyIndex ->
+                val textLayoutResult = textMeasurer.measure(buildAnnotatedString {
+                    withStyle(
+                        SpanStyle(
+                            fontSize = TextUnit(
+                                10F,
+                                TextUnitType.Sp
+                            )
+                        )
+                    )
+                    { append(formatFrequency(values.nominalFrequencies[frequencyIndex].toInt())) }
+                })
+                textLayoutResult
+            }
+
+        var horizontalLegendSize = Size(0F, 0F)
+        var verticalLegendSize = Size(0F, 0F)
+        drawScope.draw(
+            density = density,
+            layoutDirection = LayoutDirection.Ltr,
+            canvas = canvas,
+            size = size,
+        ) {
+            val maxYAxisWidth = (legendTexts.maxOfOrNull { it.size.width }) ?:0
+            verticalLegendSize = Size(maxYAxisWidth.toFloat(), size.height)
+            val barMaxWidth : Float = size.width - maxYAxisWidth
+            val legendElements = makeXLabels(
+                textMeasurer,  settings.minimumX, settings.maximumX, barMaxWidth,
+                ::noiseLevelAxisFormater
+            )
+            val maxXAxisHeight = (legendElements.maxOfOrNull { it.text.size.height }) ?:0
+            horizontalLegendSize = Size(size.width, maxXAxisHeight.toFloat())
+            val chartHeight = (size.height - maxXAxisHeight - tickLength.toPx())
+            legendElements.forEach {legendElement ->
+                val tickPos = maxYAxisWidth + max(tickStroke.toPx() / 2F, min(barMaxWidth-tickStroke.toPx(), legendElement.xPos - tickStroke.toPx() / 2F))
+                drawLine(
+                    color = colors.onPrimary, start = Offset(
+                        tickPos,
+                        chartHeight
+                    ),
+                    end = Offset(
+                        tickPos,
+                        chartHeight + tickLength.toPx()
+                    ),
+                    strokeWidth = tickStroke.toPx()
+                )
+                drawText(legendElement.text, topLeft = Offset(maxYAxisWidth + legendElement.textPos, chartHeight + tickLength.toPx()))
+            }
+            val barHeight = chartHeight / values.spl.size - SPECTRUM_PLOT_SQUARE_OFFSET.toPx()
+            values.spl.forEachIndexed { index, spl ->
+                val barYOffset = (barHeight + SPECTRUM_PLOT_SQUARE_OFFSET.toPx())*(values.spl.size - 1 - index)
+                drawText(textMeasurer, legendTexts[index].layoutInput.text, topLeft = Offset(0F, barYOffset + barHeight / 2 - legendTexts[index].size.height / 2F))
             }
         }
-        val textLayout = textMeasurer.measure(legendText)
-        val textPos = min(
-            legendWidth - textLayout.size.width,
-            max(0F, xPos - textLayout.size.width / 2)
-        )
-        return LegendElement(legendText, textLayout.size, xPos, textPos, depth)
+        return PlotBitmapOverlay(bitmap, size, horizontalLegendSize, verticalLegendSize, settings.hashCode())
     }
 
-    @Suppress("LongParameterList")
-    private fun recursiveLegendBuild(
-        textMeasurer: TextMeasurer,
-        timeValue: Double,
-        legendWidth: Float,
-        timePerPixel: Double,
-        minX: Float,
-        maxX: Float,
-        timeValueLeft: Double,
-        timeValueRight: Double,
-        feedElements: ArrayList<LegendElement>,
-        depth: Int,
-    ) {
-        val legendElement = makeXLegend(textMeasurer, timeValue, legendWidth, timePerPixel, depth)
-        if (legendElement.textPos > minX && legendElement.xPos + legendElement.textSize.width / 2 < maxX) {
-            feedElements.add(legendElement)
-            // left legend, + x seconds
-            recursiveLegendBuild(
-                textMeasurer,
-                timeValue + (timeValueLeft - timeValue) / 2,
-                legendWidth,
-                timePerPixel,
-                minX,
-                legendElement.textPos,
-                timeValueLeft,
-                timeValue,
-                feedElements,
-                depth + 1
-            )
-            // right legend, - x seconds
-            recursiveLegendBuild(
-                textMeasurer,
-                timeValue - (timeValue - timeValueRight) / 2,
-                legendWidth,
-                timePerPixel,
-                legendElement.textPos + legendElement.textSize.width,
-                maxX,
-                timeValue,
-                timeValueRight,
-                feedElements,
-                depth + 1
-            )
-        }
-    }
-
-    fun buildLegendBitmap(
-        size: Size,
-        density: Density,
-        scaleMode: SpectrogramBitmap.Companion.ScaleMode,
-        sampleRate: Double,
-        textMeasurer: TextMeasurer,
-        colors: Colors,
-    ): LegendBitmap {
+    fun buildSpectrogramAxisBitmap(size: Size, density: Density, scaleMode: SpectrogramBitmap.Companion.ScaleMode,
+                                   sampleRate: Double, textMeasurer: TextMeasurer, colors: Colors): PlotBitmapOverlay {
         val drawScope = CanvasDrawScope()
         val bitmap = ImageBitmap(size.width.toInt(), size.height.toInt())
         val canvas = androidx.compose.ui.graphics.Canvas(bitmap)
@@ -260,8 +325,7 @@ class MeasurementScreen(
             SpectrogramBitmap.Companion.ScaleMode.SCALE_LOG -> SpectrogramBitmap.frequencyLegendPositionLog
             else -> SpectrogramBitmap.frequencyLegendPositionLinear
         }
-        frequencyLegendPosition =
-            frequencyLegendPosition.filter { f -> f < sampleRate / 2 }.toIntArray()
+        frequencyLegendPosition = frequencyLegendPosition.filter { f -> f < sampleRate / 2 }.toIntArray()
         val timeXLabelMeasure = textMeasurer.measure(REFERENCE_LEGEND_TEXT)
         val timeXLabelHeight = timeXLabelMeasure.size.height
         val maxYLabelWidth =
@@ -277,14 +341,11 @@ class MeasurementScreen(
             canvas = canvas,
             size = size,
         ) {
-
-            val tickLength = 4.dp.toPx()
-            val tickStroke = 2.dp
-            val legendHeight = timeXLabelHeight + tickLength
-            val legendWidth = maxYLabelWidth + tickLength
-            bottomLegendSize = Size(size.width - legendWidth, legendHeight)
+            val legendHeight = timeXLabelHeight+tickLength.toPx()
+            val legendWidth = maxYLabelWidth+tickLength.toPx()
+            bottomLegendSize = Size(size.width-legendWidth, legendHeight)
             rightLegendSize = Size(legendWidth, size.height - legendHeight)
-            if (sampleRate > 1) {
+            if(sampleRate > 1) {
                 // draw Y axe labels
                 val fMax = sampleRate / 2
                 val fMin = frequencyLegendPosition[0].toDouble()
@@ -300,63 +361,28 @@ class MeasurementScreen(
                         SpectrogramBitmap.Companion.ScaleMode.SCALE_LOG -> {
                             sheight - (log10(frequency / fMin) / ((log10(fMax / fMin) / sheight))).toInt()
                         }
-
                         else -> (sheight - frequency / fMax * sheight).toInt()
                     }
                     drawLine(
                         color = colors.onPrimary, start = Offset(
                             size.width - legendWidth,
-                            tickHeightPos.toFloat() - tickStroke.toPx() / 2
+                            tickHeightPos.toFloat() - tickStroke.toPx()/2
                         ),
                         end = Offset(
-                            size.width - legendWidth + tickLength,
-                            tickHeightPos.toFloat() - tickStroke.toPx() / 2
+                            size.width - legendWidth + tickLength.toPx(),
+                            tickHeightPos.toFloat() - tickStroke.toPx()/2
                         ),
                         strokeWidth = tickStroke.toPx()
                     )
-                    val textPos = min(
-                        (size.height - textSize.size.height).toInt(),
-                        max(0, tickHeightPos - textSize.size.height / 2)
-                    )
-                    drawText(
-                        textMeasurer,
-                        text,
-                        topLeft = Offset(size.width - legendWidth + tickLength, textPos.toFloat())
-                    )
+                    val textPos = min((size.height - textSize.size.height).toInt(),
+                        max(0, tickHeightPos - textSize.size.height / 2))
+                    drawText(textMeasurer, text, topLeft = Offset(size.width - legendWidth + tickLength.toPx(), textPos.toFloat()))
                 }
-                // draw X axe labels
                 val xLegendWidth = (size.width - legendWidth)
-                // One pixel per time step
-                val timePerPixel = FFT_HOP / sampleRate
-                val lastTime = xLegendWidth * timePerPixel
-                val legendElements = ArrayList<LegendElement>()
-                val rightLegend = makeXLegend(textMeasurer, 0.0, xLegendWidth, timePerPixel, -1)
-                val leftLegend = makeXLegend(textMeasurer, lastTime, xLegendWidth, timePerPixel, -1)
-                legendElements.add(leftLegend)
-                legendElements.add(rightLegend)
-                recursiveLegendBuild(
-                    textMeasurer, lastTime / 2, xLegendWidth, timePerPixel,
-                    leftLegend.textSize.width.toFloat(),
-                    rightLegend.xPos - rightLegend.textSize.width, lastTime, 0.0, legendElements, 0
-                )
-                // find depth index with maximum number of elements (to generate same intervals on legend)
-                val legendDepthCount = IntArray(legendElements.maxOf { it.depth } + 1) { 0 }
-                legendElements.forEach {
-                    if (it.depth >= 0) {
-                        legendDepthCount[it.depth] += 1
-                    }
-                }
-                legendElements.removeAll {
-                    it.depth > 0 && legendDepthCount[it.depth] != (2.0.pow(it.depth)).toInt()
-                }
-                legendElements.forEach { legendElement ->
-                    val tickPos = max(
-                        tickStroke.toPx() / 2F,
-                        min(
-                            xLegendWidth - tickStroke.toPx(),
-                            legendElement.xPos - tickStroke.toPx() / 2F
-                        )
-                    )
+                val legendElements = makeXLabels(textMeasurer, (FFT_HOP / sampleRate)*xLegendWidth,0.0,
+                    xLegendWidth, ::timeAxisFormater)
+                legendElements.forEach {legendElement ->
+                    val tickPos = max(tickStroke.toPx() / 2F, min(xLegendWidth-tickStroke.toPx(), legendElement.xPos - tickStroke.toPx() / 2F))
                     drawLine(
                         color = colors.onPrimary, start = Offset(
                             tickPos,
@@ -364,34 +390,51 @@ class MeasurementScreen(
                         ),
                         end = Offset(
                             tickPos,
-                            sheight + tickLength
+                            sheight + tickLength.toPx()
                         ),
                         strokeWidth = tickStroke.toPx()
                     )
-                    drawText(
-                        textMeasurer,
-                        legendElement.text,
-                        topLeft = Offset(legendElement.textPos, sheight.toFloat() + tickLength)
-                    )
+                    drawText(legendElement.text, topLeft = Offset(legendElement.textPos, sheight.toFloat() + tickLength.toPx()))
                 }
             }
         }
-        return LegendBitmap(bitmap, size, bottomLegendSize, rightLegendSize)
+        return PlotBitmapOverlay(bitmap, size, bottomLegendSize, rightLegendSize, scaleMode.hashCode())
     }
 
-
     @Composable
-    fun spectrogramLegend(scaleMode: SpectrogramBitmap.Companion.ScaleMode, sampleRate: Double) {
+    fun spectrumAxis(
+        settings: SpectrumSettings,
+        values: SpectrumPlotData
+    ) {
         val colors = MaterialTheme.colors
         val textMeasurer = rememberTextMeasurer()
         Canvas(modifier = Modifier.fillMaxSize()) {
-            if (preparedLegendBitmap.imageSize != size) {
-                preparedLegendBitmap = buildLegendBitmap(
+            if (preparedSpectrumOverlayBitmap.imageSize != size || preparedSpectrumOverlayBitmap.plotSettingsHashCode != settings.hashCode()) {
+                preparedSpectrumOverlayBitmap = buildSpectrumAxisBitmap(
+                    size,
+                    Density(density),
+                    settings,
+                    values,
+                    textMeasurer,
+                    colors
+                )
+            }
+            drawImage(preparedSpectrumOverlayBitmap.imageBitmap)
+        }
+    }
+
+    @Composable
+    fun spectrogramAxis(scaleMode: SpectrogramBitmap.Companion.ScaleMode, sampleRate: Double) {
+        val colors = MaterialTheme.colors
+        val textMeasurer = rememberTextMeasurer()
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            if (preparedSpectrogramOverlayBitmap.imageSize != size) {
+                preparedSpectrogramOverlayBitmap = buildSpectrogramAxisBitmap(
                     size, Density(density), scaleMode,
                     sampleRate, textMeasurer, colors
                 )
             }
-            drawImage(preparedLegendBitmap.imageBitmap)
+            drawImage(preparedSpectrogramOverlayBitmap.imageBitmap)
         }
     }
 
@@ -409,7 +452,7 @@ class MeasurementScreen(
         }
     }
 
-    fun processSpectrum(spectrumCanvasState: SpectrogramViewModel, it: SpectrumData): Int {
+    fun processSpectrum(spectrumCanvasState: SpectrogramViewModel, it : SpectrumData) : Int {
         spectrumCanvasState.currentStripData.pushSpectrumToSpectrogramData(
             it, mindB, rangedB,
             dbGain
@@ -437,16 +480,14 @@ class MeasurementScreen(
     }
 
     @Composable
-    fun buildNoiseLevelText(noiseLevel: Double): AnnotatedString = buildAnnotatedString {
+    fun buildNoiseLevelText(noiseLevel : Double) : AnnotatedString = buildAnnotatedString {
         val inRangeNoise = noiseLevel > MIN_SHOWN_DBA_VALUE && noiseLevel < MAX_SHOWN_DBA_VALUE
         val colorIndex = noiseColorRampSpl.indexOfFirst { pair -> pair.first < noiseLevel }
-        withStyle(
-            style = SpanStyle(
-                color = if (inRangeNoise) noiseColorRampSpl[colorIndex].second else MaterialTheme.colors.onPrimary,
-                fontSize = NOISE_LEVEL_FONT_SIZE,
-                baselineShift = BaselineShift.None
-            )
-        ) {
+        withStyle(style = SpanStyle(
+            color = if(inRangeNoise) noiseColorRampSpl[colorIndex].second else MaterialTheme.colors.onPrimary,
+            fontSize = NOISE_LEVEL_FONT_SIZE,
+            baselineShift = BaselineShift.None
+        )) {
             when {
                 inRangeNoise -> append("${round(noiseLevel * 10) / 10}")
                 else -> append("-")
@@ -455,20 +496,25 @@ class MeasurementScreen(
     }
 
     @Composable
-    fun spectrumPlot(modifier: Modifier, settings: SpectrumSettings, values: SpectrumPlotData) {
+    fun spectrumPlot(
+        modifier: Modifier,
+        settings: SpectrumSettings,
+        values: SpectrumPlotData
+    ) {
         val surfaceColor = MaterialTheme.colors.onSurface
         // color ramp 0F left side of spectrum
         // 1F right side of spectrum
-        val spectrumColorRamp = List(noiseColorRampSpl.size) { index ->
-            val pair = noiseColorRampSpl[noiseColorRampSpl.size - 1 - index]
-            val linearIndex = max(
-                0.0, ((pair.first - settings.minimumX) /
-                    (settings.maximumX - settings.minimumX))
-            )
-            Pair(linearIndex.toFloat(), pair.second)
-        }.toTypedArray()
+        val spectrumColorRamp = remember(settings) {
+            List(noiseColorRampSpl.size) { index ->
+                val pair = noiseColorRampSpl[noiseColorRampSpl.size - 1 - index]
+                val linearIndex = max(
+                    0.0, ((pair.first - settings.minimumX) /
+                            (settings.maximumX - settings.minimumX))
+                )
+                Pair(linearIndex.toFloat(), pair.second)
+            }.toTypedArray()
+        }
         Canvas(modifier) {
-            val barHeight = size.height / values.spl.size - SPECTRUM_PLOT_SQUARE_OFFSET.toPx()
             val pathEffect = PathEffect.dashPathEffect(
                 floatArrayOf(
                     SPECTRUM_PLOT_SQUARE_WIDTH.toPx(),
@@ -476,24 +522,44 @@ class MeasurementScreen(
                 )
             )
             val weightedBarWidth = 10.dp.toPx()
+            val maxYAxisWidth = preparedSpectrumOverlayBitmap.verticalLegendSize.width
+            val barMaxWidth: Float = size.width - maxYAxisWidth
+            val maxXAxisHeight = preparedSpectrumOverlayBitmap.horizontalLegendSize.height
+            val chartHeight = (size.height - maxXAxisHeight - tickLength.toPx())
+            val barHeight = chartHeight / values.spl.size - SPECTRUM_PLOT_SQUARE_OFFSET.toPx()
             values.spl.forEachIndexed { index, spl ->
-                val barYOffset = (barHeight + SPECTRUM_PLOT_SQUARE_OFFSET.toPx()) * index
+                val barYOffset =
+                    (barHeight + SPECTRUM_PLOT_SQUARE_OFFSET.toPx()) * (values.spl.size - 1 - index)
                 val splRatio = (spl - settings.minimumX) / (settings.maximumX - settings.minimumX)
                 val splWeighted = max(spl, values.splWeighted[index])
-                val splWeightedRatio =
-                    (splWeighted - settings.minimumX) / (settings.maximumX - settings.minimumX)
+                val splWeightedRatio = min(
+                    1.0,
+                    max(
+                        0.0,
+                        (splWeighted - settings.minimumX) / (settings.maximumX - settings.minimumX)
+                    )
+                )
                 val splGradient =
                     Brush.horizontalGradient(*spectrumColorRamp, startX = 0F, endX = size.width)
                 drawLine(
-                    brush = splGradient, start = Offset(0F, barYOffset + barHeight / 2),
-                    end = Offset((size.width * splRatio).toFloat(), barYOffset + barHeight / 2),
-                    strokeWidth = barHeight, pathEffect = pathEffect
+                    brush = splGradient,
+                    start = Offset(maxYAxisWidth, barYOffset + barHeight / 2),
+                    end = Offset(
+                        max(
+                            maxYAxisWidth,
+                            ((barMaxWidth * splRatio).toFloat() + maxYAxisWidth)
+                        ),
+                        barYOffset + barHeight / 2
+                    ),
+                    strokeWidth = barHeight,
+                    pathEffect = pathEffect
                 )
                 drawRect(
-                    color = surfaceColor,
-                    topLeft = Offset(
-                        (size.width * splWeightedRatio).toFloat() - weightedBarWidth,
-                        barYOffset
+                    color = surfaceColor, topLeft = Offset(
+                        max(
+                            maxYAxisWidth,
+                            (barMaxWidth * splWeightedRatio).toFloat() - weightedBarWidth + maxYAxisWidth
+                        ), barYOffset
                     ),
                     size = Size(weightedBarWidth, barHeight)
                 )
@@ -502,7 +568,7 @@ class MeasurementScreen(
     }
 
     @Composable
-    fun vueMeter(modifier: Modifier, settings: VueMeterSettings, value: Double) {
+    fun vueMeter(modifier: Modifier, settings: VueMeterSettings, value : Double) {
         val color = MaterialTheme.colors
         val textMeasurer = rememberTextMeasurer()
         Canvas(modifier = modifier) {
@@ -539,7 +605,7 @@ class MeasurementScreen(
                 cornerRadius = CornerRadius(barHeight / 2, barHeight / 2),
                 size = Size(size.width, barHeight)
             )
-            val valueRatio = (value - settings.minimum) / (settings.maximum - settings.minimum)
+            val valueRatio = (value-settings.minimum)/(settings.maximum-settings.minimum)
             val colorIndex = noiseColorRampSpl.indexOfFirst { pair -> pair.first < value }
             drawRoundRect(
                 color = noiseColorRampSpl[colorIndex].second,
@@ -558,8 +624,8 @@ class MeasurementScreen(
             bottomStart = 0.dp,
             bottomEnd = 40.dp
         )
-        val vueMeterSettings = VueMeterSettings(20.0, 120.0,
-            IntArray(6) { v -> ((v + 1) * 20.0).toInt() })
+        val vueMeterSettings = VueMeterSettings(20.0,120.0,
+            IntArray(6){v->((v+ 1)*20.0).toInt()})
         Column() {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -570,10 +636,8 @@ class MeasurementScreen(
                     shape = rightRoundedSquareShape,
                     elevation = 10.dp
                 ) {
-                    Row(
-                        modifier = Modifier.padding(10.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
+                    Row(modifier = Modifier.padding(10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween) {
                         Text(
                             buildAnnotatedString {
                                 withStyle(
@@ -583,7 +647,8 @@ class MeasurementScreen(
                                             TextUnitType.Sp
                                         ),
                                     )
-                                ) { append("dB(A)") }
+                                )
+                                { append("dB(A)") }
                             },
                             modifier = Modifier.align(Alignment.CenterVertically)
                         )
@@ -623,12 +688,10 @@ class MeasurementScreen(
 
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
-    fun measurementPager(bitmapOffset: Int, sampleRate: Double, spectrumData: SpectrumPlotData) {
+    fun measurementPager(bitmapOffset: Int, sampleRate: Double, spectrumData: SpectrumPlotData, spectrumSettings: SpectrumSettings) {
 
         val animationScope = rememberCoroutineScope()
         val pagerState = rememberPagerState(pageCount = { MeasurementTabState.entries.size })
-        val spectrumSettings =
-            SpectrumSettings(MIN_SHOWN_DBA_VALUE_SPECTRUM, MAX_SHOWN_DBA_VALUE_SPECTRUM)
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             TabRow(selectedTabIndex = pagerState.currentPage) {
@@ -636,32 +699,23 @@ class MeasurementScreen(
                     Tab(
                         text = { Text(MEASUREMENT_TAB_LABEL[entry.ordinal]) },
                         selected = pagerState.currentPage == entry.ordinal,
-                        onClick = { animationScope.launch { pagerState.animateScrollToPage(entry.ordinal) } }
+                        onClick = { animationScope.launch {pagerState.animateScrollToPage(entry.ordinal)} }
                     )
                 }
             }
-            HorizontalPager(state = pagerState) { page ->
+            HorizontalPager(state = pagerState) {page->
                 when (MeasurementTabState.entries[page]) {
                     MeasurementTabState.SPECTROGRAM -> Box(Modifier.fillMaxSize()) {
                         spectrogram(spectrumCanvasState, bitmapOffset)
-                        spectrogramLegend(scaleMode, sampleRate)
+                        spectrogramAxis(scaleMode, sampleRate)
                     }
-
-                    MeasurementTabState.SPECTRUM -> spectrumPlot(
-                        Modifier.fillMaxSize(),
-                        spectrumSettings,
-                        spectrumData
-                    )
-
-                    else -> Surface(
-                        Modifier.fillMaxSize(),
-                        color = MaterialTheme.colors.background
-                    ) {
-                        Text(
-                            text = "Text tab ${MEASUREMENT_TAB_LABEL[page]} selected",
-                            style = MaterialTheme.typography.body1
-                        )
-                    }
+                    MeasurementTabState.SPECTRUM -> Box(Modifier.fillMaxSize()) {
+                        spectrumPlot(Modifier.fillMaxSize(), spectrumSettings, spectrumData)
+                        spectrumAxis(spectrumSettings, spectrumData)
+                    } else -> Surface(Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {Text(
+                        text = "Text tab ${MEASUREMENT_TAB_LABEL[page]} selected",
+                        style = MaterialTheme.typography.body1
+                    )}
                 }
             }
         }
@@ -673,35 +727,36 @@ class MeasurementScreen(
     override fun Content(modifier: Modifier) {
         var bitmapOffset by remember { mutableStateOf(0) }
         var noiseLevel by remember { mutableStateOf(0.0) }
-        var sampleRate by remember { mutableStateOf(DEFAULT_SAMPLE_RATE) }
-        var spectrumDataState by remember {
+        var sampleRate by remember { mutableStateOf( DEFAULT_SAMPLE_RATE ) }
+        var spectrumDataState by remember { mutableStateOf( SpectrumPlotData(ArrayList(0),
+            DoubleArray(0), DoubleArray(0))) }
+        var spectrumSettings by remember {
             mutableStateOf(
-                SpectrumPlotData(
-                    DoubleArray(0),
-                    DoubleArray(0)
+                SpectrumSettings(
+                    MIN_SHOWN_DBA_VALUE_SPECTRUM,
+                    MAX_SHOWN_DBA_VALUE_SPECTRUM,
+                    ArrayList(0)
                 )
             )
         }
-        var indicatorCollectJob: Job? = null
-        var spectrumCollectJob: Job? = null
-        val launchMeasurementJob = fun() {
+        var indicatorCollectJob : Job? = null
+        var spectrumCollectJob : Job? = null
+        val launchMeasurementJob = fun () {
             indicatorCollectJob = lifecycleScope.launch {
                 val levelDisplay = LevelDisplayWeightedDecay(FAST_DECAY_RATE, WINDOW_TIME)
-                var levelDisplayBands: Array<LevelDisplayWeightedDecay>? = null
+                var levelDisplayBands : Array<LevelDisplayWeightedDecay>? = null
                 measurementService.collectAudioIndicators().collect {
-                    if (levelDisplayBands == null) {
-                        levelDisplayBands = Array(it.nominalFrequencies.size) {
-                            LevelDisplayWeightedDecay(
-                                FAST_DECAY_RATE,
-                                WINDOW_TIME
-                            )
-                        }
+                    if(levelDisplayBands == null) {
+                        levelDisplayBands = Array(it.nominalFrequencies.size) {LevelDisplayWeightedDecay(FAST_DECAY_RATE, WINDOW_TIME)}
                     }
                     noiseLevel = levelDisplay.getWeightedValue(it.laeq)
-                    val splWeightedArray = DoubleArray(it.nominalFrequencies.size) { index ->
-                        levelDisplayBands!![index].getWeightedValue(it.thirdOctave[index])
-                    }
-                    spectrumDataState = SpectrumPlotData(it.thirdOctave, splWeightedArray)
+                    val splWeightedArray = DoubleArray(it.nominalFrequencies.size) {index -> levelDisplayBands!![index].getWeightedValue(it.thirdOctave[index])}
+                    spectrumDataState = SpectrumPlotData(it.nominalFrequencies, it.thirdOctave, splWeightedArray)
+                    spectrumSettings = SpectrumSettings(
+                        MIN_SHOWN_DBA_VALUE_SPECTRUM,
+                        MAX_SHOWN_DBA_VALUE_SPECTRUM,
+                        it.nominalFrequencies
+                    )
                 }
             }
             spectrumCollectJob = lifecycleScope.launch {
@@ -720,9 +775,8 @@ class MeasurementScreen(
                 if (event == Lifecycle.Event.ON_PAUSE) {
                     indicatorCollectJob?.cancel()
                     spectrumCollectJob?.cancel()
-                } else if (event == Lifecycle.Event.ON_RESUME &&
-                    (indicatorCollectJob == null || indicatorCollectJob?.isActive == false)
-                ) {
+                } else if(event == Lifecycle.Event.ON_RESUME &&
+                    (indicatorCollectJob == null || indicatorCollectJob?.isActive == false)) {
                     launchMeasurementJob()
                 }
             }
@@ -739,13 +793,13 @@ class MeasurementScreen(
                             measurementHeader(noiseLevel)
                         }
                         Column(modifier = Modifier) {
-                            measurementPager(bitmapOffset, sampleRate, spectrumDataState)
+                            measurementPager(bitmapOffset, sampleRate, spectrumDataState, spectrumSettings)
                         }
                     }
                 } else {
                     Column(modifier = Modifier.fillMaxSize()) {
                         measurementHeader(noiseLevel)
-                        measurementPager(bitmapOffset, sampleRate, spectrumDataState)
+                        measurementPager(bitmapOffset, sampleRate, spectrumDataState, spectrumSettings)
                     }
                 }
             }
@@ -753,39 +807,24 @@ class MeasurementScreen(
     }
 }
 
-data class SpectrogramViewModel(
-    var currentStripData: SpectrogramBitmap.SpectrogramDataModel,
-    val cachedStrips: ArrayList<ImageBitmap>,
-    var spectrogramCanvasSize: Size,
-)
+data class SpectrogramViewModel(var currentStripData : SpectrogramBitmap.SpectrogramDataModel,
+                                val cachedStrips : ArrayList<ImageBitmap>,
+                                var spectrogramCanvasSize : Size)
 
-data class LegendElement(
-    val text: AnnotatedString, val textSize: IntSize, val xPos: Float,
-    val textPos: Float, val depth: Int,
-)
+data class LegendElement(val text : TextLayoutResult, val xPos : Float,
+                         val textPos : Float, val depth : Int)
 
-enum class MeasurementTabState { SPECTRUM,
-    SPECTROGRAM,
-    MAP
-}
-
+enum class MeasurementTabState { SPECTRUM, SPECTROGRAM, MAP}
 val MEASUREMENT_TAB_LABEL = listOf("Spectrum", "Spectrogram", "Map")
+data class PlotBitmapOverlay(val imageBitmap: ImageBitmap, val imageSize: Size, val horizontalLegendSize: Size, val verticalLegendSize: Size, val plotSettingsHashCode : Int)
 
-data class LegendBitmap(
-    val imageBitmap: ImageBitmap,
-    val imageSize: Size,
-    val bottomLegendSize: Size,
-    val rightLegendSize: Size,
-)
+data class MeasurementStatistics(val label : String, val value : String)
 
-data class MeasurementStatistics(val label: String, val value: String)
+data class SpectrumSettings(val minimumX : Double, val maximumX : Double, val nominalFrequencies : List<Double>)
 
-data class SpectrumSettings(val minimumX: Double, val maximumX: Double)
+data class SpectrumPlotData(val nominalFrequencies : List<Double>, val spl : DoubleArray, val splWeighted : DoubleArray)
 
-data class SpectrumPlotData(val spl: DoubleArray, val splWeighted: DoubleArray)
-
-data class VueMeterSettings(val minimum: Double, val maximum: Double, val xLabels: IntArray) {
-
+data class VueMeterSettings(val minimum : Double, val maximum : Double, val xLabels : IntArray) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
