@@ -19,6 +19,7 @@ import org.noiseplanet.noisecapture.ui.NavigationRoute
 import org.noiseplanet.noisecapture.ui.screens.HomeScreen
 import org.noiseplanet.noisecapture.ui.screens.MeasurementScreen
 import org.noiseplanet.noisecapture.ui.screens.PlatformInfoScreen
+import org.noiseplanet.noisecapture.ui.screens.RequestPermissionScreen
 
 
 /**
@@ -70,7 +71,10 @@ fun NoiseCaptureApp(
         ) {
             composable(route = NavigationRoute.Home.name) {
                 HomeScreen(
-                    onClick = { navController.navigate(NavigationRoute.RequestPermission.name) },
+                    onClick = {
+                        // TODO: Silently check for permissions and bypass this step if they are already all granted
+                        navController.navigate(NavigationRoute.RequestPermission.name)
+                    },
                 )
             }
             composable(route = NavigationRoute.PlatformInfo.name) {
@@ -79,7 +83,11 @@ fun NoiseCaptureApp(
                 )
             }
             composable(route = NavigationRoute.RequestPermission.name) {
-                navController.navigate(NavigationRoute.Measurement.name)
+                RequestPermissionScreen(
+                    onClickNextButton = {
+                        navController.navigate(NavigationRoute.Measurement.name)
+                    }
+                )
             }
             composable(route = NavigationRoute.Measurement.name) {
                 MeasurementScreen()
