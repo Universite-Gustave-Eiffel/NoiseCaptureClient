@@ -15,15 +15,8 @@ interface AudioSource {
         LOCATION_PERIPHERAL
     }
 
-    enum class InitializeErrorCode {
-        INITIALIZE_OK, // TODO: Make error code optional rather than have and OK case
-        INITIALIZE_WRONG_BUFFER_SIZE,
-        INITIALIZE_SAMPLE_RATE_NOT_SUPPORTED,
-        INITIALIZE_ALREADY_INITIALIZED,
-        INITIALIZE_NO_MICROPHONE
-    }
-
     /**
+     * TODO: Improve documentation and methods naming
      * @param sampleRate Sample rate in Hz
      * @param bufferSize Buffer size in bytes
      * @return InitializeErrorCode instance
@@ -36,5 +29,8 @@ interface AudioSource {
      */
     fun release()
 
+    /**
+     * TODO: Document this
+     */
     fun getMicrophoneLocation(): MicrophoneLocation
 }

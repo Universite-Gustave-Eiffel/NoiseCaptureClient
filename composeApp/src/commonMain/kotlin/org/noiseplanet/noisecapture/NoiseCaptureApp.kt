@@ -17,8 +17,8 @@ import androidx.navigation.compose.rememberNavController
 import org.noiseplanet.noisecapture.ui.AppBar
 import org.noiseplanet.noisecapture.ui.NavigationRoute
 import org.noiseplanet.noisecapture.ui.screens.HomeScreen
+import org.noiseplanet.noisecapture.ui.screens.MeasurementScreen
 import org.noiseplanet.noisecapture.ui.screens.PlatformInfoScreen
-import org.noiseplanet.noisecapture.ui.screens.RequestPermissionScreen
 
 
 /**
@@ -79,10 +79,10 @@ fun NoiseCaptureApp(
                 )
             }
             composable(route = NavigationRoute.RequestPermission.name) {
-                // TODO: Navigate to measurements screen
-                RequestPermissionScreen(onClickNextButton = {
-                    navController.popBackStack()
-                })
+                navController.navigate(NavigationRoute.Measurement.name)
+            }
+            composable(route = NavigationRoute.Measurement.name) {
+                MeasurementScreen()
             }
         }
     }

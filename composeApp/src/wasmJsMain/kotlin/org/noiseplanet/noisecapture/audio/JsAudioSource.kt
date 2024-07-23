@@ -16,6 +16,9 @@ const val SAMPLES_BUFFER_SIZE = 1024
 const val AUDIO_CONSTRAINT =
     "{audio: {echoCancellation: false, autoGainControl: false, noiseSuppression: false}}"
 
+/**
+ * TODO: Document, cleanup, use platform logger instead of println, get rid of force unwraps (!!)
+ */
 internal class JsAudioSource : AudioSource {
 
     private var audioContext: AudioContext? = null
@@ -59,12 +62,10 @@ internal class JsAudioSource : AudioSource {
             micNode!!.connect(scriptProcessorNode)
             scriptProcessorNode.connect(audioContext!!.destination)
             micNode!!.connect(scriptProcessorNode)
-
-            AudioSource.InitializeErrorCode.INITIALIZE_OK as JsAny
+            mediaStream
         }, onRejected = { error ->
             println("Error! $error")
-
-            AudioSource.InitializeErrorCode.INITIALIZE_NO_MICROPHONE as JsAny
+            error
         })
         return audioSamplesChannel.consumeAsFlow()
     }

@@ -165,6 +165,10 @@ class WindowAnalysis(
     }
 }
 
+
+// TODO: Move dataclasses to separate files and add documentation
+
+
 data class Window(val epoch: Long, val samples: FloatArray) {
 
     override fun equals(other: Any?): Boolean {
