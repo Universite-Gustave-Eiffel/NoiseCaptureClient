@@ -1,113 +1,54 @@
 # keep sorted please, use Edit -> Sort Lines
 
 [versions]
-#agp = "8.2.0"
-#android-compileSdk = "34"
-#android-minSdk = "24"
-#android-targetSdk = "34"
-#androidDriver = "2.0.1"
-#androidx-activity-compose = "1.8.2"
-#androidx-lifecycle = "2.7.0"
-#androidx-test-espresso-core = "3.5.1"
-#androidx-test-junit = "1.1.5"
-#appcompat = "1.6.1"
-#appyx = "2.0.1"
-#compose-compiler = "1.5.14"
-#compose-plugin = "1.6.11"
-#compose-ui-test-junit4 = "1.6.2"
-#core-ktx = "1.12.0"
-#coroutines = "1.8.0"
-#detekt = "1.23.6"
-#junit = "4.13.2"
-#jvm-target = "1.8"
-#koin-android = "3.5.6"
-#koin-core = "3.5.6"
-#kotlin = "2.0.0"
-#kotlinWrappersVersion = "1.0.0-pre.700"
-
-#ksp = "1.9.24-1.0.20"
-#sqliteFramework = "2.4.0"
 agp = "8.2.0"
 android-compileSdk = "34"
 android-minSdk = "24"
 android-targetSdk = "34"
-
 androidx-activityCompose = "1.9.0"
 androidx-appcompat = "1.7.0"
 androidx-constraintlayout = "2.1.4"
 androidx-core-ktx = "1.13.1"
 androidx-espresso-core = "3.6.0"
+androidx-lifecycle-viewmodel = "2.8.3"
 androidx-material = "1.12.0"
 androidx-navigation = "2.7.0-alpha07"
 androidx-test-junit = "1.2.0"
-androidx-lifecycle-viewmodel = "2.8.3"
-
 compose-plugin = "1.6.11"
+coroutines = "1.8.0"
+detekt = "1.23.6"
 junit = "4.13.2"
-
 koin = "3.6.0-Beta4"
 koin-compose-multiplatform = "1.2.0-Beta4"
-
 kotlin = "2.0.0"
 kotlin-wrappers = "1.0.0-pre.775"
 kotlinx-datetime = "0.5.0"
 
-detekt = "1.23.6"
-
-coroutines = "1.8.0"
-
 [libraries]
-#androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
-#androidx-core = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
-#androidx-lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "androidx-lifecycle" }
-#androidx-sqlite-framework = { module = "androidx.sqlite:sqlite-framework", version.ref = "sqliteFramework" }
-#androidx-test-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidx-test-espresso-core" }
-#androidx-test-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-test-junit" }
-#appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
-#appyx-components-backstack = { module = "com.bumble.appyx:backstack", version.ref = "appyx" }
-#appyx-navigation = { module = "com.bumble.appyx:appyx-navigation", version.ref = "appyx" }
-#appyx-processor = { module = "com.bumble.appyx:appyx-processor", version.ref = "appyx" }
-#compose-material = { module = "androidx.compose.material:material" }
-#compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "compose-ui-test-junit4" }
-#compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
-#compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
-#compose-ui-ui = { module = "androidx.compose.ui:ui" }
-#detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting" }
-#junit = { module = "junit:junit", version.ref = "junit" }
-#koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin-android" }
-#koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin-core" }
-
-#kotlin-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
-
-
-#sqldelight-android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "androidDriver" }
-#sqldelight-driver = { module = "app.cash.sqldelight:web-worker-driver", version.ref = "androidDriver" }
-#sqldelight-native-driver = { module = "app.cash.sqldelight:native-driver", version.ref = "androidDriver" }
-
-kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
-kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
-junit = { group = "junit", name = "junit", version.ref = "junit" }
-androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core-ktx" }
-androidx-test-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-junit" }
-androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "androidx-espresso-core" }
-androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }
-androidx-material = { group = "com.google.android.material", name = "material", version.ref = "androidx-material" }
-androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "androidx-constraintlayout" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
-androidx-navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "androidx-navigation" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "androidx-constraintlayout" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core-ktx" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "androidx-espresso-core" }
 androidx-lifecycle-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle-viewmodel" }
+androidx-material = { group = "com.google.android.material", name = "material", version.ref = "androidx-material" }
+androidx-navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "androidx-navigation" }
+androidx-test-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-junit" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin-compose-multiplatform" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+kotlin-browser = { module = "org.jetbrains.kotlin-wrappers:kotlin-browser", version.ref = "kotlin-wrappers" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
-kotlin-browser = { module = "org.jetbrains.kotlin-wrappers:kotlin-browser", version.ref = "kotlin-wrappers" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
-jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose-plugin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose-plugin" }
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
