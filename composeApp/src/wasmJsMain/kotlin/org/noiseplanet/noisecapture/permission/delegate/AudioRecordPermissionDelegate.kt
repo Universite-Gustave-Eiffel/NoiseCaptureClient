@@ -3,7 +3,7 @@ package org.noiseplanet.noisecapture.permission.delegate
 import kotlinx.browser.window
 import org.koin.core.logger.Level
 import org.koin.mp.KoinPlatformTools
-import org.noiseplanet.noisecapture.audio.AudioContext
+import org.noiseplanet.noisecapture.interop.AudioContext
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.permission.util.checkPermission

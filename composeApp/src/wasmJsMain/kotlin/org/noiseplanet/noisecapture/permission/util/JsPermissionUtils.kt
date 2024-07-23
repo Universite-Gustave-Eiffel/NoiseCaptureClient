@@ -14,7 +14,6 @@ import kotlin.reflect.KClass
  */
 internal suspend fun checkPermission(permission: Permission): PermissionState {
     val result = permissionsAPIQuery(permission.jsName).await<JsString>()
-    println("State: $result")
     return PermissionState::class.fromJsState(result)
 }
 

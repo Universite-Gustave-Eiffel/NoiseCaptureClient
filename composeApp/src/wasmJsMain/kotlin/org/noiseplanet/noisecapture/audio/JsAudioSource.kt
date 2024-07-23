@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.datetime.Clock
 import org.khronos.webgl.get
+import org.noiseplanet.noisecapture.interop.AudioContext
+import org.noiseplanet.noisecapture.interop.AudioNode
 import org.w3c.dom.mediacapture.MediaStream
 import org.w3c.dom.mediacapture.MediaStreamConstraints
 
