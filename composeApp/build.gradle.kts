@@ -76,6 +76,14 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.datetime)
         }
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+            implementation(libs.kotlinx.coroutines.test)
+
+            @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class) implementation(
+                compose.components.resources
+            )
+        }
     }
 }
 
