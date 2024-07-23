@@ -4,8 +4,8 @@ import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.dsl.module
+import org.noiseplanet.noisecapture.permission.DefaultPermissionService
 import org.noiseplanet.noisecapture.permission.PermissionService
-import org.noiseplanet.noisecapture.permission.PermissionServiceImpl
 import org.noiseplanet.noisecapture.permission.defaultPermissionModule
 import org.noiseplanet.noisecapture.permission.platformPermissionModule
 
@@ -20,7 +20,7 @@ fun initKoin(
             module {
                 includes(additionalModules)
 
-                single<PermissionService> { PermissionServiceImpl() }
+                single<PermissionService> { DefaultPermissionService() }
             },
             defaultPermissionModule,
             platformPermissionModule()

@@ -47,7 +47,10 @@ interface PermissionService : KoinComponent {
 }
 
 
-internal class PermissionServiceImpl : PermissionService {
+/**
+ * Default Permission service implementation
+ */
+internal class DefaultPermissionService : PermissionService {
 
     private companion object {
 
@@ -58,7 +61,9 @@ internal class PermissionServiceImpl : PermissionService {
     override fun getPermissionStateFlow(permission: Permission): Flow<PermissionState> {
         return flow {
             // Get delegate for this permission
-            val delegate: PermissionDelegate = get(named(permission.name))
+            val delegate: PermissionDelegate = getPermissionDelegate(permission)
+            // TODO: It would be nicer to provide a platform dependant listener system
+            //       rather than using an infinite loop, but this will do the trick for now
             while (true) {
                 val permissionState = delegate.getPermissionState()
                 emit(permissionState)
