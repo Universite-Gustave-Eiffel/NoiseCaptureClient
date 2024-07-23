@@ -20,6 +20,7 @@ class WindowAnalysis(val sampleRate : Int, val windowSize : Int, val windowHop :
     val circularSamplesBuffer = FloatArray(windowSize)
     var circularBufferCursor = 0
     var samplesUntilWindow = windowSize
+    val bluestein = if(nextPowerOfTwo(windowSize)!=windowSize) BluesteinFloat(windowSize) else null
     val hannWindow: FloatArray? = when (applyHannWindow) {
         true ->
             FloatArray(windowSize) {
@@ -114,21 +115,8 @@ class WindowAnalysis(val sampleRate : Int, val windowSize : Int, val windowHop :
     }
 
     fun processWindowFloat(window: Window) : FloatArray {
-        // resize array to power of two if window.samples.size is not a power of two
-        val fftWindow: FloatArray = when (val fftWindowSize = nextPowerOfTwo(windowSize)) {
-            windowSize -> window.samples
-            else -> {
-                val paddedWindow = FloatArray(fftWindowSize)
-                // place 0 padding at the center of the window
-                window.samples.copyInto(paddedWindow, 0, windowSize / 2, windowSize)
-                window.samples.copyInto(
-                    paddedWindow, fftWindowSize - (windowSize / 2),
-                    0, windowSize / 2
-                )
-                paddedWindow
-            }
-        }
-        val fr = realFFTFloat(fftWindow)
+        require(window.samples.size == windowSize)
+        val fr = (bluestein?.fft(window.samples) ?: realFFTFloat(window.samples))
         val vRef = (((windowSize*windowSize)/2.0)*windowCorrectionFactor).toFloat()
         return FloatArray(fr.size / 2) { i: Int -> 10 * log10((fr[(i*2)+1]*fr[(i*2)+1]) /vRef) }
     }

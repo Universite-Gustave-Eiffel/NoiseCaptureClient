@@ -7,6 +7,12 @@ plugins {
     id("app.cash.sqldelight") version "2.0.1"
 }
 
+tasks.withType<Test> {
+    this.testLogging {
+        this.showStandardStreams = true
+    }
+}
+
 kotlin {
     androidTarget {
         compilations.all {

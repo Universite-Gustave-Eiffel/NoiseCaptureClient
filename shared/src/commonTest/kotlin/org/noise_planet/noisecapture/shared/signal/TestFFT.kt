@@ -9,6 +9,7 @@ import kotlin.math.log2
 import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.measureTime
@@ -296,6 +297,7 @@ class TestFFT {
     }
 
     @Test
+    @Ignore // not a unit test
     fun benchBluestein() = runTest {
         val input = DoubleArray(60000*2) { cos(it.toDouble()) }
         val bluestein = Bluestein(input.size/2)

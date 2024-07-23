@@ -97,14 +97,14 @@ class BluesteinFloat(val window_length : Int) {
     }
 
     fun fft(x : FloatArray) : FloatArray {
-        require(x.size == window_length * 2)
+        val inputIm = x.size == window_length * 2
         val xp = (0..< n2).foldIndexed(FloatArray(n2*2)) {
                 index, realImagArray, i ->
             if(i < n) {
-                val realIndex = index*2
+                val realIndex = if(inputIm) index*2 else index
                 val imIndex = index*2+1
                 val chirpOffset = (n-1)*2
-                val c = Complex(x[realIndex], x[imIndex]) * a.pow(-i) * Complex(chirp[chirpOffset+realIndex], chirp[chirpOffset+imIndex])
+                val c = Complex(x[realIndex], if(inputIm) x[imIndex] else 0F) * a.pow(-i) * Complex(chirp[chirpOffset+realIndex], chirp[chirpOffset+imIndex])
                 realImagArray[index*2] = c.real
                 realImagArray[index*2+1] = c.imag
             }
