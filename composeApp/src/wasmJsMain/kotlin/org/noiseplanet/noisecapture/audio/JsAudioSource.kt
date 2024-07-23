@@ -50,8 +50,9 @@ internal class JsAudioSource : AudioSource {
                 val samplesBuffer = FloatArray(jsBuffer.length) { i -> jsBuffer[i] }
                 audioSamplesChannel.trySend(
                     AudioSamples(
-                        Clock.System.now().toEpochMilliseconds(), samplesBuffer,
-                        AudioSamples.ErrorCode.OK, buffer.sampleRate.toInt()
+                        Clock.System.now().toEpochMilliseconds(),
+                        samplesBuffer,
+                        buffer.sampleRate.toInt()
                     )
                 )
             }

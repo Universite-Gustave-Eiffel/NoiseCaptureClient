@@ -16,7 +16,7 @@ interface AudioSource {
     }
 
     enum class InitializeErrorCode {
-        INITIALIZE_OK,
+        INITIALIZE_OK, // TODO: Make error code optional rather than have and OK case
         INITIALIZE_WRONG_BUFFER_SIZE,
         INITIALIZE_SAMPLE_RATE_NOT_SUPPORTED,
         INITIALIZE_ALREADY_INITIALIZED,
@@ -37,37 +37,4 @@ interface AudioSource {
     fun release()
 
     fun getMicrophoneLocation(): MicrophoneLocation
-
-}
-
-data class AudioSamples(
-    val epoch: Long,
-    val samples: FloatArray,
-    val errorCode: ErrorCode,
-    val sampleRate: Int,
-) {
-
-    enum class ErrorCode {
-        OK,
-        ABORTED,
-        DEVICE_ERROR
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-
-        other as AudioSamples
-
-        if (epoch != other.epoch) return false
-        if (!samples.contentEquals(other.samples)) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = epoch.hashCode()
-        result = 31 * result + samples.contentHashCode()
-        return result
-    }
 }
