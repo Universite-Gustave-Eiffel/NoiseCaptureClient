@@ -16,7 +16,12 @@ import kotlin.math.sqrt
  * @windowSize Size of the window
  * @windowHop Run a new analysis each windowHop samples
  */
-class WindowAnalysis(val sampleRate : Int, val windowSize : Int, val windowHop : Int, private val applyHannWindow  : Boolean = true) {
+class WindowAnalysis(
+    val sampleRate: Int,
+    val windowSize: Int,
+    val windowHop: Int,
+    private val applyHannWindow: Boolean = true
+) {
     val circularSamplesBuffer = FloatArray(windowSize)
     var circularBufferCursor = 0
     var samplesUntilWindow = windowSize
