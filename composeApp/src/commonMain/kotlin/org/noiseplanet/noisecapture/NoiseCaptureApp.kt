@@ -14,6 +14,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import org.koin.compose.koinInject
 import org.noiseplanet.noisecapture.ui.AppBar
 import org.noiseplanet.noisecapture.ui.NavigationRoute
 import org.noiseplanet.noisecapture.ui.screens.HomeScreen
@@ -90,7 +91,12 @@ fun NoiseCaptureApp(
                 )
             }
             composable(route = NavigationRoute.Measurement.name) {
-                MeasurementScreen()
+                // TODO: Decide of a standard for screens architecture:
+                //       - class or compose function as root?
+                //       - Inject dependencies in constructor or via Koin factories?
+                //       - What should be the package structure?
+                MeasurementScreen(measurementService = koinInject(), logger = koinInject())
+                    .Content()
             }
         }
     }

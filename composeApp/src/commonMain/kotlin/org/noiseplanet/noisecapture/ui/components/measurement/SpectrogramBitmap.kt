@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.ui.components
+package org.noiseplanet.noisecapture.ui.components.measurement
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
