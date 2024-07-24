@@ -46,10 +46,10 @@ jobs:
         uses: ./.github/actions/job-set-up
 
       - name: Compile Android binary
-        run: ./gradlew :androidApp:clean :androidApp:build
+        run: ./gradlew :composeApp:clean :composeApp:assembleDebug
 
       - name: Run tests
-        run: ./gradlew :androidApp:cleanTestDebugUnitTest :composeApp:testDebugUnitTest
+        run: ./gradlew :composeApp:cleanTestDebugUnitTest :composeApp:testDebugUnitTest
 
       - name: Upload reports
         if: always()
@@ -80,7 +80,10 @@ jobs:
         with:
           cache-disabled: true
 
-      - name: run tests
+      - name: Compile iOS binary
+        run: ./gradlew :composeApp:clean :composeApp:iosSimulatorArm64Binaries
+
+      - name: Run tests
         run: ./gradlew :composeApp:cleanIosSimulatorArm64Test :composeApp:iosSimulatorArm64Test
 
       - name: Upload reports
