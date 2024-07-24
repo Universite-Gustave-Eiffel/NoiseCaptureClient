@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.shared.signal
+package org.noiseplanet.noisecapture.signal
 
 import kotlinx.coroutines.test.runTest
 import org.noiseplanet.noisecapture.audio.AcousticIndicatorsProcessing
@@ -161,8 +161,8 @@ class TestWindowAnalysis {
 
         val bufferSize = (sampleRate * 0.1).toInt()
         var cursor = 0
-        val windowSize = (sampleRate*0.125).toInt()
-        val wa = WindowAnalysis(sampleRate, windowSize, windowSize/2)
+        val windowSize = (sampleRate * 0.125).toInt()
+        val wa = WindowAnalysis(sampleRate, windowSize, windowSize / 2)
         val spectrumDataArray = ArrayList<SpectrumData>()
         while (cursor < signal.size) {
             val windowSize = min(bufferSize, signal.size - cursor)

@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.shared.signal
+package org.noiseplanet.noisecapture.signal
 
 import IgnoreIos
 import kotlinx.coroutines.test.runTest
