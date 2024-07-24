@@ -65,7 +65,6 @@ import androidx.lifecycle.eventFlow
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import org.koin.core.logger.Logger
 import org.noiseplanet.noisecapture.audio.ANDROID_GAIN
 import org.noiseplanet.noisecapture.audio.WINDOW_TIME
 import org.noiseplanet.noisecapture.audio.signal.FAST_DECAY_RATE
@@ -97,9 +96,10 @@ val SPECTRUM_PLOT_SQUARE_OFFSET = 1.dp
 const val MIN_FREQUENCY_SPECTRUM = 100.0
 const val MAX_FREQUENCY_SPECTRUM = 16000.0
 
+// TODO: Refactor this screen
+@Suppress("LargeClass")
 class MeasurementScreen(
     private val measurementService: MeasurementService,
-    private val logger: Logger,
 ) {
 
     private var rangedB = 40.0
@@ -127,7 +127,8 @@ class MeasurementScreen(
         val tickStroke = 2.dp
         val tickLength = 4.dp
 
-
+        // TODO: Cleanup legend generation functions
+        @Suppress("LongParameterList")
         fun makeXLegend(
             textMeasurer: TextMeasurer,
             xValue: Double,
@@ -155,6 +156,8 @@ class MeasurementScreen(
             return LegendElement(textLayout, xPos, textPos, depth)
         }
 
+        // TODO: Cleanup legend generation functions
+        @Suppress("LongParameterList")
         fun recursiveLegendBuild(
             textMeasurer: TextMeasurer,
             timeValue: Double,
@@ -180,7 +183,6 @@ class MeasurementScreen(
                 )
             if (legendElement.textPos > minPixel && legendElement.xPos + legendElement.text.size.width / 2 < maxPixel) {
                 feedElements.add(legendElement)
-                val axisOrder = if (xLeftValue < xRightValue) 1 else -1
                 // left legend, + x seconds
                 recursiveLegendBuild(
                     textMeasurer,
@@ -305,7 +307,10 @@ class MeasurementScreen(
             )
             if (spectrumCanvasState.currentStripData.size.height != canvasSize.height) {
                 // reset buffer on resize or first draw
-                println("Clear ${spectrumCanvasState.cachedStrips.size} strips ${spectrumCanvasState.currentStripData.size.height} != ${canvasSize.height}")
+                println(
+                    "Clear ${spectrumCanvasState.cachedStrips.size} strips " +
+                        "${spectrumCanvasState.currentStripData.size.height} != ${canvasSize.height}"
+                )
                 spectrumCanvasState.currentStripData = SpectrogramBitmap.createSpectrogram(
                     canvasSize, scaleMode, spectrumCanvasState.currentStripData.sampleRate
                 )
@@ -321,9 +326,9 @@ class MeasurementScreen(
                     )
                     spectrumCanvasState.cachedStrips.reversed()
                         .forEachIndexed { index, imageBitmap ->
-                            val bitmapX =
-                                size.width - preparedSpectrogramOverlayBitmap.verticalLegendSize.width - ((index + 1) * SPECTROGRAM_STRIP_WIDTH
-                                    + bitmapOffset).toFloat()
+                            val bitmapX = size.width -
+                                preparedSpectrogramOverlayBitmap.verticalLegendSize.width -
+                                ((index + 1) * SPECTROGRAM_STRIP_WIDTH + bitmapOffset).toFloat()
                             drawImage(
                                 imageBitmap,
                                 topLeft = Offset(bitmapX, 0F)
@@ -334,9 +339,12 @@ class MeasurementScreen(
         }
     }
 
+    @Suppress("LongParameterList", "LongMethod")
     fun buildSpectrumAxisBitmap(
-        size: Size, density: Density, settings: SpectrumSettings,
-        values: SpectrumPlotData, textMeasurer: TextMeasurer,
+        size: Size, density: Density,
+        settings: SpectrumSettings,
+        values: SpectrumPlotData,
+        textMeasurer: TextMeasurer,
         colors: ColorScheme,
     ): PlotBitmapOverlay {
         val drawScope = CanvasDrawScope()
@@ -426,6 +434,7 @@ class MeasurementScreen(
         )
     }
 
+    @Suppress("LongParameterList", "LongMethod")
     fun buildSpectrogramAxisBitmap(
         size: Size,
         density: Density,
@@ -558,7 +567,9 @@ class MeasurementScreen(
         val colors = MaterialTheme.colorScheme
         val textMeasurer = rememberTextMeasurer()
         Canvas(modifier = Modifier.fillMaxSize()) {
-            if (preparedSpectrumOverlayBitmap.imageSize != size || preparedSpectrumOverlayBitmap.plotSettingsHashCode != settings.hashCode()) {
+            if (preparedSpectrumOverlayBitmap.imageSize != size ||
+                preparedSpectrumOverlayBitmap.plotSettingsHashCode != settings.hashCode()
+            ) {
                 preparedSpectrumOverlayBitmap = buildSpectrumAxisBitmap(
                     size,
                     Density(density),
@@ -892,7 +903,6 @@ class MeasurementScreen(
     @Composable
     fun Content(
         lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
-        modifier: Modifier = Modifier,
     ) {
         var bitmapOffset by remember { mutableStateOf(0) }
         var noiseLevel by remember { mutableStateOf(0.0) }

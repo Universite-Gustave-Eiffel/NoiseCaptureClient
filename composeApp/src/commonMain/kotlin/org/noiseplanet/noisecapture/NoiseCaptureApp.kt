@@ -95,7 +95,7 @@ fun NoiseCaptureApp(
                 //       - class or compose function as root?
                 //       - Inject dependencies in constructor or via Koin factories?
                 //       - What should be the package structure?
-                MeasurementScreen(measurementService = koinInject(), logger = koinInject())
+                MeasurementScreen(measurementService = koinInject())
                     .Content()
             }
         }

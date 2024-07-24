@@ -38,8 +38,6 @@ import noisecapture.composeapp.generated.resources.request_permission_button_set
 import noisecapture.composeapp.generated.resources.request_permission_explanation
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
-import org.koin.core.logger.Logger
-import org.koin.mp.KoinPlatformTools
 import org.noiseplanet.noisecapture.permission.PermissionService
 import org.noiseplanet.noisecapture.permission.PermissionState
 
@@ -55,7 +53,6 @@ import org.noiseplanet.noisecapture.permission.PermissionState
 fun RequestPermissionScreen(
     onClickNextButton: () -> Unit,
     permissionService: PermissionService = koinInject(),
-    logger: Logger = KoinPlatformTools.defaultLogger(),
     modifier: Modifier = Modifier,
 ) {
     val coroutineScope = rememberCoroutineScope()
