@@ -161,7 +161,8 @@ class TestWindowAnalysis {
 
         val bufferSize = (sampleRate * 0.1).toInt()
         var cursor = 0
-        val wa = WindowAnalysis(sampleRate, 4096, 2048)
+        val windowSize = (sampleRate*0.125).toInt()
+        val wa = WindowAnalysis(sampleRate, windowSize, windowSize/2)
         val spectrumDataArray = ArrayList<SpectrumData>()
         while (cursor < signal.size) {
             val windowSize = min(bufferSize, signal.size - cursor)
