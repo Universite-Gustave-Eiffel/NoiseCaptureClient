@@ -25,7 +25,7 @@ jobs:
         uses: ./.github/actions/job-set-up
 
       - name: Run tests
-        run: ./gradlew :shared:cleanTestDebugUnitTest :shared:testDebugUnitTest
+        run: ./gradlew :composeApp:cleanTestDebugUnitTest :composeApp:testDebugUnitTest
 
       - name: Upload reports
         if: always()
@@ -49,7 +49,7 @@ jobs:
         run: ./gradlew :androidApp:clean :androidApp:build
 
       - name: Run tests
-        run: ./gradlew :androidApp:cleanTestDebugUnitTest :shared:testDebugUnitTest
+        run: ./gradlew :androidApp:cleanTestDebugUnitTest :composeApp:testDebugUnitTest
 
       - name: Upload reports
         if: always()
@@ -81,7 +81,7 @@ jobs:
           cache-disabled: true
 
       - name: run tests
-        run: ./gradlew :shared:cleanIosSimulatorArm64Test :shared:iosSimulatorArm64Test
+        run: ./gradlew :composeApp:cleanIosSimulatorArm64Test :composeApp:iosSimulatorArm64Test
 
       - name: Upload reports
         if: always()
