@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.shared.signal
 
+import IgnoreIos
 import kotlinx.coroutines.test.runTest
 import noisecapture.composeapp.generated.resources.Res
 import org.jetbrains.compose.resources.ExperimentalResourceApi
@@ -1441,6 +1442,14 @@ class SpectrumChannelTest {
         assertEquals(expectedLevel, thirdOctaves[frequencies.indexOf(4000.0)], 0.1);
     }
 
+    /**
+     * TODO: Fix compose test resources on iOS
+     *       For the moment the build scripts only copy the main target resources to the simulator
+     *       so accessing test resources is not possible. It seems like it could be solved by
+     *       using cocoapods for providing the shared framework on iOS builds but I didn't manage
+     *       to get it to work yet.
+     */
+    @IgnoreIos
     @OptIn(ExperimentalResourceApi::class)
     @Test
     fun testSpeak() = runTest {

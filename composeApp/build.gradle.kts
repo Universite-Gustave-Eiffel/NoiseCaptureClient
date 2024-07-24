@@ -79,10 +79,7 @@ kotlin {
         commonTest.dependencies {
             implementation(kotlin("test"))
             implementation(libs.kotlinx.coroutines.test)
-
-            @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class) implementation(
-                compose.components.resources
-            )
+            implementation(compose.components.resources)
         }
     }
 }
