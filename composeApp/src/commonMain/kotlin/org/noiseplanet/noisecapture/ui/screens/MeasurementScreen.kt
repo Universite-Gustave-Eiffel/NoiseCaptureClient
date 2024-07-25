@@ -93,8 +93,6 @@ const val MAX_SHOWN_DBA_VALUE_SPECTRUM = 100.0
 val NOISE_LEVEL_FONT_SIZE = TextUnit(50F, TextUnitType.Sp)
 val SPECTRUM_PLOT_SQUARE_WIDTH = 10.dp
 val SPECTRUM_PLOT_SQUARE_OFFSET = 1.dp
-const val MIN_FREQUENCY_SPECTRUM = 100.0
-const val MAX_FREQUENCY_SPECTRUM = 16000.0
 
 // TODO: Refactor this screen
 @Suppress("LargeClass")
@@ -660,7 +658,7 @@ class MeasurementScreen(
         }
     }
 
-    @Suppress("LongParameterList", "LongMethod")
+    @Suppress("LongParameterList", "LongMethod", "SpreadOperator")
     @Composable
     fun spectrumPlot(
         modifier: Modifier,
@@ -706,7 +704,7 @@ class MeasurementScreen(
                     )
                 )
                 val splGradient =
-                    Brush.horizontalGradient(*arrayOf(*spectrumColorRamp), startX = 0F, endX = size.width)
+                    Brush.horizontalGradient(*spectrumColorRamp, startX = 0F, endX = size.width)
                 drawLine(
                     brush = splGradient,
                     start = Offset(maxYAxisWidth, barYOffset + barHeight / 2),
