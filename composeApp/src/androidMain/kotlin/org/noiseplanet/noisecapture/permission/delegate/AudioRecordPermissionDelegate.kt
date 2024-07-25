@@ -16,7 +16,7 @@ internal class AudioRecordPermissionDelegate(
 ) : PermissionDelegate {
 
     override suspend fun getPermissionState(): PermissionState {
-        return checkPermissions(context, audioRecordPermissions)
+        return activity.value.checkPermissions(audioRecordPermissions)
     }
 
     override suspend fun providePermission() {

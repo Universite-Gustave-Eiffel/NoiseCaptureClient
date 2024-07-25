@@ -345,6 +345,7 @@ class MeasurementScreen(
     /**
      * Generate bitmap of Axis (as it does not change between redraw of values)
      */
+    @Suppress("LongParameterList", "LongMethod")
     fun buildSpectrumAxisBitmap(
         size: Size, density: Density,
         settings: SpectrumSettings,
@@ -659,6 +660,7 @@ class MeasurementScreen(
         }
     }
 
+    @Suppress("LongParameterList", "LongMethod")
     @Composable
     fun spectrumPlot(
         modifier: Modifier,
@@ -704,7 +706,7 @@ class MeasurementScreen(
                     )
                 )
                 val splGradient =
-                    Brush.horizontalGradient(*spectrumColorRamp, startX = 0F, endX = size.width)
+                    Brush.horizontalGradient(*arrayOf(*spectrumColorRamp), startX = 0F, endX = size.width)
                 drawLine(
                     brush = splGradient,
                     start = Offset(maxYAxisWidth, barYOffset + barHeight / 2),
@@ -780,6 +782,7 @@ class MeasurementScreen(
         }
     }
 
+    @Suppress("LongParameterList", "LongMethod")
     @Composable
     fun measurementHeader(noiseLevel: Double) {
         val rightRoundedSquareShape: Shape = RoundedCornerShape(
@@ -902,6 +905,7 @@ class MeasurementScreen(
 
 
     @OptIn(ExperimentalFoundationApi::class)
+    @Suppress("LongParameterList", "LongMethod")
     @Composable
     fun Content(
         lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,

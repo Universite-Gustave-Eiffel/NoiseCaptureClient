@@ -20,7 +20,7 @@ internal class LocationBackgroundPermissionDelegate(
     override suspend fun getPermissionState(): PermissionState {
         return when (locationForegroundPermissionDelegate.getPermissionState()) {
             PermissionState.GRANTED ->
-                checkPermissions(context, backgroundLocationPermissions)
+                activity.value.checkPermissions(backgroundLocationPermissions)
 
             else -> PermissionState.NOT_DETERMINED
         }

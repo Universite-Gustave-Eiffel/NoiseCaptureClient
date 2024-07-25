@@ -9,6 +9,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.Settings
 import androidx.core.app.ActivityCompat
+import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionState
 
@@ -28,24 +29,28 @@ internal fun Context.openPage(
     }
 }
 
-internal fun checkPermissions(
-    context: Context,
+internal fun Activity.checkPermissions(
     permissions: List<String>,
 ): PermissionState {
     permissions.ifEmpty {
         return PermissionState.GRANTED
     } // no permissions needed
     val status: List<Int> = permissions.map {
-        context.checkSelfPermission(it)
+        this.checkSelfPermission(it)
+    }
+    val isOneDenied: Boolean = permissions.all() {
+        this.shouldShowRequestPermissionRationale(it)
     }
     val isAllGranted: Boolean = status.all {
         it == PackageManager.PERMISSION_GRANTED
     }
-    if (isAllGranted) {
-        return PermissionState.GRANTED
+    return if (isAllGranted) {
+        PermissionState.GRANTED
+    } else if(isOneDenied) {
+        PermissionState.DENIED
+    } else {
+        PermissionState.NOT_DETERMINED
     }
-
-    return PermissionState.DENIED
 }
 
 private const val REQUEST_PERMISSION_CODE = 100

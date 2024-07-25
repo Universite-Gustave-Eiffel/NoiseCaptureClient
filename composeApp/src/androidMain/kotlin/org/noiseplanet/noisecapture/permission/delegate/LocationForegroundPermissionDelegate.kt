@@ -17,7 +17,7 @@ internal class LocationForegroundPermissionDelegate(
 ) : PermissionDelegate {
 
     override suspend fun getPermissionState(): PermissionState {
-        return checkPermissions(context, fineLocationPermissions)
+        return activity.value.checkPermissions(fineLocationPermissions)
     }
 
     override suspend fun providePermission() {
