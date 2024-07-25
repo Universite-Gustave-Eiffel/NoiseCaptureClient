@@ -181,6 +181,7 @@ class MeasurementScreen(
                     formater,
                     xLeftValue < xRightValue
                 )
+            // Add sub axis element if the text does not overlap with neighboring texts
             if (legendElement.textPos > minPixel && legendElement.xPos + legendElement.text.size.width / 2 < maxPixel) {
                 feedElements.add(legendElement)
                 // left legend, + x seconds
@@ -245,6 +246,7 @@ class MeasurementScreen(
                 )
             legendElements.add(leftLegend)
             legendElements.add(rightLegend)
+            // Add axis texts between left and rightmost axis texts (until it overlaps)
             recursiveLegendBuild(
                 textMeasurer,
                 abs(leftValue - rightValue) / 2,
@@ -265,6 +267,7 @@ class MeasurementScreen(
                     legendDepthCount[it.depth] += 1
                 }
             }
+            // remove sub-axis texts with isolated depth (should produce same intervals between axis text)
             legendElements.removeAll {
                 it.depth > 0 && legendDepthCount[it.depth] != (2.0.pow(it.depth)).toInt()
             }
@@ -339,18 +342,19 @@ class MeasurementScreen(
         }
     }
 
-    @Suppress("LongParameterList", "LongMethod")
+    /**
+     * Generate bitmap of Axis (as it does not change between redraw of values)
+     */
     fun buildSpectrumAxisBitmap(
         size: Size, density: Density,
         settings: SpectrumSettings,
-        values: SpectrumPlotData,
         textMeasurer: TextMeasurer,
         colors: ColorScheme,
     ): PlotBitmapOverlay {
         val drawScope = CanvasDrawScope()
         val bitmap = ImageBitmap(size.width.toInt(), size.height.toInt())
         val canvas = androidx.compose.ui.graphics.Canvas(bitmap)
-        val legendTexts = List(values.nominalFrequencies.size) { frequencyIndex ->
+        val legendTexts = List(settings.nominalFrequencies.size) { frequencyIndex ->
             val textLayoutResult = textMeasurer.measure(buildAnnotatedString {
                 withStyle(
                     SpanStyle(
@@ -360,7 +364,7 @@ class MeasurementScreen(
                         )
                     )
                 )
-                { append(formatFrequency(values.nominalFrequencies[frequencyIndex].toInt())) }
+                { append(formatFrequency(settings.nominalFrequencies[frequencyIndex].toInt())) }
             })
             textLayoutResult
         }
@@ -393,7 +397,7 @@ class MeasurementScreen(
                         )
                     )
                 drawLine(
-                    color = colors.onPrimary, start = Offset(
+                    color = colors.onSurfaceVariant, start = Offset(
                         tickPos,
                         chartHeight
                     ),
@@ -411,16 +415,16 @@ class MeasurementScreen(
                     )
                 )
             }
-            val barHeight = chartHeight / values.spl.size - SPECTRUM_PLOT_SQUARE_OFFSET.toPx()
-            values.spl.forEachIndexed { index, spl ->
+            val barHeight = chartHeight / settings.nominalFrequencies.size - SPECTRUM_PLOT_SQUARE_OFFSET.toPx()
+            legendTexts.forEachIndexed { index, legendText ->
                 val barYOffset =
-                    (barHeight + SPECTRUM_PLOT_SQUARE_OFFSET.toPx()) * (values.spl.size - 1 - index)
+                    (barHeight + SPECTRUM_PLOT_SQUARE_OFFSET.toPx()) * (settings.nominalFrequencies.size - 1 - index)
                 drawText(
                     textMeasurer,
-                    legendTexts[index].layoutInput.text,
+                    legendText.layoutInput.text,
                     topLeft = Offset(
                         0F,
-                        barYOffset + barHeight / 2 - legendTexts[index].size.height / 2F
+                        barYOffset + barHeight / 2 - legendText.size.height / 2F
                     )
                 )
             }
@@ -492,7 +496,7 @@ class MeasurementScreen(
                         else -> (sheight - frequency / fMax * sheight).toInt()
                     }
                     drawLine(
-                        color = colors.onPrimary, start = Offset(
+                        color = colors.onSurfaceVariant, start = Offset(
                             size.width - legendWidth,
                             tickHeightPos.toFloat() - tickStroke.toPx() / 2
                         ),
@@ -530,7 +534,7 @@ class MeasurementScreen(
                             )
                         )
                     drawLine(
-                        color = colors.onPrimary, start = Offset(
+                        color = colors.onSurfaceVariant, start = Offset(
                             tickPos,
                             sheight.toFloat()
                         ),
@@ -561,8 +565,7 @@ class MeasurementScreen(
 
     @Composable
     fun spectrumAxis(
-        settings: SpectrumSettings,
-        values: SpectrumPlotData,
+        settings: SpectrumSettings
     ) {
         val colors = MaterialTheme.colorScheme
         val textMeasurer = rememberTextMeasurer()
@@ -574,7 +577,6 @@ class MeasurementScreen(
                     size,
                     Density(density),
                     settings,
-                    values,
                     textMeasurer,
                     colors
                 )
@@ -881,7 +883,7 @@ class MeasurementScreen(
 
                     MeasurementTabState.SPECTRUM -> Box(Modifier.fillMaxSize()) {
                         spectrumPlot(Modifier.fillMaxSize(), spectrumSettings, spectrumData)
-                        spectrumAxis(spectrumSettings, spectrumData)
+                        spectrumAxis(spectrumSettings)
                     }
 
                     else -> Surface(
