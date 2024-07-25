@@ -1,4 +1,4 @@
-pluginManagement {
+/*pluginManagement {
     repositories {
         google()
         gradlePluginPortal()
@@ -25,13 +25,40 @@ dependencyResolutionManagement {
         maven("https://repo.kotlin.link")
     }
 }
-
-rootProject.name = "NoiseCapture"
-
-enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
-
 include(":androidApp")
 include(":webApp")
 include(":ios")
 include(":shared")
-include(":permissions")
+include(":permissions")*/
+
+rootProject.name = "NoiseCapture"
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
+pluginManagement {
+    repositories {
+        google {
+            mavenContent {
+                includeGroupAndSubgroups("androidx")
+                includeGroupAndSubgroups("com.android")
+                includeGroupAndSubgroups("com.google")
+            }
+        }
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositories {
+        google {
+            mavenContent {
+                includeGroupAndSubgroups("androidx")
+                includeGroupAndSubgroups("com.android")
+                includeGroupAndSubgroups("com.google")
+            }
+        }
+        mavenCentral()
+    }
+}
+
+include(":composeApp")
