@@ -125,7 +125,7 @@ fun RequestPermissionScreen(
 
                     // If permission state is not yet determined, show a button to trigger
                     // the permission request popup
-                    AnimatedVisibility(permissionState == PermissionState.NOT_DETERMINED) {
+                    AnimatedVisibility(permissionState.notGranted()) {
                         Button(
                             onClick = {
                                 coroutineScope.launch {
