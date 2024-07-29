@@ -6,16 +6,12 @@ import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import org.koin.android.logger.AndroidLogger
-import org.koin.core.logger.Logger
 import org.koin.dsl.module
 
 /**
  * Android app entry point
  */
 class MainActivity : ComponentActivity() {
-
-    private val androidLogger = AndroidLogger()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,9 +21,6 @@ class MainActivity : ComponentActivity() {
                 module {
                     single<Context> { applicationContext }
                     single<Activity> { this@MainActivity }
-                },
-                module {
-                    single<Logger> { androidLogger }
                 },
                 platformModule
             )

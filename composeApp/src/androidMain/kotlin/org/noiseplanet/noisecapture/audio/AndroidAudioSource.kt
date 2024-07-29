@@ -4,14 +4,16 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.consumeAsFlow
-import org.koin.core.logger.Logger
+import org.noiseplanet.noisecapture.log.Logger
 
 /**
  * Android audio source implementation
  *
  * @param logger Logger instance
  */
-internal class AndroidAudioSource(private val logger: Logger) : AudioSource {
+internal class AndroidAudioSource(
+    private val logger: Logger,
+) : AudioSource {
 
     private var audioThread: Thread? = null
     private var audioRecorder: AudioRecorder? = null

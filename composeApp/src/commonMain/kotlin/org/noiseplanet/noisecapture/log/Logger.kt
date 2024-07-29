@@ -8,7 +8,7 @@ package org.noiseplanet.noisecapture.log
  */
 abstract class Logger(
     // TODO: Is there a way to infer class name at build time?
-    private val tag: String? = null,
+    protected val tag: String? = null,
 ) {
 
     /**
