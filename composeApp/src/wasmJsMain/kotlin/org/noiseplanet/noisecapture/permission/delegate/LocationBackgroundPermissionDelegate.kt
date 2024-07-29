@@ -1,15 +1,14 @@
 package org.noiseplanet.noisecapture.permission.delegate
 
-import org.koin.core.logger.Logger
-import org.koin.mp.KoinPlatformTools
 import org.noiseplanet.noisecapture.interop.createGeolocationOptions
 import org.noiseplanet.noisecapture.interop.navigator
+import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.permission.util.checkPermission
 
 internal class LocationBackgroundPermissionDelegate(
-    private val logger: Logger = KoinPlatformTools.defaultLogger(),
+    private val logger: Logger,
 ) : PermissionDelegate {
 
     private var permissionSate = PermissionState.NOT_DETERMINED
@@ -28,7 +27,7 @@ internal class LocationBackgroundPermissionDelegate(
                 permissionSate = PermissionState.GRANTED
             },
             error = { err ->
-                logger.warn("Geolocation ping failed: ${err.message}")
+                logger.warning("Geolocation ping failed: ${err.message}")
                 permissionSate = PermissionState.DENIED
             },
             options = createGeolocationOptions(enableHighAccuracy = true)

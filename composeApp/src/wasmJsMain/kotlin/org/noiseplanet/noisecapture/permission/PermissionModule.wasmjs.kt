@@ -9,9 +9,13 @@ import org.noiseplanet.noisecapture.permission.delegate.PermissionDelegate
 
 internal actual fun platformPermissionModule(): Module = module {
     single<PermissionDelegate>(named(Permission.RECORD_AUDIO.name)) {
-        AudioRecordPermissionDelegate()
+        AudioRecordPermissionDelegate(
+            logger = get()
+        )
     }
     single<PermissionDelegate>(named(Permission.LOCATION_BACKGROUND.name)) {
-        LocationBackgroundPermissionDelegate()
+        LocationBackgroundPermissionDelegate(
+            logger = get()
+        )
     }
 }
