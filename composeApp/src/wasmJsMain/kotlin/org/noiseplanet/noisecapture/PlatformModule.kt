@@ -8,7 +8,8 @@ import org.noiseplanet.noisecapture.log.Logger
 
 val platformModule: Module = module {
 
-    factory<Logger> { (tag: String) ->
+    factory<Logger> { params ->
+        val tag: String? = params.values.firstOrNull() as? String
         JSLogger(tag)
     }
 
