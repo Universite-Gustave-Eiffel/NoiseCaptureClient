@@ -1,17 +1,17 @@
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.window.ComposeUIViewController
-import org.koin.core.logger.PrintLogger
 import org.noiseplanet.noisecapture.initKoin
+import org.noiseplanet.noisecapture.platformModule
 
 /**
  * iOS application entry point
  */
-@Composable
+@Suppress("FunctionNaming")
 fun MainViewController() = ComposeUIViewController {
 
-    // TODO: Platform specific implementation
-    val logger = PrintLogger()
-
-    initKoin().logger(logger)
+    initKoin(
+        additionalModules = listOf(
+            platformModule
+        )
+    )
     App()
 }

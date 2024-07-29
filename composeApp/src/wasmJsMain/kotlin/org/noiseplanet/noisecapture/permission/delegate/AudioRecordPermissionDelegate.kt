@@ -1,18 +1,18 @@
 package org.noiseplanet.noisecapture.permission.delegate
 
 import kotlinx.browser.window
-import org.koin.core.logger.Level
-import org.koin.mp.KoinPlatformTools
 import org.noiseplanet.noisecapture.interop.AudioContext
+import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.permission.util.checkPermission
 import org.w3c.dom.mediacapture.MediaStreamConstraints
 
 
-class AudioRecordPermissionDelegate : PermissionDelegate {
+class AudioRecordPermissionDelegate(
+    private val logger: Logger,
+) : PermissionDelegate {
 
-    private val logger = KoinPlatformTools.defaultLogger(Level.DEBUG)
     private var permissionState = PermissionState.NOT_DETERMINED
 
     override suspend fun getPermissionState(): PermissionState {

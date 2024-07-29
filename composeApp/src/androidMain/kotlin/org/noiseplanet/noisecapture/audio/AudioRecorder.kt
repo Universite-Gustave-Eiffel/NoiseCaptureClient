@@ -8,7 +8,7 @@ import android.media.AudioRecord.ERROR_BAD_VALUE
 import android.media.MediaRecorder
 import android.os.Process
 import kotlinx.coroutines.channels.Channel
-import org.koin.core.logger.Logger
+import org.noiseplanet.noisecapture.log.Logger
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
