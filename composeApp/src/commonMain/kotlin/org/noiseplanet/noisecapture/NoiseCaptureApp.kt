@@ -1,7 +1,5 @@
 package org.noiseplanet.noisecapture
 
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -15,8 +13,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import org.koin.compose.koinInject
+import org.koin.core.parameter.parametersOf
+import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.ui.AppBar
 import org.noiseplanet.noisecapture.ui.NavigationRoute
+import org.noiseplanet.noisecapture.ui.navigation.Transitions
 import org.noiseplanet.noisecapture.ui.screens.HomeScreen
 import org.noiseplanet.noisecapture.ui.screens.MeasurementScreen
 import org.noiseplanet.noisecapture.ui.screens.PlatformInfoScreen
@@ -30,6 +31,7 @@ import org.noiseplanet.noisecapture.ui.screens.RequestPermissionScreen
 @Composable
 fun NoiseCaptureApp(
     navController: NavHostController = rememberNavController(),
+    logger: Logger = koinInject { parametersOf("NoiseCaptureApp") },
 ) {
     // Get current navigation back stack entry
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -47,25 +49,15 @@ fun NoiseCaptureApp(
             )
         }
     ) { innerPadding ->
-        // TODO: Configure NavHost in a separate file
-        // TODO: Use ease out curve for slide transitions
         // TODO: Handle swipe back gestures on iOS -> encapsulate UINavigationController?
         // TODO: Handle predictive back gestures on Android
         NavHost(
             navController = navController,
             startDestination = NavigationRoute.Home.name,
-            enterTransition = {
-                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(300))
-            },
-            exitTransition = {
-                slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(300))
-            },
-            popEnterTransition = {
-                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(300))
-            },
-            popExitTransition = {
-                slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(300))
-            },
+            enterTransition = Transitions.enterTransition,
+            exitTransition = Transitions.exitTransition,
+            popEnterTransition = Transitions.popEnterTransition,
+            popExitTransition = Transitions.popExitTransition,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
