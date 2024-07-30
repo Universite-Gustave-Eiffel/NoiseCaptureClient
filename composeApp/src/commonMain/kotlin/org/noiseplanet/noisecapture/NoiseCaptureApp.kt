@@ -30,9 +30,9 @@ import org.noiseplanet.noisecapture.ui.screens.RequestPermissionScreen
  */
 @Composable
 fun NoiseCaptureApp(
-    navController: NavHostController = rememberNavController(),
     logger: Logger = koinInject { parametersOf("NoiseCaptureApp") },
 ) {
+    val navController: NavHostController = rememberNavController()
     // Get current navigation back stack entry
     val backStackEntry by navController.currentBackStackEntryAsState()
     // Get the name of the current screen
@@ -50,7 +50,6 @@ fun NoiseCaptureApp(
         }
     ) { innerPadding ->
         // TODO: Handle swipe back gestures on iOS -> encapsulate UINavigationController?
-        // TODO: Handle predictive back gestures on Android
         NavHost(
             navController = navController,
             startDestination = NavigationRoute.Home.name,
