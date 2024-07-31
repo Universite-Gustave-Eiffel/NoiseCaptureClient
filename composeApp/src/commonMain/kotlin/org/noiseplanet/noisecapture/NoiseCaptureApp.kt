@@ -1,6 +1,5 @@
 package org.noiseplanet.noisecapture
 
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
@@ -20,7 +19,6 @@ import org.noiseplanet.noisecapture.ui.features.home.HomeScreen
 import org.noiseplanet.noisecapture.ui.navigation.Route
 import org.noiseplanet.noisecapture.ui.navigation.Transitions
 import org.noiseplanet.noisecapture.ui.screens.MeasurementScreen
-import org.noiseplanet.noisecapture.ui.screens.PlatformInfoScreen
 import org.noiseplanet.noisecapture.ui.screens.RequestPermissionScreen
 
 
@@ -64,11 +62,6 @@ fun NoiseCaptureApp(
             composable(route = Route.Home.name) {
                 // TODO: Silently check for permissions and bypass this step if they are already all granted
                 HomeScreen(navigationController = navController)
-            }
-            composable(route = Route.PlatformInfo.name) {
-                PlatformInfoScreen(
-                    modifier = Modifier.fillMaxHeight()
-                )
             }
             composable(route = Route.RequestPermission.name) {
                 RequestPermissionScreen(
