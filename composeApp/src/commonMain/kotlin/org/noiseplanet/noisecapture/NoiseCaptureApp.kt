@@ -16,9 +16,9 @@ import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.ui.AppBar
-import org.noiseplanet.noisecapture.ui.NavigationRoute
+import org.noiseplanet.noisecapture.ui.features.home.HomeScreen
+import org.noiseplanet.noisecapture.ui.navigation.Route
 import org.noiseplanet.noisecapture.ui.navigation.Transitions
-import org.noiseplanet.noisecapture.ui.screens.HomeScreen
 import org.noiseplanet.noisecapture.ui.screens.MeasurementScreen
 import org.noiseplanet.noisecapture.ui.screens.PlatformInfoScreen
 import org.noiseplanet.noisecapture.ui.screens.RequestPermissionScreen
@@ -36,8 +36,8 @@ fun NoiseCaptureApp(
     // Get current navigation back stack entry
     val backStackEntry by navController.currentBackStackEntryAsState()
     // Get the name of the current screen
-    val currentScreen = NavigationRoute.valueOf(
-        backStackEntry?.destination?.route ?: NavigationRoute.Home.name
+    val currentScreen = Route.valueOf(
+        backStackEntry?.destination?.route ?: Route.Home.name
     )
 
     Scaffold(
@@ -52,7 +52,7 @@ fun NoiseCaptureApp(
         // TODO: Handle swipe back gestures on iOS -> encapsulate UINavigationController?
         NavHost(
             navController = navController,
-            startDestination = NavigationRoute.Home.name,
+            startDestination = Route.Home.name,
             enterTransition = Transitions.enterTransition,
             exitTransition = Transitions.exitTransition,
             popEnterTransition = Transitions.popEnterTransition,
@@ -61,27 +61,23 @@ fun NoiseCaptureApp(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            composable(route = NavigationRoute.Home.name) {
-                HomeScreen(
-                    onClick = {
-                        // TODO: Silently check for permissions and bypass this step if they are already all granted
-                        navController.navigate(NavigationRoute.RequestPermission.name)
-                    },
-                )
+            composable(route = Route.Home.name) {
+                // TODO: Silently check for permissions and bypass this step if they are already all granted
+                HomeScreen(navigationController = navController)
             }
-            composable(route = NavigationRoute.PlatformInfo.name) {
+            composable(route = Route.PlatformInfo.name) {
                 PlatformInfoScreen(
                     modifier = Modifier.fillMaxHeight()
                 )
             }
-            composable(route = NavigationRoute.RequestPermission.name) {
+            composable(route = Route.RequestPermission.name) {
                 RequestPermissionScreen(
                     onClickNextButton = {
-                        navController.navigate(NavigationRoute.Measurement.name)
+                        navController.navigate(Route.Measurement.name)
                     }
                 )
             }
-            composable(route = NavigationRoute.Measurement.name) {
+            composable(route = Route.Measurement.name) {
                 // TODO: Decide of a standard for screens architecture:
                 //       - class or compose function as root?
                 //       - Inject dependencies in constructor or via Koin factories?

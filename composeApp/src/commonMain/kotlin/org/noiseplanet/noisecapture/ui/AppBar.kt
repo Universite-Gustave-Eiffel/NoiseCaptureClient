@@ -13,10 +13,11 @@ import androidx.compose.ui.Modifier
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.back_button
 import org.jetbrains.compose.resources.stringResource
+import org.noiseplanet.noisecapture.ui.navigation.Route
 
 @Composable
 fun AppBar(
-    currentScreen: NavigationRoute,
+    currentScreen: Route,
     canNavigateBack: Boolean,
     navigateUp: () -> Unit,
     modifier: Modifier = Modifier,

@@ -5,10 +5,9 @@ import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.dsl.module
 import org.noiseplanet.noisecapture.measurements.MeasurementService
-import org.noiseplanet.noisecapture.permission.DefaultPermissionService
-import org.noiseplanet.noisecapture.permission.PermissionService
 import org.noiseplanet.noisecapture.permission.defaultPermissionModule
 import org.noiseplanet.noisecapture.permission.platformPermissionModule
+import org.noiseplanet.noisecapture.ui.features.home.homeModule
 
 /**
  * Create root Koin application and register modules shared between platforms
@@ -20,12 +19,16 @@ fun initKoin(
         modules(
             module {
                 includes(additionalModules)
+            },
 
-                single<PermissionService> { DefaultPermissionService() }
+            module {
                 single<MeasurementService> { MeasurementService(audioSource = get()) }
             },
+
             defaultPermissionModule,
-            platformPermissionModule()
+            platformPermissionModule(),
+
+            homeModule,
         )
         createEagerInstances()
     }
