@@ -30,7 +30,7 @@ class HomeScreenViewModel : ViewModel(), KoinComponent {
 
     val menuItems: Array<MenuItemViewModel> = arrayOf(
         get<MenuItemViewModel> {
-            parametersOf(Res.string.menu_new_measurement, Icons.Filled.Mic, Route.Measurement)
+            parametersOf(Res.string.menu_new_measurement, Icons.Filled.Mic, Route.RequestPermission)
         },
         get<MenuItemViewModel> {
             parametersOf(Res.string.menu_history, Icons.Filled.History, null)

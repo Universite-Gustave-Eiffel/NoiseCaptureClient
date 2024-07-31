@@ -8,6 +8,7 @@ import org.noiseplanet.noisecapture.measurements.MeasurementService
 import org.noiseplanet.noisecapture.permission.defaultPermissionModule
 import org.noiseplanet.noisecapture.permission.platformPermissionModule
 import org.noiseplanet.noisecapture.ui.features.home.homeModule
+import org.noiseplanet.noisecapture.ui.features.permission.requestPermissionModule
 
 /**
  * Create root Koin application and register modules shared between platforms
@@ -29,6 +30,7 @@ fun initKoin(
             platformPermissionModule(),
 
             homeModule,
+            requestPermissionModule,
         )
         createEagerInstances()
     }

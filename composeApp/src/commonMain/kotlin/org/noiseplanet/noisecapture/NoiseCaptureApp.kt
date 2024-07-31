@@ -16,10 +16,10 @@ import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.ui.AppBar
 import org.noiseplanet.noisecapture.ui.features.home.HomeScreen
+import org.noiseplanet.noisecapture.ui.features.permission.RequestPermissionScreen
 import org.noiseplanet.noisecapture.ui.navigation.Route
 import org.noiseplanet.noisecapture.ui.navigation.Transitions
 import org.noiseplanet.noisecapture.ui.screens.MeasurementScreen
-import org.noiseplanet.noisecapture.ui.screens.RequestPermissionScreen
 
 
 /**
