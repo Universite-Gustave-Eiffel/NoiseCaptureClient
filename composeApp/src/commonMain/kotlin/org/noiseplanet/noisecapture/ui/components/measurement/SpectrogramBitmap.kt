@@ -1,10 +1,11 @@
 package org.noiseplanet.noisecapture.ui.components.measurement
 
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.IntSize
-import org.noiseplanet.noisecapture.audio.signal.SpectrumData
-import org.noiseplanet.noisecapture.measurements.FFT_SIZE
+import org.noiseplanet.noisecapture.audio.signal.window.SpectrumData
+import org.noiseplanet.noisecapture.measurements.DefaultMeasurementService.Companion.FFT_SIZE
+import org.noiseplanet.noisecapture.util.toComposeColor
+import org.noiseplanet.noisecapture.util.toLittleEndianBytes
 import kotlin.math.floor
 import kotlin.math.log10
 import kotlin.math.max
@@ -60,30 +61,10 @@ class SpectrogramBitmap {
             // Image data after this
         ).map { it.toByte() }.toByteArray()
 
-        const val sizeIndex = 2
-        const val widthIndex = 18
-        const val heightIndex = 22
-        const val rawSizeIndex = 34
-
-        fun parseColor(colorString: String): Int {
-            var color = colorString.substring(1).toLong(16)
-            if (colorString.length == 7) {
-                // Set the alpha value
-                color = color or 0x00000000ff000000L
-            } else {
-                require(colorString.length != 9) { "Unknown color" }
-            }
-            return color.toInt()
-        }
-
-        fun String.toComposeColor(): Color {
-            return Color(parseColor(this))
-        }
-
-        enum class ScaleMode {
-            SCALE_LINEAR,
-            SCALE_LOG
-        }
+        private const val SIZE_INDEX = 2
+        private const val WIDTH_INDEX = 18
+        private const val HEIGHT_INDEX = 22
+        private const val RAW_SIZE_INDEX = 34
 
         val frequencyLegendPositionLog =
             intArrayOf(63, 125, 250, 500, 1000, 2000, 4000, 8000, 16000, 24000)
@@ -91,6 +72,7 @@ class SpectrogramBitmap {
         val frequencyLegendPositionLinear = IntArray(24) { it * 1000 + 1000 }
 
         val colorRamp = arrayOf(
+            // TODO: Move this to color resources instead?
             "#303030".toComposeColor(),
             "#2D3C2D".toComposeColor(),
             "#2A482A".toComposeColor(),
@@ -119,10 +101,10 @@ class SpectrogramBitmap {
             bmpHeader.copyInto(byteArray)
             // fill with changing header data
             val rawPixelSize = size.width * size.height * Int.SIZE_BYTES
-            rawPixelSize.toLittleEndianBytes().copyInto(byteArray, rawSizeIndex)
-            (rawPixelSize + bmpHeader.size).toLittleEndianBytes().copyInto(byteArray, sizeIndex)
-            size.width.toLittleEndianBytes().copyInto(byteArray, widthIndex)
-            size.height.toLittleEndianBytes().copyInto(byteArray, heightIndex)
+            rawPixelSize.toLittleEndianBytes().copyInto(byteArray, RAW_SIZE_INDEX)
+            (rawPixelSize + bmpHeader.size).toLittleEndianBytes().copyInto(byteArray, SIZE_INDEX)
+            size.width.toLittleEndianBytes().copyInto(byteArray, WIDTH_INDEX)
+            size.height.toLittleEndianBytes().copyInto(byteArray, HEIGHT_INDEX)
             return SpectrogramDataModel(
                 size,
                 byteArray,
@@ -130,15 +112,11 @@ class SpectrogramBitmap {
                 sampleRate = sampleRate
             )
         }
+    }
 
-        /**
-         * Convert Int into little endian array of bytes
-         */
-        fun Int.toLittleEndianBytes(): ByteArray = byteArrayOf(
-            this.toByte(), this.ushr(8).toByte(),
-            this.ushr(16).toByte(), this.ushr(24).toByte()
-        )
-
+    enum class ScaleMode {
+        SCALE_LINEAR,
+        SCALE_LOG
     }
 
     /**
@@ -171,7 +149,9 @@ class SpectrogramBitmap {
 
         fun pushSpectrumToSpectrogramData(
             fftResult: SpectrumData,
-            mindB: Double, rangedB: Double, gain: Double,
+            mindB: Double,
+            rangedB: Double,
+            gain: Double,
         ) {
             // generate columns of pixels
             // merge power of each frequencies following the destination bitmap resolution

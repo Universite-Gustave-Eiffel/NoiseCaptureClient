@@ -1,5 +1,7 @@
-package org.noiseplanet.noisecapture.audio.signal
+package org.noiseplanet.noisecapture.audio.signal.bluestein
 
+import org.noiseplanet.noisecapture.audio.signal.fft.iFFT
+import org.noiseplanet.noisecapture.audio.signal.fft.nextPowerOfTwo
 import kotlin.math.PI
 import kotlin.math.atan
 import kotlin.math.cos
@@ -105,7 +107,7 @@ class Bluestein(private val windowLength: Int) {
     }
 
     init {
-        fft(ichirp.size / 2, ichirp)
+        org.noiseplanet.noisecapture.audio.signal.fft.fft(ichirp.size / 2, ichirp)
     }
 
     fun fft(x: DoubleArray): DoubleArray {
@@ -124,7 +126,7 @@ class Bluestein(private val windowLength: Int) {
             }
             realImagArray
         }
-        fft(xp.size / 2, xp)
+        org.noiseplanet.noisecapture.audio.signal.fft.fft(xp.size / 2, xp)
         val r = (0..<n2).foldIndexed(DoubleArray(n2 * 2)) { index, realImagArray, i ->
             val realIndex = index * 2
             val imIndex = index * 2 + 1

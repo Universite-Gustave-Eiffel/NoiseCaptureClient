@@ -1,5 +1,8 @@
-package org.noiseplanet.noisecapture.audio.signal
+package org.noiseplanet.noisecapture.audio.signal.bluestein
 
+import org.noiseplanet.noisecapture.audio.signal.fft.fftFloat
+import org.noiseplanet.noisecapture.audio.signal.fft.iFFTFloat
+import org.noiseplanet.noisecapture.audio.signal.fft.nextPowerOfTwo
 import kotlin.math.PI
 import kotlin.math.atan
 import kotlin.math.cos
@@ -32,6 +35,7 @@ class BluesteinFloat(private val windowLength: Int) {
 
         @Suppress("TooManyFunctions")
         data class Complex(val real: Float, val imag: Float) {
+
             operator fun plus(other: Complex) = Complex(real + other.real, imag + other.imag)
             operator fun minus(other: Complex) = Complex(real - other.real, imag - other.imag)
             operator fun times(other: Complex) = Complex(
@@ -110,7 +114,7 @@ class BluesteinFloat(private val windowLength: Int) {
         fftFloat(ichirp.size / 2, ichirp)
     }
 
-    fun fft(x : FloatArray) : FloatArray {
+    fun fft(x: FloatArray): FloatArray {
         val inputIm = x.size == windowLength * 2
         val xp = (0..<n2).foldIndexed(FloatArray(n2 * 2)) { index, realImagArray, i ->
             if (i < n) {
@@ -120,29 +124,31 @@ class BluesteinFloat(private val windowLength: Int) {
                 val c = Complex(
                     x[realIndex],
                     if (inputIm) x[imIndex] else 0F
-                ) * a.pow(-i) * Complex(chirp[chirpOffset + realIndex], chirp[chirpOffset + imIndex])
+                ) * a.pow(-i) * Complex(
+                    chirp[chirpOffset + realIndex],
+                    chirp[chirpOffset + imIndex]
+                )
                 realImagArray[index * 2] = c.real
                 realImagArray[index * 2 + 1] = c.imag
             }
             realImagArray
         }
-        fftFloat(xp.size/2, xp)
-        val r =  (0..< n2).foldIndexed(FloatArray(n2*2)) {
-                index, realImagArray, i ->
-            val realIndex = index*2
-            val imIndex = index*2+1
-            val c = Complex(xp[realIndex], xp[imIndex]) * Complex(ichirp[realIndex], ichirp[imIndex])
-            realImagArray[index*2] = c.real
-            realImagArray[index*2+1] = c.imag
+        fftFloat(xp.size / 2, xp)
+        val r = (0..<n2).foldIndexed(FloatArray(n2 * 2)) { index, realImagArray, i ->
+            val realIndex = index * 2
+            val imIndex = index * 2 + 1
+            val c =
+                Complex(xp[realIndex], xp[imIndex]) * Complex(ichirp[realIndex], ichirp[imIndex])
+            realImagArray[index * 2] = c.real
+            realImagArray[index * 2 + 1] = c.imag
             realImagArray
         }
-        iFFTFloat(r.size/2, r)
-        return (n-1..< m+n-1).foldIndexed(FloatArray(if(inputIm) windowLength*2 else windowLength)) {
-                index, realImagArray, i ->
-            val realIndex = i*2
-            val imIndex = i*2+1
+        iFFTFloat(r.size / 2, r)
+        return (n - 1..<m + n - 1).foldIndexed(FloatArray(if (inputIm) windowLength * 2 else windowLength)) { index, realImagArray, i ->
+            val realIndex = i * 2
+            val imIndex = i * 2 + 1
             val c = Complex(r[realIndex], r[imIndex]) * Complex(chirp[realIndex], chirp[imIndex])
-            if(inputIm) {
+            if (inputIm) {
                 realImagArray[index * 2] = c.real
                 realImagArray[index * 2 + 1] = c.imag
             } else {

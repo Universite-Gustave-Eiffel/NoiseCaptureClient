@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.audio.signal
+package org.noiseplanet.noisecapture.audio.signal.filter
 
 import kotlin.math.log10
 

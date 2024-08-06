@@ -1,16 +1,16 @@
 package org.noiseplanet.noisecapture.signal
 
 import kotlinx.coroutines.test.runTest
-import org.noiseplanet.noisecapture.audio.signal.Bluestein
 import org.noiseplanet.noisecapture.audio.signal.SpectrumChannel
-import org.noiseplanet.noisecapture.audio.signal.fft
-import org.noiseplanet.noisecapture.audio.signal.fftFloat
+import org.noiseplanet.noisecapture.audio.signal.bluestein.Bluestein
+import org.noiseplanet.noisecapture.audio.signal.fft.fft
+import org.noiseplanet.noisecapture.audio.signal.fft.fftFloat
+import org.noiseplanet.noisecapture.audio.signal.fft.nextPowerOfTwo
+import org.noiseplanet.noisecapture.audio.signal.fft.realFFT
+import org.noiseplanet.noisecapture.audio.signal.fft.realFFTFloat
+import org.noiseplanet.noisecapture.audio.signal.fft.realIFFT
+import org.noiseplanet.noisecapture.audio.signal.fft.realIFFTFloat
 import org.noiseplanet.noisecapture.audio.signal.get48000HZ
-import org.noiseplanet.noisecapture.audio.signal.nextPowerOfTwo
-import org.noiseplanet.noisecapture.audio.signal.realFFT
-import org.noiseplanet.noisecapture.audio.signal.realFFTFloat
-import org.noiseplanet.noisecapture.audio.signal.realIFFT
-import org.noiseplanet.noisecapture.audio.signal.realIFFTFloat
 import kotlin.math.PI
 import kotlin.math.ceil
 import kotlin.math.cos

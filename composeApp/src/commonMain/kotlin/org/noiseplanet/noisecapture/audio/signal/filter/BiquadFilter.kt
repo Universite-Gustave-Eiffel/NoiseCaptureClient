@@ -24,7 +24,7 @@
  * 14-20 Boulevard Newton Cite Descartes, Champs sur Marne F-77447 Marne la Vallee Cedex 2 FRANCE
  *  or write to scientific.computing@ifsttar.fr
  */
-package org.noiseplanet.noisecapture.audio.signal
+package org.noiseplanet.noisecapture.audio.signal.filter
 
 import kotlin.math.log10
 

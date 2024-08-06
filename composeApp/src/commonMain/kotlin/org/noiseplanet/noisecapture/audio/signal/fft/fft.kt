@@ -1,6 +1,6 @@
 @file:Suppress("LongMethod")
 
-package org.noiseplanet.noisecapture.audio.signal
+package org.noiseplanet.noisecapture.audio.signal.fft
 
 import kotlin.math.PI
 import kotlin.math.ceil
