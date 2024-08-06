@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import org.noiseplanet.noisecapture.ui.features.measurement.MAX_SHOWN_DBA_VALUE
 import org.noiseplanet.noisecapture.ui.features.measurement.MIN_SHOWN_DBA_VALUE
-import org.noiseplanet.noisecapture.ui.features.measurement.MeasurementStatistics
 import org.noiseplanet.noisecapture.ui.features.measurement.NOISE_LEVEL_FONT_SIZE
 import org.noiseplanet.noisecapture.ui.features.measurement.indicators.AcousticIndicatorsViewModel.Companion.VU_METER_DB_MAX
 import org.noiseplanet.noisecapture.ui.features.measurement.indicators.AcousticIndicatorsViewModel.Companion.VU_METER_DB_MIN
@@ -85,6 +84,7 @@ fun AcousticIndicatorsView(
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 listOf(
+                    // TODO: Localize this
                     MeasurementStatistics("Min", "-"),
                     MeasurementStatistics("Avg", "-"),
                     MeasurementStatistics("Max", "-")
@@ -118,7 +118,11 @@ private fun buildNoiseLevelText(noiseLevel: Double): AnnotatedString = buildAnno
     val colorIndex = noiseColorRampSpl.indexOfFirst { pair -> pair.first < noiseLevel }
     withStyle(
         style = SpanStyle(
-            color = if (inRangeNoise) noiseColorRampSpl[colorIndex].second else MaterialTheme.colorScheme.onPrimary,
+            color = if (inRangeNoise) {
+                noiseColorRampSpl[colorIndex].second
+            } else {
+                MaterialTheme.colorScheme.onPrimary
+            },
             fontSize = NOISE_LEVEL_FONT_SIZE,
             baselineShift = BaselineShift.None
         )
@@ -129,3 +133,8 @@ private fun buildNoiseLevelText(noiseLevel: Double): AnnotatedString = buildAnno
         }
     }
 }
+
+private data class MeasurementStatistics(
+    val label: String,
+    val value: String,
+)

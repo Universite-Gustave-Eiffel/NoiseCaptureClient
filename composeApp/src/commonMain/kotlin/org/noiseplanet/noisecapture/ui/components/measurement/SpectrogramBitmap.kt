@@ -1,10 +1,12 @@
 package org.noiseplanet.noisecapture.ui.components.measurement
 
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.IntSize
 import org.noiseplanet.noisecapture.audio.signal.window.SpectrumData
 import org.noiseplanet.noisecapture.measurements.DefaultMeasurementService.Companion.FFT_SIZE
 import org.noiseplanet.noisecapture.util.toComposeColor
+import org.noiseplanet.noisecapture.util.toImageBitmap
 import org.noiseplanet.noisecapture.util.toLittleEndianBytes
 import kotlin.math.floor
 import kotlin.math.log10
@@ -14,9 +16,16 @@ import kotlin.math.pow
 
 /**
  * Convert FFT result into spectrogram bitmap bytearray
- * TODO: Cleanup and document
+ * TODO: Document
  */
-class SpectrogramBitmap {
+data class SpectrogramBitmap(
+    val size: IntSize,
+    val scaleMode: ScaleMode,
+    var offset: Int = 0,
+    private val byteArray: ByteArray = ByteArray(
+        bmpHeader.size + Int.SIZE_BYTES * size.width * size.height
+    ),
+) {
 
     companion object {
 
@@ -91,27 +100,6 @@ class SpectrogramBitmap {
             "#F75500".toComposeColor(),
             "#FB2A00".toComposeColor(),
         )
-
-        fun createSpectrogram(
-            size: IntSize,
-            scaleMode: ScaleMode,
-            sampleRate: Double,
-        ): SpectrogramDataModel {
-            val byteArray = ByteArray(bmpHeader.size + Int.SIZE_BYTES * size.width * size.height)
-            bmpHeader.copyInto(byteArray)
-            // fill with changing header data
-            val rawPixelSize = size.width * size.height * Int.SIZE_BYTES
-            rawPixelSize.toLittleEndianBytes().copyInto(byteArray, RAW_SIZE_INDEX)
-            (rawPixelSize + bmpHeader.size).toLittleEndianBytes().copyInto(byteArray, SIZE_INDEX)
-            size.width.toLittleEndianBytes().copyInto(byteArray, WIDTH_INDEX)
-            size.height.toLittleEndianBytes().copyInto(byteArray, HEIGHT_INDEX)
-            return SpectrogramDataModel(
-                size,
-                byteArray,
-                scaleMode = scaleMode,
-                sampleRate = sampleRate
-            )
-        }
     }
 
     enum class ScaleMode {
@@ -119,88 +107,112 @@ class SpectrogramBitmap {
         SCALE_LOG
     }
 
+    init {
+        // Initialize bytes array
+        bmpHeader.copyInto(byteArray)
+        // fill with changing header data
+        val rawPixelSize = size.width * size.height * Int.SIZE_BYTES
+        rawPixelSize.toLittleEndianBytes().copyInto(byteArray, RAW_SIZE_INDEX)
+        (rawPixelSize + bmpHeader.size).toLittleEndianBytes().copyInto(byteArray, SIZE_INDEX)
+        size.width.toLittleEndianBytes().copyInto(byteArray, WIDTH_INDEX)
+        size.height.toLittleEndianBytes().copyInto(byteArray, HEIGHT_INDEX)
+    }
+
     /**
-     * @constructor
-     * @si
+     * Updates internal bytes array by interpreting the given [SpectrumData] value
+     *
+     * @param fftResult Input [SpectrumData]
+     * @param mindB Min dB value to determine color coding
+     * @param rangedB Range dB value to determine color coding
+     * @param gain Additional gain to apply to input data
+     * @param sampleRate Sample rate (Hz)
      */
-    data class SpectrogramDataModel(
-        val size: IntSize,
-        val byteArray: ByteArray,
-        var offset: Int = 0,
-        val scaleMode: ScaleMode,
-        val sampleRate: Double,
+    fun pushSpectrumData(
+        fftResult: SpectrumData,
+        mindB: Double,
+        rangedB: Double,
+        gain: Double,
     ) {
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other == null || this::class != other::class) return false
-
-            other as SpectrogramDataModel
-
-            if (size != other.size) return false
-            return byteArray.contentEquals(other.byteArray)
+        // generate columns of pixels
+        // merge power of each frequencies following the destination bitmap resolution
+        val sampleRate = fftResult.sampleRate.toDouble()
+        val hertzBySpectrumCell = sampleRate / FFT_SIZE.toDouble()
+        val frequencyLegendPosition = when (scaleMode) {
+            ScaleMode.SCALE_LOG -> frequencyLegendPositionLog
+            else -> frequencyLegendPositionLinear
         }
-
-        override fun hashCode(): Int {
-            var result = size.hashCode()
-            result = 31 * result + byteArray.contentHashCode()
-            return result
-        }
-
-        fun pushSpectrumToSpectrogramData(
-            fftResult: SpectrumData,
-            mindB: Double,
-            rangedB: Double,
-            gain: Double,
-        ) {
-            // generate columns of pixels
-            // merge power of each frequencies following the destination bitmap resolution
-            val hertzBySpectrumCell = sampleRate / FFT_SIZE.toDouble()
-            val frequencyLegendPosition = when (scaleMode) {
-                ScaleMode.SCALE_LOG -> frequencyLegendPositionLog
-                else -> frequencyLegendPositionLinear
+        var lastProcessFrequencyIndex = 0
+        val freqByPixel = fftResult.spectrum.size / size.height.toDouble()
+        for (pixel in 0..<size.height) {
+            var freqStart: Int
+            var freqEnd: Int
+            if (scaleMode == ScaleMode.SCALE_LOG) {
+                freqStart = lastProcessFrequencyIndex
+                val fMax = sampleRate / 2
+                val fMin = frequencyLegendPosition[0]
+                val r = fMax / fMin.toDouble()
+                val f = fMin * 10.0.pow(pixel * log10(r) / size.height)
+                val nextFrequencyIndex =
+                    min(fftResult.spectrum.size, (f / hertzBySpectrumCell).toInt())
+                freqEnd =
+                    min(fftResult.spectrum.size, (f / hertzBySpectrumCell).toInt() + 1)
+                lastProcessFrequencyIndex = min(fftResult.spectrum.size, nextFrequencyIndex)
+            } else {
+                freqStart = floor(pixel * freqByPixel).toInt()
+                freqEnd = min(
+                    (pixel + 1) * freqByPixel,
+                    fftResult.spectrum.size.toDouble()
+                ).toInt()
             }
-            var lastProcessFrequencyIndex = 0
-            val freqByPixel = fftResult.spectrum.size / size.height.toDouble()
-            for (pixel in 0..<size.height) {
-                var freqStart: Int
-                var freqEnd: Int
-                if (scaleMode == ScaleMode.SCALE_LOG) {
-                    freqStart = lastProcessFrequencyIndex
-                    val fMax = sampleRate / 2
-                    val fMin = frequencyLegendPosition[0]
-                    val r = fMax / fMin.toDouble()
-                    val f = fMin * 10.0.pow(pixel * log10(r) / size.height)
-                    val nextFrequencyIndex =
-                        min(fftResult.spectrum.size, (f / hertzBySpectrumCell).toInt())
-                    freqEnd =
-                        min(fftResult.spectrum.size, (f / hertzBySpectrumCell).toInt() + 1)
-                    lastProcessFrequencyIndex = min(fftResult.spectrum.size, nextFrequencyIndex)
-                } else {
-                    freqStart = floor(pixel * freqByPixel).toInt()
-                    freqEnd = min(
-                        (pixel + 1) * freqByPixel,
-                        fftResult.spectrum.size.toDouble()
-                    ).toInt()
-                }
-                var sumVal = 0.0
-                for (idFreq in freqStart..<freqEnd) {
-                    sumVal += 10.0.pow(fftResult.spectrum[idFreq] / 10.0)
-                }
-                sumVal = max(0.0, 10 * log10(sumVal / (freqEnd - freqStart)) + gain)
-                val colorIndex = min(
-                    colorRamp.size - 1, max(
-                        0, (((sumVal - mindB) / rangedB) *
-                            colorRamp.size).toInt()
-                    )
+            var sumVal = 0.0
+            for (idFreq in freqStart..<freqEnd) {
+                sumVal += 10.0.pow(fftResult.spectrum[idFreq] / 10.0)
+            }
+            sumVal = max(0.0, 10 * log10(sumVal / (freqEnd - freqStart)) + gain)
+            val colorIndex = min(
+                colorRamp.size - 1,
+                max(
+                    0,
+                    (((sumVal - mindB) / rangedB) * colorRamp.size).toInt()
                 )
-                val pixelColor = colorRamp[colorIndex].toArgb()
-                val columnOffset = offset % size.width
-                val pixelIndex = bmpHeader.size + size.width * Int.SIZE_BYTES *
-                    pixel + columnOffset * Int.SIZE_BYTES
-                pixelColor.toLittleEndianBytes().copyInto(byteArray, pixelIndex)
-            }
-            offset += 1
+            )
+            val pixelColor = colorRamp[colorIndex].toArgb()
+            val columnOffset = offset % size.width
+            val pixelIndex = bmpHeader.size + size.width * Int.SIZE_BYTES *
+                pixel + columnOffset * Int.SIZE_BYTES
+            pixelColor.toLittleEndianBytes().copyInto(byteArray, pixelIndex)
         }
+        offset += 1
+    }
+
+    /**
+     * Creates an ImageBitmap object from the internal bytes array
+     *
+     * @return [ImageBitmap] representation of internal data
+     */
+    fun toImageBitmap(): ImageBitmap {
+        return byteArray.toImageBitmap()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as SpectrogramBitmap
+
+        if (size != other.size) return false
+        if (scaleMode != other.scaleMode) return false
+        if (offset != other.offset) return false
+        if (!byteArray.contentEquals(other.byteArray)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = size.hashCode()
+        result = 31 * result + scaleMode.hashCode()
+        result = 31 * result + offset
+        result = 31 * result + byteArray.contentHashCode()
+        return result
     }
 }

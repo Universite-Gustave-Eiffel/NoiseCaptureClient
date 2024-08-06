@@ -25,16 +25,13 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
-import org.noiseplanet.noisecapture.ui.features.measurement.MeasurementScreen.Companion
-import org.noiseplanet.noisecapture.ui.features.measurement.MeasurementScreen.Companion.makeXLabels
-import org.noiseplanet.noisecapture.ui.features.measurement.MeasurementScreen.Companion.tickLength
-import org.noiseplanet.noisecapture.ui.features.measurement.MeasurementScreen.Companion.tickStroke
+import org.noiseplanet.noisecapture.ui.features.measurement.PlotAxisBuilder
 import org.noiseplanet.noisecapture.ui.features.measurement.PlotBitmapOverlay
 import org.noiseplanet.noisecapture.ui.features.measurement.SPECTRUM_PLOT_SQUARE_OFFSET
 import org.noiseplanet.noisecapture.ui.features.measurement.SPECTRUM_PLOT_SQUARE_WIDTH
-import org.noiseplanet.noisecapture.ui.features.measurement.formatFrequency
 import org.noiseplanet.noisecapture.ui.features.measurement.spectrum.SpectrumPlotViewModel.Companion.DBA_MAX
 import org.noiseplanet.noisecapture.ui.features.measurement.spectrum.SpectrumPlotViewModel.Companion.DBA_MIN
+import org.noiseplanet.noisecapture.util.toFrequencyString
 import kotlin.math.max
 import kotlin.math.min
 
@@ -70,11 +67,12 @@ fun SpectrumPlotView(
                 SPECTRUM_PLOT_SQUARE_OFFSET.toPx()
             )
         )
+        val axisBuilder = PlotAxisBuilder()
         val weightedBarWidth = 10.dp.toPx()
         val maxYAxisWidth = preparedSpectrumOverlayBitmap.verticalLegendSize.width
         val barMaxWidth: Float = size.width - maxYAxisWidth
         val maxXAxisHeight = preparedSpectrumOverlayBitmap.horizontalLegendSize.height
-        val chartHeight = (size.height - maxXAxisHeight - tickLength.toPx())
+        val chartHeight = (size.height - maxXAxisHeight - axisBuilder.tickLength.toPx())
         val barHeight = chartHeight / rawSpl.size - SPECTRUM_PLOT_SQUARE_OFFSET.toPx()
 
         rawSpl.forEachIndexed { index, spl ->
@@ -164,8 +162,9 @@ private fun buildSpectrumAxisBitmap(
                         TextUnitType.Sp
                     )
                 )
-            )
-            { append(formatFrequency(settings.nominalFrequencies[frequencyIndex].toInt())) }
+            ) {
+                append(settings.nominalFrequencies[frequencyIndex].toInt().toFrequencyString())
+            }
         })
         textLayoutResult
     }
@@ -178,23 +177,24 @@ private fun buildSpectrumAxisBitmap(
         canvas = canvas,
         size = size,
     ) {
+        val axisBuilder = PlotAxisBuilder()
         val maxYAxisWidth = (legendTexts.maxOfOrNull { it.size.width }) ?: 0
         verticalLegendSize = Size(maxYAxisWidth.toFloat(), size.height)
         val barMaxWidth: Float = size.width - maxYAxisWidth
-        val legendElements = makeXLabels(
+        val legendElements = axisBuilder.makeXLabels(
             textMeasurer, settings.minimumX, settings.maximumX, barMaxWidth,
-            Companion::noiseLevelAxisFormater
+            axisBuilder::noiseLevelAxisFormater
         )
         val maxXAxisHeight = (legendElements.maxOfOrNull { it.text.size.height }) ?: 0
         horizontalLegendSize = Size(size.width, maxXAxisHeight.toFloat())
-        val chartHeight = (size.height - maxXAxisHeight - tickLength.toPx())
+        val chartHeight = (size.height - maxXAxisHeight - axisBuilder.tickLength.toPx())
         legendElements.forEach { legendElement ->
             val tickPos =
                 maxYAxisWidth + max(
-                    tickStroke.toPx() / 2F,
+                    axisBuilder.tickStroke.toPx() / 2F,
                     min(
-                        barMaxWidth - tickStroke.toPx(),
-                        legendElement.xPos - tickStroke.toPx() / 2F
+                        barMaxWidth - axisBuilder.tickStroke.toPx(),
+                        legendElement.xPos - axisBuilder.tickStroke.toPx() / 2F
                     )
                 )
             drawLine(
@@ -204,15 +204,15 @@ private fun buildSpectrumAxisBitmap(
                 ),
                 end = Offset(
                     tickPos,
-                    chartHeight + tickLength.toPx()
+                    chartHeight + axisBuilder.tickLength.toPx()
                 ),
-                strokeWidth = tickStroke.toPx()
+                strokeWidth = axisBuilder.tickStroke.toPx()
             )
             drawText(
                 legendElement.text,
                 topLeft = Offset(
                     maxYAxisWidth + legendElement.textPos,
-                    chartHeight + tickLength.toPx()
+                    chartHeight + axisBuilder.tickLength.toPx()
                 )
             )
         }
