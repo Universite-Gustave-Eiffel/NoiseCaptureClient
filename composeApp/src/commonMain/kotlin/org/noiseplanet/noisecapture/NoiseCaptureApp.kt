@@ -71,12 +71,7 @@ fun NoiseCaptureApp(
                 )
             }
             composable(route = Route.Measurement.name) {
-                // TODO: Decide of a standard for screens architecture:
-                //       - class or compose function as root?
-                //       - Inject dependencies in constructor or via Koin factories?
-                //       - What should be the package structure?
-                MeasurementScreen(measurementService = koinInject())
-                    .Content()
+                MeasurementScreen()
             }
         }
     }

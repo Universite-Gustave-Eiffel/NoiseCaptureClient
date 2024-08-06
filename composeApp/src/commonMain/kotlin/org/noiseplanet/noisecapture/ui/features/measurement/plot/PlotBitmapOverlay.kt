@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.ui.features.measurement
+package org.noiseplanet.noisecapture.ui.features.measurement.plot
 
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ImageBitmap

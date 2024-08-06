@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.ui.features.measurement.spectrogram
+package org.noiseplanet.noisecapture.ui.features.measurement.plot.spectrogram
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,10 +24,10 @@ import androidx.compose.ui.unit.LayoutDirection
 import org.noiseplanet.noisecapture.measurements.DefaultMeasurementService.Companion.FFT_HOP
 import org.noiseplanet.noisecapture.ui.components.measurement.SpectrogramBitmap
 import org.noiseplanet.noisecapture.ui.features.measurement.DEFAULT_SAMPLE_RATE
-import org.noiseplanet.noisecapture.ui.features.measurement.PlotAxisBuilder
-import org.noiseplanet.noisecapture.ui.features.measurement.PlotBitmapOverlay
-import org.noiseplanet.noisecapture.ui.features.measurement.REFERENCE_LEGEND_TEXT
-import org.noiseplanet.noisecapture.ui.features.measurement.SPECTROGRAM_STRIP_WIDTH
+import org.noiseplanet.noisecapture.ui.features.measurement.plot.PlotAxisBuilder
+import org.noiseplanet.noisecapture.ui.features.measurement.plot.PlotBitmapOverlay
+import org.noiseplanet.noisecapture.ui.features.measurement.plot.spectrogram.SpectrogramPlotViewModel.Companion.REFERENCE_LEGEND_TEXT
+import org.noiseplanet.noisecapture.ui.features.measurement.plot.spectrogram.SpectrogramPlotViewModel.Companion.SPECTROGRAM_STRIP_WIDTH
 import org.noiseplanet.noisecapture.util.toFrequencyString
 import kotlin.math.log10
 import kotlin.math.max

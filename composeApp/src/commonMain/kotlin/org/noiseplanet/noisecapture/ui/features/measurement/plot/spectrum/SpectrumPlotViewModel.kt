@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.ui.features.measurement.spectrum
+package org.noiseplanet.noisecapture.ui.features.measurement.plot.spectrum
 
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel

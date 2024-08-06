@@ -14,7 +14,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
-import org.noiseplanet.noisecapture.ui.features.measurement.spectrum.SpectrumPlotViewModel.Companion.noiseColorRampSpl
+import org.noiseplanet.noisecapture.ui.features.measurement.plot.spectrum.SpectrumPlotViewModel.Companion.noiseColorRampSpl
 import kotlin.math.max
 import kotlin.math.min
 

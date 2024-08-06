@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.ui.features.measurement.spectrogram
+package org.noiseplanet.noisecapture.ui.features.measurement.plot.spectrogram
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.unit.IntSize
@@ -14,15 +14,20 @@ import kotlinx.coroutines.withContext
 import org.noiseplanet.noisecapture.audio.ANDROID_GAIN
 import org.noiseplanet.noisecapture.measurements.MeasurementsService
 import org.noiseplanet.noisecapture.ui.components.measurement.SpectrogramBitmap
-import org.noiseplanet.noisecapture.ui.features.measurement.SPECTROGRAM_STRIP_WIDTH
 
 class SpectrogramPlotViewModel(
     private val measurementsService: MeasurementsService,
 ) : ViewModel() {
 
-    private val rangedB = 40.0
-    private val mindB = 0.0
-    private val dbGain = ANDROID_GAIN
+    companion object {
+
+        private const val RANGE_DB = 40.0
+        private const val MIN_DB = 0.0
+        private const val DB_GAIN = ANDROID_GAIN // TODO: Platform dependant gain?
+
+        const val REFERENCE_LEGEND_TEXT = " +99s "
+        const val SPECTROGRAM_STRIP_WIDTH = 32
+    }
 
     private var canvasSize: IntSize = IntSize.Zero
     private val spectrogramBitmaps = mutableStateListOf<SpectrogramBitmap>()
@@ -35,6 +40,7 @@ class SpectrogramPlotViewModel(
 
     val currentStripData: SpectrogramBitmap?
         get() = spectrogramBitmaps.lastOrNull()
+
     val spectrogramBitmapFlow: StateFlow<List<SpectrogramBitmap>>
         get() = MutableStateFlow(spectrogramBitmaps)
 
@@ -48,7 +54,7 @@ class SpectrogramPlotViewModel(
                         // Update current strip data
                         val newStripData = currentStripData.copy()
                         newStripData.pushSpectrumData(
-                            spectrumData, mindB, rangedB, dbGain
+                            spectrumData, MIN_DB, RANGE_DB, DB_GAIN
                         )
                         spectrogramBitmaps[spectrogramBitmaps.size - 1] = newStripData
 

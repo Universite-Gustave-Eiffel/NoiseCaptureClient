@@ -3,8 +3,8 @@ package org.noiseplanet.noisecapture.ui.features.measurement
 import org.koin.compose.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 import org.noiseplanet.noisecapture.ui.features.measurement.indicators.AcousticIndicatorsViewModel
-import org.noiseplanet.noisecapture.ui.features.measurement.spectrogram.SpectrogramPlotViewModel
-import org.noiseplanet.noisecapture.ui.features.measurement.spectrum.SpectrumPlotViewModel
+import org.noiseplanet.noisecapture.ui.features.measurement.plot.spectrogram.SpectrogramPlotViewModel
+import org.noiseplanet.noisecapture.ui.features.measurement.plot.spectrum.SpectrumPlotViewModel
 
 
 val measurementModule = module {
@@ -19,5 +19,9 @@ val measurementModule = module {
 
     viewModel {
         SpectrogramPlotViewModel(measurementsService = get())
+    }
+
+    viewModel {
+        MeasurementScreenViewModel(measurementsService = get())
     }
 }

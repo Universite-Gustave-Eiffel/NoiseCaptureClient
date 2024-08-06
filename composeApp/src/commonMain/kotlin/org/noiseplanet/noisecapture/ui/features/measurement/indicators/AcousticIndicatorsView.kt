@@ -24,12 +24,10 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
-import org.noiseplanet.noisecapture.ui.features.measurement.MAX_SHOWN_DBA_VALUE
-import org.noiseplanet.noisecapture.ui.features.measurement.MIN_SHOWN_DBA_VALUE
 import org.noiseplanet.noisecapture.ui.features.measurement.NOISE_LEVEL_FONT_SIZE
 import org.noiseplanet.noisecapture.ui.features.measurement.indicators.AcousticIndicatorsViewModel.Companion.VU_METER_DB_MAX
 import org.noiseplanet.noisecapture.ui.features.measurement.indicators.AcousticIndicatorsViewModel.Companion.VU_METER_DB_MIN
-import org.noiseplanet.noisecapture.ui.features.measurement.spectrum.SpectrumPlotViewModel.Companion.noiseColorRampSpl
+import org.noiseplanet.noisecapture.ui.features.measurement.plot.spectrum.SpectrumPlotViewModel.Companion.noiseColorRampSpl
 import kotlin.math.round
 
 
@@ -114,7 +112,7 @@ fun AcousticIndicatorsView(
 
 @Composable
 private fun buildNoiseLevelText(noiseLevel: Double): AnnotatedString = buildAnnotatedString {
-    val inRangeNoise = noiseLevel > MIN_SHOWN_DBA_VALUE && noiseLevel < MAX_SHOWN_DBA_VALUE
+    val inRangeNoise = noiseLevel > VU_METER_DB_MIN && noiseLevel < VU_METER_DB_MAX
     val colorIndex = noiseColorRampSpl.indexOfFirst { pair -> pair.first < noiseLevel }
     withStyle(
         style = SpanStyle(
