@@ -1,22 +1,24 @@
 package org.noiseplanet.noisecapture.ui.features.measurement.indicators
 
-import androidx.compose.foundation.Canvas
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.drawText
-import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
+import androidx.compose.ui.unit.dp
 import org.noiseplanet.noisecapture.ui.features.measurement.plot.spectrum.SpectrumPlotViewModel.Companion.noiseColorRampSpl
-import kotlin.math.max
-import kotlin.math.min
+
+private val BAR_HEIGHT: Dp = 32.dp
 
 @Composable
 fun VuMeter(
@@ -26,52 +28,29 @@ fun VuMeter(
     value: Double,
     modifier: Modifier = Modifier,
 ) {
-    val color = MaterialTheme.colorScheme
-    val textMeasurer = rememberTextMeasurer()
+    val valueRatio = (value - minimum) / (maximum - minimum)
+    val colorIndex = noiseColorRampSpl.indexOfFirst { pair -> pair.first < value }
+    val color = noiseColorRampSpl[colorIndex].second
 
-    // TODO: Rewrite this using Compose
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
 
-    Canvas(modifier = modifier) {
-        // x axis labels
-        var maxHeight = 0
-        ticks.forEach { value ->
-            val textLayoutResult = textMeasurer.measure(buildAnnotatedString {
-                withStyle(
-                    SpanStyle(
-                        fontSize = TextUnit(
-                            10F,
-                            TextUnitType.Sp
-                        )
-                    )
-                )
-                { append("$value") }
-            })
-            maxHeight = max(textLayoutResult.size.height, maxHeight)
-            val labelRatio =
-                max(0.0, (value - minimum) / (maximum - minimum))
-            val xPosition = min(
-                size.width - textLayoutResult.size.width,
-                max(
-                    0F,
-                    (size.width * labelRatio - textLayoutResult.size.width / 2).toFloat()
-                )
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(valueRatio.toFloat())
+                    .height(BAR_HEIGHT)
+                    .clip(RoundedCornerShape(percent = 50))
+                    .background(color)
             )
-            drawText(textLayoutResult, topLeft = Offset(xPosition, 0F))
         }
-        val barHeight = size.height - maxHeight
-        drawRoundRect(
-            color = color.background,
-            topLeft = Offset(0F, maxHeight.toFloat()),
-            cornerRadius = CornerRadius(barHeight / 2, barHeight / 2),
-            size = Size(size.width, barHeight)
-        )
-        val valueRatio = (value - minimum) / (maximum - minimum)
-        val colorIndex = noiseColorRampSpl.indexOfFirst { pair -> pair.first < value }
-        drawRoundRect(
-            color = noiseColorRampSpl[colorIndex].second,
-            topLeft = Offset(0F, maxHeight.toFloat()),
-            cornerRadius = CornerRadius(barHeight / 2, barHeight / 2),
-            size = Size((size.width * valueRatio).toFloat(), barHeight)
-        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            ticks.forEach {
+                Text(text = "$it", fontSize = TextUnit(10F, TextUnitType.Sp))
+            }
+        }
     }
 }
