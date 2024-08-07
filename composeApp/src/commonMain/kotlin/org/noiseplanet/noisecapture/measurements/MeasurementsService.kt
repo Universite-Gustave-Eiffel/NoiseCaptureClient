@@ -126,16 +126,11 @@ class DefaultMeasurementService(
                         ?.forEach {
                             spectrumDataFlow.tryEmit(it)
                         }
-
                 }
         }
     }
 
     override fun stopRecordingAudio() {
-        if (audioJob == null || audioJob?.isActive == false) {
-            logger.debug("Audio recording is already stopped. Don't stop again.")
-            return
-        }
         audioJob?.cancel()
         audioSource.release()
     }

@@ -12,11 +12,13 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.noiseplanet.noisecapture.audio.ANDROID_GAIN
+import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.measurements.MeasurementsService
 import org.noiseplanet.noisecapture.ui.components.measurement.SpectrogramBitmap
 
 class SpectrogramPlotViewModel(
     private val measurementsService: MeasurementsService,
+    private val logger: Logger,
 ) : ViewModel() {
 
     companion object {
@@ -67,7 +69,10 @@ class SpectrogramPlotViewModel(
                             withContext(Dispatchers.Main) {
                                 spectrogramBitmaps.add(
                                     SpectrogramBitmap(
-                                        size = canvasSize,
+                                        size = IntSize(
+                                            width = SPECTROGRAM_STRIP_WIDTH,
+                                            height = canvasSize.height,
+                                        ),
                                         scaleMode = scaleMode,
                                     )
                                 )
@@ -88,6 +93,9 @@ class SpectrogramPlotViewModel(
         if (newSize == canvasSize) {
             return
         }
+
+        logger.debug("Updating spectrogram canvas size: [W: ${newSize.width}, H: ${newSize.height}]")
+
         canvasSize = newSize
         spectrogramBitmaps.clear()
         spectrogramBitmaps.add(

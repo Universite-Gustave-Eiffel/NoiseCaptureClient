@@ -21,6 +21,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.toSize
 import org.noiseplanet.noisecapture.measurements.DefaultMeasurementService.Companion.FFT_HOP
 import org.noiseplanet.noisecapture.ui.components.measurement.SpectrogramBitmap
 import org.noiseplanet.noisecapture.ui.features.measurement.DEFAULT_SAMPLE_RATE
@@ -60,18 +61,12 @@ fun SpectrogramPlotView(
             (size.width - preparedSpectrogramOverlayBitmap.verticalLegendSize.width).toInt(),
             (size.height - preparedSpectrogramOverlayBitmap.horizontalLegendSize.height).toInt()
         )
-        val canvasSize = IntSize(
-            SPECTROGRAM_STRIP_WIDTH,
-            spectrogramCanvasSize.height
-        )
+        viewModel.updateCanvasSize(spectrogramCanvasSize)
+
         drawRect(
             color = SpectrogramBitmap.colorRamp[0],
-            size = Size(
-                size.width - preparedSpectrogramOverlayBitmap.verticalLegendSize.width,
-                canvasSize.height.toFloat()
-            )
+            size = spectrogramCanvasSize.toSize()
         )
-        viewModel.updateCanvasSize(spectrogramCanvasSize)
         viewModel.currentStripData?.let { currentStripData ->
             val offset = currentStripData.offset
             spectrogramBitmaps.reversed().forEachIndexed { index, spectrogramBitmap ->
