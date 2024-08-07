@@ -107,15 +107,11 @@ data class SpectrogramBitmap(
         SCALE_LOG
     }
 
+    private var cachedBitmap: ImageBitmap? = null
+    private var cachedOffset: Int = -1
+
     init {
-        // Initialize bytes array
-        bmpHeader.copyInto(byteArray)
-        // fill with changing header data
-        val rawPixelSize = size.width * size.height * Int.SIZE_BYTES
-        rawPixelSize.toLittleEndianBytes().copyInto(byteArray, RAW_SIZE_INDEX)
-        (rawPixelSize + bmpHeader.size).toLittleEndianBytes().copyInto(byteArray, SIZE_INDEX)
-        size.width.toLittleEndianBytes().copyInto(byteArray, WIDTH_INDEX)
-        size.height.toLittleEndianBytes().copyInto(byteArray, HEIGHT_INDEX)
+        initializeBytesArray()
     }
 
     /**
@@ -191,7 +187,24 @@ data class SpectrogramBitmap(
      * @return [ImageBitmap] representation of internal data
      */
     fun toImageBitmap(): ImageBitmap {
-        return byteArray.toImageBitmap()
+        if (cachedBitmap == null || offset != cachedOffset) {
+            cachedBitmap = byteArray.toImageBitmap()
+            cachedOffset = offset
+        }
+        return cachedBitmap ?: byteArray.toImageBitmap()
+    }
+
+    /**
+     * Initializes bytes array with bitmap headers
+     */
+    private fun initializeBytesArray() {
+        bmpHeader.copyInto(byteArray)
+        // fill with changing header data
+        val rawPixelSize = size.width * size.height * Int.SIZE_BYTES
+        rawPixelSize.toLittleEndianBytes().copyInto(byteArray, RAW_SIZE_INDEX)
+        (rawPixelSize + bmpHeader.size).toLittleEndianBytes().copyInto(byteArray, SIZE_INDEX)
+        size.width.toLittleEndianBytes().copyInto(byteArray, WIDTH_INDEX)
+        size.height.toLittleEndianBytes().copyInto(byteArray, HEIGHT_INDEX)
     }
 
     override fun equals(other: Any?): Boolean {
