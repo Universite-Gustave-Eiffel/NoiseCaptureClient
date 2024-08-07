@@ -144,17 +144,21 @@ class BluesteinFloat(private val windowLength: Int) {
             realImagArray
         }
         iFFTFloat(r.size / 2, r)
-        return (n - 1..<m + n - 1).foldIndexed(FloatArray(if (inputIm) windowLength * 2 else windowLength)) { index, realImagArray, i ->
-            val realIndex = i * 2
-            val imIndex = i * 2 + 1
-            val c = Complex(r[realIndex], r[imIndex]) * Complex(chirp[realIndex], chirp[imIndex])
-            if (inputIm) {
-                realImagArray[index * 2] = c.real
-                realImagArray[index * 2 + 1] = c.imag
-            } else {
-                realImagArray[index] = c.real
+        return (n - 1..<m + n - 1)
+            .foldIndexed(
+                FloatArray(if (inputIm) windowLength * 2 else windowLength)
+            ) { index, realImagArray, i ->
+                val realIndex = i * 2
+                val imIndex = i * 2 + 1
+                val c =
+                    Complex(r[realIndex], r[imIndex]) * Complex(chirp[realIndex], chirp[imIndex])
+                if (inputIm) {
+                    realImagArray[index * 2] = c.real
+                    realImagArray[index * 2 + 1] = c.imag
+                } else {
+                    realImagArray[index] = c.real
+                }
+                realImagArray
             }
-            realImagArray
-        }
     }
 }

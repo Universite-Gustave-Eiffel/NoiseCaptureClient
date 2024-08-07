@@ -11,9 +11,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import org.koin.compose.koinInject
-import org.koin.core.parameter.parametersOf
-import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.ui.AppBar
 import org.noiseplanet.noisecapture.ui.features.home.HomeScreen
 import org.noiseplanet.noisecapture.ui.features.measurement.MeasurementScreen
@@ -27,9 +24,7 @@ import org.noiseplanet.noisecapture.ui.navigation.Transitions
  * Currently handles the navigation stack, and navigation bar management.
  */
 @Composable
-fun NoiseCaptureApp(
-    logger: Logger = koinInject { parametersOf("NoiseCaptureApp") },
-) {
+fun NoiseCaptureApp() {
     val navController: NavHostController = rememberNavController()
     // Get current navigation back stack entry
     val backStackEntry by navController.currentBackStackEntryAsState()

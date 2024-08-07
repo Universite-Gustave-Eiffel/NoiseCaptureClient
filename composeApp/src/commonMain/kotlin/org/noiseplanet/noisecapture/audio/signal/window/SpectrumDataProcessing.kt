@@ -148,6 +148,7 @@ class SpectrumDataProcessing(
         }
     }
 
+    @Suppress("UnusedPrivateMember") // Unused for now but might come in handy later
     private fun processWindowDouble(window: Window): DoubleArray {
         val fftWindowSize = nextPowerOfTwo(windowSize)
         val fftWindow = DoubleArray(fftWindowSize)
