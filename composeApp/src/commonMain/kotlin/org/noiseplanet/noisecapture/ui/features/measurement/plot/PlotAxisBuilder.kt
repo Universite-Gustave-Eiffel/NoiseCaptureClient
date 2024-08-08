@@ -5,7 +5,6 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import org.noiseplanet.noisecapture.ui.components.measurement.LegendElement
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min

@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.ui.components.measurement
+package org.noiseplanet.noisecapture.ui.features.measurement.plot.spectrogram
 
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toArgb
