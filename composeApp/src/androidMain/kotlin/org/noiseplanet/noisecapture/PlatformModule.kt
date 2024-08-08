@@ -3,6 +3,7 @@ package org.noiseplanet.noisecapture
 import AndroidLogger
 
 import org.koin.core.module.Module
+import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
 import org.noiseplanet.noisecapture.audio.AndroidAudioSource
 import org.noiseplanet.noisecapture.audio.AudioSource
@@ -18,5 +19,9 @@ val platformModule: Module = module {
         AndroidLogger(tag)
     }
 
-    factory<AudioSource> { AndroidAudioSource(logger = get()) }
+    factory<AudioSource> {
+        AndroidAudioSource(logger = get {
+            parametersOf("AudioSource")
+        })
+    }
 }
