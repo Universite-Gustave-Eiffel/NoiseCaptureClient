@@ -47,7 +47,7 @@ internal class IOSAudioSource(
     )
 
     private val audioSession = AVAudioSession.sharedInstance()
-    private val audioEngine = AVAudioEngine()
+    private var audioEngine: AVAudioEngine? = null
 
 
     override suspend fun setup(): Flow<AudioSamples> {
@@ -57,6 +57,7 @@ internal class IOSAudioSource(
             logger.error("Error during audio source setup", e)
         }
 
+        val audioEngine = AVAudioEngine()
         val inputNode = audioEngine.inputNode
         val busNumber: ULong = 0u // Mono input
 
@@ -82,14 +83,26 @@ internal class IOSAudioSource(
             logger.debug("AVAudioEngine is now running")
         } catch (e: IllegalStateException) {
             logger.error("Error setting up audio source", e)
-            // TODO: Retry?
         }
+
+        // Keep a reference to audio engine to be able to stop it afterwards
+        this.audioEngine = audioEngine
 
         return audioSamplesChannel.receiveAsFlow()
     }
 
     override fun release() {
-        audioEngine.stop()
+        // Stop audio engine...
+        audioEngine?.stop()
+        // ... and audio session
+        memScoped {
+            val error: ObjCObjectVar<NSError?> = alloc()
+            audioSession.setActive(
+                active = false,
+                error = error.ptr
+            )
+            checkNoError(error.value) { "Error while stopping AVAudioSession" }
+        }
     }
 
     override fun getMicrophoneLocation(): AudioSource.MicrophoneLocation {
@@ -131,6 +144,9 @@ internal class IOSAudioSource(
         }
     }
 
+    /**
+     * Setup and activate [AVAudioSession].
+     */
     private fun setupAudioSession() {
         logger.debug("Starting AVAudioSession...")
 
