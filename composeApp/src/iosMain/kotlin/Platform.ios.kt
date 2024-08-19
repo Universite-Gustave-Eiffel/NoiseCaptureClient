@@ -1,3 +1,4 @@
+import org.noiseplanet.noisecapture.permission.Permission
 import platform.UIKit.UIDevice
 
 @Suppress("MatchingDeclarationName")
@@ -5,6 +6,15 @@ class IOSPlatform : Platform {
 
     override val name: String =
         UIDevice.currentDevice.systemName() + " " + UIDevice.currentDevice.systemVersion
+
+    override val requiredPermissions: List<Permission>
+        // We can't control laptop settings on the web so we don't
+        // check if location services are on. It will be part of the
+        // location background permission check.
+        get() = listOf(
+            Permission.RECORD_AUDIO,
+//            Permission.LOCATION_BACKGROUND
+        )
 }
 
 actual fun getPlatform(): Platform = IOSPlatform()

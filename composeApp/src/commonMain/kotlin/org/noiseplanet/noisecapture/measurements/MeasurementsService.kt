@@ -99,7 +99,7 @@ class DefaultMeasurementService(
         }
         logger.debug("Starting recording audio samples...")
         // Start recording and processing audio samples in a background thread
-        audioJob = coroutineScope.launch {
+        audioJob = coroutineScope.launch(Dispatchers.Default) {
             audioSource.setup()
                 .flowOn(Dispatchers.Default)
                 .collect { audioSamples ->
@@ -131,8 +131,10 @@ class DefaultMeasurementService(
     }
 
     override fun stopRecordingAudio() {
-        audioJob?.cancel()
-        audioSource.release()
+        coroutineScope.launch(Dispatchers.Default) {
+            audioJob?.cancel()
+            audioSource.release()
+        }
     }
 
     override fun getAcousticIndicatorsFlow(): Flow<AcousticIndicatorsData> {

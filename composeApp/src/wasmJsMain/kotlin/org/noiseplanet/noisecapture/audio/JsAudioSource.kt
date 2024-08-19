@@ -13,14 +13,17 @@ import org.noiseplanet.noisecapture.interop.ScriptProcessorNode
 import org.noiseplanet.noisecapture.log.Logger
 import org.w3c.dom.mediacapture.MediaStreamConstraints
 
-const val SAMPLES_BUFFER_SIZE = 1024
-
 /**
  * TODO: Document, cleanup, use platform logger instead of println, get rid of force unwraps (!!)
  */
 internal class JsAudioSource(
     private val logger: Logger,
 ) : AudioSource {
+
+    companion object {
+
+        const val SAMPLES_BUFFER_SIZE = 1024
+    }
 
     private var audioContext: AudioContext? = null
     private var micNode: AudioNode? = null

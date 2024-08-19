@@ -1,7 +1,10 @@
 package org.noiseplanet.noisecapture
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -53,6 +56,7 @@ fun NoiseCaptureApp() {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .windowInsetsPadding(WindowInsets.navigationBars)
         ) {
             composable(route = Route.Home.name) {
                 // TODO: Silently check for permissions and bypass this step if they are already all granted
