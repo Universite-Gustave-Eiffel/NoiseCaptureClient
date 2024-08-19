@@ -18,6 +18,7 @@ import org.noiseplanet.noisecapture.ui.AppBar
 import org.noiseplanet.noisecapture.ui.features.home.HomeScreen
 import org.noiseplanet.noisecapture.ui.features.measurement.MeasurementScreen
 import org.noiseplanet.noisecapture.ui.features.permission.RequestPermissionScreen
+import org.noiseplanet.noisecapture.ui.features.settings.SettingsScreen
 import org.noiseplanet.noisecapture.ui.navigation.Route
 import org.noiseplanet.noisecapture.ui.navigation.Transitions
 
@@ -71,6 +72,9 @@ fun NoiseCaptureApp() {
             }
             composable(route = Route.Measurement.name) {
                 MeasurementScreen()
+            }
+            composable(route = Route.Settings.name) {
+                SettingsScreen(navController)
             }
         }
     }

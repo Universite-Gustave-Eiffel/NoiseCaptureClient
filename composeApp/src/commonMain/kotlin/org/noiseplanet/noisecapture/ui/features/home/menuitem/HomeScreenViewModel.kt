@@ -54,7 +54,7 @@ class HomeScreenViewModel : ViewModel(), KoinComponent {
             parametersOf(Res.string.menu_calibration, Icons.Filled.CenterFocusWeak, null)
         },
         get<MenuItemViewModel> {
-            parametersOf(Res.string.menu_settings, Icons.Filled.Settings, null)
+            parametersOf(Res.string.menu_settings, Icons.Filled.Settings, Route.Settings)
         },
     )
 }

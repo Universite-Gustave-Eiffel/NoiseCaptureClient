@@ -26,4 +26,16 @@
 
     <!--  MeasurementScreen  -->
     <string name="measurement_title">New measurement</string>
+
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_microphone_title">Microphone</string>
+    <string name="settings_microphone_description">Select preferred microphone and calibrate it to improve the precision of results</string>
+    <string name="settings_privacy_title">Privacy</string>
+    <string name="settings_privacy_description">Check the current state of system permissions and check our privacy statement</string>
+    <string name="settings_help_title">Help</string>
+    <string name="settings_help_description">How to use the Noise Capture app, bug report, and other useful resources</string>
+    <string name="settings_about_title">About</string>
+    <string name="settings_about_description">More information about NoisePlanet and the Noise Capture app</string>
 </resources>
