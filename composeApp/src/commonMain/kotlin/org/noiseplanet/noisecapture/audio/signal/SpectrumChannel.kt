@@ -2,10 +2,13 @@ package org.noiseplanet.noisecapture.audio.signal
 
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import org.noiseplanet.noisecapture.audio.signal.filter.BiquadFilter
+import org.noiseplanet.noisecapture.audio.signal.filter.DigitalFilter
 import kotlin.math.pow
 
 /**
  * Digital filtering of audio samples
+ *
  * @author Nicolas Fortin, Université Gustave Eiffel
  * @author Valentin Le Bescond, Université Gustave Eiffel
  * @link https://github.com/SonoMKR/sonomkr-core/blob/master/src/spectrumchannel.cpp

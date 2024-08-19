@@ -13,5 +13,7 @@ val platformModule: Module = module {
         JSLogger(tag)
     }
 
-    factory<AudioSource> { JsAudioSource() }
+    factory<AudioSource> {
+        JsAudioSource(logger = get())
+    }
 }

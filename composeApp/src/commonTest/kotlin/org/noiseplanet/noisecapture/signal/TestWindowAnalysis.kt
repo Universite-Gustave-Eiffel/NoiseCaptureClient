@@ -5,11 +5,17 @@ import org.noiseplanet.noisecapture.audio.AcousticIndicatorsProcessing
 import org.noiseplanet.noisecapture.audio.AudioSamples
 import org.noiseplanet.noisecapture.audio.WINDOW_TIME
 import org.noiseplanet.noisecapture.audio.signal.FAST_DECAY_RATE
+import org.noiseplanet.noisecapture.audio.signal.FrequencyBand
+import org.noiseplanet.noisecapture.audio.signal.FrequencyBand.Companion.emptyFrequencyBands
 import org.noiseplanet.noisecapture.audio.signal.LevelDisplayWeightedDecay
-import org.noiseplanet.noisecapture.audio.signal.SpectrumData
-import org.noiseplanet.noisecapture.audio.signal.Window
-import org.noiseplanet.noisecapture.audio.signal.WindowAnalysis
+import org.noiseplanet.noisecapture.audio.signal.window.SpectrumData
+import org.noiseplanet.noisecapture.audio.signal.window.SpectrumDataProcessing
+import org.noiseplanet.noisecapture.audio.signal.window.Window
 import kotlin.math.PI
+import kotlin.math.ceil
+import kotlin.math.floor
+import kotlin.math.log10
+import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sin
@@ -25,7 +31,7 @@ class TestWindowAnalysis {
             0f, 0.0954915f, 0.3454915f, 0.6545085f, 0.9045085f, 1f,
             0.9045085f, 0.6545085f, 0.3454915f, 0.0954915f, 0f
         )
-        val windowAnalysis = WindowAnalysis(44100, expected.size, 1)
+        val windowAnalysis = SpectrumDataProcessing(44100, expected.size, 1)
 
         expected.forEachIndexed { index, value ->
             assertEquals(value, windowAnalysis.hannWindow?.get(index) ?: 0.0F, 1e-8f)
@@ -36,7 +42,7 @@ class TestWindowAnalysis {
     fun testOverlapWindows() {
         val arraySize = 13
         val ones = FloatArray(arraySize) { if (it in 2..arraySize - 3) 1f else 0f }
-        val windowAnalysis = WindowAnalysis(1, 5, 2)
+        val windowAnalysis = SpectrumDataProcessing(1, 5, 2)
         val processedWindows = ArrayList<Window>()
         windowAnalysis.pushSamples(0, ones, processedWindows).toList()
         assertEquals(5, processedWindows.size)
@@ -47,7 +53,7 @@ class TestWindowAnalysis {
     fun testOverlapWindowsSegments() {
         for (arraySize in 9..13) {
             val ones = FloatArray(arraySize) { if (it in 2..arraySize - 3) 1f else 0f }
-            val windowAnalysis = WindowAnalysis(1, 5, 2)
+            val windowAnalysis = SpectrumDataProcessing(1, 5, 2)
             val processedWindows = ArrayList<Window>()
             windowAnalysis.pushSamples(
                 (arraySize * 0.6).toLong(),
@@ -78,7 +84,7 @@ class TestWindowAnalysis {
         val arraySize = 13
         val ones = FloatArray(arraySize) { if (it in 2..arraySize - 3) 1f else 0f }
         // val ones = FloatArray(arraySize) {it.toFloat()}
-        val windowAnalysis = WindowAnalysis(1, 5, 2)
+        val windowAnalysis = SpectrumDataProcessing(1, 5, 2)
         val processedWindows = ArrayList<Window>()
         val step = 3
         for (i in ones.indices step step) {
@@ -121,7 +127,7 @@ class TestWindowAnalysis {
 
         val bufferSize = (sampleRate * 0.1).toInt()
         var cursor = 0
-        val wa = WindowAnalysis(sampleRate, 4096, 4096, applyHannWindow = false)
+        val wa = SpectrumDataProcessing(sampleRate, 4096, 4096, applyHannWindow = false)
         val spectrumDataArray = ArrayList<SpectrumData>()
         while (cursor < signal.size) {
             val windowSize = min(bufferSize, signal.size - cursor)
@@ -162,7 +168,7 @@ class TestWindowAnalysis {
         val bufferSize = (sampleRate * 0.1).toInt()
         var cursor = 0
         val windowSize = (sampleRate * 0.125).toInt()
-        val wa = WindowAnalysis(sampleRate, windowSize, windowSize / 2)
+        val wa = SpectrumDataProcessing(sampleRate, windowSize, windowSize / 2)
         val spectrumDataArray = ArrayList<SpectrumData>()
         while (cursor < signal.size) {
             val windowSize = min(bufferSize, signal.size - cursor)
@@ -175,12 +181,12 @@ class TestWindowAnalysis {
             val thirdOctaveSquare = spectrumData.thirdOctaveProcessing(
                 50.0,
                 12000.0,
-                octaveWindow = SpectrumData.OctaveWindow.RECTANGULAR
+                octaveWindow = OctaveWindow.RECTANGULAR
             ).asList()
             val thirdOctaveFractional = spectrumData.thirdOctaveProcessing(
                 50.0,
                 12000.0,
-                octaveWindow = SpectrumData.OctaveWindow.FRACTIONAL
+                octaveWindow = OctaveWindow.FRACTIONAL
             ).asList()
             val indexOf1000Hz =
                 thirdOctaveSquare.indexOfFirst { t -> t.midFrequency.toInt() == 1000 }
@@ -237,4 +243,64 @@ class TestWindowAnalysis {
         val averageLeq = processed.map { indicators -> indicators.leq }.average()
         assertEquals(expectedLevel, averageLeq, 0.01)
     }
+}
+
+enum class OctaveWindow {
+    RECTANGULAR,
+    FRACTIONAL
+}
+
+/**
+ * @see <a href="https://www.ap.com/technical-library/deriving-fractional-octave-spectra-from-the-fft-with-apx/">ref</a>
+ * Class 0 filter is 0.15 dB error according to IEC 61260
+ *
+ * @param firstFrequencyBand Skip bands up to specified frequency
+ * @param lastFrequencyBand Skip bands higher than this frequency
+ * @param base Octave base 10 or base 2
+ * @param octaveWindow Rectangular association of frequency band or fractional close to done by a filter
+ */
+@Suppress("NestedBlockDepth")
+fun SpectrumData.thirdOctaveProcessing(
+    firstFrequencyBand: Double,
+    lastFrequencyBand: Double,
+    base: FrequencyBand.BaseMethod = FrequencyBand.BaseMethod.B10,
+    bandDivision: Double = 3.0,
+    octaveWindow: OctaveWindow = OctaveWindow.FRACTIONAL,
+): Array<FrequencyBand> {
+    val freqByCell: Double = (spectrum.size.toDouble() * 2) / sampleRate
+    val thirdOctave = emptyFrequencyBands(
+        firstFrequencyBand, lastFrequencyBand, base, bandDivision,
+    )
+
+    if (octaveWindow == OctaveWindow.FRACTIONAL) {
+        for (band in thirdOctave) {
+            for (cellIndex in spectrum.indices) {
+                val f = (cellIndex + 1) / freqByCell
+                val division =
+                    (f / band.midFrequency - band.midFrequency / f) * 1.507 * bandDivision
+                val cellGain = sqrt(1.0 / (1.0 + division.pow(6)))
+                val fg = 10.0.pow(spectrum[cellIndex] / 10.0) * cellGain
+                if (fg.isFinite()) {
+                    band.spl += fg
+                }
+            }
+        }
+        for (band in thirdOctave) {
+            band.spl = 10 * log10(band.spl)
+        }
+    } else {
+        for (band in thirdOctave) {
+            val minCell = max(0, floor(band.minFrequency * freqByCell).toInt())
+            val maxCell = min(spectrum.size, ceil(band.maxFrequency * freqByCell).toInt())
+            var rms = 0.0
+            for (cellIndex in minCell..<maxCell) {
+                val fg = 10.0.pow(spectrum[cellIndex] / 10.0)
+                if (fg.isFinite()) {
+                    rms += fg
+                }
+            }
+            band.spl = 10 * log10(rms)
+        }
+    }
+    return thirdOctave
 }
