@@ -1,6 +1,7 @@
 package org.noiseplanet.noisecapture
 
 import org.koin.core.module.Module
+import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
 import org.noiseplanet.noisecapture.audio.AudioSource
 import org.noiseplanet.noisecapture.audio.JsAudioSource
@@ -13,5 +14,9 @@ val platformModule: Module = module {
         JSLogger(tag)
     }
 
-    factory<AudioSource> { JsAudioSource() }
+    factory<AudioSource> {
+        JsAudioSource(logger = get {
+            parametersOf("AudioSource")
+        })
+    }
 }

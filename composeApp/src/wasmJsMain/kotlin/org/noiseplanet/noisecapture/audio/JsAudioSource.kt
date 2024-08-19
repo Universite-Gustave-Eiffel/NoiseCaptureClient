@@ -4,85 +4,106 @@ import kotlinx.browser.window
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.datetime.Clock
 import org.khronos.webgl.get
 import org.noiseplanet.noisecapture.interop.AudioContext
 import org.noiseplanet.noisecapture.interop.AudioNode
-import org.w3c.dom.mediacapture.MediaStream
+import org.noiseplanet.noisecapture.interop.ScriptProcessorNode
+import org.noiseplanet.noisecapture.log.Logger
 import org.w3c.dom.mediacapture.MediaStreamConstraints
-
-const val SAMPLES_BUFFER_SIZE = 1024
-const val AUDIO_CONSTRAINT =
-    "{audio: {echoCancellation: false, autoGainControl: false, noiseSuppression: false}}"
 
 /**
  * TODO: Document, cleanup, use platform logger instead of println, get rid of force unwraps (!!)
  */
-internal class JsAudioSource : AudioSource {
+internal class JsAudioSource(
+    private val logger: Logger,
+) : AudioSource {
+
+    companion object {
+
+        const val SAMPLES_BUFFER_SIZE = 1024
+    }
 
     private var audioContext: AudioContext? = null
-    private var mediaStream: MediaStream? = null
     private var micNode: AudioNode? = null
-    private var scriptProcessorNode: AudioNode? = null
+    private var scriptProcessorNode: ScriptProcessorNode? = null
 
     private val audioSamplesChannel = Channel<AudioSamples>(
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
 
     override suspend fun setup(): Flow<AudioSamples> {
-        println("Launch JSAudioSource")
+        logger.debug("Launch JSAudioSource...")
+
         window.navigator.mediaDevices.getUserMedia(
             MediaStreamConstraints(
+                // TODO: Not sure this has any effect...
                 audio = object {
-                    val audioCancellation = false
+                    val echoCancellation = false
+                    val autoGainControl = false
+                    val noiseSuppression = false
                 }.toJsReference()
             )
         ).then(onFulfilled = { mediaStream ->
-            println("Got it")
-
-            this.mediaStream = mediaStream
             audioContext = AudioContext()
-            println("AudioContext ready $audioContext.")
-            micNode = audioContext!!.createMediaStreamSource(mediaStream)
-            val scriptProcessorNode =
-                audioContext!!.createScriptProcessor(SAMPLES_BUFFER_SIZE, 1, 1)
-            scriptProcessorNode.onaudioprocess = { audioProcessingEvent ->
+            logger.debug("AudioContext ready $audioContext.")
+
+            micNode = audioContext?.createMediaStreamSource(mediaStream)
+            checkNotNull(micNode) { "Failed initializing mic node" }
+
+            scriptProcessorNode = audioContext?.createScriptProcessor(
+                bufferSize = SAMPLES_BUFFER_SIZE,
+                numberOfInputChannels = 1,
+                numberOfOutputChannels = 1
+            )
+            checkNotNull(scriptProcessorNode) { "Failed initializing script processor node" }
+
+            scriptProcessorNode?.onaudioprocess = { audioProcessingEvent ->
+                val timestamp = Clock.System.now().toEpochMilliseconds()
+                logger.debug("New samples: ${audioProcessingEvent.inputBuffer}")
+
                 val buffer = audioProcessingEvent.inputBuffer
                 val jsBuffer = buffer.getChannelData(0)
                 val samplesBuffer = FloatArray(jsBuffer.length) { i -> jsBuffer[i] }
+
                 audioSamplesChannel.trySend(
                     AudioSamples(
-                        Clock.System.now().toEpochMilliseconds(),
+                        timestamp,
                         samplesBuffer,
                         buffer.sampleRate.toInt()
                     )
                 )
             }
-            micNode!!.connect(scriptProcessorNode)
-            scriptProcessorNode.connect(audioContext!!.destination)
-            micNode!!.connect(scriptProcessorNode)
+            scriptProcessorNode?.let { scriptProcessorNode ->
+                micNode?.connect(scriptProcessorNode)
+                audioContext?.let { audioContext ->
+                    scriptProcessorNode.connect(audioContext.destination)
+                }
+            }
             mediaStream
         }, onRejected = { error ->
-            println("Error! $error")
+            logger.error("Error while setting up audio source: $error")
             error
         })
-        return audioSamplesChannel.consumeAsFlow()
+        return audioSamplesChannel.receiveAsFlow()
     }
 
     override fun release() {
+        logger.debug("Releasing audio source")
+
         micNode?.disconnect()
         scriptProcessorNode?.disconnect()
 
         try {
             audioContext?.close()?.catch { error ->
                 // ignore
-                println(error)
+                logger.error("Error while closing audio context: $error")
                 error
             }
         } catch (ignore: Exception) {
             // Ignore
-            println(ignore.stackTraceToString())
+            logger.error("Uncaught exception:", ignore)
         }
     }
 

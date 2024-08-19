@@ -4,7 +4,7 @@ name: Deploy NoiseCapture as a static website
 on:
   # Runs on pushes targeting the default branch
   push:
-    branches: ["main"]
+    branches: [ "main" ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -23,7 +23,7 @@ concurrency:
 
 
 env:
-  MAIN_BRANCH: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/appyx' }}
+  MAIN_BRANCH: ${{ github.ref == 'refs/heads/main' }}
 
 jobs:
   # Single deploy job since we're just deploying
@@ -48,20 +48,18 @@ jobs:
         with:
           key: noisecapturejs
           path: |
-            webApp/build
-            shared/build
+            build/js
+            composeApp/build/dist/wasmJs
       - name: Build
         run: >
-          ./gradlew
-          webApp:jsBrowserDistribution
-          --continue
+          ./gradlew wasmJsBrowserDistribution
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           # Upload js dist
-          path: 'webApp/build/dist/js/productionExecutable'
+          path: 'composeApp/build/dist/wasmJs/productionExecutable'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
