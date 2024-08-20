@@ -11,7 +11,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import org.koin.compose.koinInject
 import org.noiseplanet.noisecapture.ui.features.settings.item.SettingsItem
-import org.noiseplanet.noisecapture.util.toComposeColor
+import org.noiseplanet.noisecapture.ui.theme.listBackground
 
 @Composable
 fun SettingsScreen(
@@ -21,11 +21,11 @@ fun SettingsScreen(
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.background("#F2F2F2".toComposeColor())
+        modifier = Modifier.background(listBackground)
     ) {
         items(viewModel.settingsItems) { viewModel ->
             SettingsItem(viewModel) { route ->
-                // navigationController.navigate(route.name)
+                navigationController.navigate(route.name)
             }
         }
     }

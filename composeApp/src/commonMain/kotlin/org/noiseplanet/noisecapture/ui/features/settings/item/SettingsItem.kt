@@ -11,7 +11,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -41,16 +40,18 @@ fun SettingsItem(
                 Text(
                     stringResource(viewModel.description),
                     style = MaterialTheme.typography.titleSmall,
-                    color = Color.Black.copy(alpha = 0.3f),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            
+
             Image(
                 Icons.Rounded.ChevronRight,
-                contentDescription = "null",
-                colorFilter = ColorFilter.tint(Color.Black.copy(alpha = 0.25f)),
+                contentDescription = null,
+                colorFilter = ColorFilter.tint(
+                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                ),
             )
         }
     }

@@ -25,25 +25,25 @@ class SettingsScreenViewModel : ViewModel() {
             title = Res.string.settings_microphone_title,
             description = Res.string.settings_microphone_description,
             icon = Icons.Filled.Mic,
-            target = Route.Settings
+            target = Route.SettingsMicrophone
         ),
         SettingsItemViewModel(
             title = Res.string.settings_privacy_title,
             description = Res.string.settings_privacy_description,
             icon = Icons.Filled.Security,
-            target = Route.Settings
+            target = Route.SettingsPrivacy
         ),
         SettingsItemViewModel(
             title = Res.string.settings_help_title,
             description = Res.string.settings_help_description,
             icon = Icons.AutoMirrored.Rounded.HelpOutline,
-            target = Route.Settings
+            target = Route.SettingsHelp
         ),
         SettingsItemViewModel(
             title = Res.string.settings_about_title,
             description = Res.string.settings_about_description,
             icon = Icons.Outlined.Info,
-            target = Route.Settings
+            target = Route.SettingsAbout
         )
     )
 }
