@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.serialization)
 }
 
 kotlin {
@@ -60,6 +61,7 @@ kotlin {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
+            implementation(libs.kstore.file)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -77,6 +79,13 @@ kotlin {
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.datetime)
+            implementation(libs.kotlinx.serialization)
+            implementation(libs.kstore)
+        }
+        iosMain {
+            dependencies {
+                implementation(libs.kstore.file)
+            }
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
