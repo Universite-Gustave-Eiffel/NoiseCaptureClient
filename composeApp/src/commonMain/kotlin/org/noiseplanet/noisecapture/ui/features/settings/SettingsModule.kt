@@ -11,8 +11,16 @@ val settingsModule = module {
 
     viewModel { SettingsScreenViewModel() }
 
-    viewModel { MicrophoneSettingsScreenViewModel() }
-    viewModel { PrivacySettingsScreenViewModel() }
-    viewModel { HelpScreenViewModel() }
-    viewModel { AboutScreenViewModel() }
+    viewModel {
+        MicrophoneSettingsScreenViewModel()
+    }
+    viewModel {
+        PrivacySettingsScreenViewModel()
+    }
+    viewModel {
+        HelpScreenViewModel()
+    }
+    viewModel {
+        AboutScreenViewModel()
+    }
 }

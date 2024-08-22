@@ -59,6 +59,7 @@ kotlin {
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.androidx.preference)
             implementation(libs.koin.android)
         }
         commonMain.dependencies {
@@ -77,6 +78,7 @@ kotlin {
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.datetime)
+            implementation(libs.settings)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))

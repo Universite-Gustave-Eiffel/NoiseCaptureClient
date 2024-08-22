@@ -14,8 +14,6 @@ internal expect fun platformPermissionModule(): Module
 
 internal val defaultPermissionModule = module {
 
-    single<PermissionService> { DefaultPermissionService() }
-
     for (permission in Permission.entries) {
         // Register a default delegate implementation for each permission that will be overridden
         // in each platform module depending on the supported permissions

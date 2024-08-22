@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.measurements
+package org.noiseplanet.noisecapture.services
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

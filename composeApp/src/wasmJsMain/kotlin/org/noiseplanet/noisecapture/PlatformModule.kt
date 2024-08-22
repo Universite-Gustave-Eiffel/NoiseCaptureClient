@@ -1,5 +1,7 @@
 package org.noiseplanet.noisecapture
 
+import com.russhwolf.settings.Settings
+import com.russhwolf.settings.StorageSettings
 import org.koin.core.module.Module
 import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
@@ -18,5 +20,9 @@ val platformModule: Module = module {
         JsAudioSource(logger = get {
             parametersOf("AudioSource")
         })
+    }
+
+    single<Settings> {
+        StorageSettings()
     }
 }

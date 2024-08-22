@@ -4,10 +4,9 @@ import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.dsl.module
-import org.noiseplanet.noisecapture.measurements.DefaultMeasurementService
-import org.noiseplanet.noisecapture.measurements.MeasurementsService
 import org.noiseplanet.noisecapture.permission.defaultPermissionModule
 import org.noiseplanet.noisecapture.permission.platformPermissionModule
+import org.noiseplanet.noisecapture.services.servicesModule
 import org.noiseplanet.noisecapture.ui.features.home.homeModule
 import org.noiseplanet.noisecapture.ui.features.measurement.measurementModule
 import org.noiseplanet.noisecapture.ui.features.permission.requestPermissionModule
@@ -25,11 +24,7 @@ fun initKoin(
                 includes(additionalModules)
             },
 
-            module {
-                single<MeasurementsService> {
-                    DefaultMeasurementService(audioSource = get(), logger = get())
-                }
-            },
+            servicesModule,
 
             defaultPermissionModule,
             platformPermissionModule(),
