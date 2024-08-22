@@ -73,12 +73,13 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.navigation.compose)
             implementation(libs.androidx.viewmodel.compose)
+            implementation(libs.androidx.runtime.compose)
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.datetime)
-            implementation(libs.settings)
+            implementation(libs.settings.multiplatform)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
