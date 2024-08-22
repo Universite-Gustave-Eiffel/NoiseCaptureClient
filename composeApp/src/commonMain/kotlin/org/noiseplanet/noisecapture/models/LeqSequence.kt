@@ -4,7 +4,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class LeqSequence (
-    val leqUtc: Long,
+    val recordUtc : Long, // start of measurement, millisecond utc
+    val userUUID: String, // random UUID set at application installation
+    val leqUtc: Long,     // First leq time in millisecond utc (add approx 125ms for following lAeq)
     val lzeq: FloatArray,
     val laeq: FloatArray,
     val lceq: FloatArray,
