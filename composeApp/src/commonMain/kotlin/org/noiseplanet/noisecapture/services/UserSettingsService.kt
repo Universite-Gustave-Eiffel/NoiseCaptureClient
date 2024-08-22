@@ -3,6 +3,10 @@ package org.noiseplanet.noisecapture.services
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.get
 import com.russhwolf.settings.set
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlin.reflect.KClass
 
 
@@ -66,7 +70,7 @@ interface UserSettingsService {
     fun <T : Any> get(key: SettingsKey, t: KClass<T>): T?
 
     /**
-     * Gets the value associated to a given key, or null if value is not set.
+     * Gets the value associated to a given key, or [defaultValue] if value is not set.
      *
      * @param key User settings [SettingsKey]
      * @param defaultValue Default value to return if no value was found
@@ -74,6 +78,25 @@ interface UserSettingsService {
      * @return Value or [defaultValue] if not found
      */
     fun <T : Any> get(key: SettingsKey, defaultValue: T, t: KClass<T>): T
+
+    /**
+     * Gets a flow of values associated to a given key, starting with null if value is not set.
+     *
+     * @param key User settings [SettingsKey]
+     * @param t Type of value to get
+     * @return Value or null if not found.
+     */
+    fun <T : Any> getFlow(key: SettingsKey, t: KClass<T>): Flow<T?>
+
+    /**
+     * Gets a flow of values associated to a given key, starting with [defaultValue] if value is not set.
+     *
+     * @param key User settings [SettingsKey]
+     * @param defaultValue Default value to return if no value was found
+     * @param t Type of value to get
+     * @return Value or [defaultValue] if not found
+     */
+    fun <T : Any> getFlow(key: SettingsKey, defaultValue: T, t: KClass<T>): Flow<T>
 }
 
 
@@ -86,6 +109,11 @@ class DefaultUserSettingsService(
     private val settingsProvider: Settings,
 ) : UserSettingsService {
 
+    /**
+     * Tracks changes made to settings value.
+     */
+    private val settingsChangeListener = MutableSharedFlow<Unit>(replay = 1)
+
     override fun <T : Any> set(key: SettingsKey, value: T?, t: KClass<T>) {
         when (t) {
             Int::class -> settingsProvider[key.name] = value as Int
@@ -96,6 +124,8 @@ class DefaultUserSettingsService(
             Boolean::class -> settingsProvider[key.name] = value as Boolean
             else -> throw IllegalArgumentException("Unsupported type")
         }
+        // Notify that a new value was stored
+        settingsChangeListener.tryEmit(Unit)
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -122,5 +152,17 @@ class DefaultUserSettingsService(
             Boolean::class -> settingsProvider[key.name, defaultValue as Boolean] as T
             else -> throw IllegalArgumentException("Unsupported type")
         }
+    }
+
+    override fun <T : Any> getFlow(key: SettingsKey, t: KClass<T>): Flow<T?> {
+        return settingsChangeListener
+            .map { get(key, t) }
+            .distinctUntilChanged()
+    }
+
+    override fun <T : Any> getFlow(key: SettingsKey, defaultValue: T, t: KClass<T>): Flow<T> {
+        return settingsChangeListener
+            .map { get(key, defaultValue, t) }
+            .distinctUntilChanged()
     }
 }

@@ -9,6 +9,7 @@ import org.koin.dsl.module
 import org.noiseplanet.noisecapture.audio.AudioSource
 import org.noiseplanet.noisecapture.audio.IOSAudioSource
 import org.noiseplanet.noisecapture.log.Logger
+import platform.Foundation.NSBundle
 
 /**
  * Registers koin components specific to this platform
@@ -28,6 +29,8 @@ val platformModule: Module = module {
     }
 
     single<Settings> {
-        KeychainSettings()
+        NSBundle.mainBundle.bundleIdentifier
+            ?.let { KeychainSettings(it) }
+            ?: KeychainSettings()
     }
 }
