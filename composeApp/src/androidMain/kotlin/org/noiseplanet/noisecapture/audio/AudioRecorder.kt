@@ -7,6 +7,7 @@ import android.media.AudioRecord.ERROR
 import android.media.AudioRecord.ERROR_BAD_VALUE
 import android.media.MediaRecorder
 import android.os.Process
+import io.github.xxfast.kstore.file.extensions.storeOf
 import kotlinx.coroutines.channels.Channel
 import org.noiseplanet.noisecapture.log.Logger
 import java.util.concurrent.atomic.AtomicBoolean
