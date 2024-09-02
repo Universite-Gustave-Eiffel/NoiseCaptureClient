@@ -7,12 +7,12 @@ class UUIDGenerator {
 
     companion object {
         @OptIn(ExperimentalStdlibApi::class)
-        fun createV4UUID() : String {
-            var timeHigh = IntArray(4) { Random.nextInt(256) }
-            var timeLow = IntArray(2) { Random.nextInt(256) }
-            var reserved = IntArray(2) { Random.nextInt(256) }
-            var family = IntArray(2) { Random.nextInt(256) }
-            var node = IntArray(6) { Random.nextInt(256) }
+        fun createV4UUID(random: Random) : String {
+            var timeHigh = IntArray(4) { random.nextInt(256) }
+            var timeLow = IntArray(2) { random.nextInt(256) }
+            var reserved = IntArray(2) { random.nextInt(256) }
+            var family = IntArray(2) { random.nextInt(256) }
+            var node = IntArray(6) { random.nextInt(256) }
             // Fix version byte
             reserved[0] = (0x40 or (0x0F and reserved[0]))
             // Fix variant bits (variant 1, from 0x80 to 0xBF)
