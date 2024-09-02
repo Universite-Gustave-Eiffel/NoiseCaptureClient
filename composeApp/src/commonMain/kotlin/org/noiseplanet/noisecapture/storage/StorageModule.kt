@@ -6,7 +6,7 @@ import org.koin.dsl.module
 /**
  * Should be implemented in each platform to use the specific storage service
  */
-internal expect fun storageServiceModule(): Module
+//internal expect fun storageServiceModule(): Module
 
 internal val defaultStorageModule = module {
     single<StorageService> { DefaultStorageService() }

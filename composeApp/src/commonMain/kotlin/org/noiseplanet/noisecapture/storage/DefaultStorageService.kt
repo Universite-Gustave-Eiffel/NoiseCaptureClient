@@ -2,16 +2,18 @@ package org.noiseplanet.noisecapture.storage
 
 import io.github.xxfast.kstore.KStore
 import kotlinx.serialization.Serializable
+import org.noiseplanet.noisecapture.models.ApplicationData
+import org.noiseplanet.noisecapture.models.Record
 
 /**
- * Default implementation of storage do not persist data
+ * Default implementation of storage that does not persist data
  */
 class DefaultStorageService : StorageService {
-    val store: Map<String, @Serializable Any> = HashMap()
+    private var applicationData = ApplicationData(mutableListOf(), mutableListOf())
 
-    override fun <T : Any> fetchDocument(documentId: String): KStore<T> {
-        return KStore(codec = DefaultStorageCodec(store.get(documentId)))
-    }
+    override val store: KStore<ApplicationData>
+        get() = KStore(codec = DefaultStorageCodec(applicationData))
+
 
     override fun fetchDocumentRaw(documentId: String): ByteArray {
         TODO("Not yet implemented")

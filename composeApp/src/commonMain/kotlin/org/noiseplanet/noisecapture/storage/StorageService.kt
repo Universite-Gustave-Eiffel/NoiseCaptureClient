@@ -2,18 +2,16 @@ package org.noiseplanet.noisecapture.storage
 
 import io.github.xxfast.kstore.KStore
 import kotlinx.serialization.Serializable
+import org.noiseplanet.noisecapture.models.ApplicationData
 
 
 interface StorageService {
-    /**
-     * Retrieve parsed document with the specified document identifier
-     */
-    fun <T : @Serializable Any> fetchDocument(documentId: String) : KStore<T>
+    val store: KStore<ApplicationData>
 
     /**
      * Retrieve document without parsing it. It is used when transferring measurements to server
      * not parsing the document reduce the local processing time
      */
-    fun fetchDocumentRaw(documentId: String): ByteArray
+    suspend fun fetchDocumentRaw(documentId: String): ByteArray
 
 }

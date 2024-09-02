@@ -4,18 +4,16 @@ import io.github.xxfast.kstore.Codec
 import kotlinx.serialization.Serializable
 
 class DefaultStorageCodec<T : @Serializable Any>(
-    private val storage : MutableMap<String, @Serializable Any>,
-    private val documentId: String,
+    private var stored: T?,
     private val delay: (suspend (value: T?) -> Unit)? = null,
 ) : Codec<T> {
-
     override suspend fun encode(value: T?) {
         delay?.invoke(value)
-        storage[documentId] = value as @Serializable Any
+        stored = value
     }
 
     override suspend fun decode(): T? {
-        val value: T? = storage[documentId] as? T
+        val value: T? = stored as? T
         delay?.invoke(value)
         return value
     }
