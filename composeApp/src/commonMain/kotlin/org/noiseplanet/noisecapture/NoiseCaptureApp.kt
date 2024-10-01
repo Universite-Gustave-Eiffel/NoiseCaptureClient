@@ -19,10 +19,6 @@ import org.noiseplanet.noisecapture.ui.features.home.HomeScreen
 import org.noiseplanet.noisecapture.ui.features.measurement.MeasurementScreen
 import org.noiseplanet.noisecapture.ui.features.permission.RequestPermissionScreen
 import org.noiseplanet.noisecapture.ui.features.settings.SettingsScreen
-import org.noiseplanet.noisecapture.ui.features.settings.about.AboutScreen
-import org.noiseplanet.noisecapture.ui.features.settings.help.HelpScreen
-import org.noiseplanet.noisecapture.ui.features.settings.microphone.MicrophoneSettingsScreen
-import org.noiseplanet.noisecapture.ui.features.settings.privacy.PrivacySettingsScreen
 import org.noiseplanet.noisecapture.ui.navigation.Route
 import org.noiseplanet.noisecapture.ui.navigation.Transitions
 
@@ -82,10 +78,6 @@ fun NoiseCaptureApp() {
             }
 
             composable(route = Route.Settings.name) { SettingsScreen(navController) }
-            composable(route = Route.SettingsMicrophone.name) { MicrophoneSettingsScreen() }
-            composable(route = Route.SettingsPrivacy.name) { PrivacySettingsScreen() }
-            composable(route = Route.SettingsHelp.name) { HelpScreen() }
-            composable(route = Route.SettingsAbout.name) { AboutScreen() }
         }
     }
 }
