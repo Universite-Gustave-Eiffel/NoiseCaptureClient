@@ -9,7 +9,11 @@ import org.noiseplanet.noisecapture.ui.features.settings.privacy.PrivacySettings
 
 val settingsModule = module {
 
-    viewModel { SettingsScreenViewModel() }
+    viewModel {
+        SettingsScreenViewModel(
+            settingsService = get()
+        )
+    }
 
     viewModel {
         MicrophoneSettingsScreenViewModel()
