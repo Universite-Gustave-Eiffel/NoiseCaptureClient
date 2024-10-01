@@ -2,11 +2,11 @@ package org.noiseplanet.noisecapture.ui.features.settings.item
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
+import org.noiseplanet.noisecapture.ui.theme.listBackground
 
 private const val CORNER_RADIUS: Float = 10f
 
@@ -31,18 +32,18 @@ fun SettingsItem(
         bottomEnd = if (viewModel.isLastInSection) CORNER_RADIUS.dp else 0.dp,
     )
 
-    Box(
+    Column(
         modifier = Modifier.background(Color.White, shape)
             .clip(shape)
             .padding(horizontal = 16.dp)
-            .padding(
-                top = if (viewModel.isFirstInSection) 16.dp else 12.dp,
-                bottom = if (viewModel.isLastInSection) 16.dp else 12.dp,
-            )
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(
+                top = if (viewModel.isFirstInSection) 16.dp else 12.dp,
+                bottom = if (viewModel.isLastInSection) 16.dp else 12.dp,
+            )
         ) {
             Column(modifier = Modifier.weight(1f, fill = false)) {
                 Text(
@@ -59,6 +60,13 @@ fun SettingsItem(
 
                 // TODO: Show setting value
             }
+        }
+
+        if (!viewModel.isLastInSection) {
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = listBackground
+            )
         }
     }
 }
