@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
@@ -43,9 +44,9 @@ fun SettingsItem(
             modifier = Modifier.padding(
                 top = if (viewModel.isFirstInSection) 16.dp else 12.dp,
                 bottom = if (viewModel.isLastInSection) 16.dp else 12.dp,
-            )
+            ).fillMaxWidth()
         ) {
-            Column(modifier = Modifier.weight(1f, fill = false)) {
+            Column(modifier = Modifier.weight(0.8f, fill = false)) {
                 Text(
                     stringResource(viewModel.title),
                     style = MaterialTheme.typography.titleMedium,
@@ -54,11 +55,31 @@ fun SettingsItem(
                     stringResource(viewModel.description),
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                    maxLines = 2,
+                    maxLines = 3,
                     overflow = TextOverflow.Ellipsis,
                 )
+            }
 
-                // TODO: Show setting value
+            @Suppress("UNCHECKED_CAST")
+            when (viewModel.settingKey.valueType) {
+                Boolean::class -> SettingsBooleanItem(
+                    viewModel as SettingsItemViewModel<Boolean>
+                )
+
+                Int::class -> SettingsIntegerItem(
+                    viewModel as SettingsItemViewModel<Int>,
+                    modifier = Modifier.weight(0.2f, fill = false)
+                )
+
+                Double::class -> SettingsDoubleItem(
+                    viewModel as SettingsItemViewModel<Double>,
+                    modifier = Modifier.weight(0.2f, fill = false)
+                )
+
+                Float::class -> SettingsDoubleItem(
+                    viewModel as SettingsItemViewModel<Double>,
+                    modifier = Modifier.weight(0.2f, fill = false)
+                )
             }
         }
 

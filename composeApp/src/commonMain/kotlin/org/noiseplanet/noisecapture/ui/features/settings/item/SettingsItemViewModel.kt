@@ -10,11 +10,16 @@ class SettingsItemViewModel<T : Any>(
     val description: StringResource,
     val isFirstInSection: Boolean = false,
     val isLastInSection: Boolean = false,
+    val settingKey: SettingsKey<T>,
 
-    private val settingKey: SettingsKey<T>,
     private val settingsService: UserSettingsService,
 ) {
 
     fun getValue(): T? = settingsService.get(settingKey)
+    fun getValue(defaultValue: T): T = settingsService.get(settingKey, defaultValue)
+
     fun getValueFlow(): Flow<T?> = settingsService.getFlow(settingKey)
+    fun getValueFlow(defaultValue: T) = settingsService.getFlow(settingKey, defaultValue)
+
+    fun setValue(newValue: T?) = settingsService.set(settingKey, newValue)
 }

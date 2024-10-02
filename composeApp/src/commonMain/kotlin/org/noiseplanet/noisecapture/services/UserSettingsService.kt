@@ -135,14 +135,18 @@ class DefaultUserSettingsService(
             "Could not get name from settings key"
         }
 
-        when (key.valueType) {
-            Int::class -> settingsProvider[name] = value as Int
-            Long::class -> settingsProvider[name] = value as Long
-            Double::class -> settingsProvider[name] = value as Double
-            Float::class -> settingsProvider[name] = value as Float
-            String::class -> settingsProvider[name] = value as String
-            Boolean::class -> settingsProvider[name] = value as Boolean
-            else -> throw IllegalArgumentException("Unsupported type")
+        value?.let {
+            when (key.valueType) {
+                Int::class -> settingsProvider[name] = it as Int
+                Long::class -> settingsProvider[name] = it as Long
+                Double::class -> settingsProvider[name] = it as Double
+                Float::class -> settingsProvider[name] = it as Float
+                String::class -> settingsProvider[name] = it as String
+                Boolean::class -> settingsProvider[name] = it as Boolean
+                else -> throw IllegalArgumentException("Unsupported type")
+            }
+        } ?: {
+            settingsProvider[name] = null
         }
         // Notify that a new value was stored
         settingsChangeListener.tryEmit(Unit)
