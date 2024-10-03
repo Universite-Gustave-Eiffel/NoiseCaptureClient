@@ -4,8 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -60,11 +62,16 @@ fun SettingsItem(
                 )
             }
 
+            Spacer(modifier = Modifier.widthIn())
+
             @Suppress("UNCHECKED_CAST")
             when (viewModel.settingKey.valueType) {
                 Boolean::class -> SettingsBooleanItem(
                     viewModel as SettingsItemViewModel<Boolean>
                 )
+
+                // TODO: Figure out a way to leave just enough space for text field
+                //       while still allowing it to expand enough to show the entire input
 
                 Int::class -> SettingsIntegerItem(
                     viewModel as SettingsItemViewModel<Int>,
@@ -80,6 +87,9 @@ fun SettingsItem(
                     viewModel as SettingsItemViewModel<Double>,
                     modifier = Modifier.weight(0.2f, fill = false)
                 )
+
+                // TODO: Figure out a way to handle enum settings like windowing mode
+                //       (maybe a dropdown menu?)
             }
         }
 

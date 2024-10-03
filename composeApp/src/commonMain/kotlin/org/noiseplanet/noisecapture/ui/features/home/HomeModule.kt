@@ -13,8 +13,6 @@ val homeModule = module {
         MenuItemViewModel(label, imageVector, route)
     }
     viewModel {
-        HomeScreenViewModel(
-            settingsService = get()
-        )
+        HomeScreenViewModel()
     }
 }

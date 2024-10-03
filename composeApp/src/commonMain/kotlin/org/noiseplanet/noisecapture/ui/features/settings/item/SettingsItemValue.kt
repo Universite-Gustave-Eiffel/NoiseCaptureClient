@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 
 @Composable
 fun SettingsBooleanItem(
@@ -60,7 +61,7 @@ fun SettingsIntegerItem(
                 .replace(",", "")
         },
 
-        textStyle = MaterialTheme.typography.titleMedium.copy(),
+        textStyle = MaterialTheme.typography.titleMedium.copy(textAlign = TextAlign.End),
         colors = TextFieldDefaults.colors(
             unfocusedContainerColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent
@@ -112,7 +113,7 @@ fun SettingsDoubleItem(
                 .replace(" ", "")
         },
 
-        textStyle = MaterialTheme.typography.titleMedium,
+        textStyle = MaterialTheme.typography.titleMedium.copy(textAlign = TextAlign.End),
         colors = TextFieldDefaults.colors(
             unfocusedContainerColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent
@@ -120,6 +121,8 @@ fun SettingsDoubleItem(
         maxLines = 1,
 
         // Use a numerical keyboard with a Done button
+        // TODO: The iPhone version doesn't show a done button so we need to find a workaround
+        //       for the user to validate their input
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Number,
             imeAction = ImeAction.Done
@@ -163,7 +166,7 @@ fun SettingsFloatItem(
                 .replace(" ", "")
         },
 
-        textStyle = MaterialTheme.typography.titleMedium,
+        textStyle = MaterialTheme.typography.titleMedium.copy(textAlign = TextAlign.End),
         colors = TextFieldDefaults.colors(
             unfocusedContainerColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent

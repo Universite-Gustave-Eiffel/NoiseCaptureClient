@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import org.noiseplanet.noisecapture.ui.features.measurement.plot.spectrogram.SpectrogramBitmap
 import kotlin.reflect.KClass
 
 
@@ -18,41 +19,52 @@ sealed class SettingsKey<T : Any>(val valueType: KClass<T>, val defaultValue: T?
     // For testing purpose
     data object Test : SettingsKey<Int>(Int::class)
 
+    // User profile
+    data object UserAcousticsKnowledge : SettingsKey<String>(String::class)
+
     // General
     data object TooltipsEnabled : SettingsKey<Boolean>(Boolean::class)
     data object DisclaimersEnabled : SettingsKey<Boolean>(Boolean::class)
+    data object NotificationEnabled : SettingsKey<Boolean>(Boolean::class)
+    data object AutomaticTransferEnabled : SettingsKey<Boolean>(Boolean::class)
+    data object TransferOverWifiOnly : SettingsKey<Boolean>(Boolean::class)
 
-    // Profile
-//    USER_ACOUSTICS_KNOWLEDGE,
-//
-//    // General
-//    TOOLTIPS_ENABLED,
-//    SHOW_APP_DISCLAIMER,
-//    SHOW_NOISE_PLANET_NOTIFICATION,
-//    AUTOMATIC_DATA_TRANSFER_ENABLED,
-//    DATA_TRANSFER_ON_WIFI_ONLY,
-//
-//    // Measurements
-//    WINDOWING_MODE,
-//    RESTRICT_MEASUREMENT_DURATION,
-//    MEASUREMENT_MAX_DURATION,
-//    SPECTROGRAM_SCALE_MODE,
-//    PAUSE_MODE, // TODO: Better name for this
-//
-//    // Calibration
-//    GAIN_CORRECTION,
-//    CALIBRATION_COUNTDOWN_DURATION,
-//    CALIBRATION_DURATION,
-//    CALIBRATION_SIGNAL_OUTPUT,
-//
-//    // Map
-//    MAX_MEASUREMENTS_SHOWN_ON_MAP,
+    // Measurements
+    data object WindowingMode : SettingsKey<String>(String::class)
+    data object LimitMeasurementDuration : SettingsKey<Boolean>(Boolean::class)
+    data object MaxMeasurementDuration : SettingsKey<Int>(Int::class)
+    data object SpectrogramScaleMode : SettingsKey<String>(String::class)
+
+    // Calibration
+    data object SignalGainCorrection : SettingsKey<Double>(Double::class)
+    data object CalibrationCountdown : SettingsKey<Int>(Int::class)
+    data object CalibrationDuration : SettingsKey<Int>(Int::class)
+    data object TestSignalAudioOutput : SettingsKey<String>(String::class)
+
+    // Map
+    data object MapMaxMeasurementsCount : SettingsKey<Int>(Int::class)
 
     companion object {
 
         val defaults = mapOf(
             Test to 42,
-            TooltipsEnabled to false
+
+            TooltipsEnabled to true,
+            DisclaimersEnabled to true,
+            NotificationEnabled to true,
+            AutomaticTransferEnabled to true,
+            TransferOverWifiOnly to true,
+
+            WindowingMode to "TODO", // TODO: Add an enum for this
+            LimitMeasurementDuration to false,
+            MaxMeasurementDuration to 30,
+            SpectrogramScaleMode to SpectrogramBitmap.ScaleMode.SCALE_LOG.name,
+
+            SignalGainCorrection to 0.0,
+            CalibrationCountdown to 4,
+            CalibrationDuration to 4,
+            TestSignalAudioOutput to "TODO", // TODO: Add an enum for this
+            MapMaxMeasurementsCount to 500,
         )
     }
 }
