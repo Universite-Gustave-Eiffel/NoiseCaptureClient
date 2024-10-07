@@ -2,6 +2,7 @@ package org.noiseplanet.noisecapture
 
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
 import org.koin.core.module.Module
 import org.koin.dsl.module
 import org.noiseplanet.noisecapture.permission.defaultPermissionModule
@@ -18,6 +19,9 @@ import org.noiseplanet.noisecapture.ui.features.settings.settingsModule
 fun initKoin(
     additionalModules: List<Module> = emptyList(),
 ): KoinApplication {
+
+    stopKoin()
+
     return startKoin {
         modules(
             module {
