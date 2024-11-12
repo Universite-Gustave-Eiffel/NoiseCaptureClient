@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.noiseplanet.noisecapture.audio.ANDROID_GAIN
 import org.noiseplanet.noisecapture.log.Logger
+import org.noiseplanet.noisecapture.model.SpectrogramScaleMode
 import org.noiseplanet.noisecapture.services.MeasurementsService
 
 class SpectrogramPlotViewModel(
@@ -33,7 +34,7 @@ class SpectrogramPlotViewModel(
     private var canvasSize: IntSize = IntSize.Zero
     private val spectrogramBitmaps = mutableStateListOf<SpectrogramBitmap>()
 
-    val scaleMode = SpectrogramBitmap.ScaleMode.SCALE_LOG
+    val scaleMode = SpectrogramScaleMode.SCALE_LOG
 
     val sampleRateFlow: Flow<Double> = measurementsService
         .getSpectrumDataFlow()

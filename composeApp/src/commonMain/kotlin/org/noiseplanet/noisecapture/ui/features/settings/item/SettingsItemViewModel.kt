@@ -1,25 +1,88 @@
 package org.noiseplanet.noisecapture.ui.features.settings.item
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import org.jetbrains.compose.resources.StringResource
 import org.noiseplanet.noisecapture.services.SettingsKey
 import org.noiseplanet.noisecapture.services.UserSettingsService
+import org.noiseplanet.noisecapture.util.IterableEnum
+import org.noiseplanet.noisecapture.util.ShortNameRepresentable
 
-class SettingsItemViewModel<T : Any>(
+/**
+ * Base setting item view model class to use with primitive types.
+ */
+open class SettingsItemViewModel<T>(
     val title: StringResource,
     val description: StringResource,
     val isFirstInSection: Boolean = false,
     val isLastInSection: Boolean = false,
     val settingKey: SettingsKey<T>,
 
-    private val settingsService: UserSettingsService,
+    protected val settingsService: UserSettingsService,
 ) {
 
-    fun getValue(): T? = settingsService.get(settingKey)
-    fun getValue(defaultValue: T): T = settingsService.get(settingKey, defaultValue)
+    /**
+     * Returns this setting's value directly
+     */
+    fun getValue(): T = settingsService.get(settingKey)
 
-    fun getValueFlow(): Flow<T?> = settingsService.getFlow(settingKey)
-    fun getValueFlow(defaultValue: T) = settingsService.getFlow(settingKey, defaultValue)
+    /**
+     * Gets this setting's value as a flow to listen for value changes.
+     */
+    fun getValueFlow(): Flow<T> = settingsService.getFlow(settingKey)
 
+    /**
+     * Sets a new value for this setting key.
+     */
     fun setValue(newValue: T?) = settingsService.set(settingKey, newValue)
+}
+
+
+/**
+ * A SettingItem subclass to be used with enums that can be stored in user defaults.
+ *
+ * The given enum must comply to both [IterableEnum] and [ShortNameRepresentable].
+ */
+class SettingsEnumItemViewModel<T>(
+    title: StringResource,
+    description: StringResource,
+    isFirstInSection: Boolean = false,
+    isLastInSection: Boolean = false,
+    settingKey: SettingsKey<T>,
+    settingsService: UserSettingsService,
+) : SettingsItemViewModel<T>(
+    title = title,
+    description = description,
+    isFirstInSection = isFirstInSection,
+    isLastInSection = isLastInSection,
+    settingKey = settingKey,
+    settingsService = settingsService
+) where T : Enum<T>, T : IterableEnum<T>, T : ShortNameRepresentable {
+
+    private val entries = settingKey.defaultValue.entries()
+
+    /**
+     * Lists the choices that will be available in the dropdown menu
+     */
+    val choices: List<StringResource> = entries
+        .map { it.fullName }
+
+    /**
+     * Returns the currently selected item as a string resource
+     */
+    val selected: Flow<StringResource> = getValueFlow()
+        .map { it.shortName }
+
+    /**
+     * The initial value to be displayed as a string resource
+     */
+    val initialValue: StringResource = getValue().shortName
+
+    /**
+     * Select a new value and update the underlying setting value from the index
+     * of the selected choice.
+     */
+    fun select(index: Int) {
+        setValue(entries[index])
+    }
 }

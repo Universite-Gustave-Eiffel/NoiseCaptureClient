@@ -42,15 +42,15 @@ fun <T : Any> SettingsNumericalItem(
     modifier: Modifier = Modifier,
 ) {
     @Suppress("UNCHECKED_CAST")
-    val defaultValue = when (viewModel.settingKey.valueType) {
-        Int::class -> 0 as T
-        Double::class -> 0.0 as T
-        Float::class -> 0.0f as T
+    val defaultValue = when (viewModel.settingKey.defaultValue) {
+        is Int -> 0 as T
+        is Double -> 0.0 as T
+        is Float -> 0.0f as T
         else -> error("Template parameter must be a numerical value")
     }
 
     var textFieldValueState by remember {
-        val initialValue = viewModel.getValue(defaultValue).toString()
+        val initialValue = viewModel.getValue().toString()
 
         mutableStateOf(
             TextFieldValue(
@@ -70,10 +70,10 @@ fun <T : Any> SettingsNumericalItem(
 
     @Suppress("UNCHECKED_CAST")
     fun getNumericalValue(): T? {
-        return when (viewModel.settingKey.valueType) {
-            Int::class -> textFieldValueState.text.toIntOrNull() as T?
-            Double::class -> textFieldValueState.text.toDoubleOrNull() as T?
-            Float::class -> textFieldValueState.text.toFloatOrNull() as T?
+        return when (viewModel.settingKey.defaultValue) {
+            is Int -> textFieldValueState.text.toIntOrNull() as T?
+            is Double -> textFieldValueState.text.toDoubleOrNull() as T?
+            is Float -> textFieldValueState.text.toFloatOrNull() as T?
             else -> null
         }
     }

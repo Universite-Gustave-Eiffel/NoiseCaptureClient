@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.IntSize
 import org.noiseplanet.noisecapture.audio.signal.window.SpectrumData
+import org.noiseplanet.noisecapture.model.SpectrogramScaleMode
 import org.noiseplanet.noisecapture.services.DefaultMeasurementService.Companion.FFT_SIZE
 import org.noiseplanet.noisecapture.util.toComposeColor
 import org.noiseplanet.noisecapture.util.toImageBitmap
@@ -20,7 +21,7 @@ import kotlin.math.pow
  */
 data class SpectrogramBitmap(
     val size: IntSize,
-    val scaleMode: ScaleMode,
+    val scaleMode: SpectrogramScaleMode,
     var offset: Int = 0,
     private val byteArray: ByteArray = ByteArray(
         bmpHeader.size + Int.SIZE_BYTES * size.width * size.height
@@ -102,11 +103,6 @@ data class SpectrogramBitmap(
         )
     }
 
-    enum class ScaleMode {
-        SCALE_LINEAR,
-        SCALE_LOG
-    }
-
     private var cachedBitmap: ImageBitmap? = null
     private var cachedOffset: Int = -1
 
@@ -134,7 +130,7 @@ data class SpectrogramBitmap(
         val sampleRate = fftResult.sampleRate.toDouble()
         val hertzBySpectrumCell = sampleRate / FFT_SIZE.toDouble()
         val frequencyLegendPosition = when (scaleMode) {
-            ScaleMode.SCALE_LOG -> frequencyLegendPositionLog
+            SpectrogramScaleMode.SCALE_LOG -> frequencyLegendPositionLog
             else -> frequencyLegendPositionLinear
         }
         var lastProcessFrequencyIndex = 0
@@ -142,7 +138,7 @@ data class SpectrogramBitmap(
         for (pixel in 0..<size.height) {
             var freqStart: Int
             var freqEnd: Int
-            if (scaleMode == ScaleMode.SCALE_LOG) {
+            if (scaleMode == SpectrogramScaleMode.SCALE_LOG) {
                 freqStart = lastProcessFrequencyIndex
                 val fMax = sampleRate / 2
                 val fMin = frequencyLegendPosition[0]

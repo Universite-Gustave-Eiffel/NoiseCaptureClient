@@ -12,11 +12,10 @@ import androidx.compose.ui.Modifier
 @Composable
 fun SettingsBooleanItem(
     viewModel: SettingsItemViewModel<Boolean>,
-    defaultValue: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
-    val value by viewModel.getValueFlow(defaultValue)
-        .collectAsState(viewModel.getValue(defaultValue))
+    val value by viewModel.getValueFlow()
+        .collectAsState(viewModel.getValue())
 
     Switch(
         checked = value,

@@ -40,22 +40,20 @@ import noisecapture.composeapp.generated.resources.settings_user_acoustics_knowl
 import org.jetbrains.compose.resources.StringResource
 import org.noiseplanet.noisecapture.services.SettingsKey
 import org.noiseplanet.noisecapture.services.UserSettingsService
+import org.noiseplanet.noisecapture.ui.features.settings.item.SettingsEnumItemViewModel
 import org.noiseplanet.noisecapture.ui.features.settings.item.SettingsItemViewModel
 
 class SettingsScreenViewModel(
     private val settingsService: UserSettingsService,
 ) : ViewModel() {
 
-    val settingsItems: Map<StringResource, List<SettingsItemViewModel<*>>> = mapOf(
-
-        // TODO: Fill in with actual settings values instead of placeholders
-
+    val settingsItems: Map<StringResource, List<SettingsItemViewModel<out Any>>> = mapOf(
         Pair(
             Res.string.settings_section_user_profile, listOf(
-                SettingsItemViewModel(
+                SettingsEnumItemViewModel(
                     title = Res.string.settings_user_acoustics_knowledge_title,
                     description = Res.string.settings_user_acoustics_knowledge_description,
-                    settingKey = SettingsKey.UserAcousticsKnowledge,
+                    settingKey = SettingsKey.SettingUserAcousticsKnowledge,
                     settingsService = settingsService,
                     isFirstInSection = true,
                     isLastInSection = true,
@@ -67,32 +65,32 @@ class SettingsScreenViewModel(
                 SettingsItemViewModel(
                     title = Res.string.settings_general_tooltips_title,
                     description = Res.string.settings_general_tooltips_description,
-                    settingKey = SettingsKey.TooltipsEnabled,
+                    settingKey = SettingsKey.SettingTooltipsEnabled,
                     settingsService = settingsService,
                     isFirstInSection = true,
                 ),
                 SettingsItemViewModel(
                     title = Res.string.settings_general_disclaimer_title,
                     description = Res.string.settings_general_disclaimer_description,
-                    settingKey = SettingsKey.DisclaimersEnabled,
+                    settingKey = SettingsKey.SettingDisclaimersEnabled,
                     settingsService = settingsService,
                 ),
                 SettingsItemViewModel(
                     title = Res.string.settings_general_notification_title,
                     description = Res.string.settings_general_notification_description,
-                    settingKey = SettingsKey.NotificationEnabled,
+                    settingKey = SettingsKey.SettingNotificationEnabled,
                     settingsService = settingsService,
                 ),
                 SettingsItemViewModel(
                     title = Res.string.settings_general_automatic_transfer_title,
                     description = Res.string.settings_general_automatic_transfer_description,
-                    settingKey = SettingsKey.AutomaticTransferEnabled,
+                    settingKey = SettingsKey.SettingAutomaticTransferEnabled,
                     settingsService = settingsService,
                 ),
                 SettingsItemViewModel(
                     title = Res.string.settings_general_wifi_only_title,
                     description = Res.string.settings_general_wifi_only_description,
-                    settingKey = SettingsKey.TransferOverWifiOnly,
+                    settingKey = SettingsKey.SettingTransferOverWifiOnly,
                     settingsService = settingsService,
                     isLastInSection = true,
                 ),
@@ -103,26 +101,26 @@ class SettingsScreenViewModel(
                 SettingsItemViewModel(
                     title = Res.string.settings_measurements_windowing_title,
                     description = Res.string.settings_measurements_windowing_description,
-                    settingKey = SettingsKey.WindowingMode,
+                    settingKey = SettingsKey.SettingWindowingMode,
                     settingsService = settingsService,
                     isFirstInSection = true,
                 ),
                 SettingsItemViewModel(
                     title = Res.string.settings_measurements_limit_duration_title,
                     description = Res.string.settings_measurements_limit_duration_description,
-                    settingKey = SettingsKey.LimitMeasurementDuration,
+                    settingKey = SettingsKey.SettingLimitMeasurementDuration,
                     settingsService = settingsService,
                 ),
                 SettingsItemViewModel(
                     title = Res.string.settings_measurements_max_duration_title,
                     description = Res.string.settings_measurements_max_duration_description,
-                    settingKey = SettingsKey.MaxMeasurementDuration,
+                    settingKey = SettingsKey.SettingMaxMeasurementDuration,
                     settingsService = settingsService,
                 ),
-                SettingsItemViewModel(
+                SettingsEnumItemViewModel(
                     title = Res.string.settings_measurements_spectrogram_mode_title,
                     description = Res.string.settings_measurements_spectrogram_mode_description,
-                    settingKey = SettingsKey.SpectrogramScaleMode,
+                    settingKey = SettingsKey.SettingSpectrogramScaleMode,
                     settingsService = settingsService,
                     isLastInSection = true
                 ),
@@ -133,26 +131,26 @@ class SettingsScreenViewModel(
                 SettingsItemViewModel(
                     title = Res.string.settings_calibration_gain_correction_title,
                     description = Res.string.settings_calibration_gain_correction_description,
-                    settingKey = SettingsKey.SignalGainCorrection,
+                    settingKey = SettingsKey.SettingSignalGainCorrection,
                     settingsService = settingsService,
                     isFirstInSection = true,
                 ),
                 SettingsItemViewModel(
                     title = Res.string.settings_calibration_countdown_title,
                     description = Res.string.settings_calibration_countdown_description,
-                    settingKey = SettingsKey.CalibrationCountdown,
+                    settingKey = SettingsKey.SettingCalibrationCountdown,
                     settingsService = settingsService,
                 ),
                 SettingsItemViewModel(
                     title = Res.string.settings_calibration_duration_title,
                     description = Res.string.settings_calibration_duration_description,
-                    settingKey = SettingsKey.CalibrationDuration,
+                    settingKey = SettingsKey.SettingCalibrationDuration,
                     settingsService = settingsService,
                 ),
                 SettingsItemViewModel(
                     title = Res.string.settings_calibration_output_title,
                     description = Res.string.settings_calibration_output_description,
-                    settingKey = SettingsKey.TestSignalAudioOutput,
+                    settingKey = SettingsKey.SettingTestSignalAudioOutput,
                     settingsService = settingsService,
                     isLastInSection = true
                 ),
@@ -163,7 +161,7 @@ class SettingsScreenViewModel(
                 SettingsItemViewModel(
                     title = Res.string.settings_map_measurements_count_title,
                     description = Res.string.settings_map_measurements_count_description,
-                    settingKey = SettingsKey.MapMaxMeasurementsCount,
+                    settingKey = SettingsKey.SettingMapMaxMeasurementsCount,
                     settingsService = settingsService,
                     isFirstInSection = true,
                     isLastInSection = true,

@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.serialization)
 }
 
 kotlin {
@@ -78,7 +79,10 @@ kotlin {
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.datetime)
+            implementation(libs.kotlinx.serialization)
             implementation(libs.settings.multiplatform)
+            implementation(libs.settings.multiplatform.serialization)
+            implementation(libs.settings.multiplatform.coroutines)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
