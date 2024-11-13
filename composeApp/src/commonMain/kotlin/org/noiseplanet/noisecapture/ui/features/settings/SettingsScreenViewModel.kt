@@ -98,7 +98,7 @@ class SettingsScreenViewModel(
         ),
         Pair(
             Res.string.settings_section_measurements, listOf(
-                SettingsItemViewModel(
+                SettingsEnumItemViewModel(
                     title = Res.string.settings_measurements_windowing_title,
                     description = Res.string.settings_measurements_windowing_description,
                     settingKey = SettingsKey.SettingWindowingMode,
@@ -147,7 +147,7 @@ class SettingsScreenViewModel(
                     settingKey = SettingsKey.SettingCalibrationDuration,
                     settingsService = settingsService,
                 ),
-                SettingsItemViewModel(
+                SettingsEnumItemViewModel(
                     title = Res.string.settings_calibration_output_title,
                     description = Res.string.settings_calibration_output_description,
                     settingKey = SettingsKey.SettingTestSignalAudioOutput,

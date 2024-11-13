@@ -3,6 +3,8 @@ package org.noiseplanet.noisecapture.services
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.serializer
 import org.noiseplanet.noisecapture.model.AcousticsKnowledgeLevel
+import org.noiseplanet.noisecapture.model.CalibrationTestAudioOutput
+import org.noiseplanet.noisecapture.model.MeasurementWindowingMode
 import org.noiseplanet.noisecapture.model.SpectrogramScaleMode
 
 /**
@@ -46,10 +48,10 @@ sealed class SettingsKey<T>(val serializer: KSerializer<T>, val defaultValue: T)
     )
 
     // Measurements
-    data object SettingWindowingMode : SettingsKey<String>(
-        String.serializer(),
-        defaultValue = "TODO",
-    ) // TODO: Create enum
+    data object SettingWindowingMode : SettingsKey<MeasurementWindowingMode>(
+        MeasurementWindowingMode.serializer(),
+        defaultValue = MeasurementWindowingMode.HANN,
+    )
 
     data object SettingLimitMeasurementDuration : SettingsKey<Boolean>(
         Boolean.serializer(),
@@ -82,10 +84,10 @@ sealed class SettingsKey<T>(val serializer: KSerializer<T>, val defaultValue: T)
         defaultValue = 6,
     )
 
-    data object SettingTestSignalAudioOutput : SettingsKey<String>(
-        String.serializer(),
-        defaultValue = "TODO",
-    ) // TODO: Create enum
+    data object SettingTestSignalAudioOutput : SettingsKey<CalibrationTestAudioOutput>(
+        CalibrationTestAudioOutput.serializer(),
+        defaultValue = CalibrationTestAudioOutput.PHONE_CALL,
+    )
 
     // Map
     data object SettingMapMaxMeasurementsCount : SettingsKey<Int>(

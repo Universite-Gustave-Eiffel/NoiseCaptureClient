@@ -45,7 +45,7 @@ fun SettingsEnumInput(
             ) {
                 Text(
                     text = stringResource(selectedItemName),
-                    style = MaterialTheme.typography.titleSmall
+                    style = MaterialTheme.typography.titleSmall,
                 )
             }
             DropdownMenu(

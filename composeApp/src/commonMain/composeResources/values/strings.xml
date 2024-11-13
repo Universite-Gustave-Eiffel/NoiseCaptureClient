@@ -78,10 +78,36 @@
     <string name="acoustics_knowledge_expert_description">I am an expert or professional in the domain of noise</string>
 
 
+    <!-- Spectrogram scale mode -->
     <string name="spectrogram_scale_mode_linear_title">Linear</string>
     <string name="spectrogram_scale_mode_linear_description">Linear scale</string>
     <string name="spectrogram_scale_mode_logarithmic_title">Log</string>
     <string name="spectrogram_scale_mode_logarithmic_description">Logarithmic scale</string>
+
+
+    <!-- Calibration test audio output -->
+    <string name="calibration_output_phonecall_title">Phone call</string>
+    <string name="calibration_output_phonecall_description">Phone call</string>
+    <string name="calibration_output_system_sound_title">System sound</string>
+    <string name="calibration_output_system_sound_description">System sound</string>
+    <string name="calibration_output_ringtone_title">Ringtone</string>
+    <string name="calibration_output_ringtone_description">Ringtone</string>
+    <string name="calibration_output_music_title">Music</string>
+    <string name="calibration_output_music_description">Music</string>
+    <string name="calibration_output_alarm_title">Alarm</string>
+    <string name="calibration_output_alarm_description">Alarm</string>
+    <string name="calibration_output_notification_title">Notification</string>
+    <string name="calibration_output_notification_description">Notification</string>
+    <string name="calibration_output_dmtf_title">DMTF</string>
+    <string name="calibration_output_dmtf_description">Dual tone multi-frequency (DMTF)</string>
+
+
+    <!-- Measurement windowing mode -->
+    <string name="measurement_windowing_mode_hann_title">Hann</string>
+    <string name="measurement_windowing_mode_hann_description">Hann</string>
+    <string name="measurement_windowing_mode_rect_title">Rect</string>
+    <string name="measurement_windowing_mode_rect_description">Rectangular</string>
+
 
     <!-- Misc -->
     <string name="na">N/A</string>

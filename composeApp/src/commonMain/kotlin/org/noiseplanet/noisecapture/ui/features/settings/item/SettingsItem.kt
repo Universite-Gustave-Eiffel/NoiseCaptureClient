@@ -3,12 +3,10 @@ package org.noiseplanet.noisecapture.ui.features.settings.item
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
@@ -22,9 +20,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
-import org.noiseplanet.noisecapture.model.AcousticsKnowledgeLevel
-import org.noiseplanet.noisecapture.model.SpectrogramScaleMode
 import org.noiseplanet.noisecapture.ui.theme.listBackground
+import org.noiseplanet.noisecapture.util.IterableEnum
 
 private const val CORNER_RADIUS: Float = 10f
 
@@ -76,16 +73,11 @@ fun <T : Any> SettingsItem(
                 }
 
                 is Number -> {
-                    SettingsNumericalItem(
-                        viewModel,
-                        modifier = Modifier.width(IntrinsicSize.Min)
-                    )
+                    SettingsNumericalItem(viewModel)
                 }
 
-                is SpectrogramScaleMode, is AcousticsKnowledgeLevel -> {
+                is IterableEnum<*> -> {
                     SettingsEnumInput(viewModel as SettingsEnumItemViewModel<*>)
-                    // TODO: Figure out a way to handle enum settings like windowing mode
-                    //       (maybe a dropdown menu?)
                 }
             }
         }
