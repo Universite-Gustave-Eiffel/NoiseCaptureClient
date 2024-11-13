@@ -2,7 +2,9 @@ package org.noiseplanet.noisecapture.ui.features.settings.item
 
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -27,6 +29,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 
@@ -79,7 +82,9 @@ fun <T : Any> SettingsNumericalItem(
     }
 
 
-    Box(modifier.widthIn(min = 32.dp)) {
+    Box(
+        modifier = modifier.width(IntrinsicSize.Min)
+    ) {
         BasicTextField(
             value = textFieldValueState,
             onValueChange = { newValue ->
@@ -89,7 +94,7 @@ fun <T : Any> SettingsNumericalItem(
                     viewModel.setValue(it)
                 }
             },
-            textStyle = MaterialTheme.typography.titleMedium,
+            textStyle = MaterialTheme.typography.titleSmall.copy(textAlign = TextAlign.End),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Ascii,
                 imeAction = ImeAction.Done,
@@ -99,8 +104,11 @@ fun <T : Any> SettingsNumericalItem(
                 focusManager.clearFocus()
             }),
             singleLine = true,
-            modifier = modifier.align(Alignment.CenterEnd)
+            modifier = modifier
+                .widthIn(min = 32.dp, max = 64.dp)
+                .align(Alignment.CenterEnd)
                 .padding(vertical = 16.dp)
+                .padding(start = 4.dp)
                 .disabledHorizontalPointerInputScroll()
         ) {
             TextFieldDefaults.DecorationBox(
