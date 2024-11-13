@@ -5,23 +5,22 @@ agp = "8.5.2"
 android-compileSdk = "34"
 android-minSdk = "24"
 android-targetSdk = "34"
-androidx-activityCompose = "1.9.1"
+androidx-activityCompose = "1.9.3"
 androidx-appcompat = "1.7.0"
-androidx-constraintlayout = "2.1.4"
-androidx-core-ktx = "1.13.1"
+androidx-constraintlayout = "2.2.0"
+androidx-core-ktx = "1.15.0"
 androidx-espresso-core = "3.6.1"
-androidx-viewmodel-compose = "2.8.0"
+androidx-viewmodel-compose = "2.8.4"
 androidx-material = "1.12.0"
-androidx-navigation = "2.7.0-alpha07"
+androidx-navigation = "2.8.0-alpha10"
 androidx-preference = "1.2.1"
 androidx-test-junit = "1.2.1"
-compose-plugin = "1.7.0-rc01"
+compose-plugin = "1.7.1"
 coroutines = "1.8.0"
 detekt = "1.23.6"
 junit = "4.13.2"
-koin = "3.6.0-Beta4"
-koin-compose-multiplatform = "1.2.0-Beta4"
-kotlin = "2.0.0"
+koin = "4.0.0"
+kotlin = "2.0.20"
 kotlin-wrappers = "1.0.0-pre.775"
 kotlinx-datetime = "0.6.0"
 kotlinx-serialization = "1.7.3"
@@ -41,8 +40,8 @@ androidx-preference = { module = "androidx.preference:preference-ktx", version.r
 androidx-test-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-junit" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
-koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin-compose-multiplatform" }
-koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin-compose-multiplatform" }
+koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
+koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 kotlin-browser = { module = "org.jetbrains.kotlin-wrappers:kotlin-browser", version.ref = "kotlin-wrappers" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
