@@ -74,11 +74,11 @@ fun <T : Any> SettingsItem(
             @Suppress("UNCHECKED_CAST")
             when (value) {
                 is Boolean -> {
-                    SettingsBooleanItem(viewModel as SettingsItemViewModel<Boolean>)
+                    SettingsBooleanInput(viewModel as SettingsItemViewModel<Boolean>)
                 }
 
                 is Number -> {
-                    SettingsNumericalItem(viewModel)
+                    SettingsNumericalInput(viewModel)
                 }
 
                 is IterableEnum<*> -> {

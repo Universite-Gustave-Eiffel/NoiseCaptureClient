@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.dp
  * @param modifier Compose [Modifier]
  */
 @Composable
-fun <T : Any> SettingsNumericalItem(
+fun <T : Any> SettingsNumericalInput(
     viewModel: SettingsItemViewModel<T>,
     modifier: Modifier = Modifier,
 ) {

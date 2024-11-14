@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
  * Switch that controls a given boolean setting's value.
  */
 @Composable
-fun SettingsBooleanItem(
+fun SettingsBooleanInput(
     viewModel: SettingsItemViewModel<Boolean>,
     modifier: Modifier = Modifier,
 ) {
