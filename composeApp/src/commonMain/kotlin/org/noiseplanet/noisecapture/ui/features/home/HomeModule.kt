@@ -2,7 +2,7 @@ package org.noiseplanet.noisecapture.ui.features.home
 
 import androidx.compose.ui.graphics.vector.ImageVector
 import org.jetbrains.compose.resources.StringResource
-import org.koin.compose.viewmodel.dsl.viewModel
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 import org.noiseplanet.noisecapture.ui.features.home.menuitem.HomeScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.home.menuitem.MenuItemViewModel
