@@ -12,4 +12,4 @@ expect annotation class IgnoreIos()
  * but will just be a dummy annotation for iOS
  */
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
-expect annotation class IgnoreAndroid
+expect annotation class IgnoreAndroid()

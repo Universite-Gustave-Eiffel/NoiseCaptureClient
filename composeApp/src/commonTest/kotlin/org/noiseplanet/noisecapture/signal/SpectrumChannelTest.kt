@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.signal
 
+import IgnoreAndroid
 import IgnoreIos
 import kotlinx.coroutines.test.runTest
 import noisecapture.composeapp.generated.resources.Res
@@ -1448,8 +1449,17 @@ class SpectrumChannelTest {
      *       so accessing test resources is not possible. It seems like it could be solved by
      *       using cocoapods for providing the shared framework on iOS builds but I didn't manage
      *       to get it to work yet.
+     * TODO: Fix compose test resources on Android
+     *       Since compose KMP 1.7.0+ accessing resources require Android Context to be initialized,
+     *       which is not the case for Unit tests because they are platform independent. I'm not
+     *       sure yet how to fix that as I didn't find much documented examples. There seems to be
+     *       two options:
+     *       - Transform this test to an instrumented test (i.e. UI test)
+     *       - Find an alternative way to inject the raw data into the test case than trying to
+     *         access the test device file system.
      */
     @IgnoreIos
+    @IgnoreAndroid
     @OptIn(ExperimentalResourceApi::class)
     @Test
     fun testSpeak() = runTest {
