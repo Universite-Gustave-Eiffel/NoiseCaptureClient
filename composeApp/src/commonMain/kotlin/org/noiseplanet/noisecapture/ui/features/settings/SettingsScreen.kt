@@ -8,7 +8,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import org.koin.compose.koinInject
 import org.noiseplanet.noisecapture.ui.features.settings.item.SettingsItem
 import org.noiseplanet.noisecapture.ui.theme.listBackground
@@ -16,7 +15,6 @@ import org.noiseplanet.noisecapture.ui.theme.listBackground
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SettingsScreen(
-    navigationController: NavController,
     viewModel: SettingsScreenViewModel = koinInject(),
 ) {
     LazyColumn(
