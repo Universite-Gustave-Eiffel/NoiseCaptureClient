@@ -12,6 +12,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -68,8 +69,9 @@ fun <T : Any> SettingsNumericalItem(
 
     val colors = TextFieldDefaults.colors(
         unfocusedContainerColor = Color.Transparent,
-        unfocusedIndicatorColor = Color.Transparent
+        unfocusedIndicatorColor = Color.Transparent,
     )
+    val isEnabled by viewModel.isEnabled.collectAsState(true)
 
     @Suppress("UNCHECKED_CAST")
     fun getNumericalValue(): T? {
@@ -80,7 +82,6 @@ fun <T : Any> SettingsNumericalItem(
             else -> null
         }
     }
-
 
     Box(
         modifier = modifier.width(IntrinsicSize.Min)
@@ -94,7 +95,11 @@ fun <T : Any> SettingsNumericalItem(
                     viewModel.setValue(it)
                 }
             },
-            textStyle = MaterialTheme.typography.titleSmall.copy(textAlign = TextAlign.End),
+            textStyle = MaterialTheme.typography.titleMedium.copy(
+                textAlign = TextAlign.End,
+                color = MaterialTheme.colorScheme.onSurface
+                    .copy(alpha = if (isEnabled) 1.0f else 0.5f)
+            ),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Ascii,
                 imeAction = ImeAction.Done,
@@ -104,6 +109,7 @@ fun <T : Any> SettingsNumericalItem(
                 focusManager.clearFocus()
             }),
             singleLine = true,
+            enabled = isEnabled,
             modifier = modifier
                 .widthIn(min = 32.dp, max = 64.dp)
                 .align(Alignment.CenterEnd)

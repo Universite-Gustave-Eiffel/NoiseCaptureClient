@@ -59,6 +59,11 @@ class DefaultUserSettingsService(
      */
     private val settingsChangeListener = MutableSharedFlow<Unit>(replay = 1)
 
+    init {
+        // Upon initialisation, emit a first value so the flow not empty when subscribing
+        settingsChangeListener.tryEmit(Unit)
+    }
+
     override fun <T> set(key: SettingsKey<T>, value: T?) {
         val keyName = requireNotNull(key::class.simpleName) {
             "Could not get name from settings key"

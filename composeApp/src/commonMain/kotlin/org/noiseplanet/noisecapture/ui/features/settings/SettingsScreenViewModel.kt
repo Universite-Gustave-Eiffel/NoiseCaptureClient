@@ -93,6 +93,7 @@ class SettingsScreenViewModel(
                     settingKey = SettingsKey.SettingTransferOverWifiOnly,
                     settingsService = settingsService,
                     isLastInSection = true,
+                    isEnabled = settingsService.getFlow(SettingsKey.SettingAutomaticTransferEnabled)
                 ),
             )
         ),
@@ -116,6 +117,7 @@ class SettingsScreenViewModel(
                     description = Res.string.settings_measurements_max_duration_description,
                     settingKey = SettingsKey.SettingMaxMeasurementDuration,
                     settingsService = settingsService,
+                    isEnabled = settingsService.getFlow(SettingsKey.SettingLimitMeasurementDuration)
                 ),
                 SettingsEnumItemViewModel(
                     title = Res.string.settings_measurements_spectrogram_mode_title,

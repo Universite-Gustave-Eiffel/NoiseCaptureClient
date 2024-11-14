@@ -7,12 +7,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,11 +36,12 @@ fun <T : Any> SettingsItem(
         bottomStart = if (viewModel.isLastInSection) CORNER_RADIUS.dp else 0.dp,
         bottomEnd = if (viewModel.isLastInSection) CORNER_RADIUS.dp else 0.dp,
     )
+    val isEnabled by viewModel.isEnabled.collectAsState(true)
 
     Column(
         modifier = Modifier.background(Color.White, shape)
             .clip(shape)
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 16.dp),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -52,18 +54,20 @@ fun <T : Any> SettingsItem(
             Column(modifier = Modifier.weight(0.8f, fill = false)) {
                 Text(
                     stringResource(viewModel.title),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                        .copy(alpha = if (isEnabled) 1.0f else 0.5f)
                 )
                 Text(
                     stringResource(viewModel.description),
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
 
-            Spacer(modifier = Modifier.widthIn())
+            Spacer(modifier = Modifier)
 
             val value = viewModel.getValue()
             @Suppress("UNCHECKED_CAST")

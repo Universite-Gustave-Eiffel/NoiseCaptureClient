@@ -17,11 +17,14 @@ fun SettingsBooleanItem(
     val value by viewModel.getValueFlow()
         .collectAsState(viewModel.getValue())
 
+    val isEnabled by viewModel.isEnabled.collectAsState(true)
+
     Switch(
         checked = value,
         onCheckedChange = { newValue ->
             viewModel.setValue(newValue)
         },
-        modifier
+        enabled = isEnabled,
+        modifier = modifier
     )
 }

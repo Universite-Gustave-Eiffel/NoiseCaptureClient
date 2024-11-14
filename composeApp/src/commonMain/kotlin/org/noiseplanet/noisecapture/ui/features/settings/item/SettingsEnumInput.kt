@@ -27,6 +27,9 @@ fun SettingsEnumInput(
     val isDropDownExpanded = remember {
         mutableStateOf(false)
     }
+    val isEnabled by viewModel.isEnabled
+        .collectAsState(true)
+
     val selectedItemName by viewModel.selected
         .collectAsState(initial = viewModel.initialValue)
 
@@ -39,26 +42,29 @@ fun SettingsEnumInput(
             Row(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.clickable {
+                modifier = Modifier.clickable(enabled = isEnabled) {
                     isDropDownExpanded.value = true
                 }
             ) {
                 Text(
                     text = stringResource(selectedItemName),
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                        .copy(alpha = if (isEnabled) 1.0f else 0.5f)
                 )
             }
             DropdownMenu(
                 expanded = isDropDownExpanded.value,
                 onDismissRequest = {
                     isDropDownExpanded.value = false
-                }) {
+                },
+            ) {
                 viewModel.choices.forEachIndexed { index, name ->
                     DropdownMenuItem(
                         text = {
                             Text(
                                 text = stringResource(name),
-                                style = MaterialTheme.typography.bodySmall
+                                style = MaterialTheme.typography.bodyMedium
                             )
                         },
                         onClick = {
