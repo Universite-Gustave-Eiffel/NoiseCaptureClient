@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -45,7 +46,7 @@ fun <T : Any> SettingsItem(
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.padding(
                 top = if (viewModel.isFirstInSection) 16.dp else 12.dp,
                 bottom = if (viewModel.isLastInSection) 16.dp else 12.dp,
@@ -67,7 +68,7 @@ fun <T : Any> SettingsItem(
                 )
             }
 
-            Spacer(modifier = Modifier)
+            Spacer(modifier = Modifier.width(16.dp))
 
             val value = viewModel.getValue()
             @Suppress("UNCHECKED_CAST")
