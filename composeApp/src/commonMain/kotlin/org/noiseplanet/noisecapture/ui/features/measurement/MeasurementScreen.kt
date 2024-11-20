@@ -36,8 +36,8 @@ fun MeasurementScreen(
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
-                Lifecycle.Event.ON_START -> viewModel.startRecordingAudio()
-                Lifecycle.Event.ON_STOP -> viewModel.stopRecordingAudio()
+                Lifecycle.Event.ON_CREATE -> viewModel.startRecordingAudio()
+                Lifecycle.Event.ON_DESTROY -> viewModel.stopRecordingAudio()
                 else -> {}
             }
         }
