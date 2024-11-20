@@ -14,6 +14,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import org.noiseplanet.noisecapture.log.Logger
+import org.noiseplanet.noisecapture.util.NSNotificationListener
 import org.noiseplanet.noisecapture.util.checkNoError
 import platform.AVFAudio.AVAudioEngine
 import platform.AVFAudio.AVAudioPCMBuffer
@@ -25,7 +26,9 @@ import platform.AVFAudio.setActive
 import platform.AVFAudio.setPreferredIOBufferDuration
 import platform.AVFAudio.setPreferredSampleRate
 import platform.Foundation.NSError
+import platform.Foundation.NSNotification
 import platform.Foundation.NSTimeInterval
+import platform.UIKit.UIApplicationWillResignActiveNotification
 import platform.posix.uint32_t
 
 /**
@@ -50,6 +53,11 @@ internal class IOSAudioSource(
     private val audioSession = AVAudioSession.sharedInstance()
     private var audioEngine: AVAudioEngine? = null
 
+    private val interruptionNotificationHandler = NSNotificationListener(
+        notificationName = UIApplicationWillResignActiveNotification,
+        `object` = audioSession,
+        callback = { handleSessionInterruptionNotification(it) }
+    )
 
     override suspend fun setup(): Flow<AudioSamples> {
         try {
@@ -103,6 +111,8 @@ internal class IOSAudioSource(
                 error = error.ptr
             )
             checkNoError(error.value) { "Error while stopping AVAudioSession" }
+
+            interruptionNotificationHandler.stopListening()
         }
     }
 
@@ -168,14 +178,19 @@ internal class IOSAudioSource(
             audioSession.setPreferredIOBufferDuration(bufferDuration, error.ptr)
             checkNoError(error.value) { "Error while setting AVAudioSession buffer size" }
 
-            // TODO: Figure out how to add an observer for NSNotification.Name.AVAudioSessionInterruption
-            //       so we can listen to external AVAudioSession interruptions
             audioSession.setActive(
                 active = true,
                 error = error.ptr
             )
             checkNoError(error.value) { "Error while starting AVAudioSession" }
+
+            interruptionNotificationHandler.startListening()
         }
         logger.debug("AVAudioSession is now active")
+    }
+
+    private fun handleSessionInterruptionNotification(notification: NSNotification) {
+        logger.debug("Received audio interruption notification!")
+        logger.debug(notification.toString())
     }
 }
