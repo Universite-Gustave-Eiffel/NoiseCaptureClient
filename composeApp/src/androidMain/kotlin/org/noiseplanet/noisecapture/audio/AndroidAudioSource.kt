@@ -5,6 +5,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.consumeAsFlow
 import org.noiseplanet.noisecapture.log.Logger
+import org.noiseplanet.noisecapture.model.MicrophoneLocation
 
 /**
  * Android audio source implementation
@@ -35,7 +36,7 @@ internal class AndroidAudioSource(
         audioRecorder?.stopRecording()
     }
 
-    override fun getMicrophoneLocation(): AudioSource.MicrophoneLocation {
-        return AudioSource.MicrophoneLocation.LOCATION_UNKNOWN
+    override fun getMicrophoneLocation(): MicrophoneLocation {
+        return MicrophoneLocation.LOCATION_UNKNOWN
     }
 }

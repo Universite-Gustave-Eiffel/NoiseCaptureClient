@@ -25,11 +25,21 @@ import org.noiseplanet.noisecapture.log.Logger
 /**
  * Record, observe and save audio measurements.
  */
-interface MeasurementsService {
+interface LiveRecordingService {
+
+    /**
+     * Setup audio source for recording audio
+     */
+    fun setupAudioSource()
+
+    /**
+     * Destroy audio source
+     */
+    fun releaseAudioSource()
 
     /**
      * Starts recording audio through the provided audio source.
-     * If already a recording is already running, calling this again will have no effect.
+     * If a recording is already running, calling this again will have no effect.
      */
     fun startRecordingAudio()
 
@@ -61,13 +71,13 @@ interface MeasurementsService {
 }
 
 /**
- * Default [MeasurementsService] implementation.
+ * Default [LiveRecordingService] implementation.
  * Can be overridden in platforms to add specific behaviour.
  */
-class DefaultMeasurementService(
+class DefaultLiveRecordingService(
     private val audioSource: AudioSource,
     private val logger: Logger,
-) : MeasurementsService, KoinComponent {
+) : LiveRecordingService, KoinComponent {
 
     companion object {
 
@@ -77,6 +87,7 @@ class DefaultMeasurementService(
         private const val SPL_DECAY_RATE = FAST_DECAY_RATE
         private const val SPL_WINDOW_TIME = WINDOW_TIME
     }
+
 
     private var indicatorsProcessing: AcousticIndicatorsProcessing? = null
     private var spectrumDataProcessing: SpectrumDataProcessing? = null
@@ -92,15 +103,33 @@ class DefaultMeasurementService(
     )
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
+
+    override fun setupAudioSource() {
+        // Setup audio source
+        audioSource.setup()
+    }
+
+    override fun releaseAudioSource() {
+        // Cancel processing job
+        coroutineScope.launch(Dispatchers.Default) {
+            audioJob?.cancel()
+        }
+        // Release audio source
+        audioSource.release()
+    }
+
     override fun startRecordingAudio() {
         if (audioJob?.isActive == true) {
             logger.debug("Audio recording is already running. Don't start again.")
             return
         }
+
         logger.debug("Starting recording audio samples...")
-        // Start recording and processing audio samples in a background thread
+        audioSource.start()
+
+        // Start processing audio samples in a background thread
         audioJob = coroutineScope.launch(Dispatchers.Default) {
-            audioSource.setup()
+            audioSource.audioSamples
                 .flowOn(Dispatchers.Default)
                 .collect { audioSamples ->
                     // Process acoustic indicators
@@ -131,10 +160,8 @@ class DefaultMeasurementService(
     }
 
     override fun stopRecordingAudio() {
-        coroutineScope.launch(Dispatchers.Default) {
-            audioJob?.cancel()
-            audioSource.release()
-        }
+        // Pause audio source
+        audioSource.pause()
     }
 
     override fun getAcousticIndicatorsFlow(): Flow<AcousticIndicatorsData> {

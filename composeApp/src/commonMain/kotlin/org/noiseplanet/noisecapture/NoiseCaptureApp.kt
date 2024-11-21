@@ -77,7 +77,9 @@ fun NoiseCaptureApp() {
                 MeasurementScreen()
             }
 
-            composable(route = Route.Settings.name) { SettingsScreen() }
+            composable(route = Route.Settings.name) {
+                SettingsScreen()
+            }
         }
     }
 }

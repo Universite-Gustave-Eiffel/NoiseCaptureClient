@@ -30,20 +30,24 @@ val SPECTRUM_PLOT_SQUARE_OFFSET = 1.dp
 @Composable
 fun MeasurementScreen(
     viewModel: MeasurementScreenViewModel = koinInject(),
-    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
 ) {
+    val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
-                Lifecycle.Event.ON_CREATE -> viewModel.startRecordingAudio()
-                Lifecycle.Event.ON_DESTROY -> viewModel.stopRecordingAudio()
+                Lifecycle.Event.ON_CREATE -> {
+                    viewModel.setupAudioSource()
+                    viewModel.startRecordingAudio()
+                }
+
                 else -> {}
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
 
         onDispose {
+            viewModel.releaseAudioSource()
             lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }

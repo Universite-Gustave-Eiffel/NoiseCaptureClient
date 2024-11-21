@@ -14,10 +14,10 @@ import kotlinx.coroutines.withContext
 import org.noiseplanet.noisecapture.audio.ANDROID_GAIN
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.SpectrogramScaleMode
-import org.noiseplanet.noisecapture.services.MeasurementsService
+import org.noiseplanet.noisecapture.services.LiveRecordingService
 
 class SpectrogramPlotViewModel(
-    private val measurementsService: MeasurementsService,
+    private val measurementsService: LiveRecordingService,
     private val logger: Logger,
 ) : ViewModel() {
 
