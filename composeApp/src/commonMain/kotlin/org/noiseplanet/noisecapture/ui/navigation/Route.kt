@@ -5,11 +5,15 @@ import noisecapture.composeapp.generated.resources.app_name
 import noisecapture.composeapp.generated.resources.measurement_title
 import noisecapture.composeapp.generated.resources.platform_info_title
 import noisecapture.composeapp.generated.resources.request_permission_title
+import noisecapture.composeapp.generated.resources.settings_title
 import org.jetbrains.compose.resources.StringResource
 
 enum class Route(val title: StringResource) {
     Home(title = Res.string.app_name),
+
     PlatformInfo(title = Res.string.platform_info_title),
     RequestPermission(title = Res.string.request_permission_title),
-    Measurement(title = Res.string.measurement_title)
+    Measurement(title = Res.string.measurement_title),
+
+    Settings(title = Res.string.settings_title),
 }

@@ -10,16 +10,15 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.ui.features.measurement.indicators.AcousticIndicatorsView
 
 const val DEFAULT_SAMPLE_RATE = 48000.0
@@ -28,7 +27,6 @@ val NOISE_LEVEL_FONT_SIZE = TextUnit(50F, TextUnitType.Sp)
 val SPECTRUM_PLOT_SQUARE_WIDTH = 10.dp
 val SPECTRUM_PLOT_SQUARE_OFFSET = 1.dp
 
-@OptIn(KoinExperimentalAPI::class)
 @Composable
 fun MeasurementScreen(
     viewModel: MeasurementScreenViewModel = koinInject(),

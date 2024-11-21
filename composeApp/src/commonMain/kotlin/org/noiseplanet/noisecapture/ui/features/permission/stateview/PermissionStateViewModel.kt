@@ -14,8 +14,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.noiseplanet.noisecapture.permission.Permission
-import org.noiseplanet.noisecapture.permission.PermissionService
 import org.noiseplanet.noisecapture.permission.PermissionState
+import org.noiseplanet.noisecapture.services.PermissionService
 
 class PermissionStateViewModel(
     private val permission: Permission,

@@ -9,10 +9,12 @@ on:
   push:
     branches:
       - main
+      - dev
   pull_request:
     types: [ opened, reopened, labeled, unlabeled, ready_for_review, synchronize ]
     branches:
       - main
+      - dev
 
 jobs:
   SetUp:
