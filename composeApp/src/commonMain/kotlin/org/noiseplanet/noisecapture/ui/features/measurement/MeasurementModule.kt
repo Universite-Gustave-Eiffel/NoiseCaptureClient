@@ -1,6 +1,6 @@
 package org.noiseplanet.noisecapture.ui.features.measurement
 
-import org.koin.compose.viewmodel.dsl.viewModel
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 import org.noiseplanet.noisecapture.ui.features.measurement.indicators.AcousticIndicatorsViewModel
 import org.noiseplanet.noisecapture.ui.features.measurement.plot.spectrogram.SpectrogramPlotViewModel

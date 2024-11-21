@@ -14,6 +14,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import org.noiseplanet.noisecapture.log.Logger
+import org.noiseplanet.noisecapture.util.checkNoError
 import platform.AVFAudio.AVAudioEngine
 import platform.AVFAudio.AVAudioPCMBuffer
 import platform.AVFAudio.AVAudioSession
@@ -176,19 +177,5 @@ internal class IOSAudioSource(
             checkNoError(error.value) { "Error while starting AVAudioSession" }
         }
         logger.debug("AVAudioSession is now active")
-    }
-
-    /**
-     * Checks an optional [NSError] and if it's not null, throws an [IllegalStateException] with
-     * a given message and the error's localized description
-     *
-     * @param error Optional [NSError]
-     * @param lazyMessage Provided error message
-     * @throws [IllegalStateException] If given [NSError] is not null.
-     */
-    private fun checkNoError(error: NSError?, lazyMessage: () -> String) {
-        check(error == null) {
-            "${lazyMessage()}: ${error?.localizedDescription}"
-        }
     }
 }

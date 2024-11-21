@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.material.Scaffold
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -18,6 +18,7 @@ import org.noiseplanet.noisecapture.ui.AppBar
 import org.noiseplanet.noisecapture.ui.features.home.HomeScreen
 import org.noiseplanet.noisecapture.ui.features.measurement.MeasurementScreen
 import org.noiseplanet.noisecapture.ui.features.permission.RequestPermissionScreen
+import org.noiseplanet.noisecapture.ui.features.settings.SettingsScreen
 import org.noiseplanet.noisecapture.ui.navigation.Route
 import org.noiseplanet.noisecapture.ui.navigation.Transitions
 
@@ -59,19 +60,24 @@ fun NoiseCaptureApp() {
                 .windowInsetsPadding(WindowInsets.navigationBars)
         ) {
             composable(route = Route.Home.name) {
-                // TODO: Silently check for permissions and bypass this step if they are already all granted
                 HomeScreen(navigationController = navController)
             }
+
             composable(route = Route.RequestPermission.name) {
+                // TODO: Silently check for permissions and bypass this step if
+                //       they are already all granted
                 RequestPermissionScreen(
                     onClickNextButton = {
                         navController.navigate(Route.Measurement.name)
                     }
                 )
             }
+
             composable(route = Route.Measurement.name) {
                 MeasurementScreen()
             }
+
+            composable(route = Route.Settings.name) { SettingsScreen() }
         }
     }
 }

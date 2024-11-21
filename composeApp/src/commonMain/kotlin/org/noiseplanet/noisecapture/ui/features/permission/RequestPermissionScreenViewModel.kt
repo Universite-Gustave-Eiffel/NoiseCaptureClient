@@ -7,8 +7,8 @@ import kotlinx.coroutines.flow.combine
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.parameter.parametersOf
-import org.noiseplanet.noisecapture.permission.PermissionService
 import org.noiseplanet.noisecapture.permission.PermissionState
+import org.noiseplanet.noisecapture.services.PermissionService
 import org.noiseplanet.noisecapture.ui.features.permission.stateview.PermissionStateViewModel
 
 class RequestPermissionScreenViewModel(

@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.ui.features.home
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -29,24 +30,26 @@ fun HomeScreen(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 96.dp),
-            contentPadding = PaddingValues(
-                start = 24.dp,
-                top = 24.dp,
-                end = 24.dp,
-                bottom = 24.dp
-            ),
-            content = {
-                items(viewModel.menuItems) { viewModel ->
-                    MenuItem(
-                        viewModel,
-                        navigateTo = { route ->
-                            navigationController.navigate(route.name)
-                        },
-                    )
+        Column {
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(minSize = 96.dp),
+                contentPadding = PaddingValues(
+                    start = 24.dp,
+                    top = 24.dp,
+                    end = 24.dp,
+                    bottom = 24.dp
+                ),
+                content = {
+                    items(viewModel.menuItems) { viewModel ->
+                        MenuItem(
+                            viewModel,
+                            navigateTo = { route ->
+                                navigationController.navigate(route.name)
+                            },
+                        )
+                    }
                 }
-            }
-        )
+            )
+        }
     }
 }

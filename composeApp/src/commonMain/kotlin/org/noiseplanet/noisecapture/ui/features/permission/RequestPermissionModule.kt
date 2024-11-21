@@ -1,6 +1,6 @@
 package org.noiseplanet.noisecapture.ui.features.permission
 
-import org.koin.compose.viewmodel.dsl.viewModel
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.ui.features.permission.stateview.PermissionStateViewModel

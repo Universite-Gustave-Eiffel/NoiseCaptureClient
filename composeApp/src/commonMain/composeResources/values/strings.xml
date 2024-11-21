@@ -11,9 +11,6 @@
     <string name="menu_feedback">Measurement feedback</string>
     <string name="menu_statistics">Measurements statistics</string>
     <string name="menu_map">Last measurement map</string>
-    <string name="menu_help">Help</string>
-    <string name="menu_about">About</string>
-    <string name="menu_calibration">Calibration</string>
     <string name="menu_settings">Settings</string>
 
     <!--  PermissionScreen  -->
@@ -26,4 +23,92 @@
 
     <!--  MeasurementScreen  -->
     <string name="measurement_title">New measurement</string>
+
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+
+    <string name="settings_section_user_profile">USER PROFILE</string>
+    <string name="settings_user_acoustics_knowledge_title">Acoustics knowledge</string>
+    <string name="settings_user_acoustics_knowledge_description">How would you rank your knowledge about acoustics and sonic environments?</string>
+
+    <string name="settings_section_general">GENERAL</string>
+    <string name="settings_general_tooltips_title">Tooltips</string>
+    <string name="settings_general_tooltips_description">Show tooltips across the NoiseCapture app</string>
+    <string name="settings_general_disclaimer_title">Disclaimer</string>
+    <string name="settings_general_disclaimer_description">Show a usage disclaimer upon opening the app</string>
+    <string name="settings_general_notification_title">Notification</string>
+    <string name="settings_general_notification_description">Show a notification with a link to the Noise-Planet website (TODO: When is this notification shown?)</string>
+    <string name="settings_general_automatic_transfer_title">Automatic transfer</string>
+    <string name="settings_general_automatic_transfer_description">Transfer measurements automatically after completion</string>
+    <string name="settings_general_wifi_only_title">Wi-Fi only</string>
+    <string name="settings_general_wifi_only_description">Only transfer measurements data over Wi-Fi to reduce mobile data consumption</string>
+
+    <string name="settings_section_measurements">MEASUREMENTS</string>
+    <string name="settings_measurements_windowing_title">Windowing mode</string>
+    <string name="settings_measurements_windowing_description">Real time measurement windowing mode (doesn't affect the end result)</string>
+    <string name="settings_measurements_limit_duration_title">Limit duration</string>
+    <string name="settings_measurements_limit_duration_description">Limit measurements duration to a certain length</string>
+    <string name="settings_measurements_max_duration_title">Max duration (in seconds)</string>
+    <string name="settings_measurements_max_duration_description">Measurements will automatically stop after this amount of time has elapsed</string>
+    <string name="settings_measurements_spectrogram_mode_title">Spectrogram mode</string>
+    <string name="settings_measurements_spectrogram_mode_description">Set the spectrogram scale mode (logarithmic or linear)</string>
+
+    <string name="settings_section_calibration">CALIBRATION</string>
+    <string name="settings_calibration_gain_correction_title">Signal gain correction (dB)</string>
+    <string name="settings_calibration_gain_correction_description">Adds a gain correction to the input signal after calibration</string>
+    <string name="settings_calibration_countdown_title">Countdown duration (seconds)</string>
+    <string name="settings_calibration_countdown_description">How many seconds will elapse before the calibration starts</string>
+    <string name="settings_calibration_duration_title">Calibration duration (seconds)</string>
+    <string name="settings_calibration_duration_description">Sets the duration of the calibration in seconds</string>
+    <string name="settings_calibration_output_title">Signal output</string>
+    <string name="settings_calibration_output_description">Pick the audio output used for the linearity test</string>
+
+    <string name="settings_section_map">MAP</string>
+    <string name="settings_map_measurements_count_title">Shown measurements count</string>
+    <string name="settings_map_measurements_count_description">Adjust the maximum number of measurements shown on the map at once (set this to 0 to show all measurements)</string>
+
+
+    <!-- User acoustics knowledge -->
+    <string name="acoustics_knowledge_beginner_title">Beginner</string>
+    <string name="acoustics_knowledge_beginner_description">I know nothing or only a few things about noise</string>
+    <string name="acoustics_knowledge_confirmed_title">Confirmed</string>
+    <string name="acoustics_knowledge_confirmed_description">I have some knowledge about noise</string>
+    <string name="acoustics_knowledge_expert_title">Expert</string>
+    <string name="acoustics_knowledge_expert_description">I am an expert or professional in the domain of noise</string>
+
+
+    <!-- Spectrogram scale mode -->
+    <string name="spectrogram_scale_mode_linear_title">Linear</string>
+    <string name="spectrogram_scale_mode_linear_description">Linear scale</string>
+    <string name="spectrogram_scale_mode_logarithmic_title">Log</string>
+    <string name="spectrogram_scale_mode_logarithmic_description">Logarithmic scale</string>
+
+
+    <!-- Calibration test audio output -->
+    <string name="calibration_output_phonecall_title">Phone call</string>
+    <string name="calibration_output_phonecall_description">Phone call</string>
+    <string name="calibration_output_system_sound_title">System sound</string>
+    <string name="calibration_output_system_sound_description">System sound</string>
+    <string name="calibration_output_ringtone_title">Ringtone</string>
+    <string name="calibration_output_ringtone_description">Ringtone</string>
+    <string name="calibration_output_music_title">Music</string>
+    <string name="calibration_output_music_description">Music</string>
+    <string name="calibration_output_alarm_title">Alarm</string>
+    <string name="calibration_output_alarm_description">Alarm</string>
+    <string name="calibration_output_notification_title">Notification</string>
+    <string name="calibration_output_notification_description">Notification</string>
+    <string name="calibration_output_dmtf_title">DMTF</string>
+    <string name="calibration_output_dmtf_description">Dual tone multi-frequency (DMTF)</string>
+
+
+    <!-- Measurement windowing mode -->
+    <string name="measurement_windowing_mode_hann_title">Hann</string>
+    <string name="measurement_windowing_mode_hann_description">Hann</string>
+    <string name="measurement_windowing_mode_rect_title">Rect</string>
+    <string name="measurement_windowing_mode_rect_description">Rectangular</string>
+
+
+    <!-- Misc -->
+    <string name="na">N/A</string>
 </resources>

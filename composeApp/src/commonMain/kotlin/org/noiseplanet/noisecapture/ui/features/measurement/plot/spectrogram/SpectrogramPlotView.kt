@@ -22,7 +22,8 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.toSize
-import org.noiseplanet.noisecapture.measurements.DefaultMeasurementService.Companion.FFT_HOP
+import org.noiseplanet.noisecapture.model.SpectrogramScaleMode
+import org.noiseplanet.noisecapture.services.DefaultMeasurementService.Companion.FFT_HOP
 import org.noiseplanet.noisecapture.ui.features.measurement.DEFAULT_SAMPLE_RATE
 import org.noiseplanet.noisecapture.ui.features.measurement.plot.PlotAxisBuilder
 import org.noiseplanet.noisecapture.ui.features.measurement.plot.PlotBitmapOverlay
@@ -100,7 +101,7 @@ fun SpectrogramPlotView(
 private fun buildSpectrogramAxisBitmap(
     size: Size,
     density: Density,
-    scaleMode: SpectrogramBitmap.ScaleMode,
+    scaleMode: SpectrogramScaleMode,
     sampleRate: Double,
     textMeasurer: TextMeasurer,
     colors: ColorScheme,
@@ -110,7 +111,7 @@ private fun buildSpectrogramAxisBitmap(
     val canvas = androidx.compose.ui.graphics.Canvas(bitmap)
 
     var frequencyLegendPosition = when (scaleMode) {
-        SpectrogramBitmap.ScaleMode.SCALE_LOG -> SpectrogramBitmap.frequencyLegendPositionLog
+        SpectrogramScaleMode.SCALE_LOG -> SpectrogramBitmap.frequencyLegendPositionLog
         else -> SpectrogramBitmap.frequencyLegendPositionLinear
     }
     frequencyLegendPosition = frequencyLegendPosition
@@ -148,7 +149,7 @@ private fun buildSpectrogramAxisBitmap(
                 }
                 val textSize = textMeasurer.measure(text)
                 val tickHeightPos = when (scaleMode) {
-                    SpectrogramBitmap.ScaleMode.SCALE_LOG -> {
+                    SpectrogramScaleMode.SCALE_LOG -> {
                         sheight - (log10(frequency / fMin) / ((log10(fMax / fMin) / sheight))).toInt()
                     }
 

@@ -1,7 +1,7 @@
 package org.noiseplanet.noisecapture.ui.features.measurement
 
 import androidx.lifecycle.ViewModel
-import org.noiseplanet.noisecapture.measurements.MeasurementsService
+import org.noiseplanet.noisecapture.services.MeasurementsService
 
 class MeasurementScreenViewModel(
     private val measurementsService: MeasurementsService,

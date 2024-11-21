@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.permission
+package org.noiseplanet.noisecapture.services
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -6,6 +6,8 @@ import kotlinx.coroutines.flow.flow
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.qualifier.named
+import org.noiseplanet.noisecapture.permission.Permission
+import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.permission.delegate.PermissionDelegate
 
 /**

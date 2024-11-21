@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import org.noiseplanet.noisecapture.measurements.MeasurementsService
+import org.noiseplanet.noisecapture.services.MeasurementsService
 import org.noiseplanet.noisecapture.util.toComposeColor
 import kotlin.math.max
 
