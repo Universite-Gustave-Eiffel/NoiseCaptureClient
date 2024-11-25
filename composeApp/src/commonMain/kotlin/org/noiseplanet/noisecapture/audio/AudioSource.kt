@@ -80,6 +80,11 @@ enum class AudioSourceState {
      * Audio source currently recording incoming audio.
      */
     RUNNING,
+
+    /**
+     * Audio source was paused and can be started again.
+     */
+    PAUSED,
 }
 
 /**
