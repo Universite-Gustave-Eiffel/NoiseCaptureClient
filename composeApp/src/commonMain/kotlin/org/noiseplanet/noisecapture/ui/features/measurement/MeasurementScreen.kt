@@ -37,7 +37,6 @@ fun MeasurementScreen(
             when (event) {
                 Lifecycle.Event.ON_CREATE -> {
                     viewModel.setupAudioSource()
-                    viewModel.startRecordingAudio()
                 }
 
                 else -> {}

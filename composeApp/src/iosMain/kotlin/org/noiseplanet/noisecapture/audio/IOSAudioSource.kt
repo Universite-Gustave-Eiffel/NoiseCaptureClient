@@ -82,9 +82,8 @@ internal class IOSAudioSource(
     override val audioSamples: Flow<AudioSamples> = audioSamplesChannel.receiveAsFlow()
     override val stateFlow: Flow<AudioSourceState> = stateChannel.receiveAsFlow()
 
-
     override fun setup() {
-        if (state == AudioSourceState.READY) {
+        if (state != AudioSourceState.UNINITIALIZED) {
             logger.debug("Audio source is already initialized, skipping setup.")
             return
         }
@@ -115,8 +114,8 @@ internal class IOSAudioSource(
                 return
             }
 
-            AudioSourceState.READY -> {
-                logger.debug("Starting audio recording")
+            AudioSourceState.READY, AudioSourceState.PAUSED -> {
+                logger.debug("Starting audio source")
                 memScoped {
                     val error: ObjCObjectVar<NSError?> = alloc()
                     audioEngine?.startAndReturnError(error.ptr)
@@ -137,10 +136,10 @@ internal class IOSAudioSource(
             AudioSourceState.RUNNING -> {
                 logger.debug("Pausing audio source.")
                 audioEngine?.stop()
-                state = AudioSourceState.READY
+                state = AudioSourceState.PAUSED
             }
 
-            AudioSourceState.READY -> {
+            AudioSourceState.READY, AudioSourceState.PAUSED -> {
                 logger.debug("Audio source already paused.")
                 return
             }
@@ -271,6 +270,7 @@ internal class IOSAudioSource(
 
                 val reason = userInfo[AVAudioSessionInterruptionReasonKey] as? Long ?: return
                 logger.debug("Reason: $reason")
+                pause()
             }
 
             AVAudioSessionInterruptionTypeEnded -> {
@@ -280,7 +280,7 @@ internal class IOSAudioSource(
                 val options = userInfo[AVAudioSessionInterruptionOptionKey] as? Long ?: return
                 if (options.toULong() == AVAudioSessionInterruptionOptionShouldResume) {
                     logger.debug("Resuming recording")
-                    setAudioSessionActive(true)
+                    start()
 
                     // TODO: Audio session is not restarting even if shouldResume is true
                     //       Do we need to start a new session? Restart audio engine?

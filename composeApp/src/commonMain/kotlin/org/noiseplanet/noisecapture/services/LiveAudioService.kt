@@ -18,6 +18,7 @@ import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.audio.AcousticIndicatorsData
 import org.noiseplanet.noisecapture.audio.AcousticIndicatorsProcessing
 import org.noiseplanet.noisecapture.audio.AudioSource
+import org.noiseplanet.noisecapture.audio.AudioSourceState
 import org.noiseplanet.noisecapture.audio.WINDOW_TIME
 import org.noiseplanet.noisecapture.audio.signal.FAST_DECAY_RATE
 import org.noiseplanet.noisecapture.audio.signal.LevelDisplayWeightedDecay
@@ -37,9 +38,17 @@ interface LiveAudioService {
     val isRunning: StateFlow<Boolean>
 
     /**
-     * Setup audio source for listening to incoming audio.
+     * State of the underlying audio source.
+     * Can be used to reflect system interruptions or resumes to user interface
      */
-    fun setupAudioSource()
+    val audioSourceState: Flow<AudioSourceState>
+
+    /**
+     * Setup audio source for listening to incoming audio.
+     *
+     * @param startWhenReady If true, starts the audio source when it becomes ready.
+     */
+    fun setupAudioSource(startWhenReady: Boolean = false)
 
     /**
      * Destroy audio source.
@@ -114,11 +123,11 @@ class DefaultLiveAudioService(
 
     private val _isRunning = MutableStateFlow(false)
     override val isRunning: StateFlow<Boolean> = _isRunning.asStateFlow()
+    
+    override val audioSourceState: Flow<AudioSourceState> = audioSource.stateFlow
 
-    override fun setupAudioSource() {
-        // Setup audio source
-        audioSource.setup()
-
+    override fun setupAudioSource(startWhenReady: Boolean) {
+        logger.debug("start when ready: $startWhenReady")
         // Create a job that will process incoming audio samples in a background thread
         audioJob = coroutineScope.launch(Dispatchers.Default) {
             audioSource.audioSamples
@@ -149,6 +158,9 @@ class DefaultLiveAudioService(
                         }
                 }
         }
+
+        // Setup audio source
+        audioSource.setup()
     }
 
     override fun releaseAudioSource() {

@@ -36,11 +36,11 @@ internal class AndroidAudioSource(
     override val stateFlow: Flow<AudioSourceState> = stateChannel.receiveAsFlow()
 
     override fun setup() {
-        if (state == AudioSourceState.READY) {
+        if (state != AudioSourceState.UNINITIALIZED) {
             logger.debug("Audio source is already initialized, skipping setup.")
             return
         }
-        
+
         // Create a recorder that will process raw incoming audio into audio samples
         // and broadcast it through the channel.
         audioRecorder = AudioRecorder(audioSamplesChannel, logger)
@@ -59,8 +59,8 @@ internal class AndroidAudioSource(
                 return
             }
 
-            AudioSourceState.READY -> {
-                logger.debug("Audio source already paused.")
+            AudioSourceState.READY, AudioSourceState.PAUSED -> {
+                logger.debug("Starting audio source.")
                 // Start audio recording in a background thread and return the channel as a Flow
                 audioThread = Thread(audioRecorder)
                 audioThread?.start()
@@ -77,11 +77,12 @@ internal class AndroidAudioSource(
             }
 
             AudioSourceState.RUNNING -> {
+                logger.debug("Pausing audio source.")
                 audioRecorder?.stopRecording()
-                state = AudioSourceState.READY
+                state = AudioSourceState.PAUSED
             }
 
-            AudioSourceState.READY -> {
+            AudioSourceState.READY, AudioSourceState.PAUSED -> {
                 logger.debug("Audio source already paused.")
                 return
             }
