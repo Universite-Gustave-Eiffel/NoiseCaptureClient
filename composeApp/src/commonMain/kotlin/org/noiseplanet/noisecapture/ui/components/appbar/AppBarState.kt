@@ -7,6 +7,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 
 @Stable
 class AppBarState(
@@ -23,8 +25,8 @@ class AppBarState(
     val isVisible: Boolean
         get() = viewModel?.isAppBarVisible == true
 
-    val actions: List<AppBarButtonViewModel>
-        get() = viewModel?.actions.orEmpty()
+    val actions: Flow<List<AppBarButtonViewModel>>
+        get() = viewModel?.actions ?: MutableStateFlow(emptyList())
 }
 
 

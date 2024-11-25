@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,6 +32,8 @@ fun AppBar(
     val previousBackStackEntry = appBarState.navController.previousBackStackEntry
     val currentRoute = currentBackStackEntry?.destination?.route
     val canNavigateUp = currentRoute != null && previousBackStackEntry != null
+
+    val actions by appBarState.actions.collectAsState(emptyList())
 
     TopAppBar(
         title = {
@@ -58,11 +61,13 @@ fun AppBar(
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp, alignment = Alignment.End)
             ) {
-                items(appBarState.actions) { action ->
+                items(actions) { action ->
                     IconButton(onClick = action.onClick) {
                         Icon(
                             imageVector = action.icon,
-                            contentDescription = stringResource(action.iconContentDescription),
+                            contentDescription = action.iconContentDescription?.let {
+                                stringResource(it)
+                            },
                         )
                     }
                 }

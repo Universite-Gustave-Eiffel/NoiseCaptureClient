@@ -5,6 +5,6 @@ import org.jetbrains.compose.resources.StringResource
 
 data class AppBarButtonViewModel(
     val icon: ImageVector,
-    val iconContentDescription: StringResource,
+    val iconContentDescription: StringResource? = null,
     val onClick: () -> Unit,
 )

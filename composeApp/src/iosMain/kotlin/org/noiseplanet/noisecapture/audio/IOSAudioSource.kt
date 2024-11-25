@@ -121,6 +121,7 @@ internal class IOSAudioSource(
                     val error: ObjCObjectVar<NSError?> = alloc()
                     audioEngine?.startAndReturnError(error.ptr)
                     checkNoError(error.value) { "Error while starting AVAudioEngine" }
+                    state = AudioSourceState.RUNNING
                 }
             }
         }
@@ -136,6 +137,7 @@ internal class IOSAudioSource(
             AudioSourceState.RUNNING -> {
                 logger.debug("Pausing audio source.")
                 audioEngine?.stop()
+                state = AudioSourceState.READY
             }
 
             AudioSourceState.READY -> {

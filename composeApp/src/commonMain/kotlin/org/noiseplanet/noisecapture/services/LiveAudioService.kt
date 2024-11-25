@@ -7,7 +7,10 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -26,6 +29,12 @@ import org.noiseplanet.noisecapture.log.Logger
  * Listen to incoming audio and process samples to extract some acoustic indicators.
  */
 interface LiveAudioService {
+
+    /**
+     * True if service is currently monitoring incoming audio,
+     * false otherwise
+     */
+    val isRunning: StateFlow<Boolean>
 
     /**
      * Setup audio source for listening to incoming audio.
@@ -103,31 +112,14 @@ class DefaultLiveAudioService(
     )
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
+    private val _isRunning = MutableStateFlow(false)
+    override val isRunning: StateFlow<Boolean> = _isRunning.asStateFlow()
 
     override fun setupAudioSource() {
         // Setup audio source
         audioSource.setup()
-    }
 
-    override fun releaseAudioSource() {
-        // Cancel processing job
-        coroutineScope.launch(Dispatchers.Default) {
-            audioJob?.cancel()
-        }
-        // Release audio source
-        audioSource.release()
-    }
-
-    override fun startListening() {
-        if (audioJob?.isActive == true) {
-            logger.debug("Audio listening is already running. Don't start again.")
-            return
-        }
-
-        logger.debug("Starting listening to audio samples...")
-        audioSource.start()
-
-        // Start processing audio samples in a background thread
+        // Create a job that will process incoming audio samples in a background thread
         audioJob = coroutineScope.launch(Dispatchers.Default) {
             audioSource.audioSamples
                 .flowOn(Dispatchers.Default)
@@ -159,9 +151,26 @@ class DefaultLiveAudioService(
         }
     }
 
+    override fun releaseAudioSource() {
+        // Cancel processing job
+        coroutineScope.launch(Dispatchers.Default) {
+            audioJob?.cancel()
+        }
+        // Release audio source
+        audioSource.release()
+        _isRunning.tryEmit(false)
+    }
+
+    override fun startListening() {
+        // Start audio source
+        audioSource.start()
+        _isRunning.tryEmit(true)
+    }
+
     override fun stopListening() {
         // Pause audio source
         audioSource.pause()
+        _isRunning.tryEmit(false)
     }
 
     override fun getAcousticIndicatorsFlow(): Flow<AcousticIndicatorsData> {
