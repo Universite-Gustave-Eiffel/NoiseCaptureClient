@@ -14,7 +14,7 @@ val measurementModule = module {
     }
 
     viewModel {
-        SpectrumPlotViewModel(liveRecordingService = get())
+        SpectrumPlotViewModel(liveAudioService = get())
     }
 
     viewModel {
@@ -25,6 +25,6 @@ val measurementModule = module {
     }
 
     viewModel {
-        MeasurementScreenViewModel(liveRecordingService = get())
+        MeasurementScreenViewModel(liveAudioService = get())
     }
 }

@@ -23,31 +23,31 @@ import org.noiseplanet.noisecapture.audio.signal.window.SpectrumDataProcessing
 import org.noiseplanet.noisecapture.log.Logger
 
 /**
- * Record, observe and save audio measurements.
+ * Listen to incoming audio and process samples to extract some acoustic indicators.
  */
-interface LiveRecordingService {
+interface LiveAudioService {
 
     /**
-     * Setup audio source for recording audio
+     * Setup audio source for listening to incoming audio.
      */
     fun setupAudioSource()
 
     /**
-     * Destroy audio source
+     * Destroy audio source.
      */
     fun releaseAudioSource()
 
     /**
-     * Starts recording audio through the provided audio source.
+     * Starts listening to incoming audio samples through the provided audio source.
      * If a recording is already running, calling this again will have no effect.
      */
-    fun startRecordingAudio()
+    fun startListening()
 
     /**
-     * Stops the currently running audio recording.
-     * If no recording is running, this will have no effect
+     * Stops listening to incoming audio samples through the provided audio source.
+     * If no recording is running, this will have no effect.
      */
-    fun stopRecordingAudio()
+    fun stopListening()
 
     /**
      * Get a [Flow] of [AcousticIndicatorsData] from the currently running recording.
@@ -71,13 +71,13 @@ interface LiveRecordingService {
 }
 
 /**
- * Default [LiveRecordingService] implementation.
+ * Default [LiveAudioService] implementation.
  * Can be overridden in platforms to add specific behaviour.
  */
-class DefaultLiveRecordingService(
+class DefaultLiveAudioService(
     private val audioSource: AudioSource,
     private val logger: Logger,
-) : LiveRecordingService, KoinComponent {
+) : LiveAudioService, KoinComponent {
 
     companion object {
 
@@ -118,13 +118,13 @@ class DefaultLiveRecordingService(
         audioSource.release()
     }
 
-    override fun startRecordingAudio() {
+    override fun startListening() {
         if (audioJob?.isActive == true) {
-            logger.debug("Audio recording is already running. Don't start again.")
+            logger.debug("Audio listening is already running. Don't start again.")
             return
         }
 
-        logger.debug("Starting recording audio samples...")
+        logger.debug("Starting listening to audio samples...")
         audioSource.start()
 
         // Start processing audio samples in a background thread
@@ -159,7 +159,7 @@ class DefaultLiveRecordingService(
         }
     }
 
-    override fun stopRecordingAudio() {
+    override fun stopListening() {
         // Pause audio source
         audioSource.pause()
     }

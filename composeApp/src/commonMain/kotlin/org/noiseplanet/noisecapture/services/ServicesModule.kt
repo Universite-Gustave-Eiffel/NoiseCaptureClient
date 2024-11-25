@@ -6,8 +6,8 @@ val servicesModule = module {
 
     single<PermissionService> { DefaultPermissionService() }
 
-    single<LiveRecordingService> {
-        DefaultLiveRecordingService(
+    single<LiveAudioService> {
+        DefaultLiveAudioService(
             audioSource = get(),
             logger = get(),
         )

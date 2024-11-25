@@ -1,17 +1,17 @@
 package org.noiseplanet.noisecapture.ui.features.measurement
 
 import androidx.lifecycle.ViewModel
-import org.noiseplanet.noisecapture.services.LiveRecordingService
+import org.noiseplanet.noisecapture.services.LiveAudioService
 
 class MeasurementScreenViewModel(
-    private val liveRecordingService: LiveRecordingService,
+    private val liveAudioService: LiveAudioService,
 ) : ViewModel() {
 
-    fun setupAudioSource() = liveRecordingService.setupAudioSource()
+    fun setupAudioSource() = liveAudioService.setupAudioSource()
 
-    fun startRecordingAudio() = liveRecordingService.startRecordingAudio()
+    fun startRecordingAudio() = liveAudioService.startListening()
 
-    fun stopRecordingAudio() = liveRecordingService.stopRecordingAudio()
+    fun stopRecordingAudio() = liveAudioService.stopListening()
 
-    fun releaseAudioSource() = liveRecordingService.releaseAudioSource()
+    fun releaseAudioSource() = liveAudioService.releaseAudioSource()
 }
