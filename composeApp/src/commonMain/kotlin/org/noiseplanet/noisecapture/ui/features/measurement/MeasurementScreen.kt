@@ -17,7 +17,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.noiseplanet.noisecapture.ui.features.measurement.indicators.AcousticIndicatorsView
 
@@ -29,7 +28,7 @@ val SPECTRUM_PLOT_SQUARE_OFFSET = 1.dp
 
 @Composable
 fun MeasurementScreen(
-    viewModel: MeasurementScreenViewModel = koinInject(),
+    viewModel: MeasurementScreenViewModel,
 ) {
     val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
 

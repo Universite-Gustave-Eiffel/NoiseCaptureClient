@@ -2,11 +2,13 @@ package org.noiseplanet.noisecapture.ui.features.measurement
 
 import androidx.lifecycle.ViewModel
 import org.noiseplanet.noisecapture.services.LiveAudioService
+import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
+import org.noiseplanet.noisecapture.ui.navigation.Route
 
 class MeasurementScreenViewModel(
     private val liveAudioService: LiveAudioService,
-) : ViewModel() {
-
+) : ViewModel(), ScreenViewModel {
+    
     fun setupAudioSource() = liveAudioService.setupAudioSource()
 
     fun startRecordingAudio() = liveAudioService.startListening()

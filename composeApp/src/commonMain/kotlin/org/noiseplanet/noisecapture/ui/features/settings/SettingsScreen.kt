@@ -8,14 +8,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import org.koin.compose.koinInject
 import org.noiseplanet.noisecapture.ui.features.settings.item.SettingsItem
 import org.noiseplanet.noisecapture.ui.theme.listBackground
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SettingsScreen(
-    viewModel: SettingsScreenViewModel = koinInject(),
+    viewModel: SettingsScreenViewModel,
 ) {
     LazyColumn(
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 32.dp),

@@ -7,18 +7,23 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import org.noiseplanet.noisecapture.ui.AppBar
+import org.koin.compose.koinInject
+import org.noiseplanet.noisecapture.ui.components.appbar.AppBar
+import org.noiseplanet.noisecapture.ui.components.appbar.AppBarState
+import org.noiseplanet.noisecapture.ui.components.appbar.rememberAppBarState
 import org.noiseplanet.noisecapture.ui.features.home.HomeScreen
+import org.noiseplanet.noisecapture.ui.features.home.menuitem.HomeScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.measurement.MeasurementScreen
+import org.noiseplanet.noisecapture.ui.features.measurement.MeasurementScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.permission.RequestPermissionScreen
+import org.noiseplanet.noisecapture.ui.features.permission.RequestPermissionScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.settings.SettingsScreen
+import org.noiseplanet.noisecapture.ui.features.settings.SettingsScreenViewModel
 import org.noiseplanet.noisecapture.ui.navigation.Route
 import org.noiseplanet.noisecapture.ui.navigation.Transitions
 
@@ -29,21 +34,13 @@ import org.noiseplanet.noisecapture.ui.navigation.Transitions
  */
 @Composable
 fun NoiseCaptureApp() {
+
     val navController: NavHostController = rememberNavController()
-    // Get current navigation back stack entry
-    val backStackEntry by navController.currentBackStackEntryAsState()
-    // Get the name of the current screen
-    val currentScreen = Route.valueOf(
-        backStackEntry?.destination?.route ?: Route.Home.name
-    )
+    val appBarState: AppBarState = rememberAppBarState(navController)
 
     Scaffold(
         topBar = {
-            AppBar(
-                currentScreen = currentScreen,
-                canNavigateBack = navController.previousBackStackEntry != null,
-                navigateUp = { navController.navigateUp() }
-            )
+            AppBar(appBarState)
         }
     ) { innerPadding ->
         // TODO: Handle swipe back gestures on iOS -> encapsulate UINavigationController?
@@ -60,13 +57,20 @@ fun NoiseCaptureApp() {
                 .windowInsetsPadding(WindowInsets.navigationBars)
         ) {
             composable(route = Route.Home.name) {
-                HomeScreen(navigationController = navController)
+                val viewModel: HomeScreenViewModel = koinInject()
+                appBarState.setCurrentScreenViewModel(viewModel)
+
+                HomeScreen(viewModel = viewModel, navigationController = navController)
             }
 
             composable(route = Route.RequestPermission.name) {
                 // TODO: Silently check for permissions and bypass this step if
                 //       they are already all granted
+                val viewModel: RequestPermissionScreenViewModel = koinInject()
+                appBarState.setCurrentScreenViewModel(viewModel)
+
                 RequestPermissionScreen(
+                    viewModel = viewModel,
                     onClickNextButton = {
                         navController.navigate(Route.Measurement.name)
                     }
@@ -74,11 +78,17 @@ fun NoiseCaptureApp() {
             }
 
             composable(route = Route.Measurement.name) {
-                MeasurementScreen()
+                val viewModel: MeasurementScreenViewModel = koinInject()
+                appBarState.setCurrentScreenViewModel(viewModel)
+
+                MeasurementScreen(viewModel)
             }
 
             composable(route = Route.Settings.name) {
-                SettingsScreen()
+                val viewModel: SettingsScreenViewModel = koinInject()
+                appBarState.setCurrentScreenViewModel(viewModel)
+
+                SettingsScreen(viewModel)
             }
         }
     }
