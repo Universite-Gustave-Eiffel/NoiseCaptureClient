@@ -3,7 +3,7 @@ package org.noiseplanet.noisecapture.audio
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.MicrophoneLocation
 
@@ -19,20 +19,41 @@ internal class AndroidAudioSource(
     private var audioThread: Thread? = null
     private var audioRecorder: AudioRecorder? = null
 
-    override suspend fun setup(): Flow<AudioSamples> {
-        val audioSamplesChannel = Channel<AudioSamples>(
-            onBufferOverflow = BufferOverflow.DROP_OLDEST
-        )
+    private val audioSamplesChannel = Channel<AudioSamples>(
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+    private val stateChannel = Channel<AudioSourceState>(
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+
+    override var state: AudioSourceState = AudioSourceState.UNINITIALIZED
+        set(value) {
+            field = value
+            stateChannel.trySend(value)
+        }
+
+    override val audioSamples: Flow<AudioSamples> = audioSamplesChannel.receiveAsFlow()
+    override val stateFlow: Flow<AudioSourceState> = stateChannel.receiveAsFlow()
+
+    override fun setup() {
         // Create a recorder that will process raw incoming audio into audio samples
         // and broadcast it through the channel.
         audioRecorder = AudioRecorder(audioSamplesChannel, logger)
-        // Start audio recording in a background thread and return the channel as a Flow
-        audioThread = Thread(audioRecorder)
-        audioThread?.start()
-        return audioSamplesChannel.consumeAsFlow()
     }
 
     override fun release() {
+        pause()
+        audioRecorder = null
+        audioThread = null
+    }
+
+    override fun start() {
+        // Start audio recording in a background thread and return the channel as a Flow
+        audioThread = Thread(audioRecorder)
+        audioThread?.start()
+    }
+
+    override fun pause() {
         audioRecorder?.stopRecording()
     }
 

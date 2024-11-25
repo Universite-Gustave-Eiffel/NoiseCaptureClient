@@ -86,5 +86,5 @@ enum class AudioSourceState {
  * Thrown when user tries to start recording on an uninitialized audio source.
  */
 object UninitializedException : IllegalStateException(
-    message = "Audio source must be initialized before recording audio"
+    "Audio source must be initialized before recording audio"
 )
