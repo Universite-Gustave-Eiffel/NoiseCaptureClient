@@ -4,6 +4,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.os.Build
 import android.os.IBinder
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
@@ -25,9 +26,6 @@ internal class AndroidAudioSource(
 
     // - Properties
 
-    private var audioThread: Thread? = null
-    private var audioRecorder: AudioRecorder? = null
-
     private val audioSamplesChannel = Channel<AudioSamples>(
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
@@ -35,25 +33,35 @@ internal class AndroidAudioSource(
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
 
-    private var audioForegroundService: AudioForegroundService? = null
+    private var audioRecorder: AudioRecorder? = null
+    private var audioSourceService: AudioSourceService? = null
 
     private val serviceConnection = object : ServiceConnection {
+
+        /**
+         * Called when service is connected through [Context.bindService].
+         * Retrieves the service instance from the given [binder] and launches
+         * audio recording.
+         */
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
-            logger.debug("ON SERVICE CONNECTED")
             checkNotNull(binder) { "Binder is null" }
 
-            val localBinder = binder as AudioForegroundService.LocalBinder
-            audioForegroundService = localBinder.getService()
+            val localBinder = binder as AudioSourceService.LocalBinder
+            audioSourceService = localBinder.getService()
 
             val audioRecorder = audioRecorder
             checkNotNull(audioRecorder) { "Audio source was not properly initialized" }
-            audioForegroundService?.startRecording(audioRecorder)
+            audioSourceService?.startRecording(audioRecorder)
+
+            // Update state to notify UI that recording has started
             state = AudioSourceState.RUNNING
         }
 
+        /**
+         * Called when service is disconnected.
+         */
         override fun onServiceDisconnected(name: ComponentName?) {
-            logger.debug("ON SERVICE CONNECTED")
-            audioForegroundService = null
+            audioSourceService = null
         }
     }
 
@@ -95,7 +103,7 @@ internal class AndroidAudioSource(
             AudioSourceState.READY, AudioSourceState.PAUSED -> {
                 logger.debug("Starting audio source.")
                 // Start a foreground service for recording incoming audio
-                startForegroundService()
+                startAudioSourceService()
             }
         }
     }
@@ -109,7 +117,8 @@ internal class AndroidAudioSource(
 
             AudioSourceState.RUNNING -> {
                 logger.debug("Pausing audio source.")
-                audioForegroundService?.stopRecording()
+                // Stops recording through the current service and update state to notify UI
+                audioSourceService?.stopRecording()
                 state = AudioSourceState.PAUSED
             }
 
@@ -126,9 +135,8 @@ internal class AndroidAudioSource(
             return
         }
 
-        audioForegroundService?.stopRecording()
+        audioSourceService?.stopRecording()
         audioRecorder = null
-        audioThread = null
         state = AudioSourceState.UNINITIALIZED
     }
 
@@ -139,9 +147,20 @@ internal class AndroidAudioSource(
 
     // - Private functions
 
-    private fun startForegroundService() {
-        val intent = Intent(context, AudioForegroundService::class.java)
-        context.startForegroundService(intent)
+    /**
+     * Based on the current OS version, start the [AudioSourceService] as a foreground service
+     * with a persistent notification, or as a "regular" service.
+     */
+    private fun startAudioSourceService() {
+        val intent = Intent(context, AudioSourceService::class.java)
+
+        // Based
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(intent)
+        } else {
+            context.startService(intent)
+        }
+
         context.bindService(intent, serviceConnection, 0)
     }
 }

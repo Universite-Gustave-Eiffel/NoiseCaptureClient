@@ -4,6 +4,8 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
 
 internal object NotificationHelper {
 
@@ -20,6 +22,7 @@ internal object NotificationHelper {
      *
      * @param context An android context to access [NotificationManager]
      */
+    @RequiresApi(Build.VERSION_CODES.O)
     fun createAppNotificationChannel(context: Context) {
         val notificationManager =
             context.getSystemService(Service.NOTIFICATION_SERVICE) as NotificationManager

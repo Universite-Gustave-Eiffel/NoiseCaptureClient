@@ -8,6 +8,7 @@ import android.content.pm.ServiceInfo
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
+import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import org.koin.android.ext.android.inject
 import org.koin.core.parameter.parametersOf
@@ -24,7 +25,7 @@ import org.noiseplanet.noisecapture.util.NotificationHelper
  * TODO: Handle system audio interruptions (playing sound from another app, phone call, timer, ...)
  * TODO: Handle Android versions prior to Android O
  */
-internal class AudioForegroundService : Service() {
+internal class AudioSourceService : Service() {
 
     // - Constants
 
@@ -45,7 +46,7 @@ internal class AudioForegroundService : Service() {
         /**
          * Gets this service instance.
          */
-        fun getService(): AudioForegroundService = this@AudioForegroundService
+        fun getService(): AudioSourceService = this@AudioSourceService
     }
 
 
@@ -60,11 +61,16 @@ internal class AudioForegroundService : Service() {
 
     // - Service
 
+    /**
+     * Called when this service is bound to a Context.
+     */
     override fun onBind(intent: Intent?): IBinder {
-        logger.debug("ON BIND")
         return binder
     }
 
+    /**
+     * Called when a Context starts this service.
+     */
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         logger.debug("ON START COMMAND")
 
@@ -120,8 +126,10 @@ internal class AudioForegroundService : Service() {
      * [More details](https://developer.android.com/develop/background-work/services/foreground-services)
      */
     private fun startAsForegroundService() {
-        // Create the notification channel
-        NotificationHelper.createAppNotificationChannel(this)
+        // Create the notification channel for newer Android versions
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationHelper.createAppNotificationChannel(this)
+        }
 
         // Promote this service to foreground service
         ServiceCompat.startForeground(
@@ -147,7 +155,7 @@ internal class AudioForegroundService : Service() {
      * TODO: Add pause/resume controls to the notification?
      */
     private fun buildNotification(): Notification {
-        return Notification.Builder(this, NotificationHelper.APP_NOTIFICATION_CHANNEL_ID)
+        return NotificationCompat.Builder(this, NotificationHelper.APP_NOTIFICATION_CHANNEL_ID)
             .setContentTitle("Notification content title")
             .setContentText("Notification content text")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
