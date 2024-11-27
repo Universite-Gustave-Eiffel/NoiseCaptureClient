@@ -11,34 +11,32 @@ import org.noiseplanet.noisecapture.permission.util.checkPermissions
 import org.noiseplanet.noisecapture.permission.util.openAppSettingsPage
 import org.noiseplanet.noisecapture.permission.util.providePermissions
 
-internal class LocationForegroundPermissionDelegate(
+internal class PostNotificationsPermissionDelegate(
     private val context: Context,
     private val activity: Lazy<Activity>,
 ) : PermissionDelegate {
 
     override suspend fun getPermissionState(): PermissionState {
-        return activity.value.checkPermissions(fineLocationPermissions)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return activity.value.checkPermissions(postNotificationPermissions)
+        }
+        return PermissionState.GRANTED
     }
 
     override suspend fun providePermission() {
-        activity.value.providePermissions(fineLocationPermissions) {
-            throw PermissionRequestException(
-                it.localizedMessage ?: "Failed to request foreground location permission"
-            )
+        activity.value.providePermissions(postNotificationPermissions) {
+            throw PermissionRequestException(Permission.POST_NOTIFICATIONS.name)
         }
     }
 
     override fun openSettingPage() {
-        context.openAppSettingsPage(Permission.LOCATION_FOREGROUND)
+        context.openAppSettingsPage(Permission.POST_NOTIFICATIONS)
     }
 }
 
-private val fineLocationPermissions: List<String> =
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        listOf(
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-        )
+private val postNotificationPermissions: List<String> =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        listOf(Manifest.permission.POST_NOTIFICATIONS)
     } else {
-        listOf(Manifest.permission.ACCESS_FINE_LOCATION)
+        emptyList()
     }

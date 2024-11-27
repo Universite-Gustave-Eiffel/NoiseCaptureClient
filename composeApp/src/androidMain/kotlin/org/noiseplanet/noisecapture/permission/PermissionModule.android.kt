@@ -13,6 +13,7 @@ import org.noiseplanet.noisecapture.permission.delegate.LocationBackgroundPermis
 import org.noiseplanet.noisecapture.permission.delegate.LocationForegroundPermissionDelegate
 import org.noiseplanet.noisecapture.permission.delegate.LocationServicePermissionDelegate
 import org.noiseplanet.noisecapture.permission.delegate.PermissionDelegate
+import org.noiseplanet.noisecapture.permission.delegate.PostNotificationsPermissionDelegate
 
 internal actual fun platformPermissionModule(): Module = module {
     single<PermissionDelegate>(named(Permission.BLUETOOTH_SERVICE_ON.name)) {
@@ -58,7 +59,13 @@ internal actual fun platformPermissionModule(): Module = module {
     single<PermissionDelegate>(named(Permission.RECORD_AUDIO.name)) {
         AudioRecordPermissionDelegate(
             context = get(),
-            activity = inject()
+            activity = inject(),
+        )
+    }
+    single<PermissionDelegate>(named(Permission.POST_NOTIFICATIONS.name)) {
+        PostNotificationsPermissionDelegate(
+            context = get(),
+            activity = inject(),
         )
     }
 }

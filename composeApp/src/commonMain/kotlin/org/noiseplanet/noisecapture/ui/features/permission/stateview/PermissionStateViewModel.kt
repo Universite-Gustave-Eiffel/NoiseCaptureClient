@@ -22,9 +22,10 @@ class PermissionStateViewModel(
     private val permissionService: PermissionService,
 ) : ViewModel() {
 
-    val permissionName: String = permission.name
+    private val stateFlow: Flow<PermissionState> =
+        permissionService.getPermissionStateFlow(permission)
 
-    val stateFlow: Flow<PermissionState> = permissionService.getPermissionStateFlow(permission)
+    val permissionName: String = permission.name
 
     val stateIcon: Flow<ImageVector> = stateFlow.map { state ->
         when (state) {

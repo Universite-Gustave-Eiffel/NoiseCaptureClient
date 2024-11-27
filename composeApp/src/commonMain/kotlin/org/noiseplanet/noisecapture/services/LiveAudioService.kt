@@ -123,7 +123,7 @@ class DefaultLiveAudioService(
 
     private val _isRunning = MutableStateFlow(false)
     override val isRunning: StateFlow<Boolean> = _isRunning.asStateFlow()
-    
+
     override val audioSourceState: Flow<AudioSourceState> = audioSource.stateFlow
 
     override fun setupAudioSource(startWhenReady: Boolean) {
