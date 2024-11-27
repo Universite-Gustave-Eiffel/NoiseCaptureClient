@@ -5,12 +5,12 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import org.noiseplanet.noisecapture.services.MeasurementsService
+import org.noiseplanet.noisecapture.services.LiveAudioService
 import org.noiseplanet.noisecapture.util.toComposeColor
 import kotlin.math.max
 
 class SpectrumPlotViewModel(
-    private val measurementsService: MeasurementsService,
+    private val liveAudioService: LiveAudioService,
 ) : ViewModel() {
 
     data class AxisSettings(
@@ -42,14 +42,14 @@ class SpectrumPlotViewModel(
         Pair(linearIndex.toFloat(), pair.second)
     }.toTypedArray()
 
-    val rawSplFlow: Flow<DoubleArray> = measurementsService
+    val rawSplFlow: Flow<DoubleArray> = liveAudioService
         .getAcousticIndicatorsFlow()
         .map { it.thirdOctave }
 
-    val weightedSplFlow: Flow<DoubleArray> = measurementsService
+    val weightedSplFlow: Flow<DoubleArray> = liveAudioService
         .getWeightedSoundPressureLevelFlow()
 
-    val axisSettingsFlow: Flow<AxisSettings> = measurementsService
+    val axisSettingsFlow: Flow<AxisSettings> = liveAudioService
         .getAcousticIndicatorsFlow()
         .map { it.nominalFrequencies }
         .distinctUntilChanged()

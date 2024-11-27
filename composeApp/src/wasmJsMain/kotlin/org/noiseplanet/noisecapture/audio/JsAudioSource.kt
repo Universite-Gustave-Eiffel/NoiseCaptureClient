@@ -11,6 +11,7 @@ import org.noiseplanet.noisecapture.interop.AudioContext
 import org.noiseplanet.noisecapture.interop.AudioNode
 import org.noiseplanet.noisecapture.interop.ScriptProcessorNode
 import org.noiseplanet.noisecapture.log.Logger
+import org.noiseplanet.noisecapture.model.MicrophoneLocation
 import org.w3c.dom.mediacapture.MediaStreamConstraints
 
 /**
@@ -32,9 +33,25 @@ internal class JsAudioSource(
     private val audioSamplesChannel = Channel<AudioSamples>(
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
+    private val stateChannel = Channel<AudioSourceState>(
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
 
-    override suspend fun setup(): Flow<AudioSamples> {
-        logger.debug("Launch JSAudioSource...")
+    override var state: AudioSourceState = AudioSourceState.UNINITIALIZED
+        set(value) {
+            field = value
+            stateChannel.trySend(value)
+        }
+
+    override val audioSamples: Flow<AudioSamples> = audioSamplesChannel.receiveAsFlow()
+    override val stateFlow: Flow<AudioSourceState> = stateChannel.receiveAsFlow()
+
+    override fun setup() {
+        if (state != AudioSourceState.UNINITIALIZED) {
+            logger.debug("Audio source is already initialized, skipping setup.")
+            return
+        }
+        logger.debug("Setup JSAudioSource...")
 
         window.navigator.mediaDevices.getUserMedia(
             MediaStreamConstraints(
@@ -47,7 +64,6 @@ internal class JsAudioSource(
             )
         ).then(onFulfilled = { mediaStream ->
             audioContext = AudioContext()
-            logger.debug("AudioContext ready $audioContext.")
 
             micNode = audioContext?.createMediaStreamSource(mediaStream)
             checkNotNull(micNode) { "Failed initializing mic node" }
@@ -75,25 +91,68 @@ internal class JsAudioSource(
                     )
                 )
             }
-            scriptProcessorNode?.let { scriptProcessorNode ->
-                micNode?.connect(scriptProcessorNode)
-                audioContext?.let { audioContext ->
-                    scriptProcessorNode.connect(audioContext.destination)
-                }
-            }
+            state = AudioSourceState.READY
             mediaStream
         }, onRejected = { error ->
             logger.error("Error while setting up audio source: $error")
             error
         })
-        return audioSamplesChannel.receiveAsFlow()
+    }
+
+    override fun start() {
+        when (state) {
+            AudioSourceState.UNINITIALIZED -> {
+                logger.error("Audio source not initialized. Call setup() first.")
+                return
+            }
+
+            AudioSourceState.RUNNING -> {
+                logger.debug("Audio source already started.")
+                return
+            }
+
+            AudioSourceState.READY, AudioSourceState.PAUSED -> {
+                logger.debug("Starting audio recording")
+                scriptProcessorNode?.let { scriptProcessorNode ->
+                    micNode?.connect(scriptProcessorNode)
+                    audioContext?.let { audioContext ->
+                        scriptProcessorNode.connect(audioContext.destination)
+                    }
+                }
+                state = AudioSourceState.RUNNING
+            }
+        }
+    }
+
+    override fun pause() {
+        when (state) {
+            AudioSourceState.UNINITIALIZED -> {
+                logger.error("Audio source not initialized. Call setup() first.")
+                return
+            }
+
+            AudioSourceState.RUNNING -> {
+                logger.debug("Pausing audio source.")
+                micNode?.disconnect()
+                scriptProcessorNode?.disconnect()
+                state = AudioSourceState.PAUSED
+            }
+
+            AudioSourceState.READY, AudioSourceState.PAUSED -> {
+                logger.debug("Audio source already paused.")
+                return
+            }
+        }
     }
 
     override fun release() {
-        logger.debug("Releasing audio source")
+        if (state == AudioSourceState.UNINITIALIZED) {
+            logger.debug("Audio source already uninitialized, skipping cleanup.")
+            return
+        }
 
-        micNode?.disconnect()
-        scriptProcessorNode?.disconnect()
+        logger.debug("Releasing audio source")
+        pause()
 
         try {
             audioContext?.close()?.catch { error ->
@@ -105,8 +164,10 @@ internal class JsAudioSource(
             // Ignore
             logger.error("Uncaught exception:", ignore)
         }
+
+        state = AudioSourceState.UNINITIALIZED
     }
 
-    override fun getMicrophoneLocation(): AudioSource.MicrophoneLocation =
-        AudioSource.MicrophoneLocation.LOCATION_UNKNOWN
+    override fun getMicrophoneLocation(): MicrophoneLocation =
+        MicrophoneLocation.LOCATION_UNKNOWN
 }

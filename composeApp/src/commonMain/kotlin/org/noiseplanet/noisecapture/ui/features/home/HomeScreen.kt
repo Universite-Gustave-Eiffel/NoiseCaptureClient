@@ -12,7 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import org.koin.compose.koinInject
 import org.noiseplanet.noisecapture.ui.features.home.menuitem.HomeScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.home.menuitem.MenuItem
 
@@ -24,7 +23,7 @@ import org.noiseplanet.noisecapture.ui.features.home.menuitem.MenuItem
 @Composable
 fun HomeScreen(
     navigationController: NavController,
-    viewModel: HomeScreenViewModel = koinInject(),
+    viewModel: HomeScreenViewModel,
 ) {
     Surface(
         modifier = Modifier.fillMaxSize(),

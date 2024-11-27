@@ -23,7 +23,6 @@ import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.request_permission_button_next
 import noisecapture.composeapp.generated.resources.request_permission_explanation
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
 import org.noiseplanet.noisecapture.ui.features.permission.stateview.PermissionStateView
 
 /**
@@ -39,7 +38,7 @@ import org.noiseplanet.noisecapture.ui.features.permission.stateview.PermissionS
 @Composable
 fun RequestPermissionScreen(
     onClickNextButton: () -> Unit,
-    viewModel: RequestPermissionScreenViewModel = koinInject(),
+    viewModel: RequestPermissionScreenViewModel,
     modifier: Modifier = Modifier,
 ) {
     Surface(
