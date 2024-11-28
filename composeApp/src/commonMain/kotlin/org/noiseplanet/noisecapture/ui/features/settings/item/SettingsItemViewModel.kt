@@ -4,8 +4,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import org.jetbrains.compose.resources.StringResource
-import org.noiseplanet.noisecapture.services.SettingsKey
-import org.noiseplanet.noisecapture.services.UserSettingsService
+import org.noiseplanet.noisecapture.services.settings.SettingsKey
+import org.noiseplanet.noisecapture.services.settings.UserSettingsService
 import org.noiseplanet.noisecapture.util.IterableEnum
 import org.noiseplanet.noisecapture.util.ShortNameRepresentable
 

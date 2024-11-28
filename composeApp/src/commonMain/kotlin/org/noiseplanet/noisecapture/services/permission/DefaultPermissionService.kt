@@ -1,9 +1,8 @@
-package org.noiseplanet.noisecapture.services
+package org.noiseplanet.noisecapture.services.permission
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.qualifier.named
 import org.noiseplanet.noisecapture.permission.Permission
@@ -11,46 +10,7 @@ import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.permission.delegate.PermissionDelegate
 
 /**
- * Manage the app permission states. Check current states and request permissions if needed.
- */
-interface PermissionService : KoinComponent {
-
-    /**
-     * Returns a flow instance to subscribe to the given permission state updates
-     *
-     * @param permission Target permission
-     * @return Flow of permission states
-     */
-    fun getPermissionStateFlow(permission: Permission): Flow<PermissionState>
-
-    /**
-     * Checks the current state of the given permission, once
-     *
-     * @param permission Target permission
-     * @return Current permission state
-     */
-    suspend fun checkPermission(permission: Permission): PermissionState
-
-    /**
-     * Opens the settings page corresponding to the given permission.
-     * Should be used when permission has been previously denied since we can't trigger
-     * the permission popup again.
-     *
-     * @param permission Target permission
-     */
-    fun openSettingsForPermission(permission: Permission)
-
-    /**
-     * Triggers requesting the given permission to the user
-     *
-     * @param permission Target permission
-     */
-    suspend fun requestPermission(permission: Permission)
-}
-
-
-/**
- * Default Permission service implementation
+ * Default [PermissionService] implementation
  */
 internal class DefaultPermissionService : PermissionService {
 

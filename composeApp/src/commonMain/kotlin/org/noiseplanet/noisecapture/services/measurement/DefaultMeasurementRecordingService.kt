@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.services
+package org.noiseplanet.noisecapture.services.measurement
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -14,37 +14,15 @@ import org.noiseplanet.noisecapture.audio.AcousticIndicatorsData
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.Location
 import org.noiseplanet.noisecapture.model.Measurement
+import org.noiseplanet.noisecapture.services.liveaudio.LiveAudioService
+import org.noiseplanet.noisecapture.services.location.UserLocationService
 
 
-interface RecordingService {
-
-    /**
-     * True if the service is currently recording incoming data, false otherwise
-     */
-    val isRecording: Boolean
-
-    /**
-     * A flow of [isRecording] values
-     */
-    val isRecordingFlow: StateFlow<Boolean>
-
-    /**
-     * Starts a new recording of acoustic parameters and location updates
-     */
-    fun start()
-
-    /**
-     * Ends the current recording and saves the results to the app's storage
-     */
-    fun endAndSave()
-}
-
-
-class DefaultRecordingService(
+class DefaultMeasurementRecordingService(
     private val measurementService: MeasurementService,
     private val userLocationService: UserLocationService,
     private val liveAudioService: LiveAudioService,
-) : RecordingService, KoinComponent {
+) : MeasurementRecordingService, KoinComponent {
 
     // - Constants
 

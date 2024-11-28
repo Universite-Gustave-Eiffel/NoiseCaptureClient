@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.services
+package org.noiseplanet.noisecapture.services.settings
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.serializer
