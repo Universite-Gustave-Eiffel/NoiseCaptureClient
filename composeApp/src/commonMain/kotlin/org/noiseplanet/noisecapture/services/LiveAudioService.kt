@@ -35,7 +35,12 @@ interface LiveAudioService {
      * True if service is currently monitoring incoming audio,
      * false otherwise
      */
-    val isRunning: StateFlow<Boolean>
+    val isRunning: Boolean
+
+    /**
+     * A flow of [isRunning] values.
+     */
+    val isRunningFlow: StateFlow<Boolean>
 
     /**
      * State of the underlying audio source.
@@ -97,6 +102,8 @@ class DefaultLiveAudioService(
     private val logger: Logger,
 ) : LiveAudioService, KoinComponent {
 
+    // - Constants
+
     companion object {
 
         const val FFT_SIZE = 4096
@@ -106,6 +113,8 @@ class DefaultLiveAudioService(
         private const val SPL_WINDOW_TIME = WINDOW_TIME
     }
 
+
+    // - Properties
 
     private var indicatorsProcessing: AcousticIndicatorsProcessing? = null
     private var spectrumDataProcessing: SpectrumDataProcessing? = null
@@ -121,8 +130,14 @@ class DefaultLiveAudioService(
     )
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    private val _isRunning = MutableStateFlow(false)
-    override val isRunning: StateFlow<Boolean> = _isRunning.asStateFlow()
+    private val _isRunningFlow = MutableStateFlow(false)
+
+
+    // - LiveAudioService
+
+    override val isRunningFlow: StateFlow<Boolean> = _isRunningFlow.asStateFlow()
+    override val isRunning: Boolean
+        get() = _isRunningFlow.value
 
     override val audioSourceState: Flow<AudioSourceState> = audioSource.stateFlow
 
@@ -170,19 +185,19 @@ class DefaultLiveAudioService(
         }
         // Release audio source
         audioSource.release()
-        _isRunning.tryEmit(false)
+        _isRunningFlow.tryEmit(false)
     }
 
     override fun startListening() {
         // Start audio source
         audioSource.start()
-        _isRunning.tryEmit(true)
+        _isRunningFlow.tryEmit(true)
     }
 
     override fun stopListening() {
         // Pause audio source
         audioSource.pause()
-        _isRunning.tryEmit(false)
+        _isRunningFlow.tryEmit(false)
     }
 
     override fun getAcousticIndicatorsFlow(): Flow<AcousticIndicatorsData> {
