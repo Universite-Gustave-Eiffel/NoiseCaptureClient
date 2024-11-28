@@ -109,6 +109,10 @@
     <string name="measurement_windowing_mode_rect_description">Rectangular</string>
 
 
+    <!-- Ongoing measurement notification -->
+    <string name="ongoing_measurement_notification_title">Currently recording audio</string>
+    <string name="ongoing_measurement_notification_body">The NoiseCapture app is currently recording surrounding audio to analyse acoustic parameters. Don't kill the app if you want the recording session to keep going.</string>
+
     <!-- Misc -->
     <string name="na">N/A</string>
 </resources>

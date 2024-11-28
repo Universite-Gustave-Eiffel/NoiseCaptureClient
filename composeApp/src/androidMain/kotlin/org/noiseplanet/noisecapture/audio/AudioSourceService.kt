@@ -10,6 +10,14 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.ongoing_measurement_notification_body
+import noisecapture.composeapp.generated.resources.ongoing_measurement_notification_title
+import org.jetbrains.compose.resources.getString
 import org.koin.android.ext.android.inject
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.MainActivity
@@ -32,7 +40,11 @@ internal class AudioSourceService : Service() {
 
         private const val TAG = "AudioForegroundService"
         private const val FOREGROUND_SERVICE_ID = 1
+        private const val NOTIFICATION_REQUEST_CODE = 1029384756
     }
+
+    private val job = SupervisorJob()
+    private val coroutineScope = CoroutineScope(Dispatchers.IO + job)
 
 
     // Associated types
@@ -87,9 +99,10 @@ internal class AudioSourceService : Service() {
     }
 
     override fun onDestroy() {
+        super.onDestroy()
         logger.debug("ON DESTROY")
         stopRecording()
-        super.onDestroy()
+        job.cancel()
     }
 
 
@@ -130,35 +143,59 @@ internal class AudioSourceService : Service() {
             NotificationHelper.createAppNotificationChannel(this)
         }
 
-        // Promote this service to foreground service
-        ServiceCompat.startForeground(
-            this,
-            FOREGROUND_SERVICE_ID,
-            buildNotification(),
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
-            } else {
-                0
-            }
-        )
+        coroutineScope.launch {
+            // Promote this service to foreground service
+            ServiceCompat.startForeground(
+                this@AudioSourceService,
+                FOREGROUND_SERVICE_ID,
+                buildNotification(),
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
+                } else {
+                    0
+                }
+            )
+        }
     }
 
     /**
      * Builds the notification that will show the service as active to the user.
      *
-     * TODO: Localize content
-     *
      * TODO: Add pause/resume controls to the notification?
      */
-    private fun buildNotification(): Notification {
-        return NotificationCompat.Builder(this, NotificationHelper.APP_NOTIFICATION_CHANNEL_ID)
-            .setContentTitle("Notification content title")
-            .setContentText("Notification content text")
+    private suspend fun buildNotification(): Notification {
+        // Prepare notification intent to resume app when clicking the notification
+        val notificationIntent = Intent(this, MainActivity::class.java)
+        notificationIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            .or(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+
+        // Create the notification using notification builder
+        val notification = NotificationCompat
+            .Builder(this, NotificationHelper.APP_NOTIFICATION_CHANNEL_ID)
+            .setContentTitle(getString(Res.string.ongoing_measurement_notification_title))
+            .setContentText(getString(Res.string.ongoing_measurement_notification_body))
             .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentIntent(Intent(this, MainActivity::class.java).let {
-                PendingIntent.getActivity(this, 0, it, PendingIntent.FLAG_IMMUTABLE)
-            })
+            .setContentIntent(
+                PendingIntent.getActivity(
+                    this,
+                    NOTIFICATION_REQUEST_CODE,
+                    notificationIntent,
+                    PendingIntent.FLAG_IMMUTABLE,
+                )
+            )
+            // This will only prevent notification from being dismissed for Android version prior
+            // to Android 14. Since this version, all notifications can be dismissed. It doesn't
+            // stop the ongoing service however.
+            // https://developer.android.com/about/versions/14/behavior-changes-all#non-dismissable-notifications
             .setOngoing(true)
             .build()
+
+        // Set notification intent flags to only resume the app instead of starting a new activity
+        notification.flags = Notification.FLAG_FOREGROUND_SERVICE
+            .or(Notification.FLAG_ONGOING_EVENT)
+            .or(Notification.FLAG_NO_CLEAR)
+
+        // Return the created notification
+        return notification
     }
 }
