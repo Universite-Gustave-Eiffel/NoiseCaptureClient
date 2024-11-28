@@ -207,7 +207,6 @@ class DefaultLiveAudioService(
 
         return getAcousticIndicatorsFlow()
             .map { indicators ->
-                logger.debug("indicators: $indicators")
                 if (levelDisplayBands == null) {
                     levelDisplayBands = Array(indicators.nominalFrequencies.size) {
                         LevelDisplayWeightedDecay(SPL_DECAY_RATE, SPL_WINDOW_TIME)
