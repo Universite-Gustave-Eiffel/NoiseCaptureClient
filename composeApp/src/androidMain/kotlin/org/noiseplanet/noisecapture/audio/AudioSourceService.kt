@@ -23,7 +23,6 @@ import org.noiseplanet.noisecapture.util.NotificationHelper
  *
  * TODO: Check under which circumstances the system kills the service
  * TODO: Handle system audio interruptions (playing sound from another app, phone call, timer, ...)
- * TODO: Handle Android versions prior to Android O
  */
 internal class AudioSourceService : Service() {
 
@@ -148,9 +147,6 @@ internal class AudioSourceService : Service() {
      * Builds the notification that will show the service as active to the user.
      *
      * TODO: Localize content
-     *
-     * TODO: Notification can still be manually dismissed for Android > 14.
-     *       Does the service get killed then?
      *
      * TODO: Add pause/resume controls to the notification?
      */

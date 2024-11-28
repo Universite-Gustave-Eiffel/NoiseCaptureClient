@@ -18,14 +18,17 @@ internal object NotificationHelper {
     /**
      * Creates a general channel to post app level notifications
      *
-     * TODO: Add support for Android < O
-     *
      * @param context An android context to access [NotificationManager]
      */
     @RequiresApi(Build.VERSION_CODES.O)
     fun createAppNotificationChannel(context: Context) {
         val notificationManager =
             context.getSystemService(Service.NOTIFICATION_SERVICE) as NotificationManager
+
+        // If the channel already exists, don't recreate it again
+        if (notificationManager.getNotificationChannel(APP_NOTIFICATION_CHANNEL_ID) != null) {
+            return
+        }
 
         // Create the notification channel
         val channel = NotificationChannel(
