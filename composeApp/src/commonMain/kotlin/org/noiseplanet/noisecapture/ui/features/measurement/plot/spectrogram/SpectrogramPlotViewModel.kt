@@ -55,7 +55,6 @@ class SpectrogramPlotViewModel(
     init {
         viewModelScope.launch {
             // Listen to spectrum data updates and build spectrogram along the way
-            // TODO: We may want to pause this when the app goes into background
             measurementsService.getSpectrumDataFlow()
                 .collect { spectrumData ->
                     currentStripData?.let { currentStripData ->
