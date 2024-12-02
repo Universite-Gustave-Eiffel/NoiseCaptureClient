@@ -20,7 +20,7 @@ fun RecordingControls(
     val startStopButtonTitle by viewModel.startStopButtonTitle.collectAsState("")
     val isRecording by viewModel.isRecording.collectAsState(false)
 
-    Column {
+    Column(modifier = modifier) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
