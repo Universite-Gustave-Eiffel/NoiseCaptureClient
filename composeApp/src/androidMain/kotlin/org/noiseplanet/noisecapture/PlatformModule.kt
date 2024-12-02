@@ -22,9 +22,12 @@ val platformModule: Module = module {
     }
 
     factory<AudioSource> {
-        AndroidAudioSource(logger = get {
-            parametersOf("AudioSource")
-        })
+        AndroidAudioSource(
+            logger = get {
+                parametersOf("AudioSource")
+            },
+            context = get()
+        )
     }
 
     single<Settings> {

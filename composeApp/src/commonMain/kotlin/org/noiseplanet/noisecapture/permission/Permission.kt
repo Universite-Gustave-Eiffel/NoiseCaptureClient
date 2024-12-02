@@ -35,4 +35,9 @@ enum class Permission {
      * App audio recording permission.
      */
     RECORD_AUDIO,
+
+    /**
+     * Permission to send notifications.
+     */
+    POST_NOTIFICATIONS,
 }

@@ -1,5 +1,11 @@
 package org.noiseplanet.noisecapture.audio
 
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
+import android.os.Build
+import android.os.IBinder
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -10,14 +16,15 @@ import org.noiseplanet.noisecapture.model.MicrophoneLocation
 /**
  * Android audio source implementation
  *
- * @param logger Logger instance
+ * @param logger [Logger] instance
+ * @param context Android [Context] instance
  */
 internal class AndroidAudioSource(
     private val logger: Logger,
+    private val context: Context,
 ) : AudioSource {
 
-    private var audioThread: Thread? = null
-    private var audioRecorder: AudioRecorder? = null
+    // - Properties
 
     private val audioSamplesChannel = Channel<AudioSamples>(
         onBufferOverflow = BufferOverflow.DROP_OLDEST
@@ -25,6 +32,41 @@ internal class AndroidAudioSource(
     private val stateChannel = Channel<AudioSourceState>(
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
+
+    private var audioRecorder: AudioRecorder? = null
+    private var audioSourceService: AudioSourceService? = null
+
+    private val serviceConnection = object : ServiceConnection {
+
+        /**
+         * Called when service is connected through [Context.bindService].
+         * Retrieves the service instance from the given [binder] and launches
+         * audio recording.
+         */
+        override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
+            checkNotNull(binder) { "Binder is null" }
+
+            val localBinder = binder as AudioSourceService.LocalBinder
+            audioSourceService = localBinder.getService()
+
+            val audioRecorder = audioRecorder
+            checkNotNull(audioRecorder) { "Audio source was not properly initialized" }
+            audioSourceService?.startRecording(audioRecorder)
+
+            // Update state to notify UI that recording has started
+            state = AudioSourceState.RUNNING
+        }
+
+        /**
+         * Called when service is disconnected.
+         */
+        override fun onServiceDisconnected(name: ComponentName?) {
+            audioSourceService = null
+        }
+    }
+
+
+    // - AudioSource
 
     override var state: AudioSourceState = AudioSourceState.UNINITIALIZED
         set(value) {
@@ -40,7 +82,6 @@ internal class AndroidAudioSource(
             logger.debug("Audio source is already initialized, skipping setup.")
             return
         }
-
         // Create a recorder that will process raw incoming audio into audio samples
         // and broadcast it through the channel.
         audioRecorder = AudioRecorder(audioSamplesChannel, logger)
@@ -61,10 +102,8 @@ internal class AndroidAudioSource(
 
             AudioSourceState.READY, AudioSourceState.PAUSED -> {
                 logger.debug("Starting audio source.")
-                // Start audio recording in a background thread and return the channel as a Flow
-                audioThread = Thread(audioRecorder)
-                audioThread?.start()
-                state = AudioSourceState.RUNNING
+                // Start a foreground service for recording incoming audio
+                startAudioSourceService()
             }
         }
     }
@@ -78,7 +117,8 @@ internal class AndroidAudioSource(
 
             AudioSourceState.RUNNING -> {
                 logger.debug("Pausing audio source.")
-                audioRecorder?.stopRecording()
+                // Stops recording through the current service and update state to notify UI
+                audioSourceService?.stopRecording()
                 state = AudioSourceState.PAUSED
             }
 
@@ -95,13 +135,32 @@ internal class AndroidAudioSource(
             return
         }
 
-        pause()
+        audioSourceService?.stopRecording()
         audioRecorder = null
-        audioThread = null
         state = AudioSourceState.UNINITIALIZED
     }
 
     override fun getMicrophoneLocation(): MicrophoneLocation {
         return MicrophoneLocation.LOCATION_UNKNOWN
+    }
+
+
+    // - Private functions
+
+    /**
+     * Based on the current OS version, start the [AudioSourceService] as a foreground service
+     * with a persistent notification, or as a "regular" service.
+     */
+    private fun startAudioSourceService() {
+        val intent = Intent(context, AudioSourceService::class.java)
+
+        // Based
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(intent)
+        } else {
+            context.startService(intent)
+        }
+
+        context.bindService(intent, serviceConnection, 0)
     }
 }
