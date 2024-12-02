@@ -2,9 +2,11 @@ package org.noiseplanet.noisecapture.ui.features.measurement
 
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -18,6 +20,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import org.koin.compose.viewmodel.koinViewModel
+import org.noiseplanet.noisecapture.ui.features.measurement.controls.RecordingControls
 import org.noiseplanet.noisecapture.ui.features.measurement.indicators.AcousticIndicatorsView
 
 const val DEFAULT_SAMPLE_RATE = 48000.0
@@ -62,11 +65,16 @@ fun MeasurementScreen(
                     }
                     Column(modifier = Modifier) {
                         MeasurementPager()
+                        RecordingControls(viewModel = viewModel.recordingControlsViewModel)
                     }
                 }
             } else {
                 Column(modifier = Modifier.fillMaxSize()) {
                     AcousticIndicatorsView(viewModel = koinViewModel())
+                    RecordingControls(
+                        viewModel = viewModel.recordingControlsViewModel,
+                        modifier = Modifier.height(IntrinsicSize.Min)
+                    )
                     MeasurementPager()
                 }
             }
