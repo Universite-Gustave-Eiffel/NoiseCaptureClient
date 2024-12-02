@@ -20,11 +20,13 @@ val measurementModule = module {
     viewModel {
         SpectrogramPlotViewModel(
             measurementsService = get(),
-            logger = get()
         )
     }
 
     viewModel {
-        MeasurementScreenViewModel(liveAudioService = get())
+        MeasurementScreenViewModel(
+            liveAudioService = get(),
+            recordingService = get(),
+        )
     }
 }

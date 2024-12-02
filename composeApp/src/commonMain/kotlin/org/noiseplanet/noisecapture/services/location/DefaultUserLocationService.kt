@@ -47,14 +47,16 @@ class DefaultUserLocationService : UserLocationService, KoinComponent {
         logger.debug("Get live location")
 
         return flow {
-            // For now, just emmit dummy locations once every second
-            emit(
-                Location(
-                    lat = Random.nextDouble(),
-                    lon = Random.nextDouble(),
+            while (true) {
+                // For now, just emmit dummy locations once every second
+                emit(
+                    Location(
+                        lat = Random.nextDouble(),
+                        lon = Random.nextDouble(),
+                    )
                 )
-            )
-            delay(1.seconds.inWholeMilliseconds)
+                delay(1.seconds.inWholeMilliseconds)
+            }
         }
     }
 }

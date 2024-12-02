@@ -11,6 +11,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.audio.ANDROID_GAIN
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.SpectrogramScaleMode
@@ -18,10 +21,11 @@ import org.noiseplanet.noisecapture.services.liveaudio.LiveAudioService
 
 class SpectrogramPlotViewModel(
     private val measurementsService: LiveAudioService,
-    private val logger: Logger,
-) : ViewModel() {
+) : ViewModel(), KoinComponent {
 
     companion object {
+
+        private const val TAG = "SpectrogramPlotViewModel"
 
         private const val RANGE_DB = 40.0
         private const val MIN_DB = 0.0
@@ -30,6 +34,8 @@ class SpectrogramPlotViewModel(
         const val REFERENCE_LEGEND_TEXT = " +99s "
         const val SPECTROGRAM_STRIP_WIDTH = 32
     }
+
+    private val logger: Logger by inject { parametersOf(TAG) }
 
     private var canvasSize: IntSize = IntSize.Zero
     private val spectrogramBitmaps = mutableStateListOf<SpectrogramBitmap>()

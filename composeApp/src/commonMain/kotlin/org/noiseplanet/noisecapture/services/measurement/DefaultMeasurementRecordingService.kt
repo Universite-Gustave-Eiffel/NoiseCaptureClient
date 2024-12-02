@@ -2,7 +2,7 @@ package org.noiseplanet.noisecapture.services.measurement
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,11 +36,15 @@ class DefaultMeasurementRecordingService(
 
     private val logger: Logger by inject { parametersOf(TAG) }
 
-    private val job = SupervisorJob()
-    private val coroutineScope = CoroutineScope(Dispatchers.Default + job)
+    private val coroutineScope = CoroutineScope(Dispatchers.Default)
+    private var recordingJob: Job? = null
 
     private val _isRecording = MutableStateFlow(value = false)
 
+    // Stores the collected acoustic indicators and location data.
+    // TODO: This is just a placeholder until a proper Measurement model is established
+    //       in which case having a mutable measurement object would make more sense here
+    //       rather than a series of individual properties
     private var ongoingUserLocationHistory: MutableList<Location> = mutableListOf()
     private var ongoingAcousticIndicators: MutableList<AcousticIndicatorsData> = mutableListOf()
 
@@ -63,7 +67,8 @@ class DefaultMeasurementRecordingService(
 
     override fun endAndSave() {
         logger.debug("End recording")
-        job.cancel()
+        recordingJob?.cancel()
+        recordingJob = null
         _isRecording.tryEmit(false)
 
         measurementService.storeMeasurement(
@@ -72,6 +77,8 @@ class DefaultMeasurementRecordingService(
                 acousticIndicators = ongoingAcousticIndicators,
             )
         )
+        ongoingAcousticIndicators.clear()
+        ongoingAcousticIndicators.clear()
     }
 
 
@@ -82,7 +89,13 @@ class DefaultMeasurementRecordingService(
      * location flows to populate it during the recording session
      */
     private fun createMeasurementAndSubscribe() {
-        coroutineScope.launch {
+        // Clear any previously ongoing recording data
+        ongoingAcousticIndicators.clear()
+        ongoingUserLocationHistory.clear()
+        recordingJob?.cancel()
+
+        // Start listening to the various data sources during the recording session
+        recordingJob = coroutineScope.launch {
             userLocationService.getLiveLocation().collect { location ->
                 ongoingUserLocationHistory.add(location)
             }
