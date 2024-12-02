@@ -44,6 +44,13 @@ class MeasurementScreenViewModel(
         }
     )
 
+    /**
+     * True if a measurement recording is currently ongoing, meaning audio and location services
+     * should still be running while the app is sent to background.
+     */
+    val isRecording: Boolean
+        get() = recordingService.isRecording
+
     fun setupAudioSource() = liveAudioService.setupAudioSource()
 
     fun startRecordingAudio() = liveAudioService.startListening()

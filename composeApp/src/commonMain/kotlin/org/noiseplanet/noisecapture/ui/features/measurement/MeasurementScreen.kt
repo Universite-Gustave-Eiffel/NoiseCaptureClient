@@ -42,6 +42,20 @@ fun MeasurementScreen(
                     viewModel.setupAudioSource()
                 }
 
+                Lifecycle.Event.ON_PAUSE -> {
+                    // If there is no ongoing measurement recording, pause audio source
+                    if (!viewModel.isRecording) {
+                        viewModel.stopRecordingAudio()
+                    }
+                }
+
+                Lifecycle.Event.ON_RESUME -> {
+                    // If there is no ongoing measurement recording, resume audio source
+                    if (!viewModel.isRecording) {
+                        viewModel.startRecordingAudio()
+                    }
+                }
+
                 else -> {}
             }
         }
