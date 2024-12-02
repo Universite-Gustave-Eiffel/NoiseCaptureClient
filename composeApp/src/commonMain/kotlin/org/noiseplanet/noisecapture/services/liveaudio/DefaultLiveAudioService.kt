@@ -77,10 +77,9 @@ class DefaultLiveAudioService(
     override val isRunning: Boolean
         get() = _isRunningFlow.value
 
-    override val audioSourceState: Flow<AudioSourceState> = audioSource.stateFlow
+    override val audioSourceStateFlow: Flow<AudioSourceState> = audioSource.stateFlow
 
-    override fun setupAudioSource(startWhenReady: Boolean) {
-        logger.debug("start when ready: $startWhenReady")
+    override fun setupAudioSource() {
         // Create a job that will process incoming audio samples in a background thread
         audioJob = coroutineScope.launch(Dispatchers.Default) {
             audioSource.audioSamples

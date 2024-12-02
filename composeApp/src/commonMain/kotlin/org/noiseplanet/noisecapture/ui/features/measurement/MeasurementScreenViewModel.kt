@@ -16,7 +16,7 @@ class MeasurementScreenViewModel(
 
     init {
         viewModelScope.launch {
-            liveAudioService.audioSourceState.collect { state ->
+            liveAudioService.audioSourceStateFlow.collect { state ->
                 if (state == AudioSourceState.READY) {
                     // Start recording audio whenever audio source is done initializing
                     startRecordingAudio()

@@ -3,6 +3,7 @@ package org.noiseplanet.noisecapture.services.measurement
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,7 +37,7 @@ class DefaultMeasurementRecordingService(
 
     private val logger: Logger by inject { parametersOf(TAG) }
 
-    private val coroutineScope = CoroutineScope(Dispatchers.Default)
+    private val scope = CoroutineScope(Dispatchers.Default)
     private var recordingJob: Job? = null
 
     private val _isRecording = MutableStateFlow(value = false)
@@ -95,12 +96,18 @@ class DefaultMeasurementRecordingService(
         recordingJob?.cancel()
 
         // Start listening to the various data sources during the recording session
-        recordingJob = coroutineScope.launch {
-            userLocationService.getLiveLocation().collect { location ->
-                ongoingUserLocationHistory.add(location)
-            }
-            liveAudioService.getAcousticIndicatorsFlow().collect { acousticIndicators ->
-                ongoingAcousticIndicators.add(acousticIndicators)
+        recordingJob = scope.launch {
+            coroutineScope {
+                launch {
+                    userLocationService.getLiveLocation().collect { location ->
+                        ongoingUserLocationHistory.add(location)
+                    }
+                }
+                launch {
+                    liveAudioService.getAcousticIndicatorsFlow().collect { indicators ->
+                        ongoingAcousticIndicators.add(indicators)
+                    }
+                }
             }
         }
     }

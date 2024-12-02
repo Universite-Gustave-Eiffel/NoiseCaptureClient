@@ -26,14 +26,12 @@ interface LiveAudioService {
      * State of the underlying audio source.
      * Can be used to reflect system interruptions or resumes to user interface
      */
-    val audioSourceState: Flow<AudioSourceState>
+    val audioSourceStateFlow: Flow<AudioSourceState>
 
     /**
      * Setup audio source for listening to incoming audio.
-     *
-     * @param startWhenReady If true, starts the audio source when it becomes ready.
      */
-    fun setupAudioSource(startWhenReady: Boolean = false)
+    fun setupAudioSource()
 
     /**
      * Destroy audio source.
