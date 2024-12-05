@@ -70,6 +70,9 @@ fun <T : Any> SettingsNumericalInput(
     fun getNumericalValue(): T? {
         return when (viewModel.settingKey.defaultValue) {
             is Int -> textFieldValueState.text.toIntOrNull() as T?
+            is UInt -> textFieldValueState.text.toUIntOrNull() as T?
+            is Long -> textFieldValueState.text.toLongOrNull() as T?
+            is ULong -> textFieldValueState.text.toULongOrNull() as T?
             is Double -> textFieldValueState.text.toDoubleOrNull() as T?
             is Float -> textFieldValueState.text.toFloatOrNull() as T?
             else -> null
