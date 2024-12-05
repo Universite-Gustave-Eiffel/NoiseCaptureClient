@@ -38,17 +38,16 @@ import noisecapture.composeapp.generated.resources.settings_section_user_profile
 import noisecapture.composeapp.generated.resources.settings_user_acoustics_knowledge_description
 import noisecapture.composeapp.generated.resources.settings_user_acoustics_knowledge_title
 import org.jetbrains.compose.resources.StringResource
-import org.noiseplanet.noisecapture.services.SettingsKey
-import org.noiseplanet.noisecapture.services.UserSettingsService
+import org.noiseplanet.noisecapture.services.settings.SettingsKey
+import org.noiseplanet.noisecapture.services.settings.UserSettingsService
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.settings.item.SettingsEnumItemViewModel
 import org.noiseplanet.noisecapture.ui.features.settings.item.SettingsItemViewModel
-import org.noiseplanet.noisecapture.ui.navigation.Route
 
 class SettingsScreenViewModel(
     private val settingsService: UserSettingsService,
 ) : ViewModel(), ScreenViewModel {
-    
+
     val settingsItems: Map<StringResource, List<SettingsItemViewModel<out Any>>> = mapOf(
         Pair(
             Res.string.settings_section_user_profile, listOf(

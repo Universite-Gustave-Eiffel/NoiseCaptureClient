@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.services
+package org.noiseplanet.noisecapture.services.liveaudio
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.audio.AcousticIndicatorsData
 import org.noiseplanet.noisecapture.audio.AcousticIndicatorsProcessing
 import org.noiseplanet.noisecapture.audio.AudioSource
@@ -27,77 +29,18 @@ import org.noiseplanet.noisecapture.audio.signal.window.SpectrumDataProcessing
 import org.noiseplanet.noisecapture.log.Logger
 
 /**
- * Listen to incoming audio and process samples to extract some acoustic indicators.
- */
-interface LiveAudioService {
-
-    /**
-     * True if service is currently monitoring incoming audio,
-     * false otherwise
-     */
-    val isRunning: StateFlow<Boolean>
-
-    /**
-     * State of the underlying audio source.
-     * Can be used to reflect system interruptions or resumes to user interface
-     */
-    val audioSourceState: Flow<AudioSourceState>
-
-    /**
-     * Setup audio source for listening to incoming audio.
-     *
-     * @param startWhenReady If true, starts the audio source when it becomes ready.
-     */
-    fun setupAudioSource(startWhenReady: Boolean = false)
-
-    /**
-     * Destroy audio source.
-     */
-    fun releaseAudioSource()
-
-    /**
-     * Starts listening to incoming audio samples through the provided audio source.
-     * If a recording is already running, calling this again will have no effect.
-     */
-    fun startListening()
-
-    /**
-     * Stops listening to incoming audio samples through the provided audio source.
-     * If no recording is running, this will have no effect.
-     */
-    fun stopListening()
-
-    /**
-     * Get a [Flow] of [AcousticIndicatorsData] from the currently running recording.
-     */
-    fun getAcousticIndicatorsFlow(): Flow<AcousticIndicatorsData>
-
-    /**
-     * Get a [Flow] of sound pressure level values.
-     */
-    fun getWeightedLeqFlow(): Flow<Double>
-
-    /**
-     * Get a [Flow] of sound pressure levels weighted by frequency band.
-     */
-    fun getWeightedSoundPressureLevelFlow(): Flow<DoubleArray>
-
-    /**
-     * Get a [Flow] of [SpectrumData] from the currently running recording.
-     */
-    fun getSpectrumDataFlow(): Flow<SpectrumData>
-}
-
-/**
  * Default [LiveAudioService] implementation.
  * Can be overridden in platforms to add specific behaviour.
  */
 class DefaultLiveAudioService(
     private val audioSource: AudioSource,
-    private val logger: Logger,
 ) : LiveAudioService, KoinComponent {
 
+    // - Constants
+
     companion object {
+
+        private const val TAG = "LiveAudioService"
 
         const val FFT_SIZE = 4096
         const val FFT_HOP = 2048
@@ -106,6 +49,10 @@ class DefaultLiveAudioService(
         private const val SPL_WINDOW_TIME = WINDOW_TIME
     }
 
+
+    // - Properties
+
+    private val logger: Logger by inject { parametersOf(TAG) }
 
     private var indicatorsProcessing: AcousticIndicatorsProcessing? = null
     private var spectrumDataProcessing: SpectrumDataProcessing? = null
@@ -121,13 +68,18 @@ class DefaultLiveAudioService(
     )
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    private val _isRunning = MutableStateFlow(false)
-    override val isRunning: StateFlow<Boolean> = _isRunning.asStateFlow()
+    private val _isRunningFlow = MutableStateFlow(false)
 
-    override val audioSourceState: Flow<AudioSourceState> = audioSource.stateFlow
 
-    override fun setupAudioSource(startWhenReady: Boolean) {
-        logger.debug("start when ready: $startWhenReady")
+    // - LiveAudioService
+
+    override val isRunningFlow: StateFlow<Boolean> = _isRunningFlow.asStateFlow()
+    override val isRunning: Boolean
+        get() = _isRunningFlow.value
+
+    override val audioSourceStateFlow: Flow<AudioSourceState> = audioSource.stateFlow
+
+    override fun setupAudioSource() {
         // Create a job that will process incoming audio samples in a background thread
         audioJob = coroutineScope.launch(Dispatchers.Default) {
             audioSource.audioSamples
@@ -170,19 +122,19 @@ class DefaultLiveAudioService(
         }
         // Release audio source
         audioSource.release()
-        _isRunning.tryEmit(false)
+        _isRunningFlow.tryEmit(false)
     }
 
     override fun startListening() {
         // Start audio source
         audioSource.start()
-        _isRunning.tryEmit(true)
+        _isRunningFlow.tryEmit(true)
     }
 
     override fun stopListening() {
         // Pause audio source
         audioSource.pause()
-        _isRunning.tryEmit(false)
+        _isRunningFlow.tryEmit(false)
     }
 
     override fun getAcousticIndicatorsFlow(): Flow<AcousticIndicatorsData> {
