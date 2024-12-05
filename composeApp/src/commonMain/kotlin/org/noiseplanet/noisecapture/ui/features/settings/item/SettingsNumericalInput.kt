@@ -94,7 +94,7 @@ fun <T : Any> SettingsNumericalInput(
                     .copy(alpha = if (isEnabled) 1.0f else 0.5f)
             ),
             keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Ascii,
+                keyboardType = KeyboardType.Decimal,
                 imeAction = ImeAction.Done,
             ),
             keyboardActions = KeyboardActions(onDone = {
