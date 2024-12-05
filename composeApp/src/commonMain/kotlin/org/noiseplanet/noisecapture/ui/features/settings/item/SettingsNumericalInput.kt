@@ -116,6 +116,13 @@ fun <T : Any> SettingsNumericalInput(
                 .padding(vertical = 16.dp)
                 .padding(start = 4.dp)
                 .disabledHorizontalPointerInputScroll()
+                .onFocusChanged { focusState ->
+                    if (!focusState.isFocused) {
+                        textFieldValueState = textFieldValueState.copy(
+                            text = viewModel.getValue().toString()
+                        )
+                    }
+                }
         ) {
             TextFieldDefaults.DecorationBox(
                 value = textFieldValueState.text,
