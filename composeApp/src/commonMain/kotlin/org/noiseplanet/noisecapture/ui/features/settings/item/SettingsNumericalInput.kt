@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -105,8 +106,10 @@ fun <T : Any> SettingsNumericalInput(
                 imeAction = ImeAction.Done,
             ),
             keyboardActions = KeyboardActions(onDone = {
-                // Clear focus and dismiss keyboard
-                focusManager.clearFocus()
+                if (getNumericalValue() != null) {
+                    // Clear focus and dismiss keyboard if input is valid
+                    focusManager.clearFocus()
+                }
             }),
             singleLine = true,
             enabled = isEnabled,
