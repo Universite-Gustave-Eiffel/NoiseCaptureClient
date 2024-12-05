@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -45,14 +46,6 @@ fun <T : Any> SettingsNumericalInput(
     viewModel: SettingsItemViewModel<T>,
     modifier: Modifier = Modifier,
 ) {
-    @Suppress("UNCHECKED_CAST")
-    val defaultValue = when (viewModel.settingKey.defaultValue) {
-        is Int -> 0 as T
-        is Double -> 0.0 as T
-        is Float -> 0.0f as T
-        else -> error("Template parameter must be a numerical value")
-    }
-
     var textFieldValueState by remember {
         val initialValue = viewModel.getValue().toString()
 
@@ -77,6 +70,9 @@ fun <T : Any> SettingsNumericalInput(
     fun getNumericalValue(): T? {
         return when (viewModel.settingKey.defaultValue) {
             is Int -> textFieldValueState.text.toIntOrNull() as T?
+            is UInt -> textFieldValueState.text.toUIntOrNull() as T?
+            is Long -> textFieldValueState.text.toLongOrNull() as T?
+            is ULong -> textFieldValueState.text.toULongOrNull() as T?
             is Double -> textFieldValueState.text.toDoubleOrNull() as T?
             is Float -> textFieldValueState.text.toFloatOrNull() as T?
             else -> null
@@ -101,12 +97,14 @@ fun <T : Any> SettingsNumericalInput(
                     .copy(alpha = if (isEnabled) 1.0f else 0.5f)
             ),
             keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Ascii,
+                keyboardType = KeyboardType.Decimal,
                 imeAction = ImeAction.Done,
             ),
             keyboardActions = KeyboardActions(onDone = {
-                // Clear focus and dismiss keyboard
-                focusManager.clearFocus()
+                if (getNumericalValue() != null) {
+                    // Clear focus and dismiss keyboard if input is valid
+                    focusManager.clearFocus()
+                }
             }),
             singleLine = true,
             enabled = isEnabled,
@@ -116,6 +114,13 @@ fun <T : Any> SettingsNumericalInput(
                 .padding(vertical = 16.dp)
                 .padding(start = 4.dp)
                 .disabledHorizontalPointerInputScroll()
+                .onFocusChanged { focusState ->
+                    if (!focusState.isFocused) {
+                        textFieldValueState = textFieldValueState.copy(
+                            text = viewModel.getValue().toString()
+                        )
+                    }
+                }
         ) {
             TextFieldDefaults.DecorationBox(
                 value = textFieldValueState.text,
