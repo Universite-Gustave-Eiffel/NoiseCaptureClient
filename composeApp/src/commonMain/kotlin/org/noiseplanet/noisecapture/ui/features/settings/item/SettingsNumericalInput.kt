@@ -46,14 +46,6 @@ fun <T : Any> SettingsNumericalInput(
     viewModel: SettingsItemViewModel<T>,
     modifier: Modifier = Modifier,
 ) {
-    @Suppress("UNCHECKED_CAST")
-    val defaultValue = when (viewModel.settingKey.defaultValue) {
-        is Int -> 0 as T
-        is Double -> 0.0 as T
-        is Float -> 0.0f as T
-        else -> error("Template parameter must be a numerical value")
-    }
-
     var textFieldValueState by remember {
         val initialValue = viewModel.getValue().toString()
 
