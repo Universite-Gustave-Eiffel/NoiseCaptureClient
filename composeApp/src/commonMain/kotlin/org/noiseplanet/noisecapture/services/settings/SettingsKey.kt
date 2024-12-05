@@ -58,9 +58,9 @@ sealed class SettingsKey<T>(val serializer: KSerializer<T>, val defaultValue: T)
         defaultValue = false,
     )
 
-    data object SettingMaxMeasurementDuration : SettingsKey<Int>(
-        Int.serializer(),
-        defaultValue = 30,
+    data object SettingMaxMeasurementDuration : SettingsKey<UInt>(
+        UInt.serializer(),
+        defaultValue = 30u,
     )
 
     data object SettingSpectrogramScaleMode : SettingsKey<SpectrogramScaleMode>(
@@ -74,14 +74,14 @@ sealed class SettingsKey<T>(val serializer: KSerializer<T>, val defaultValue: T)
         defaultValue = 0.0,
     )
 
-    data object SettingCalibrationCountdown : SettingsKey<Int>(
-        Int.serializer(),
-        defaultValue = 4,
+    data object SettingCalibrationCountdown : SettingsKey<UInt>(
+        UInt.serializer(),
+        defaultValue = 4u,
     )
 
-    data object SettingCalibrationDuration : SettingsKey<Int>(
-        Int.serializer(),
-        defaultValue = 6,
+    data object SettingCalibrationDuration : SettingsKey<UInt>(
+        UInt.serializer(),
+        defaultValue = 6u,
     )
 
     data object SettingTestSignalAudioOutput : SettingsKey<CalibrationTestAudioOutput>(
@@ -90,8 +90,8 @@ sealed class SettingsKey<T>(val serializer: KSerializer<T>, val defaultValue: T)
     )
 
     // Map
-    data object SettingMapMaxMeasurementsCount : SettingsKey<Int>(
-        Int.serializer(),
-        defaultValue = 500,
+    data object SettingMapMaxMeasurementsCount : SettingsKey<UInt>(
+        UInt.serializer(),
+        defaultValue = 500u,
     )
 }

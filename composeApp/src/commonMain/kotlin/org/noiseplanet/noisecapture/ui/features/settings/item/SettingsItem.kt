@@ -77,6 +77,12 @@ fun <T : Any> SettingsItem(
                     SettingsBooleanInput(viewModel as SettingsItemViewModel<Boolean>)
                 }
 
+                // UInt and ULong are not handled as Number types in Kotlin so we need to handle
+                // those in a separate when branch
+                is UInt, ULong -> {
+                    SettingsNumericalInput(viewModel)
+                }
+
                 is Number -> {
                     SettingsNumericalInput(viewModel)
                 }
