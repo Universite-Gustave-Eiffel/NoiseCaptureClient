@@ -63,6 +63,8 @@ class DefaultMeasurementRecordingService(
         logger.debug("Start recording")
         _isRecording.tryEmit(true)
 
+        // Start live location updates
+        userLocationService.startUpdatingLocation()
         createMeasurementAndSubscribe()
     }
 
@@ -71,6 +73,9 @@ class DefaultMeasurementRecordingService(
         recordingJob?.cancel()
         recordingJob = null
         _isRecording.tryEmit(false)
+
+        // Stop live location updates
+        userLocationService.stopUpdatingLocation()
 
         measurementService.storeMeasurement(
             Measurement(
@@ -99,7 +104,8 @@ class DefaultMeasurementRecordingService(
         recordingJob = scope.launch {
             coroutineScope {
                 launch {
-                    userLocationService.getLiveLocation().collect { location ->
+                    userLocationService.liveLocation.collect { location ->
+                        logger.debug("New location received: $location")
                         ongoingUserLocationHistory.add(location)
                     }
                 }

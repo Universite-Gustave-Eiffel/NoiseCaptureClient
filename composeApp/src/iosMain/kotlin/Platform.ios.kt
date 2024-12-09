@@ -8,12 +8,11 @@ class IOSPlatform : Platform {
         UIDevice.currentDevice.systemName() + " " + UIDevice.currentDevice.systemVersion
 
     override val requiredPermissions: List<Permission>
-        // We can't control laptop settings on the web so we don't
-        // check if location services are on. It will be part of the
-        // location background permission check.
         get() = listOf(
             Permission.RECORD_AUDIO,
-//            Permission.LOCATION_BACKGROUND
+            Permission.LOCATION_FOREGROUND,
+            Permission.LOCATION_SERVICE_ON,
+            Permission.LOCATION_BACKGROUND
         )
 }
 
