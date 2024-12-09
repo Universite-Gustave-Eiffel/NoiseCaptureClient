@@ -1,17 +1,23 @@
 package org.noiseplanet.noisecapture.permission.delegate
 
+import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.interop.createGeolocationOptions
 import org.noiseplanet.noisecapture.interop.navigator
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.permission.util.checkPermission
+import org.noiseplanet.noisecapture.util.injectLogger
 
-internal class LocationBackgroundPermissionDelegate(
-    private val logger: Logger,
-) : PermissionDelegate {
+internal class LocationBackgroundPermissionDelegate : PermissionDelegate, KoinComponent {
 
+    // - Properties
+
+    private val logger: Logger by injectLogger()
     private var permissionSate = PermissionState.NOT_DETERMINED
+
+
+    // - PermissionDelegate
 
     override suspend fun getPermissionState(): PermissionState {
         if (permissionSate != PermissionState.NOT_DETERMINED) {

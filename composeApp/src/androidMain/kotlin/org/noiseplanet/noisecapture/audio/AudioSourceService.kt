@@ -18,12 +18,12 @@ import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.ongoing_measurement_notification_body
 import noisecapture.composeapp.generated.resources.ongoing_measurement_notification_title
 import org.jetbrains.compose.resources.getString
-import org.koin.android.ext.android.inject
-import org.koin.core.parameter.parametersOf
+import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.MainActivity
 import org.noiseplanet.noisecapture.R
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.util.NotificationHelper
+import org.noiseplanet.noisecapture.util.injectLogger
 
 /**
  * An Android service that will keep the audio recording active as long as possible while the
@@ -32,7 +32,7 @@ import org.noiseplanet.noisecapture.util.NotificationHelper
  * TODO: Check under which circumstances the system kills the service
  * TODO: Handle system audio interruptions (playing sound from another app, phone call, timer, ...)
  */
-internal class AudioSourceService : Service() {
+internal class AudioSourceService : Service(), KoinComponent {
 
     // - Constants
 
@@ -66,7 +66,7 @@ internal class AudioSourceService : Service() {
     private var audioRecorder: AudioRecorder? = null
     private var audioThread: Thread? = null
 
-    private val logger: Logger by inject { parametersOf(TAG) }
+    private val logger: Logger by injectLogger()
     private val binder = LocalBinder()
 
 
