@@ -11,6 +11,8 @@ import org.noiseplanet.noisecapture.audio.AudioSource
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.services.location.AndroidUserLocationProvider
 import org.noiseplanet.noisecapture.services.location.UserLocationProvider
+import org.noiseplanet.noisecapture.services.measurement.AndroidMeasurementRecordingService
+import org.noiseplanet.noisecapture.services.measurement.MeasurementRecordingService
 
 /**
  * Registers koin components specific to this platform
@@ -23,7 +25,7 @@ val platformModule: Module = module {
     }
 
     factory<AudioSource> {
-        AndroidAudioSource(context = get())
+        AndroidAudioSource()
     }
 
     factory<UserLocationProvider> {
@@ -33,5 +35,15 @@ val platformModule: Module = module {
     single<Settings> {
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(get())
         SharedPreferencesSettings(sharedPreferences)
+    }
+
+    /**
+     * Override the default [MeasurementRecordingService] implementation with the one
+     * wrapped into a foreground service.
+     */
+    single<MeasurementRecordingService> {
+        AndroidMeasurementRecordingService(
+            context = get()
+        )
     }
 }

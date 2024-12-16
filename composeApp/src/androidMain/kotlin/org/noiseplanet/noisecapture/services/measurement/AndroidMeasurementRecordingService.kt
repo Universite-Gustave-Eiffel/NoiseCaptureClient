@@ -1,9 +1,12 @@
-package org.noiseplanet.noisecapture.audio
+package org.noiseplanet.noisecapture.services.measurement
 
 import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.content.pm.ServiceInfo
 import android.os.Binder
 import android.os.Build
@@ -13,41 +16,121 @@ import androidx.core.app.ServiceCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.ongoing_measurement_notification_body
 import noisecapture.composeapp.generated.resources.ongoing_measurement_notification_title
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 import org.noiseplanet.noisecapture.MainActivity
 import org.noiseplanet.noisecapture.R
-import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.util.NotificationHelper
 import org.noiseplanet.noisecapture.util.injectLogger
 
+
 /**
- * An Android service that will keep the audio recording active as long as possible while the
- * app is not in foreground.
- *
- * TODO: Check under which circumstances the system kills the service
- * TODO: Handle system audio interruptions (playing sound from another app, phone call, timer, ...)
+ * An implementation of [MeasurementRecordingService] that will start a wrapped instance of
+ * [DefaultMeasurementRecordingService] in an Android Foreground Service so it keeps running
+ * when the app is sent to the background (as long as the system doesn't kill it).
  */
-internal class AudioSourceService : Service(), KoinComponent {
+class AndroidMeasurementRecordingService(
+    private val context: Context,
+) : MeasurementRecordingService {
+
+    // - Properties
+
+    /**
+     * Will hold the currently bound wrapper as long as a foreground service is running.
+     */
+    private var wrapper: ForegroundServiceWrapper? = null
+
+    /**
+     * Service connection will allow us to retrieve the wrapper instance when the service is started.
+     */
+    private val serviceConnection = object : ServiceConnection {
+
+        /**
+         * Called when service is connected through [Context.bindService].
+         * Retrieves the wrapper instance from the given [binder] and launches
+         * recording through the wrapped service instance.
+         */
+        override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
+            checkNotNull(binder) { "Binder is null" }
+
+            val localBinder = binder as ForegroundServiceWrapper.LocalBinder
+            wrapper = localBinder.getService()
+
+            wrapper?.innerService?.start()
+        }
+
+        /**
+         * Called when service is disconnected.
+         */
+        override fun onServiceDisconnected(name: ComponentName?) {
+            wrapper = null
+        }
+    }
+
+    private val _isRecordingFlow = MutableStateFlow(false)
+
+
+    // - MeasurementRecordingService
+
+    override val isRecording: Boolean
+        get() = wrapper?.innerService?.isRecording ?: false
+
+    // TODO: Figure out a way to always listen to the state of the last started service
+    override val isRecordingFlow: StateFlow<Boolean>
+        get() = wrapper?.innerService?.isRecordingFlow ?: _isRecordingFlow
+
+    override fun start() {
+        startForegroundServiceWrapper()
+    }
+
+    override fun endAndSave() {
+        wrapper?.stopForegroundService()
+    }
+
+
+    // - Private functions
+
+    /**
+     * Based on the current OS version, start the [ForegroundServiceWrapper] as a foreground service
+     * with a persistent notification, or as a "regular" service.
+     */
+    private fun startForegroundServiceWrapper() {
+        val intent = Intent(context, ForegroundServiceWrapper::class.java)
+
+        // Based
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(intent)
+        } else {
+            context.startService(intent)
+        }
+
+        context.bindService(intent, serviceConnection, 0)
+    }
+}
+
+
+/**
+ * Wraps the default implementation of [MeasurementRecordingService] into a Foreground Service.
+ */
+internal class ForegroundServiceWrapper : KoinComponent, Service() {
 
     // - Constants
 
     companion object {
 
-        private const val TAG = "AudioForegroundService"
         private const val FOREGROUND_SERVICE_ID = 1
         private const val NOTIFICATION_REQUEST_CODE = 1029384756
     }
 
-    private val job = SupervisorJob()
-    private val coroutineScope = CoroutineScope(Dispatchers.IO + job)
 
-
-    // Associated types
+    // - Associated types
 
     /**
      * Allows accessing this service from a Context using bindService.
@@ -57,17 +140,25 @@ internal class AudioSourceService : Service(), KoinComponent {
         /**
          * Gets this service instance.
          */
-        fun getService(): AudioSourceService = this@AudioSourceService
+        fun getService(): ForegroundServiceWrapper = this@ForegroundServiceWrapper
     }
 
 
     // - Properties
 
-    private var audioRecorder: AudioRecorder? = null
-    private var audioThread: Thread? = null
-
-    private val logger: Logger by injectLogger()
     private val binder = LocalBinder()
+
+    private val job = SupervisorJob()
+    private val coroutineScope = CoroutineScope(Dispatchers.IO + job)
+
+    private val logger by injectLogger()
+
+    // Build inner service instance using dependency injection
+    val innerService = DefaultMeasurementRecordingService(
+        measurementService = get(),
+        userLocationService = get(),
+        liveAudioService = get(),
+    )
 
 
     // - Service
@@ -83,8 +174,6 @@ internal class AudioSourceService : Service(), KoinComponent {
      * Called when a Context starts this service.
      */
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        logger.debug("ON START COMMAND")
-
         // Promote this service to foreground service, showing a notification to the user.
         // This needs to be called within 10 seconds of starting the service otherwise an
         // exception will be thrown by the system.
@@ -93,15 +182,15 @@ internal class AudioSourceService : Service(), KoinComponent {
         return super.onStartCommand(intent, flags, startId)
     }
 
-    override fun onCreate() {
-        super.onCreate()
-        logger.debug("ON CREATE")
-    }
-
+    /**
+     * Called when this service is terminated by the calling context or by the system.
+     */
     override fun onDestroy() {
         super.onDestroy()
-        logger.debug("ON DESTROY")
-        stopRecording()
+
+        if (innerService.isRecording) {
+            innerService.endAndSave()
+        }
         job.cancel()
     }
 
@@ -109,21 +198,10 @@ internal class AudioSourceService : Service(), KoinComponent {
     // - Public functions
 
     /**
-     * Starts recording audio through the provided [AudioRecorder].
+     * Stops the ongoing foreground service, which will trigger [onDestroy], thus
+     * stopping the underlying measurement and saving results before ending this service.
      */
-    fun startRecording(audioRecorder: AudioRecorder) {
-        this.audioRecorder = audioRecorder
-        audioThread = Thread(audioRecorder)
-        audioThread?.start()
-    }
-
-    /**
-     * Stops audio recording and stops this service from running.
-     */
-    fun stopRecording() {
-        audioRecorder?.stopRecording()
-        audioThread?.join()
-        audioRecorder = null
+    fun stopForegroundService() {
         stopSelf()
     }
 
@@ -146,7 +224,7 @@ internal class AudioSourceService : Service(), KoinComponent {
         coroutineScope.launch {
             // Promote this service to foreground service
             ServiceCompat.startForeground(
-                this@AudioSourceService,
+                this@ForegroundServiceWrapper,
                 FOREGROUND_SERVICE_ID,
                 buildNotification(),
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {

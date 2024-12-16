@@ -18,7 +18,7 @@ import org.noiseplanet.noisecapture.services.location.UserLocationService
 import org.noiseplanet.noisecapture.util.injectLogger
 
 
-class DefaultMeasurementRecordingService(
+open class DefaultMeasurementRecordingService(
     private val measurementService: MeasurementService,
     private val userLocationService: UserLocationService,
     private val liveAudioService: LiveAudioService,
