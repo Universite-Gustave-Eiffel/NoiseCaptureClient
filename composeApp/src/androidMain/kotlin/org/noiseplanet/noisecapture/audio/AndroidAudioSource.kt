@@ -10,19 +10,19 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
+import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.MicrophoneLocation
+import org.noiseplanet.noisecapture.util.injectLogger
 
 /**
  * Android audio source implementation
  *
- * @param logger [Logger] instance
  * @param context Android [Context] instance
  */
 internal class AndroidAudioSource(
-    private val logger: Logger,
     private val context: Context,
-) : AudioSource {
+) : AudioSource, KoinComponent {
 
     // - Properties
 
@@ -64,6 +64,8 @@ internal class AndroidAudioSource(
             audioSourceService = null
         }
     }
+
+    private val logger: Logger by injectLogger()
 
 
     // - AudioSource

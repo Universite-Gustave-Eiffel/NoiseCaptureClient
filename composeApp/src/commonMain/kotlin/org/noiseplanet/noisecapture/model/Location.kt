@@ -3,14 +3,14 @@ package org.noiseplanet.noisecapture.model
 /**
  * Location data at a given time
  *
- * @param timestamp Time at which this point was recorded.
- * @param coordinates Geographical coordinates of the device.
- * @param speed The instantaneous speed of the device, measured in meters per second.
- * @param altitude The altitude above mean sea level associated with a location, measured in meters.
- * @param direction Direction in which the device is traveling, measured in degrees and relative to due north.
- * @param orientation Direction in which the device is facing, measured in degrees and relative to true north.
- *                    May not always be available, hence optional.
- * @param accuracy Accuracy values associated with each of the measured values. See [LocationAccuracy].
+ * @param timestamp     Time at which this point was recorded.
+ * @param coordinates   Geographical coordinates of the device.
+ * @param speed         The instantaneous speed of the device, measured in meters per second.
+ * @param altitude      The altitude above mean sea level associated with a location, measured in meters.
+ * @param direction     Direction in which the device is traveling, measured in degrees and relative to due north.
+ * @param orientation   Direction in which the device is facing, measured in degrees and relative to true north.
+ *                      May not always be available, hence optional.
+ * @param accuracy      Accuracy values associated with each of the measured values. See [LocationAccuracy].
  */
 data class Location(
     val timestamp: Double,
@@ -26,19 +26,22 @@ data class Location(
 /**
  * Accuracy of a location data point.
  *
- * @param horizontal The radius of uncertainty for the location, measured in meters.
- * @param vertical The validity of the altitude values, and their estimated uncertainty, measured in meters.
- * @param speed The instantaneous speed of the device, measured in meters per second.
- * @param direction The accuracy of the direction value, measured in degrees.
- * @param orientation The maximum deviation (measured in degrees) between the reported heading and
- *                    the true geomagnetic heading. May not always be available, hence optional.
+ * @param horizontal    The radius of uncertainty for the location, measured in meters.
+ * @param vertical      The validity of the altitude values, and their estimated uncertainty, measured in meters.
+ *                      On Android, only available since SDK 26 (Oreo), hence optional.
+ * @param speed         The instantaneous speed of the device, measured in meters per second.
+ *                      On Android, only available since SDK 26 (Oreo), hence optional.
+ * @param direction     The accuracy of the direction value, measured in degrees.
+ *                      On Android, only available since SDK 26 (Oreo), hence optional.
+ * @param orientation   The maximum deviation (measured in degrees) between the reported heading and
+ *                      the true geomagnetic heading. May not always be available, hence optional.
  */
 data class LocationAccuracy(
     val horizontal: Double,
-    val speed: Double,
-    val vertical: Double,
-    val direction: Double,
-    val orientation: Double?,
+    val speed: Double? = null,
+    val vertical: Double? = null,
+    val direction: Double? = null,
+    val orientation: Double? = null,
 )
 
 

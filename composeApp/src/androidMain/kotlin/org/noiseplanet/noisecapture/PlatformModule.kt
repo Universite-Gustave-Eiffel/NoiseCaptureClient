@@ -5,11 +5,12 @@ import androidx.preference.PreferenceManager
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.SharedPreferencesSettings
 import org.koin.core.module.Module
-import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
 import org.noiseplanet.noisecapture.audio.AndroidAudioSource
 import org.noiseplanet.noisecapture.audio.AudioSource
 import org.noiseplanet.noisecapture.log.Logger
+import org.noiseplanet.noisecapture.services.location.AndroidUserLocationProvider
+import org.noiseplanet.noisecapture.services.location.UserLocationProvider
 
 /**
  * Registers koin components specific to this platform
@@ -22,12 +23,11 @@ val platformModule: Module = module {
     }
 
     factory<AudioSource> {
-        AndroidAudioSource(
-            logger = get {
-                parametersOf("AudioSource")
-            },
-            context = get()
-        )
+        AndroidAudioSource(context = get())
+    }
+
+    factory<UserLocationProvider> {
+        AndroidUserLocationProvider()
     }
 
     single<Settings> {
