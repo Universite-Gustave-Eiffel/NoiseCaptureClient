@@ -6,8 +6,11 @@ package org.noiseplanet.noisecapture.model
  * @param timestamp     Time at which this point was recorded.
  * @param coordinates   Geographical coordinates of the device.
  * @param speed         The instantaneous speed of the device, measured in meters per second.
+ *                      Not always available from browser, hence optional.
  * @param altitude      The altitude above mean sea level associated with a location, measured in meters.
+ *                      Not always available from browser, hence optional.
  * @param direction     Direction in which the device is traveling, measured in degrees and relative to due north.
+ *                      Not always available from browser, hence optional.
  * @param orientation   Direction in which the device is facing, measured in degrees and relative to true north.
  *                      May not always be available, hence optional.
  * @param accuracy      Accuracy values associated with each of the measured values. See [LocationAccuracy].
@@ -15,9 +18,9 @@ package org.noiseplanet.noisecapture.model
 data class Location(
     val timestamp: Double,
     val coordinates: Coordinates,
-    val speed: Double,
-    val altitude: Double,
-    val direction: Double,
+    val speed: Double?,
+    val altitude: Double?,
+    val direction: Double?,
     val orientation: Double?,
     val accuracy: LocationAccuracy,
 )

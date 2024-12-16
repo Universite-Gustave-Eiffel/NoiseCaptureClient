@@ -79,10 +79,10 @@ fun MeasurementScreen(
                 Row(modifier = Modifier.fillMaxSize()) {
                     Column(modifier = Modifier.fillMaxWidth(.5F)) {
                         AcousticIndicatorsView(viewModel = koinViewModel())
+                        RecordingControls(viewModel = viewModel.recordingControlsViewModel)
                     }
                     Column(modifier = Modifier) {
                         MeasurementPager()
-                        RecordingControls(viewModel = viewModel.recordingControlsViewModel)
                     }
                 }
             } else {
