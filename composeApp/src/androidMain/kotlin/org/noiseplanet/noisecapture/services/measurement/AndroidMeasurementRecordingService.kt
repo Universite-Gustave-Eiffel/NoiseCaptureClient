@@ -29,7 +29,6 @@ import org.koin.core.component.get
 import org.noiseplanet.noisecapture.MainActivity
 import org.noiseplanet.noisecapture.R
 import org.noiseplanet.noisecapture.util.NotificationHelper
-import org.noiseplanet.noisecapture.util.injectLogger
 
 
 /**
@@ -167,8 +166,6 @@ internal class ForegroundServiceWrapper : KoinComponent, Service() {
 
     private val job = SupervisorJob()
     private val coroutineScope = CoroutineScope(Dispatchers.IO + job)
-
-    private val logger by injectLogger()
 
     // Build inner service instance using dependency injection
     val innerService = DefaultMeasurementRecordingService(
