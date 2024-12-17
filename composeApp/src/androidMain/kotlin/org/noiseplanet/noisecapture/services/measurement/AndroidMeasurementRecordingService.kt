@@ -15,6 +15,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -48,6 +49,15 @@ class AndroidMeasurementRecordingService(
     private var wrapper: ForegroundServiceWrapper? = null
 
     /**
+     * Will take care of delivering the recording state of the latest running wrapped service,
+     * or false if no wrapped service is currently available.
+     */
+    private val mergedIsRecordingFlow = MutableStateFlow(false)
+
+    private val scope = CoroutineScope(Dispatchers.Default)
+    private var isRecordingRedirectionJob: Job? = null
+
+    /**
      * Service connection will allow us to retrieve the wrapper instance when the service is started.
      */
     private val serviceConnection = object : ServiceConnection {
@@ -64,6 +74,13 @@ class AndroidMeasurementRecordingService(
             wrapper = localBinder.getService()
 
             wrapper?.innerService?.start()
+
+            isRecordingRedirectionJob = scope.launch {
+                // Redirect the
+                wrapper?.innerService?.isRecordingFlow?.collect {
+                    mergedIsRecordingFlow.tryEmit(it)
+                }
+            }
         }
 
         /**
@@ -71,20 +88,20 @@ class AndroidMeasurementRecordingService(
          */
         override fun onServiceDisconnected(name: ComponentName?) {
             wrapper = null
+            isRecordingRedirectionJob?.cancel()
+            mergedIsRecordingFlow.tryEmit(false)
         }
     }
-
-    private val _isRecordingFlow = MutableStateFlow(false)
 
 
     // - MeasurementRecordingService
 
     override val isRecording: Boolean
-        get() = wrapper?.innerService?.isRecording ?: false
+        get() = mergedIsRecordingFlow.value
 
-    // TODO: Figure out a way to always listen to the state of the last started service
     override val isRecordingFlow: StateFlow<Boolean>
-        get() = wrapper?.innerService?.isRecordingFlow ?: _isRecordingFlow
+        get() = mergedIsRecordingFlow
+
 
     override fun start() {
         startForegroundServiceWrapper()
