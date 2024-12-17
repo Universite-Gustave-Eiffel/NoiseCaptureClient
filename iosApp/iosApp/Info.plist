@@ -23,13 +23,15 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>TODO: Localize this</string>
+	<string>TODO: Explain bluetooth usage needs</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>TODO: Localize this</string>
+	<string>TODO: Explain foreground and background location usage needs</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>TODO: Explain background location usage needs</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>TODO: Localize this</string>
+	<string>TODO: Explain foreground location usage needs</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>TODO: Localize this</string>
+	<string>TODO: Explain microphone usage needs</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -38,6 +40,7 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>
+		<string>location</string>
 	</array>
 	<key>UILaunchScreen</key>
 	<dict/>

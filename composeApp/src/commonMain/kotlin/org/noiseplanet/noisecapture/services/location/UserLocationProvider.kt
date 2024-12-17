@@ -4,9 +4,9 @@ import kotlinx.coroutines.flow.Flow
 import org.noiseplanet.noisecapture.model.Location
 
 /**
- * Get user location updates
+ * Common interface for user location provider, each platform should provide its own implementation
  */
-interface UserLocationService {
+interface UserLocationProvider {
 
     /**
      * Gets current user location, if known

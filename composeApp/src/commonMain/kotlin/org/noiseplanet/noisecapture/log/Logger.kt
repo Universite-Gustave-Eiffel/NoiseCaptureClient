@@ -6,10 +6,7 @@ package org.noiseplanet.noisecapture.log
  * @param tag Tag that will be prefixed before each message logged by this instance.
  *            Should give context information about the caller (e.g. class name).
  */
-abstract class Logger(
-    // TODO: Is there a way to infer class name at build time?
-    protected val tag: String? = null,
-) {
+abstract class Logger(protected val tag: String? = null) {
 
     /**
      * Calls native logger implementation to display the given message from the given log level.

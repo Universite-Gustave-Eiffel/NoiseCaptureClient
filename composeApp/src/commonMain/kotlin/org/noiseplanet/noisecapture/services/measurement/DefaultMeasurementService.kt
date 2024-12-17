@@ -1,27 +1,18 @@
 package org.noiseplanet.noisecapture.services.measurement
 
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.Measurement
+import org.noiseplanet.noisecapture.util.injectLogger
 
 /**
  * Default [MeasurementService] implementation
  */
 class DefaultMeasurementService : MeasurementService, KoinComponent {
 
-    // - Constants
-
-    companion object {
-
-        private const val TAG = "MeasurementService"
-    }
-
-
     // - Properties
 
-    private val logger: Logger by inject { parametersOf(TAG) }
+    private val logger: Logger by injectLogger()
 
 
     // - MeasurementService

@@ -15,8 +15,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.audio.AcousticIndicatorsData
 import org.noiseplanet.noisecapture.audio.AcousticIndicatorsProcessing
 import org.noiseplanet.noisecapture.audio.AudioSource
@@ -27,6 +25,7 @@ import org.noiseplanet.noisecapture.audio.signal.LevelDisplayWeightedDecay
 import org.noiseplanet.noisecapture.audio.signal.window.SpectrumData
 import org.noiseplanet.noisecapture.audio.signal.window.SpectrumDataProcessing
 import org.noiseplanet.noisecapture.log.Logger
+import org.noiseplanet.noisecapture.util.injectLogger
 
 /**
  * Default [LiveAudioService] implementation.
@@ -40,8 +39,6 @@ class DefaultLiveAudioService(
 
     companion object {
 
-        private const val TAG = "LiveAudioService"
-
         const val FFT_SIZE = 4096
         const val FFT_HOP = 2048
 
@@ -52,7 +49,7 @@ class DefaultLiveAudioService(
 
     // - Properties
 
-    private val logger: Logger by inject { parametersOf(TAG) }
+    private val logger: Logger by injectLogger()
 
     private var indicatorsProcessing: AcousticIndicatorsProcessing? = null
     private var spectrumDataProcessing: SpectrumDataProcessing? = null

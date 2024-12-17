@@ -36,7 +36,7 @@
         </activity>
 
         <service
-            android:name="org.noiseplanet.noisecapture.audio.AudioSourceService"
+            android:name="org.noiseplanet.noisecapture.services.measurement.ForegroundServiceWrapper"
             android:foregroundServiceType="microphone"
             android:exported="false" />
     </application>

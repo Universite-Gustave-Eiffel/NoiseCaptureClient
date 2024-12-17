@@ -4,11 +4,12 @@ import com.russhwolf.settings.ExperimentalSettingsImplementation
 import com.russhwolf.settings.KeychainSettings
 import com.russhwolf.settings.Settings
 import org.koin.core.module.Module
-import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
 import org.noiseplanet.noisecapture.audio.AudioSource
 import org.noiseplanet.noisecapture.audio.IOSAudioSource
 import org.noiseplanet.noisecapture.log.Logger
+import org.noiseplanet.noisecapture.services.location.IOSUserLocationProvider
+import org.noiseplanet.noisecapture.services.location.UserLocationProvider
 import platform.Foundation.NSBundle
 
 /**
@@ -23,9 +24,11 @@ val platformModule: Module = module {
     }
 
     factory<AudioSource> {
-        IOSAudioSource(logger = get {
-            parametersOf("AudioSource")
-        })
+        IOSAudioSource()
+    }
+
+    factory<UserLocationProvider> {
+        IOSUserLocationProvider()
     }
 
     single<Settings> {

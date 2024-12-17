@@ -14,25 +14,16 @@ class MeasurementScreenViewModel(
     private val recordingService: MeasurementRecordingService,
 ) : ViewModel(), ScreenViewModel {
 
-    init {
-        viewModelScope.launch {
-            liveAudioService.audioSourceStateFlow.collect { state ->
-                if (state == AudioSourceState.READY) {
-                    // Start recording audio whenever audio source is done initializing
-                    startRecordingAudio()
-                }
-            }
-        }
-    }
+    // - Properties
 
     val recordingControlsViewModel = RecordingControlsViewModel(
         isPlaying = liveAudioService.isRunningFlow,
         isRecording = recordingService.isRecordingFlow,
         onPlayPauseButtonClick = {
             if (liveAudioService.isRunning) {
-                stopRecordingAudio()
+                stopAudioSource()
             } else {
-                startRecordingAudio()
+                startAudioSource()
             }
         },
         onStartStopButtonClick = {
@@ -51,11 +42,32 @@ class MeasurementScreenViewModel(
     val isRecording: Boolean
         get() = recordingService.isRecording
 
+
+    // - Lifecycle
+
+    init {
+        viewModelScope.launch {
+            liveAudioService.audioSourceStateFlow.collect { state ->
+                if (state == AudioSourceState.READY) {
+                    // Start recording audio whenever audio source is done initializing
+                    startAudioSource()
+                }
+            }
+        }
+    }
+
+
+    // - Public functions
+
     fun setupAudioSource() = liveAudioService.setupAudioSource()
 
-    fun startRecordingAudio() = liveAudioService.startListening()
+    fun startAudioSource() = liveAudioService.startListening()
 
-    fun stopRecordingAudio() = liveAudioService.stopListening()
+    fun stopAudioSource() = liveAudioService.stopListening()
 
     fun releaseAudioSource() = liveAudioService.releaseAudioSource()
+
+    fun startRecording() = recordingService.start()
+
+    fun endRecording() = recordingService.endAndSave()
 }

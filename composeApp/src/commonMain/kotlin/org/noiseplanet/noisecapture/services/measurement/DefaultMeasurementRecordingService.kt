@@ -9,33 +9,24 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.audio.AcousticIndicatorsData
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.Location
 import org.noiseplanet.noisecapture.model.Measurement
 import org.noiseplanet.noisecapture.services.liveaudio.LiveAudioService
 import org.noiseplanet.noisecapture.services.location.UserLocationService
+import org.noiseplanet.noisecapture.util.injectLogger
 
 
-class DefaultMeasurementRecordingService(
+open class DefaultMeasurementRecordingService(
     private val measurementService: MeasurementService,
     private val userLocationService: UserLocationService,
     private val liveAudioService: LiveAudioService,
 ) : MeasurementRecordingService, KoinComponent {
 
-    // - Constants
-
-    companion object {
-
-        private const val TAG = "RecordingService"
-    }
-
-
     // - Properties
 
-    private val logger: Logger by inject { parametersOf(TAG) }
+    private val logger: Logger by injectLogger()
 
     private val scope = CoroutineScope(Dispatchers.Default)
     private var recordingJob: Job? = null
@@ -63,6 +54,8 @@ class DefaultMeasurementRecordingService(
         logger.debug("Start recording")
         _isRecording.tryEmit(true)
 
+        // Start live location updates
+        userLocationService.startUpdatingLocation()
         createMeasurementAndSubscribe()
     }
 
@@ -71,6 +64,9 @@ class DefaultMeasurementRecordingService(
         recordingJob?.cancel()
         recordingJob = null
         _isRecording.tryEmit(false)
+
+        // Stop live location updates
+        userLocationService.stopUpdatingLocation()
 
         measurementService.storeMeasurement(
             Measurement(
@@ -99,7 +95,8 @@ class DefaultMeasurementRecordingService(
         recordingJob = scope.launch {
             coroutineScope {
                 launch {
-                    userLocationService.getLiveLocation().collect { location ->
+                    userLocationService.liveLocation.collect { location ->
+                        logger.debug("New location received: $location")
                         ongoingUserLocationHistory.add(location)
                     }
                 }

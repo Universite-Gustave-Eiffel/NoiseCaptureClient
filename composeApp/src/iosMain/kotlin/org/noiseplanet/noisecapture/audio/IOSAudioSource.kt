@@ -13,10 +13,12 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
+import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.MicrophoneLocation
 import org.noiseplanet.noisecapture.util.NSNotificationListener
 import org.noiseplanet.noisecapture.util.checkNoError
+import org.noiseplanet.noisecapture.util.injectLogger
 import platform.AVFAudio.AVAudioEngine
 import platform.AVFAudio.AVAudioPCMBuffer
 import platform.AVFAudio.AVAudioSession
@@ -46,15 +48,17 @@ import platform.posix.uint32_t
  * [Swift documentation](https://developer.apple.com/documentation/avfaudio/avaudioengine)
  */
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
-internal class IOSAudioSource(
-    private val logger: Logger,
-) : AudioSource {
+internal class IOSAudioSource : AudioSource, KoinComponent {
+
+    // - Constants
 
     companion object {
 
         const val SAMPLES_BUFFER_SIZE: uint32_t = 1024u
     }
 
+
+    // - Properties
 
     private val audioSamplesChannel = Channel<AudioSamples>(
         onBufferOverflow = BufferOverflow.DROP_OLDEST
@@ -72,6 +76,10 @@ internal class IOSAudioSource(
         callback = { handleSessionInterruptionNotification(it) }
     )
 
+    private val logger: Logger by injectLogger()
+
+
+    // - AudioSource
 
     override var state: AudioSourceState = AudioSourceState.UNINITIALIZED
         set(value) {
@@ -166,6 +174,9 @@ internal class IOSAudioSource(
     override fun getMicrophoneLocation(): MicrophoneLocation {
         return MicrophoneLocation.LOCATION_UNKNOWN
     }
+
+
+    // - Private functions
 
     /**
      * Setup underlying [AVAudioSession].
