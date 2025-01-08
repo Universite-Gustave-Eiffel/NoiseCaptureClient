@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.services.liveaudio
+package org.noiseplanet.noisecapture.services.audio
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

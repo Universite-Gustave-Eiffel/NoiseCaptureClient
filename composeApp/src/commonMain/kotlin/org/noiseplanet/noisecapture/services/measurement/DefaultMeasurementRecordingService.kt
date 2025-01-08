@@ -13,7 +13,8 @@ import org.noiseplanet.noisecapture.audio.AcousticIndicatorsData
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.Location
 import org.noiseplanet.noisecapture.model.Measurement
-import org.noiseplanet.noisecapture.services.liveaudio.LiveAudioService
+import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
+import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.services.location.UserLocationService
 import org.noiseplanet.noisecapture.util.injectLogger
 

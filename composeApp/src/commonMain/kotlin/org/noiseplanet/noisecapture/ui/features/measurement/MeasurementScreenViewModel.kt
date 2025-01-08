@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import org.noiseplanet.noisecapture.audio.AudioSourceState
-import org.noiseplanet.noisecapture.services.liveaudio.LiveAudioService
+import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.services.measurement.MeasurementRecordingService
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.measurement.controls.RecordingControlsViewModel

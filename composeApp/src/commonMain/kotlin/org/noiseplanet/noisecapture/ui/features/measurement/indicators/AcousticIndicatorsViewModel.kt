@@ -2,7 +2,7 @@ package org.noiseplanet.noisecapture.ui.features.measurement.indicators
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.Flow
-import org.noiseplanet.noisecapture.services.liveaudio.LiveAudioService
+import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 
 class AcousticIndicatorsViewModel(
     private val measurementService: LiveAudioService,
