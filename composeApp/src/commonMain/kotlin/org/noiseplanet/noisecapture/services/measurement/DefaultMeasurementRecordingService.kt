@@ -23,6 +23,7 @@ open class DefaultMeasurementRecordingService(
     private val measurementService: MeasurementService,
     private val userLocationService: UserLocationService,
     private val liveAudioService: LiveAudioService,
+    private val audioRecordingService: AudioRecordingService,
 ) : MeasurementRecordingService, KoinComponent {
 
     // - Properties
@@ -57,7 +58,13 @@ open class DefaultMeasurementRecordingService(
 
         // Start live location updates
         userLocationService.startUpdatingLocation()
+        // Start listening to measured acoustic indicators and location updates
         createMeasurementAndSubscribe()
+
+        // Start recording audio to an output file
+        // TODO: Add a settings option to disable recording audio to output file.
+        // TODO: Name output file with measurement ID so it can be matched afterwards.
+        audioRecordingService.startRecordingToFile("audio_recording")
     }
 
     override fun endAndSave() {
@@ -69,6 +76,10 @@ open class DefaultMeasurementRecordingService(
         // Stop live location updates
         userLocationService.stopUpdatingLocation()
 
+        // End audio recording
+        audioRecordingService.stopRecordingToFile()
+
+        // Store measurement
         measurementService.storeMeasurement(
             Measurement(
                 userLocationHistory = ongoingUserLocationHistory,
