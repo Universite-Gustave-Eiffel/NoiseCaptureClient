@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.Button
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -101,13 +101,15 @@ fun SoundLevelMeterView(
             }
 
             if (viewModel.showPlayPauseButton) {
-                Button(onClick = {
-                    if (isAudioSourceRunning) {
-                        viewModel.stopListening()
-                    } else {
-                        viewModel.startListening()
-                    }
-                }) {
+                FilledTonalIconButton(
+                    onClick = {
+                        if (isAudioSourceRunning) {
+                            viewModel.stopListening()
+                        } else {
+                            viewModel.startListening()
+                        }
+                    },
+                ) {
                     if (isAudioSourceRunning) {
                         Icon(imageVector = Icons.Filled.Pause, contentDescription = "Pause")
                     } else {
