@@ -70,7 +70,7 @@ fun HomeScreen(
     }
 
 
-    // - Views
+    // - Layout
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -78,6 +78,12 @@ fun HomeScreen(
     ) {
         Column {
             SoundLevelMeterHeaderView(onOpenSoundLevelMeterButtonClick, viewModel)
+
+            // TODO: Add last measurements section
+
+            // TODO: Add device calibration section
+
+            // TODO: Add more info section
         }
     }
 }
