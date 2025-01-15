@@ -4,12 +4,14 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.services.liveaudio.LiveAudioService
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 
-class SpectrumPlotViewModel(
-    private val liveAudioService: LiveAudioService,
-) : ViewModel() {
+class SpectrumPlotViewModel : ViewModel(), KoinComponent {
+
+    // - Associated types
 
     data class AxisSettings(
         val minimumX: Double,
@@ -17,11 +19,19 @@ class SpectrumPlotViewModel(
         val nominalFrequencies: List<Double>,
     )
 
+
+    // - Constants
+
     companion object {
 
         const val DBA_MIN = 0.0
         const val DBA_MAX = 100.0
     }
+
+
+    // - Properties
+
+    private val liveAudioService: LiveAudioService by inject()
 
     // color ramp 0F left side of spectrum, 1F right side of spectrum
     val spectrumColorRamp = NoiseLevelColorRamp.palette.map { (spl, color) ->

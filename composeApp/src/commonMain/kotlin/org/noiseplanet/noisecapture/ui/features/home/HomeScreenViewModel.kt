@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.ui.features.home.menuitem
+package org.noiseplanet.noisecapture.ui.features.home
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
@@ -8,6 +8,8 @@ import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Timeline
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.menu_feedback
 import noisecapture.composeapp.generated.resources.menu_history
@@ -17,11 +19,40 @@ import noisecapture.composeapp.generated.resources.menu_settings
 import noisecapture.composeapp.generated.resources.menu_statistics
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
+import org.koin.core.component.inject
 import org.koin.core.parameter.parametersOf
+import org.noiseplanet.noisecapture.audio.AudioSourceState
+import org.noiseplanet.noisecapture.services.liveaudio.LiveAudioService
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
+import org.noiseplanet.noisecapture.ui.components.spl.SPLIndicatorsViewModel
+import org.noiseplanet.noisecapture.ui.features.home.menuitem.MenuItemViewModel
 import org.noiseplanet.noisecapture.ui.navigation.Route
 
 class HomeScreenViewModel : ViewModel(), KoinComponent, ScreenViewModel {
+
+    // - Properties
+
+    private val liveAudioService: LiveAudioService by inject()
+
+    val splIndicatorsViewModel = get<SPLIndicatorsViewModel>().apply {
+        showMinMaxSPL = false
+        showPlayPauseButton = true
+    }
+
+
+    // - Lifecycle
+
+    init {
+        viewModelScope.launch {
+            liveAudioService.audioSourceStateFlow.collect { state ->
+                if (state == AudioSourceState.READY) {
+                    // Start listening to incoming audio whenever audio source is done initializing
+                    splIndicatorsViewModel.startListening()
+                }
+            }
+        }
+    }
+
 
     val menuItems: Array<MenuItemViewModel> = arrayOf(
         get<MenuItemViewModel> {
@@ -43,4 +74,11 @@ class HomeScreenViewModel : ViewModel(), KoinComponent, ScreenViewModel {
             parametersOf(Res.string.menu_settings, Icons.Filled.Settings, Route.Settings)
         },
     )
+
+
+    // - Public functions
+
+    fun setupAudioSource() = liveAudioService.setupAudioSource()
+
+    fun releaseAudioSource() = liveAudioService.releaseAudioSource()
 }

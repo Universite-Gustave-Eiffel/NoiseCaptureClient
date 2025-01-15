@@ -17,7 +17,7 @@ import org.noiseplanet.noisecapture.ui.components.appbar.AppBar
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBarState
 import org.noiseplanet.noisecapture.ui.components.appbar.rememberAppBarState
 import org.noiseplanet.noisecapture.ui.features.home.HomeScreen
-import org.noiseplanet.noisecapture.ui.features.home.menuitem.HomeScreenViewModel
+import org.noiseplanet.noisecapture.ui.features.home.HomeScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.measurement.MeasurementScreen
 import org.noiseplanet.noisecapture.ui.features.measurement.MeasurementScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.permission.RequestPermissionScreen

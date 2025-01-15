@@ -35,7 +35,7 @@ import kotlin.math.round
 
 
 @Composable
-fun AcousticIndicatorsView(
+fun SPLIndicatorsView(
     viewModel: SPLIndicatorsViewModel,
 ) {
     val currentSoundPressureLevel by viewModel.soundPressureLevelFlow.collectAsState(0.0)

@@ -12,12 +12,14 @@ import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 import org.noiseplanet.noisecapture.ui.components.spl.SPLIndicatorsViewModel
 import org.noiseplanet.noisecapture.ui.features.measurement.controls.RecordingControlsViewModel
 
-class MeasurementScreenViewModel(
-    private val liveAudioService: LiveAudioService,
-    private val recordingService: MeasurementRecordingService,
-) : ViewModel(), ScreenViewModel, KoinComponent {
+class MeasurementScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
 
     // - Properties
+
+    private val liveAudioService: LiveAudioService by inject()
+    private val recordingService: MeasurementRecordingService by inject()
+
+    val splIndicatorsViewModel: SPLIndicatorsViewModel by inject()
 
     val recordingControlsViewModel = RecordingControlsViewModel(
         isPlaying = liveAudioService.isRunningFlow,
@@ -31,14 +33,12 @@ class MeasurementScreenViewModel(
         },
         onStartStopButtonClick = {
             if (recordingService.isRecording) {
-                recordingService.endAndSave()
+                endRecording()
             } else {
-                recordingService.start()
+                startRecording()
             }
         }
     )
-
-    val splIndicatorsViewModel: SPLIndicatorsViewModel by inject()
 
     /**
      * True if a measurement recording is currently ongoing, meaning audio and location services
@@ -54,8 +54,8 @@ class MeasurementScreenViewModel(
         viewModelScope.launch {
             liveAudioService.audioSourceStateFlow.collect { state ->
                 if (state == AudioSourceState.READY) {
-                    // Start recording audio whenever audio source is done initializing
-                    startAudioSource()
+                    // Start listening to incoming audio whenever audio source is done initializing
+                    splIndicatorsViewModel.startListening()
                 }
             }
         }

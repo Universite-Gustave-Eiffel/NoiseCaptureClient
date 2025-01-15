@@ -9,27 +9,65 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
-import org.noiseplanet.noisecapture.ui.features.home.menuitem.HomeScreenViewModel
+import org.noiseplanet.noisecapture.ui.components.spl.SPLIndicatorsView
 import org.noiseplanet.noisecapture.ui.features.home.menuitem.MenuItem
 
 /**
  * Home screen layout.
- *
- * TODO: Improve UI once more clearly defined
  */
 @Composable
 fun HomeScreen(
     navigationController: NavController,
     viewModel: HomeScreenViewModel,
 ) {
+    // - Lifecycle
+
+    val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_CREATE -> {
+                    viewModel.setupAudioSource()
+                }
+
+                Lifecycle.Event.ON_PAUSE -> {
+                    viewModel.splIndicatorsViewModel.stopListening()
+                }
+
+                Lifecycle.Event.ON_RESUME -> {
+                    viewModel.splIndicatorsViewModel.startListening()
+                }
+
+                else -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            viewModel.releaseAudioSource()
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+
+    // - Views
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
         Column {
+            SPLIndicatorsView(viewModel.splIndicatorsViewModel)
+
             LazyVerticalGrid(
                 columns = GridCells.Adaptive(minSize = 96.dp),
                 contentPadding = PaddingValues(
