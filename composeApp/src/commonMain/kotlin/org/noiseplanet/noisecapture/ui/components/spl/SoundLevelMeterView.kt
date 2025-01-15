@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel.Companion.VU_METER_DB_MAX
 import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel.Companion.VU_METER_DB_MIN
 import org.noiseplanet.noisecapture.ui.features.measurement.NOISE_LEVEL_FONT_SIZE
@@ -38,8 +39,13 @@ import kotlin.math.round
 fun SoundLevelMeterView(
     viewModel: SoundLevelMeterViewModel,
 ) {
+    // - Properties
+
     val currentSoundPressureLevel by viewModel.soundPressureLevelFlow.collectAsState(0.0)
     val isAudioSourceRunning by viewModel.isAudioSourceRunningFlow.collectAsState(false)
+
+
+    // - Layout
 
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -52,8 +58,10 @@ fun SoundLevelMeterView(
         ) {
             Column(horizontalAlignment = Alignment.Start) {
                 Text(
-                    text = "Current dB(A)", // TODO: Localize
-                    style = MaterialTheme.typography.labelLarge,
+                    text = stringResource(viewModel.currentDbALabel),
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontWeight = FontWeight.SemiBold
+                    ),
                 )
 
                 val isSplInRange = currentSoundPressureLevel in VU_METER_DB_MIN..VU_METER_DB_MAX
@@ -74,10 +82,18 @@ fun SoundLevelMeterView(
                     Modifier.align(Alignment.Top),
                 ) {
                     listOf(
-                        // TODO: Localize this
-                        MeasurementStatistics("Min", "-"),
-                        MeasurementStatistics("Avg", "-"),
-                        MeasurementStatistics("Max", "-")
+                        MeasurementStatistics(
+                            label = stringResource(viewModel.minDbALabel),
+                            value = "-",
+                        ),
+                        MeasurementStatistics(
+                            label = stringResource(viewModel.avgDbALabel),
+                            value = "-",
+                        ),
+                        MeasurementStatistics(
+                            label = stringResource(viewModel.maxDbALabel),
+                            value = "-",
+                        ),
                     ).forEach {
                         Column(
                             horizontalAlignment = Alignment.Start,

@@ -2,6 +2,11 @@ package org.noiseplanet.noisecapture.ui.components.spl
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.Flow
+import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.sound_level_meter_avg_dba
+import noisecapture.composeapp.generated.resources.sound_level_meter_current_dba
+import noisecapture.composeapp.generated.resources.sound_level_meter_max_dba
+import noisecapture.composeapp.generated.resources.sound_level_meter_min_dba
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.services.liveaudio.LiveAudioService
@@ -39,6 +44,11 @@ class SoundLevelMeterViewModel : ViewModel(), KoinComponent {
 
     val isAudioSourceRunningFlow: Flow<Boolean>
         get() = liveAudioService.isRunningFlow
+
+    val currentDbALabel = Res.string.sound_level_meter_current_dba
+    val minDbALabel = Res.string.sound_level_meter_min_dba
+    val avgDbALabel = Res.string.sound_level_meter_avg_dba
+    val maxDbALabel = Res.string.sound_level_meter_max_dba
 
 
     // - Public functions

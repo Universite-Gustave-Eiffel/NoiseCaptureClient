@@ -61,7 +61,9 @@ fun Coordinator() {
                 }
                 appBarState.setCurrentScreenViewModel(viewModel)
 
-                HomeScreen(viewModel = viewModel, navigationController = navController)
+                HomeScreen(viewModel = viewModel, onOpenSoundLevelMeterButtonClick = {
+                    navController.navigate(Route.Measurement.name)
+                })
             }
 
             composable(route = Route.RequestPermission.name) {

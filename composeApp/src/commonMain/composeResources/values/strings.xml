@@ -5,15 +5,18 @@
     <!--  PlatformInfoScreen  -->
     <string name="platform_info_title">Platform information</string>
 
+
     <!--  HomeScreen  -->
-    <string name="menu_new_measurement">New measurement</string>
-    <string name="menu_history">Measurements history</string>
-    <string name="menu_feedback">Measurement feedback</string>
-    <string name="menu_statistics">Measurements statistics</string>
-    <string name="menu_map">Last measurement map</string>
-    <string name="menu_settings">Settings</string>
     <string name="home_slm_hint">Visualise and measure the noise level around you as you navigate your surroundings!</string>
     <string name="home_slm_button_title">Open sound level meter</string>
+
+
+    <!--  Sound level meter  -->
+    <string name="sound_level_meter_current_dba">Current dB(A)</string>
+    <string name="sound_level_meter_min_dba">Min</string>
+    <string name="sound_level_meter_avg_dba">Avg</string>
+    <string name="sound_level_meter_max_dba">Max</string>
+
 
     <!--  PermissionScreen  -->
     <string name="request_permission_title">Permissions</string>
