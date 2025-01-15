@@ -1,18 +1,18 @@
 package org.noiseplanet.noisecapture
 
-import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import org.koin.compose.koinInject
+import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBar
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBarState
 import org.noiseplanet.noisecapture.ui.components.appbar.rememberAppBarState
@@ -33,7 +33,7 @@ import org.noiseplanet.noisecapture.ui.navigation.Transitions
  * Currently handles the navigation stack, and navigation bar management.
  */
 @Composable
-fun NoiseCaptureApp() {
+fun Coordinator() {
 
     val navController: NavHostController = rememberNavController()
     val appBarState: AppBarState = rememberAppBarState(navController)
@@ -51,13 +51,14 @@ fun NoiseCaptureApp() {
             exitTransition = Transitions.exitTransition,
             popEnterTransition = Transitions.popEnterTransition,
             popExitTransition = Transitions.popExitTransition,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .windowInsetsPadding(WindowInsets.navigationBars)
+            modifier = Modifier.fillMaxSize()
+                .padding(top = innerPadding.calculateTopPadding())
+                .background(Color.White)
         ) {
             composable(route = Route.Home.name) {
-                val viewModel: HomeScreenViewModel = koinInject()
+                val viewModel: HomeScreenViewModel = koinInject {
+                    parametersOf({ navController.navigate(Route.Settings.name) })
+                }
                 appBarState.setCurrentScreenViewModel(viewModel)
 
                 HomeScreen(viewModel = viewModel, navigationController = navController)

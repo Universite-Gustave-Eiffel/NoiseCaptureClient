@@ -2,7 +2,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.KoinContext
-import org.noiseplanet.noisecapture.NoiseCaptureApp
+import org.noiseplanet.noisecapture.Coordinator
 
 /**
  * Entry point of the Compose app.
@@ -12,7 +12,7 @@ import org.noiseplanet.noisecapture.NoiseCaptureApp
 fun App() {
     KoinContext {
         MaterialTheme {
-            NoiseCaptureApp()
+            Coordinator()
         }
     }
 }

@@ -13,7 +13,7 @@ val homeModule = module {
         MenuItemViewModel(label, imageVector, route)
     }
 
-    viewModel {
-        HomeScreenViewModel()
+    viewModel { (onClickSettingsButton: () -> Unit) ->
+        HomeScreenViewModel(onClickSettingsButton)
     }
 }

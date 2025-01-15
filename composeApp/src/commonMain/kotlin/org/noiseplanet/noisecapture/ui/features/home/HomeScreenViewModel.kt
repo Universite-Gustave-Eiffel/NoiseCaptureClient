@@ -7,8 +7,11 @@ import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Timeline
+import androidx.compose.material.icons.outlined.Settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.menu_feedback
@@ -23,12 +26,15 @@ import org.koin.core.component.inject
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.audio.AudioSourceState
 import org.noiseplanet.noisecapture.services.liveaudio.LiveAudioService
+import org.noiseplanet.noisecapture.ui.components.appbar.AppBarButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel
 import org.noiseplanet.noisecapture.ui.features.home.menuitem.MenuItemViewModel
 import org.noiseplanet.noisecapture.ui.navigation.Route
 
-class HomeScreenViewModel : ViewModel(), KoinComponent, ScreenViewModel {
+class HomeScreenViewModel(
+    private val onClickSettingsButton: () -> Unit,
+) : ViewModel(), KoinComponent, ScreenViewModel {
 
     // - Properties
 
@@ -38,6 +44,21 @@ class HomeScreenViewModel : ViewModel(), KoinComponent, ScreenViewModel {
         showMinMaxSPL = false
         showPlayPauseButton = true
     }
+
+
+    // - ScreenViewModel
+
+    override val actions: Flow<List<AppBarButtonViewModel>>
+        get() = flow {
+            emit(
+                listOf(
+                    AppBarButtonViewModel(
+                        icon = Icons.Outlined.Settings,
+                        onClick = onClickSettingsButton,
+                    )
+                )
+            )
+        }
 
 
     // - Lifecycle
