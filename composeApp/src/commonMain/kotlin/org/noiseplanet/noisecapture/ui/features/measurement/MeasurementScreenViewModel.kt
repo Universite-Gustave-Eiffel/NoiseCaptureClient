@@ -9,7 +9,7 @@ import org.noiseplanet.noisecapture.audio.AudioSourceState
 import org.noiseplanet.noisecapture.services.liveaudio.LiveAudioService
 import org.noiseplanet.noisecapture.services.measurement.MeasurementRecordingService
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
-import org.noiseplanet.noisecapture.ui.components.spl.SPLIndicatorsViewModel
+import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel
 import org.noiseplanet.noisecapture.ui.features.measurement.controls.RecordingControlsViewModel
 
 class MeasurementScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
@@ -19,7 +19,7 @@ class MeasurementScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
     private val liveAudioService: LiveAudioService by inject()
     private val recordingService: MeasurementRecordingService by inject()
 
-    val splIndicatorsViewModel: SPLIndicatorsViewModel by inject()
+    val soundLevelMeterViewModel: SoundLevelMeterViewModel by inject()
 
     val recordingControlsViewModel = RecordingControlsViewModel(
         isPlaying = liveAudioService.isRunningFlow,
@@ -55,7 +55,7 @@ class MeasurementScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
             liveAudioService.audioSourceStateFlow.collect { state ->
                 if (state == AudioSourceState.READY) {
                     // Start listening to incoming audio whenever audio source is done initializing
-                    splIndicatorsViewModel.startListening()
+                    soundLevelMeterViewModel.startListening()
                 }
             }
         }

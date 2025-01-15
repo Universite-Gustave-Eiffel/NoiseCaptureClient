@@ -27,16 +27,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.noiseplanet.noisecapture.ui.components.spl.SPLIndicatorsViewModel.Companion.VU_METER_DB_MAX
-import org.noiseplanet.noisecapture.ui.components.spl.SPLIndicatorsViewModel.Companion.VU_METER_DB_MIN
+import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel.Companion.VU_METER_DB_MAX
+import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel.Companion.VU_METER_DB_MIN
 import org.noiseplanet.noisecapture.ui.features.measurement.NOISE_LEVEL_FONT_SIZE
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import kotlin.math.round
 
 
 @Composable
-fun SPLIndicatorsView(
-    viewModel: SPLIndicatorsViewModel,
+fun SoundLevelMeterView(
+    viewModel: SoundLevelMeterViewModel,
 ) {
     val currentSoundPressureLevel by viewModel.soundPressureLevelFlow.collectAsState(0.0)
     val isAudioSourceRunning by viewModel.isAudioSourceRunningFlow.collectAsState(false)

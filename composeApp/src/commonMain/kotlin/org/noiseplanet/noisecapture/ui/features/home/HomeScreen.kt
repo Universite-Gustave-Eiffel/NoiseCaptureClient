@@ -17,7 +17,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
-import org.noiseplanet.noisecapture.ui.components.spl.SPLIndicatorsView
+import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterView
 import org.noiseplanet.noisecapture.ui.features.home.menuitem.MenuItem
 
 /**
@@ -40,11 +40,11 @@ fun HomeScreen(
                 }
 
                 Lifecycle.Event.ON_PAUSE -> {
-                    viewModel.splIndicatorsViewModel.stopListening()
+                    viewModel.soundLevelMeterViewModel.stopListening()
                 }
 
                 Lifecycle.Event.ON_RESUME -> {
-                    viewModel.splIndicatorsViewModel.startListening()
+                    viewModel.soundLevelMeterViewModel.startListening()
                 }
 
                 else -> {}
@@ -66,7 +66,7 @@ fun HomeScreen(
         color = MaterialTheme.colorScheme.background
     ) {
         Column {
-            SPLIndicatorsView(viewModel.splIndicatorsViewModel)
+            SoundLevelMeterView(viewModel.soundLevelMeterViewModel)
 
             LazyVerticalGrid(
                 columns = GridCells.Adaptive(minSize = 96.dp),

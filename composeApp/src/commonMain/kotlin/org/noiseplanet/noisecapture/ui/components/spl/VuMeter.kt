@@ -17,8 +17,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.noiseplanet.noisecapture.ui.components.spl.SPLIndicatorsViewModel.Companion.VU_METER_DB_MAX
-import org.noiseplanet.noisecapture.ui.components.spl.SPLIndicatorsViewModel.Companion.VU_METER_DB_MIN
+import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel.Companion.VU_METER_DB_MAX
+import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel.Companion.VU_METER_DB_MIN
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 
 private val BAR_HEIGHT: Dp = 24.dp

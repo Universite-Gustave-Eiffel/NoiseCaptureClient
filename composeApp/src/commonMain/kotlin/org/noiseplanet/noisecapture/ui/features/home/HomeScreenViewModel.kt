@@ -24,7 +24,7 @@ import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.audio.AudioSourceState
 import org.noiseplanet.noisecapture.services.liveaudio.LiveAudioService
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
-import org.noiseplanet.noisecapture.ui.components.spl.SPLIndicatorsViewModel
+import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel
 import org.noiseplanet.noisecapture.ui.features.home.menuitem.MenuItemViewModel
 import org.noiseplanet.noisecapture.ui.navigation.Route
 
@@ -34,7 +34,7 @@ class HomeScreenViewModel : ViewModel(), KoinComponent, ScreenViewModel {
 
     private val liveAudioService: LiveAudioService by inject()
 
-    val splIndicatorsViewModel = get<SPLIndicatorsViewModel>().apply {
+    val soundLevelMeterViewModel = get<SoundLevelMeterViewModel>().apply {
         showMinMaxSPL = false
         showPlayPauseButton = true
     }
@@ -47,7 +47,7 @@ class HomeScreenViewModel : ViewModel(), KoinComponent, ScreenViewModel {
             liveAudioService.audioSourceStateFlow.collect { state ->
                 if (state == AudioSourceState.READY) {
                     // Start listening to incoming audio whenever audio source is done initializing
-                    splIndicatorsViewModel.startListening()
+                    soundLevelMeterViewModel.startListening()
                 }
             }
         }
