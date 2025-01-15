@@ -3,16 +3,19 @@ package org.noiseplanet.noisecapture.ui.features.measurement
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.audio.AudioSourceState
 import org.noiseplanet.noisecapture.services.liveaudio.LiveAudioService
 import org.noiseplanet.noisecapture.services.measurement.MeasurementRecordingService
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
+import org.noiseplanet.noisecapture.ui.components.spl.SPLIndicatorsViewModel
 import org.noiseplanet.noisecapture.ui.features.measurement.controls.RecordingControlsViewModel
 
 class MeasurementScreenViewModel(
     private val liveAudioService: LiveAudioService,
     private val recordingService: MeasurementRecordingService,
-) : ViewModel(), ScreenViewModel {
+) : ViewModel(), ScreenViewModel, KoinComponent {
 
     // - Properties
 
@@ -34,6 +37,8 @@ class MeasurementScreenViewModel(
             }
         }
     )
+
+    val splIndicatorsViewModel: SPLIndicatorsViewModel by inject()
 
     /**
      * True if a measurement recording is currently ongoing, meaning audio and location services

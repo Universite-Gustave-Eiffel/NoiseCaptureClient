@@ -15,6 +15,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
+import org.noiseplanet.noisecapture.ui.components.ListSectionHeader
 import org.noiseplanet.noisecapture.ui.features.settings.item.SettingsItem
 import org.noiseplanet.noisecapture.ui.theme.listBackground
 
@@ -47,7 +48,7 @@ fun SettingsScreen(
     ) {
         viewModel.settingsItems.forEach { (sectionTitle, sectionItems) ->
             stickyHeader {
-                SettingsSectionHeader(sectionTitle)
+                ListSectionHeader(sectionTitle)
             }
 
             items(sectionItems) { viewModel ->

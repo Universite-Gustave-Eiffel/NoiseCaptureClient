@@ -19,9 +19,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import org.koin.compose.viewmodel.koinViewModel
+import org.noiseplanet.noisecapture.ui.components.spl.AcousticIndicatorsView
 import org.noiseplanet.noisecapture.ui.features.measurement.controls.RecordingControls
-import org.noiseplanet.noisecapture.ui.features.measurement.indicators.AcousticIndicatorsView
 
 const val DEFAULT_SAMPLE_RATE = 48000.0
 
@@ -78,7 +77,7 @@ fun MeasurementScreen(
             if (maxWidth > maxHeight) {
                 Row(modifier = Modifier.fillMaxSize()) {
                     Column(modifier = Modifier.fillMaxWidth(.5F)) {
-                        AcousticIndicatorsView(viewModel = koinViewModel())
+                        AcousticIndicatorsView(viewModel = viewModel.splIndicatorsViewModel)
                         RecordingControls(viewModel = viewModel.recordingControlsViewModel)
                     }
                     Column(modifier = Modifier) {
@@ -87,7 +86,7 @@ fun MeasurementScreen(
                 }
             } else {
                 Column(modifier = Modifier.fillMaxSize()) {
-                    AcousticIndicatorsView(viewModel = koinViewModel())
+                    AcousticIndicatorsView(viewModel = viewModel.splIndicatorsViewModel)
                     RecordingControls(
                         viewModel = viewModel.recordingControlsViewModel,
                         modifier = Modifier.height(IntrinsicSize.Min)

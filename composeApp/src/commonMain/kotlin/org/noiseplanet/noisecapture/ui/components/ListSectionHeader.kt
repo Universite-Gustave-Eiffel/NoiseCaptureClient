@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.ui.features.settings
+package org.noiseplanet.noisecapture.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -14,7 +14,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.ui.theme.listBackground
 
 @Composable
-fun SettingsSectionHeader(
+fun ListSectionHeader(
     title: StringResource,
 ) {
     Box(modifier = Modifier.fillMaxWidth().background(listBackground)) {

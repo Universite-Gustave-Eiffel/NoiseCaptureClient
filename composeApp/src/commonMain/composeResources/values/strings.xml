@@ -12,6 +12,8 @@
     <string name="menu_statistics">Measurements statistics</string>
     <string name="menu_map">Last measurement map</string>
     <string name="menu_settings">Settings</string>
+    <string name="home_slm_hint">Visualise and measure the noise level around you as you navigate your surroundings!</string>
+    <string name="home_slm_button_title">Open sound level meter</string>
 
     <!--  PermissionScreen  -->
     <string name="request_permission_title">Permissions</string>
