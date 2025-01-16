@@ -15,7 +15,7 @@ object NoiseLevelColorRamp {
         35.0 to Color(0xFFA0BABF),
         40.0 to Color(0xFFB8D6D1),
         45.0 to Color(0xFFCEE4CC),
-        50.0 to Color(0xFFE2F2BF),
+        50.0 to Color(0xFFECDFA0),
         55.0 to Color(0xFFF3C683),
         60.0 to Color(0xFFE87E4D),
         65.0 to Color(0xFFCD463E),
