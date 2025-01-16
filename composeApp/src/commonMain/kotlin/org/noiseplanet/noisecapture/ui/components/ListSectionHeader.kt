@@ -11,13 +11,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-import org.noiseplanet.noisecapture.ui.theme.listBackground
 
 @Composable
 fun ListSectionHeader(
     title: StringResource,
 ) {
-    Box(modifier = Modifier.fillMaxWidth().background(listBackground)) {
+    Box(
+        modifier = Modifier.fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
         Text(
             text = stringResource(title).uppercase(),
             style = MaterialTheme.typography.titleMedium,

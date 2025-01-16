@@ -19,15 +19,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterView
 
@@ -39,37 +34,6 @@ fun HomeScreen(
     onOpenSoundLevelMeterButtonClick: () -> Unit,
     viewModel: HomeScreenViewModel,
 ) {
-    // - Lifecycle
-
-    val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
-
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            when (event) {
-                Lifecycle.Event.ON_CREATE -> {
-                    viewModel.setupAudioSource()
-                }
-
-                Lifecycle.Event.ON_PAUSE -> {
-                    viewModel.soundLevelMeterViewModel.stopListening()
-                }
-
-                Lifecycle.Event.ON_RESUME -> {
-                    viewModel.soundLevelMeterViewModel.startListening()
-                }
-
-                else -> {}
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-
-        onDispose {
-            viewModel.releaseAudioSource()
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
-    }
-
-
     // - Layout
 
     Surface(

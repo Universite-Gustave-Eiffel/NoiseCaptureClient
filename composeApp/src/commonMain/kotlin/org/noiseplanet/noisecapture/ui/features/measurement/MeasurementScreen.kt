@@ -12,16 +12,11 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterView
 import org.noiseplanet.noisecapture.ui.features.measurement.controls.RecordingControls
 
@@ -35,43 +30,6 @@ val SPECTRUM_PLOT_SQUARE_OFFSET = 1.dp
 fun MeasurementScreen(
     viewModel: MeasurementScreenViewModel,
 ) {
-    val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
-
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            when (event) {
-                Lifecycle.Event.ON_CREATE -> {
-                    viewModel.setupAudioSource()
-                }
-
-                Lifecycle.Event.ON_PAUSE -> {
-                    // If there is no ongoing measurement recording, pause audio source
-                    if (!viewModel.isRecording) {
-                        viewModel.stopAudioSource()
-                    }
-                }
-
-                Lifecycle.Event.ON_RESUME -> {
-                    // If there is no ongoing measurement recording, resume audio source
-                    if (!viewModel.isRecording) {
-                        viewModel.startAudioSource()
-                    }
-                }
-
-                else -> {}
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-
-        onDispose {
-            if (viewModel.isRecording) {
-                viewModel.endRecording()
-            }
-            viewModel.releaseAudioSource()
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
-    }
-
     Surface(
         modifier = Modifier.fillMaxSize()
             .windowInsetsPadding(WindowInsets.navigationBars),
