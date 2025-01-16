@@ -3,18 +3,10 @@ package org.noiseplanet.noisecapture.ui.features.home
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -24,6 +16,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
+import org.noiseplanet.noisecapture.ui.components.button.NCButton
 import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterView
 
 /**
@@ -78,23 +71,12 @@ private fun SoundLevelMeterHeaderView(
                 modifier = Modifier.alpha(0.75f)
             )
 
-            // TODO: Make a button design system for the app with custom colors / spacings / drop shadows
-            FilledTonalButton(
+            NCButton(
                 onClick = onOpenSoundLevelMeterButtonClick,
-                elevation = ButtonDefaults.filledTonalButtonElevation(
-                    defaultElevation = 4.dp
-                ),
-                colors = ButtonDefaults.filledTonalButtonColors().copy(
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                ),
+                viewModel = viewModel.soundLevelMeterButtonViewModel,
                 modifier = Modifier.height(50.dp)
                     .fillMaxWidth()
-            ) {
-                val title = stringResource(viewModel.openSoundLevelMeterButtonTitle)
-                Icon(Icons.Filled.Mic, contentDescription = title, modifier = Modifier.size(18.dp))
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(title)
-            }
+            )
         }
     }
 }

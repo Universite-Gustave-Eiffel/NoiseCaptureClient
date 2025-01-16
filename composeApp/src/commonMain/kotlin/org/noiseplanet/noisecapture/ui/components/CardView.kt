@@ -1,7 +1,5 @@
 package org.noiseplanet.noisecapture.ui.components
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.animateOffsetAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -17,17 +15,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import org.noiseplanet.noisecapture.util.shadow.dropShadow
 
 
 private const val CORNER_RADIUS: Float = 10f
-private const val SHADOW_OFFSET_X: Float = 0f
-private const val SHADOW_OFFSET_Y: Float = 4f
-private const val SHADOW_BLUR_RADIUS: Float = 12f
-
 
 /**
  * Wraps the given content into a rounded cornered card.
@@ -55,17 +48,6 @@ fun CardView(
         mutableStateOf(true)
     }
 
-    val shadowOffset by animateOffsetAsState(
-        targetValue = if (isPressed) {
-            Offset.Zero
-        } else {
-            Offset(SHADOW_OFFSET_X, SHADOW_OFFSET_Y)
-        }
-    )
-    val shadowBlur by animateFloatAsState(
-        targetValue = if (isPressed) 0f else SHADOW_BLUR_RADIUS
-    )
-
     var cardModifier = modifier
     onClick?.let {
         cardModifier = modifier.clickable(
@@ -77,7 +59,7 @@ fun CardView(
 
     Box(
         modifier = cardModifier
-            .dropShadow(shape, offset = shadowOffset, blur = shadowBlur)
+            .dropShadow(shape = shape, isPressed = isPressed)
             .background(backgroundColor, shape)
             .clip(shape)
             .padding(16.dp),
