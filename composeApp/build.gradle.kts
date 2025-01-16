@@ -62,6 +62,7 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.preference)
             implementation(libs.koin.android)
+            implementation(libs.google.play.services.android.location)
         }
         commonMain.dependencies {
             implementation(compose.runtime)

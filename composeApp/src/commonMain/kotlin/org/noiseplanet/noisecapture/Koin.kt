@@ -24,10 +24,6 @@ fun initKoin(
 
     return startKoin {
         modules(
-            module {
-                includes(additionalModules)
-            },
-
             servicesModule,
 
             defaultPermissionModule,
@@ -37,6 +33,10 @@ fun initKoin(
             requestPermissionModule,
             measurementModule,
             settingsModule,
+
+            module {
+                includes(additionalModules)
+            },
         )
         createEagerInstances()
     }
