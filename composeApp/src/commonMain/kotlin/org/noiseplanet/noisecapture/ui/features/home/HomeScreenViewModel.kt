@@ -23,9 +23,7 @@ class HomeScreenViewModel(
 ) : ViewModel(), KoinComponent, ScreenViewModel {
 
     // - Properties
-
-    private val liveAudioService: LiveAudioService by inject()
-
+    
     val soundLevelMeterViewModel = SoundLevelMeterViewModel(
         showMinMaxSPL = false,
         showPlayPauseButton = true
