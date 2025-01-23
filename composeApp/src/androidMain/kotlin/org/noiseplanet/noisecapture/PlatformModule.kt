@@ -9,6 +9,8 @@ import org.koin.dsl.module
 import org.noiseplanet.noisecapture.audio.AndroidAudioSource
 import org.noiseplanet.noisecapture.audio.AudioSource
 import org.noiseplanet.noisecapture.log.Logger
+import org.noiseplanet.noisecapture.services.audio.AndroidAudioRecordingService
+import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
 import org.noiseplanet.noisecapture.services.location.AndroidUserLocationProvider
 import org.noiseplanet.noisecapture.services.location.UserLocationProvider
 import org.noiseplanet.noisecapture.services.measurement.AndroidMeasurementRecordingService
@@ -35,6 +37,10 @@ val platformModule: Module = module {
     single<Settings> {
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(get())
         SharedPreferencesSettings(sharedPreferences)
+    }
+
+    single<AudioRecordingService> {
+        AndroidAudioRecordingService()
     }
 
     /**
