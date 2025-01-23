@@ -4,24 +4,21 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import org.koin.compose.viewmodel.koinViewModel
+import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterView
 import org.noiseplanet.noisecapture.ui.features.measurement.controls.RecordingControls
-import org.noiseplanet.noisecapture.ui.features.measurement.indicators.AcousticIndicatorsView
 
 const val DEFAULT_SAMPLE_RATE = 48000.0
 
@@ -33,52 +30,16 @@ val SPECTRUM_PLOT_SQUARE_OFFSET = 1.dp
 fun MeasurementScreen(
     viewModel: MeasurementScreenViewModel,
 ) {
-    val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
-
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            when (event) {
-                Lifecycle.Event.ON_CREATE -> {
-                    viewModel.setupAudioSource()
-                }
-
-                Lifecycle.Event.ON_PAUSE -> {
-                    // If there is no ongoing measurement recording, pause audio source
-                    if (!viewModel.isRecording) {
-                        viewModel.stopAudioSource()
-                    }
-                }
-
-                Lifecycle.Event.ON_RESUME -> {
-                    // If there is no ongoing measurement recording, resume audio source
-                    if (!viewModel.isRecording) {
-                        viewModel.startAudioSource()
-                    }
-                }
-
-                else -> {}
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-
-        onDispose {
-            if (viewModel.isRecording) {
-                viewModel.endRecording()
-            }
-            viewModel.releaseAudioSource()
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
-    }
-
     Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+        modifier = Modifier.fillMaxSize()
+            .windowInsetsPadding(WindowInsets.navigationBars),
+        color = Color.White
     ) {
         BoxWithConstraints {
             if (maxWidth > maxHeight) {
                 Row(modifier = Modifier.fillMaxSize()) {
                     Column(modifier = Modifier.fillMaxWidth(.5F)) {
-                        AcousticIndicatorsView(viewModel = koinViewModel())
+                        SoundLevelMeterView(viewModel = viewModel.soundLevelMeterViewModel)
                         RecordingControls(viewModel = viewModel.recordingControlsViewModel)
                     }
                     Column(modifier = Modifier) {
@@ -87,7 +48,7 @@ fun MeasurementScreen(
                 }
             } else {
                 Column(modifier = Modifier.fillMaxSize()) {
-                    AcousticIndicatorsView(viewModel = koinViewModel())
+                    SoundLevelMeterView(viewModel = viewModel.soundLevelMeterViewModel)
                     RecordingControls(
                         viewModel = viewModel.recordingControlsViewModel,
                         modifier = Modifier.height(IntrinsicSize.Min)

@@ -12,15 +12,16 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.audio.ANDROID_GAIN
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.SpectrogramScaleMode
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.util.injectLogger
 
-class SpectrogramPlotViewModel(
-    private val measurementsService: LiveAudioService,
-) : ViewModel(), KoinComponent {
+class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
+
+    // - Constants
 
     companion object {
 
@@ -32,6 +33,10 @@ class SpectrogramPlotViewModel(
         const val SPECTROGRAM_STRIP_WIDTH = 32
     }
 
+
+    // - Properties
+
+    private val measurementsService: LiveAudioService by inject()
     private val logger: Logger by injectLogger()
 
     private var canvasSize: IntSize = IntSize.Zero
@@ -48,6 +53,9 @@ class SpectrogramPlotViewModel(
 
     val spectrogramBitmapFlow: StateFlow<List<SpectrogramBitmap>>
         get() = MutableStateFlow(spectrogramBitmaps)
+
+
+    // - Lifecycle
 
     init {
         viewModelScope.launch {
@@ -84,6 +92,9 @@ class SpectrogramPlotViewModel(
                 }
         }
     }
+
+
+    // - Public functions
 
     /**
      * Updates the canvas size used to generate spectrogram bitmaps.

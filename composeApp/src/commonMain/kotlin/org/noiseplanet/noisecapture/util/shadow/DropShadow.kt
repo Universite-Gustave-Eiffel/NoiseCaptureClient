@@ -1,5 +1,9 @@
 package org.noiseplanet.noisecapture.util.shadow
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateOffsetAsState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
@@ -23,28 +27,49 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
  *
  * @return A new `Modifier` with the drop shadow effect applied.
  */
+@Suppress("LongParameterList")
+@Composable
 fun Modifier.dropShadow(
     shape: Shape,
     color: Color = Color.Black.copy(0.10f),
-    blur: Float = 4f,
-    offset: Offset = Offset(x = 0f, y = 4f),
+    blur: Float = 12f,
+    offset: Offset = Offset(x = 0f, y = 2f),
     spread: Float = 0f,
-) = this.drawBehind {
+    isPressed: Boolean? = null,
+): Modifier {
 
-    val shadowSize = Size(size.width + spread, size.height + spread)
-    val shadowOutline = shape.createOutline(shadowSize, layoutDirection, this)
+    // - Animated properties
 
-    val paint = Paint()
-    paint.color = color
+    val animatedOffset by animateOffsetAsState(
+        targetValue = if (isPressed != false) {
+            Offset.Zero
+        } else {
+            offset
+        }
+    )
+    val animatedBlur by animateFloatAsState(
+        targetValue = if (isPressed != false) 0f else blur
+    )
 
-    if (blur > 0f) {
-        paint.asFrameworkPaint().setBlurMaskFilter(blur)
-    }
 
-    drawIntoCanvas { canvas ->
-        canvas.save()
-        canvas.translate(offset.x, offset.y)
-        canvas.drawOutline(shadowOutline, paint)
-        canvas.restore()
+    // - Draw
+
+    return this.drawBehind {
+        val shadowSize = Size(size.width + spread, size.height + spread)
+        val shadowOutline = shape.createOutline(shadowSize, layoutDirection, this)
+
+        val paint = Paint()
+        paint.color = color
+
+        if (animatedBlur > 0f) {
+            paint.asFrameworkPaint().setBlurMaskFilter(animatedBlur)
+        }
+
+        drawIntoCanvas { canvas ->
+            canvas.save()
+            canvas.translate(animatedOffset.x, animatedOffset.y)
+            canvas.drawOutline(shadowOutline, paint)
+            canvas.restore()
+        }
     }
 }

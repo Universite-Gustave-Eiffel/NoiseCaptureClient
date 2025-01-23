@@ -89,7 +89,7 @@ fun SpectrumPlotView(
             )
             val splGradient =
                 Brush.horizontalGradient(
-                    *viewModel.spectrumColorRamp,
+                    *viewModel.spectrumColorRamp.toTypedArray(),
                     startX = 0F,
                     endX = size.width
                 )
