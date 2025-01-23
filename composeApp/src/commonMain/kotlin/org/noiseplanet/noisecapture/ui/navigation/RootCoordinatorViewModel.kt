@@ -3,7 +3,7 @@ package org.noiseplanet.noisecapture.ui.navigation
 import androidx.lifecycle.ViewModel
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.noiseplanet.noisecapture.services.liveaudio.LiveAudioService
+import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.services.measurement.MeasurementRecordingService
 
 class RootCoordinatorViewModel : ViewModel(), KoinComponent {

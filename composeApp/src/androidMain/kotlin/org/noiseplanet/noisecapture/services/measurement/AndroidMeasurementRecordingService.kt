@@ -172,6 +172,7 @@ internal class ForegroundServiceWrapper : KoinComponent, Service() {
         measurementService = get(),
         userLocationService = get(),
         liveAudioService = get(),
+        audioRecordingService = get(),
     )
 
 
