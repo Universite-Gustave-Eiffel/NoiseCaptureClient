@@ -12,6 +12,7 @@ import org.noiseplanet.noisecapture.ui.features.home.homeModule
 import org.noiseplanet.noisecapture.ui.features.measurement.measurementModule
 import org.noiseplanet.noisecapture.ui.features.permission.requestPermissionModule
 import org.noiseplanet.noisecapture.ui.features.settings.settingsModule
+import org.noiseplanet.noisecapture.ui.navigation.coordinatorModule
 
 /**
  * Create root Koin application and register modules shared between platforms
@@ -25,6 +26,7 @@ fun initKoin(
     return startKoin {
         modules(
             servicesModule,
+            coordinatorModule,
 
             defaultPermissionModule,
             platformPermissionModule(),

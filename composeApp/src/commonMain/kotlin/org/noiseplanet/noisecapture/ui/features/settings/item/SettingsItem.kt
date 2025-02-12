@@ -22,7 +22,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
-import org.noiseplanet.noisecapture.ui.theme.listBackground
 import org.noiseplanet.noisecapture.util.IterableEnum
 
 private const val CORNER_RADIUS: Float = 10f
@@ -96,7 +95,7 @@ fun <T : Any> SettingsItem(
         if (!viewModel.isLastInSection) {
             HorizontalDivider(
                 thickness = 1.dp,
-                color = listBackground
+                color = MaterialTheme.colorScheme.background
             )
         }
     }

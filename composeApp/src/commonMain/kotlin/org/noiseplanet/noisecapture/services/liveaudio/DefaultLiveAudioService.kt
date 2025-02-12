@@ -74,7 +74,10 @@ class DefaultLiveAudioService(
     override val isRunning: Boolean
         get() = _isRunningFlow.value
 
-    override val audioSourceStateFlow: Flow<AudioSourceState> = audioSource.stateFlow
+    override val audioSourceState: AudioSourceState
+        get() = audioSource.state
+    override val audioSourceStateFlow: Flow<AudioSourceState>
+        get() = audioSource.stateFlow
 
     override fun setupAudioSource() {
         // Create a job that will process incoming audio samples in a background thread

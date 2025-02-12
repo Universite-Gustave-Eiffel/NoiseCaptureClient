@@ -5,11 +5,11 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -28,6 +28,8 @@ fun AppBar(
     appBarState: AppBarState,
     modifier: Modifier = Modifier,
 ) {
+    // - Properties
+
     val currentBackStackEntry by appBarState.navController.currentBackStackEntryAsState()
     val previousBackStackEntry = appBarState.navController.previousBackStackEntry
     val currentRoute = currentBackStackEntry?.destination?.route
@@ -35,15 +37,21 @@ fun AppBar(
 
     val actions by appBarState.actions.collectAsState(emptyList())
 
-    TopAppBar(
+
+    // - Layout
+
+    CenterAlignedTopAppBar(
         title = {
             if (currentRoute != null) {
                 val title = Route.valueOf(currentRoute).title
                 Text(stringResource(title))
             }
         },
-        colors = TopAppBarDefaults.mediumTopAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
+        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+            titleContentColor = MaterialTheme.colorScheme.onSecondary,
+            containerColor = MaterialTheme.colorScheme.secondary,
+            navigationIconContentColor = MaterialTheme.colorScheme.onSecondary,
+            actionIconContentColor = MaterialTheme.colorScheme.onSecondary
         ),
         navigationIcon = {
             if (canNavigateUp) {
