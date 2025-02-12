@@ -19,11 +19,14 @@
 
 
     <!--  PermissionScreen  -->
-    <string name="request_permission_title">Permissions</string>
+    <string name="request_permission_title">Grant permissions</string>
+    <string name="request_microphone_permission_title">Microphone</string>
+    <string name="request_microphone_permission_description">Listening to incoming audio requires you to grant permission to NoiseCapture to use your device’s microphone.</string>
+
     <string name="request_permission_explanation">In order to measure the sound level and place it on a map the application need to have access to sensitive sensors. Please tap on "Request" buttons.</string>
     <string name="request_permission_button_settings">Settings</string>
     <string name="request_permission_button_next">Next</string>
-    <string name="request_permission_button_request">Request</string>
+    <string name="request_permission_button_grant">Grant permission</string>
 
 
     <!--  MeasurementScreen  -->

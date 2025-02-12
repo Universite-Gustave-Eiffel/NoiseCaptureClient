@@ -1,29 +1,23 @@
 package org.noiseplanet.noisecapture.ui.features.permission
 
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import noisecapture.composeapp.generated.resources.Res
-import noisecapture.composeapp.generated.resources.request_permission_button_next
-import noisecapture.composeapp.generated.resources.request_permission_explanation
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.noiseplanet.noisecapture.ui.features.permission.stateview.PermissionStateView
+import org.noiseplanet.noisecapture.ui.components.button.NCButton
+
 
 /**
  * Presents required permissions to the user with controls to either request the
@@ -42,50 +36,39 @@ fun RequestPermissionScreen(
     modifier: Modifier = Modifier,
 ) {
     Surface(
-        modifier = modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+        color = Color.White,
+        modifier = modifier.fillMaxSize()
+            .padding(all = 16.dp)
+            .padding(bottom = 32.dp),
     ) {
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            contentPadding = PaddingValues(
-                top = 16.dp,
-                bottom = 64.dp,
-                start = 16.dp,
-                end = 16.dp
-            ),
-            modifier = Modifier.fillMaxSize()
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(32.dp, Alignment.CenterVertically),
+            modifier = Modifier.fillMaxSize(),
         ) {
-            item {
+            Image(
+                painter = painterResource(viewModel.image),
+                contentDescription = stringResource(viewModel.title),
+            )
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 Text(
-                    text = stringResource(Res.string.request_permission_explanation),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    text = stringResource(viewModel.title),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    text = stringResource(viewModel.description),
+                    style = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
                 )
             }
 
-            items(viewModel.permissionStateViewModels) {
-                PermissionStateView(it)
-            }
-            item {
-                // True if all required permissions have been granted
-                val allPermissionsGranted by viewModel.allPermissionsGranted
-                    .collectAsState(false)
-
-                AnimatedVisibility(allPermissionsGranted) {
-                    // Show Next button only if all required permissions have been granted
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Spacer(modifier = Modifier.fillParentMaxWidth())
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.End,
-                        ) {
-                            Button(onClick = onClickNextButton) {
-                                Text(stringResource(Res.string.request_permission_button_next))
-                            }
-                        }
-                    }
-                }
-            }
+            NCButton(
+                onClick = viewModel::requestPermission,
+                viewModel = viewModel.grantPermissionButtonViewModel
+            )
         }
     }
 }

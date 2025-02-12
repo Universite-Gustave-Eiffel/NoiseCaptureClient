@@ -16,8 +16,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.permission_microphone_illustration
+import noisecapture.composeapp.generated.resources.request_microphone_permission_description
+import noisecapture.composeapp.generated.resources.request_microphone_permission_title
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
+import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBar
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBarState
 import org.noiseplanet.noisecapture.ui.components.appbar.rememberAppBarState
@@ -131,7 +136,12 @@ fun RootCoordinator(
             composable(route = Route.RequestPermission.name) {
                 // TODO: Silently check for permissions and bypass this step if
                 //       they are already all granted
-                val screenViewModel: RequestPermissionScreenViewModel = koinInject()
+                val screenViewModel = RequestPermissionScreenViewModel(
+                    permission = Permission.RECORD_AUDIO,
+                    image = Res.drawable.permission_microphone_illustration,
+                    title = Res.string.request_microphone_permission_title,
+                    description = Res.string.request_microphone_permission_description,
+                )
                 appBarState.setCurrentScreenViewModel(screenViewModel)
 
                 RequestPermissionScreen(
