@@ -57,7 +57,7 @@ class AudioRecorder(
             (BUFFER_SIZE_TIME * sampleRate * 4).toInt()
         )
         audioRecord = AudioRecord(
-            MediaRecorder.AudioSource.VOICE_RECOGNITION,
+            MediaRecorder.AudioSource.MIC,
             sampleRate,
             channel,
             encoding,
