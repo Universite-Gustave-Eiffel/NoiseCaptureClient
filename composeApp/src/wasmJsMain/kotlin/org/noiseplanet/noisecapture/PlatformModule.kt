@@ -7,6 +7,8 @@ import org.koin.dsl.module
 import org.noiseplanet.noisecapture.audio.AudioSource
 import org.noiseplanet.noisecapture.audio.JsAudioSource
 import org.noiseplanet.noisecapture.log.Logger
+import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
+import org.noiseplanet.noisecapture.services.audio.JSAudioRecordingService
 import org.noiseplanet.noisecapture.services.location.UserLocationProvider
 import org.noiseplanet.noisecapture.services.location.WasmJSUserLocationProvider
 
@@ -27,5 +29,9 @@ val platformModule: Module = module {
 
     single<Settings> {
         StorageSettings()
+    }
+
+    single<AudioRecordingService> {
+        JSAudioRecordingService()
     }
 }

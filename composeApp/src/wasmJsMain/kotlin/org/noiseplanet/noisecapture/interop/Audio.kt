@@ -1,7 +1,10 @@
 package org.noiseplanet.noisecapture.interop
 
 import org.khronos.webgl.Float32Array
+import org.w3c.dom.events.Event
+import org.w3c.dom.events.EventTarget
 import org.w3c.dom.mediacapture.MediaStream
+import org.w3c.files.Blob
 import kotlin.js.Promise
 
 /**
@@ -75,4 +78,39 @@ external class AudioProcessingEvent {
 external class ScriptProcessorNode : AudioNode {
 
     var onaudioprocess: (AudioProcessingEvent) -> Unit
+}
+
+
+/**
+ * BlobEvent Kotlin interop.
+ * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/BlobEvent)
+ */
+external class BlobEvent : Event {
+
+    val data: Blob
+}
+
+
+/**
+ * MediaRecorder Kotlin interop.
+ * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder)
+ */
+external class MediaRecorder(
+    mediaStream: MediaStream,
+) : EventTarget {
+
+    val state: JsString
+    val stream: MediaStream
+
+    val mimeType: JsString
+    val audioBitsPerSecond: Long
+
+    var onstop: (Event) -> Unit
+    var ondataavailable: (BlobEvent) -> Unit
+
+    fun pause()
+    fun requestData()
+    fun resume()
+    fun start()
+    fun stop()
 }
