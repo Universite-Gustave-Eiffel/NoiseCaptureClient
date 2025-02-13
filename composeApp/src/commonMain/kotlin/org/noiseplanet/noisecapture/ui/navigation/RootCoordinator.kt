@@ -105,7 +105,7 @@ fun RootCoordinator(
         // TODO: Handle swipe back gestures on iOS -> encapsulate UINavigationController?
         NavHost(
             navController = navController,
-            startDestination = Route.Home.name,
+            startDestination = Route.RequestPermission.name,
             enterTransition = Transitions.enterTransition,
             exitTransition = Transitions.exitTransition,
             popEnterTransition = Transitions.popEnterTransition,
@@ -137,7 +137,7 @@ fun RootCoordinator(
                 RequestPermissionScreen(
                     viewModel = screenViewModel,
                     onClickNextButton = {
-                        navController.navigate(Route.Measurement.name)
+                        navController.navigate(Route.Home.name)
                     }
                 )
             }
