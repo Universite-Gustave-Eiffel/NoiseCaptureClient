@@ -53,6 +53,9 @@ class IOSAudioRecordingService : AudioRecordingService, KoinComponent {
 
     // - AudioRecordingService
 
+    override var recordingStartListener: AudioRecordingService.RecordingStartListener? = null
+    override var recordingStopListener: AudioRecordingService.RecordingStopListener? = null
+
     override fun startRecordingToFile(outputFileName: String) {
         logger.debug("Start recording to $outputFileName")
 
@@ -87,6 +90,7 @@ class IOSAudioRecordingService : AudioRecordingService, KoinComponent {
         logger.debug("Starting recording...")
         audioRecorder?.record()
         logger.debug("Recording started!")
+        recordingStartListener?.onRecordingStart()
     }
 
     override fun stopRecordingToFile() {
@@ -94,6 +98,9 @@ class IOSAudioRecordingService : AudioRecordingService, KoinComponent {
         logger.debug("Stopping recording...")
         audioRecorder?.stop()
         logger.debug("Recording stopped")
+        audioRecorder?.url?.absoluteString?.let {
+            recordingStopListener?.onRecordingStop(it)
+        }
 
         // Drop recorder reference
         audioRecorder = null

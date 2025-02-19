@@ -22,6 +22,9 @@ class JSAudioRecordingService : AudioRecordingService, KoinComponent {
 
     // - AudioRecordingService
 
+    override var recordingStartListener: AudioRecordingService.RecordingStartListener? = null
+    override var recordingStopListener: AudioRecordingService.RecordingStopListener? = null
+
     override fun startRecordingToFile(outputFileName: String) {
         window.navigator.mediaDevices.getUserMedia(
             MediaStreamConstraints(
@@ -32,6 +35,7 @@ class JSAudioRecordingService : AudioRecordingService, KoinComponent {
             configureMediaRecorder(stream)
             blob = null
             mediaRecorder?.start()
+            recordingStartListener?.onRecordingStart()
             stream
         }.catch { error ->
             logger.error("getUserMedia error during AudioRecorder init: $error")
@@ -55,11 +59,15 @@ class JSAudioRecordingService : AudioRecordingService, KoinComponent {
             // Triggered after calling MediaRecorder::stop() and after MediaRecorder::ondataavailable
             logger.debug("Recording stopped.")
             blob?.let {
-                logger.debug("Audio URL: ${URL.createObjectURL(it)}")
+                val url = URL.createObjectURL(it)
+                logger.debug("Audio URL: $url")
                 logger.debug("Blob size: ${it.size}")
-            } ?: logger.warning("Could not get recorder audio URL: Blob was null.")
+                recordingStopListener?.onRecordingStop(url)
 
-            // TODO: Once settled on a storage strategy, store the audio file somewhere (OPFS?)
+                // TODO: Once settled on a storage strategy, store the audio file somewhere (OPFS?)
+                //       For now, just revoke URL.
+                URL.revokeObjectURL(url)
+            } ?: logger.warning("Could not get recorder audio URL: Blob was null.")
         }
     }
 }

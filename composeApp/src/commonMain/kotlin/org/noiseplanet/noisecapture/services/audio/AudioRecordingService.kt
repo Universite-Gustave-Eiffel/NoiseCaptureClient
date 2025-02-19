@@ -1,6 +1,5 @@
 package org.noiseplanet.noisecapture.services.audio
 
-
 /**
  * Allows recording incoming audio to a compressed output file.
  *
@@ -10,6 +9,14 @@ package org.noiseplanet.noisecapture.services.audio
  * > Note: Audio recording permissions are not handled by this service.
  */
 interface AudioRecordingService {
+
+    // - Properties
+
+    var recordingStartListener: RecordingStartListener?
+    var recordingStopListener: RecordingStopListener?
+
+
+    // - Public functions
 
     /**
      * Starts recording audio to a file with the given name.
@@ -22,4 +29,25 @@ interface AudioRecordingService {
      * Stops any ongoing recording and closes output file handle.
      */
     fun stopRecordingToFile()
+
+
+    // - Listeners
+
+    interface RecordingStartListener {
+
+        /**
+         * Called when starting a new recording.
+         */
+        fun onRecordingStart()
+    }
+
+    interface RecordingStopListener {
+
+        /**
+         * Called after recording stopped.
+         *
+         * @param fileUrl URL of the audio file.
+         */
+        fun onRecordingStop(fileUrl: String)
+    }
 }

@@ -19,14 +19,19 @@ class AndroidAudioRecordingService : AudioRecordingService, KoinComponent {
     private val context: Context by inject()
 
     private var mediaRecorder: MediaRecorder? = null
+    private var outputFileUrl: String? = null
 
 
     // - AudioRecordingService
+
+    override var recordingStartListener: AudioRecordingService.RecordingStartListener? = null
+    override var recordingStopListener: AudioRecordingService.RecordingStopListener? = null
 
     override fun startRecordingToFile(outputFileName: String) {
         logger.debug("Recording to $outputFileName")
 
         val filesDir = context.getExternalFilesDir(null)
+        outputFileUrl = "${filesDir?.absolutePath}/$outputFileName.mp3"
         logger.debug("Files dir: $filesDir")
 
         // Initialize media recorder for given output file name
@@ -40,7 +45,7 @@ class AndroidAudioRecordingService : AudioRecordingService, KoinComponent {
             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
             setAudioEncoder(MediaRecorder.AudioEncoder.HE_AAC)
             setAudioSamplingRate(41_000)
-            setOutputFile("${filesDir?.absolutePath}/$outputFileName.mp3")
+            setOutputFile(outputFileUrl)
 
             // Finalise initialisation
             try {
@@ -52,6 +57,7 @@ class AndroidAudioRecordingService : AudioRecordingService, KoinComponent {
 
             // Start recording
             start()
+            recordingStartListener?.onRecordingStart()
             logger.debug("Started recording!")
         }
     }
@@ -61,6 +67,9 @@ class AndroidAudioRecordingService : AudioRecordingService, KoinComponent {
         mediaRecorder?.apply {
             stop()
             release()
+            outputFileUrl?.let {
+                recordingStopListener?.onRecordingStop(it)
+            }
         }
         // Drop reference
         mediaRecorder = null
