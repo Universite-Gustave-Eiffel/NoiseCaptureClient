@@ -4,11 +4,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.audio.AcousticIndicatorsData
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.Location
@@ -16,22 +18,26 @@ import org.noiseplanet.noisecapture.model.Measurement
 import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.services.location.UserLocationService
+import org.noiseplanet.noisecapture.services.settings.SettingsKey
+import org.noiseplanet.noisecapture.services.settings.UserSettingsService
 import org.noiseplanet.noisecapture.util.injectLogger
+import kotlin.time.Duration.Companion.seconds
 
 
-open class DefaultMeasurementRecordingService(
-    private val measurementService: MeasurementService,
-    private val userLocationService: UserLocationService,
-    private val liveAudioService: LiveAudioService,
-    private val audioRecordingService: AudioRecordingService,
-) : MeasurementRecordingService, KoinComponent {
+open class DefaultMeasurementRecordingService : MeasurementRecordingService, KoinComponent {
 
     // - Properties
 
+    private val measurementService: MeasurementService by inject()
+    private val userLocationService: UserLocationService by inject()
+    private val liveAudioService: LiveAudioService by inject()
+    private val audioRecordingService: AudioRecordingService by inject()
+    private val settingsService: UserSettingsService by inject()
     private val logger: Logger by injectLogger()
 
     private val scope = CoroutineScope(Dispatchers.Default)
     private var recordingJob: Job? = null
+    private var recordingLimitJob: Job? = null
 
     private val _isRecording = MutableStateFlow(value = false)
 
@@ -61,16 +67,31 @@ open class DefaultMeasurementRecordingService(
         // Start listening to measured acoustic indicators and location updates
         createMeasurementAndSubscribe()
 
-        // Start recording audio to an output file
-        // TODO: Add a settings option to disable recording audio to output file.
-        // TODO: Name output file with measurement ID so it can be matched afterwards.
-        audioRecordingService.startRecordingToFile("audio_recording")
+        // Start recording audio to an output file, if enabled
+        if (settingsService.get(SettingsKey.SettingSaveAudioWithMeasurement)) {
+            // TODO: Name output file with measurement ID so it can be matched afterwards.
+            audioRecordingService.startRecordingToFile("audio_recording")
+
+            // Schedule a job that will stop end the recording in N minutes
+            // based on the limit fixed in settings
+            recordingLimitJob = scope.launch {
+                val maxDurationInSeconds =
+                    settingsService.get(SettingsKey.SettingLimitSavedAudioDurationMinutes)// * 60u
+                delay(maxDurationInSeconds.toLong().seconds.inWholeMilliseconds)
+                audioRecordingService.stopRecordingToFile()
+            }
+        }
     }
 
     override fun endAndSave() {
         logger.debug("End recording")
+
+        // Cancel running jobs
         recordingJob?.cancel()
         recordingJob = null
+        recordingLimitJob?.cancel()
+        recordingLimitJob = null
+
         _isRecording.tryEmit(false)
 
         // Stop live location updates

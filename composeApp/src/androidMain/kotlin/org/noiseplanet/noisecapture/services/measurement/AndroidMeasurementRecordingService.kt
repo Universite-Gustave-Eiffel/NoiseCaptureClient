@@ -25,7 +25,6 @@ import noisecapture.composeapp.generated.resources.ongoing_measurement_notificat
 import noisecapture.composeapp.generated.resources.ongoing_measurement_notification_title
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.get
 import org.noiseplanet.noisecapture.MainActivity
 import org.noiseplanet.noisecapture.R
 import org.noiseplanet.noisecapture.util.NotificationHelper
@@ -167,13 +166,8 @@ internal class ForegroundServiceWrapper : KoinComponent, Service() {
     private val job = SupervisorJob()
     private val coroutineScope = CoroutineScope(Dispatchers.IO + job)
 
-    // Build inner service instance using dependency injection
-    val innerService = DefaultMeasurementRecordingService(
-        measurementService = get(),
-        userLocationService = get(),
-        liveAudioService = get(),
-        audioRecordingService = get(),
-    )
+    // Build inner service instance
+    val innerService = DefaultMeasurementRecordingService()
 
 
     // - Service

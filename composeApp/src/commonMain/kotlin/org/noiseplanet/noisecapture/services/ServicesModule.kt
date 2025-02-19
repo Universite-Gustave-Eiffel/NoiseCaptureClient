@@ -41,11 +41,6 @@ val servicesModule = module {
     }
 
     single<MeasurementRecordingService> {
-        DefaultMeasurementRecordingService(
-            measurementService = get(),
-            liveAudioService = get(),
-            userLocationService = get(),
-            audioRecordingService = get(),
-        )
+        DefaultMeasurementRecordingService()
     }
 }

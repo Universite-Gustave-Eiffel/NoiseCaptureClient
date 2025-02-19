@@ -62,8 +62,8 @@ class AndroidAudioRecordingService : AudioRecordingService, KoinComponent {
             stop()
             release()
         }
-
         // Drop reference
         mediaRecorder = null
+        logger.debug("Stopped recording")
     }
 }
