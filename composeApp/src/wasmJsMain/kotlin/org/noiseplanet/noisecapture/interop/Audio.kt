@@ -95,6 +95,7 @@ external class BlobEvent : Event {
  * MediaRecorder Kotlin interop.
  * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder)
  */
+@Suppress("UnusedPrivateProperty")
 external class MediaRecorder(
     mediaStream: MediaStream,
 ) : EventTarget {
