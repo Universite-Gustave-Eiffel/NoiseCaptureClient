@@ -60,7 +60,17 @@ sealed class SettingsKey<T>(val serializer: KSerializer<T>, val defaultValue: T)
 
     data object SettingMaxMeasurementDuration : SettingsKey<UInt>(
         UInt.serializer(),
-        defaultValue = 30u,
+        defaultValue = 60u,
+    )
+
+    data object SettingSaveAudioWithMeasurement : SettingsKey<Boolean>(
+        Boolean.serializer(),
+        defaultValue = true,
+    )
+
+    data object SettingLimitSavedAudioDurationMinutes : SettingsKey<UInt>(
+        UInt.serializer(),
+        defaultValue = 10u,
     )
 
     data object SettingSpectrogramScaleMode : SettingsKey<SpectrogramScaleMode>(
