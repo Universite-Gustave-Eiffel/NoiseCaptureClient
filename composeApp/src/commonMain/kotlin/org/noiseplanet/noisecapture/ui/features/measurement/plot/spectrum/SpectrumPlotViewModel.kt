@@ -4,9 +4,9 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.noiseplanet.noisecapture.services.liveaudio.LiveAudioService
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 
 class SpectrumPlotViewModel : ViewModel(), KoinComponent {

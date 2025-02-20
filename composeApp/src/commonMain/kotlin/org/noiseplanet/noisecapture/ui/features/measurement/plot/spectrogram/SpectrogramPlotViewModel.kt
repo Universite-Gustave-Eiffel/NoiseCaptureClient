@@ -16,7 +16,7 @@ import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.audio.ANDROID_GAIN
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.SpectrogramScaleMode
-import org.noiseplanet.noisecapture.services.liveaudio.LiveAudioService
+import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.util.injectLogger
 
 class SpectrogramPlotViewModel : ViewModel(), KoinComponent {

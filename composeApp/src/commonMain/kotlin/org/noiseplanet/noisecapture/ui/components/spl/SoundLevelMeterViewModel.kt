@@ -16,7 +16,7 @@ import noisecapture.composeapp.generated.resources.sound_level_meter_min_dba
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.audio.AudioSourceState
-import org.noiseplanet.noisecapture.services.liveaudio.LiveAudioService
+import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.ui.components.button.ButtonStyle
 import org.noiseplanet.noisecapture.ui.components.button.ButtonViewModel
 

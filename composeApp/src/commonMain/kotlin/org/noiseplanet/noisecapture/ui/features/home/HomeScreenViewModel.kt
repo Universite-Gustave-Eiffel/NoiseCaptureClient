@@ -10,8 +10,6 @@ import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.home_slm_button_title
 import noisecapture.composeapp.generated.resources.home_slm_hint
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-import org.noiseplanet.noisecapture.services.liveaudio.LiveAudioService
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBarButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 import org.noiseplanet.noisecapture.ui.components.button.ButtonStyle
@@ -23,7 +21,7 @@ class HomeScreenViewModel(
 ) : ViewModel(), KoinComponent, ScreenViewModel {
 
     // - Properties
-    
+
     val soundLevelMeterViewModel = SoundLevelMeterViewModel(
         showMinMaxSPL = false,
         showPlayPauseButton = true

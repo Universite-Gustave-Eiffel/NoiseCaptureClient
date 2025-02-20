@@ -1,8 +1,8 @@
 package org.noiseplanet.noisecapture.services
 
 import org.koin.dsl.module
-import org.noiseplanet.noisecapture.services.liveaudio.DefaultLiveAudioService
-import org.noiseplanet.noisecapture.services.liveaudio.LiveAudioService
+import org.noiseplanet.noisecapture.services.audio.DefaultLiveAudioService
+import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.services.location.DefaultUserLocationService
 import org.noiseplanet.noisecapture.services.location.UserLocationService
 import org.noiseplanet.noisecapture.services.measurement.DefaultMeasurementRecordingService
@@ -41,10 +41,6 @@ val servicesModule = module {
     }
 
     single<MeasurementRecordingService> {
-        DefaultMeasurementRecordingService(
-            measurementService = get(),
-            liveAudioService = get(),
-            userLocationService = get(),
-        )
+        DefaultMeasurementRecordingService()
     }
 }

@@ -17,6 +17,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
@@ -46,23 +47,26 @@ fun <T : Any> SettingsItem(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.padding(
-                top = if (viewModel.isFirstInSection) 16.dp else 12.dp,
-                bottom = if (viewModel.isLastInSection) 16.dp else 12.dp,
-            ).fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
+                .alpha(if (isEnabled) 1.0f else 0.3f)
+                .padding(
+                    top = if (viewModel.isFirstInSection) 16.dp else 12.dp,
+                    bottom = if (viewModel.isLastInSection) 16.dp else 12.dp,
+                )
         ) {
-            Column(modifier = Modifier.weight(0.8f, fill = false)) {
+            Column(
+                modifier = Modifier.weight(0.8f, fill = false)
+            ) {
                 Text(
                     stringResource(viewModel.title),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface
-                        .copy(alpha = if (isEnabled) 1.0f else 0.5f)
+
                 )
                 Text(
                     stringResource(viewModel.description),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                    maxLines = 3,
                     overflow = TextOverflow.Ellipsis,
                 )
             }

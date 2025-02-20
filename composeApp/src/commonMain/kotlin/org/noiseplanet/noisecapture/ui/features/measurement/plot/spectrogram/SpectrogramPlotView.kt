@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.toSize
 import org.noiseplanet.noisecapture.model.SpectrogramScaleMode
-import org.noiseplanet.noisecapture.services.liveaudio.DefaultLiveAudioService.Companion.FFT_HOP
+import org.noiseplanet.noisecapture.services.audio.DefaultLiveAudioService.Companion.FFT_HOP
 import org.noiseplanet.noisecapture.ui.features.measurement.DEFAULT_SAMPLE_RATE
 import org.noiseplanet.noisecapture.ui.features.measurement.plot.PlotAxisBuilder
 import org.noiseplanet.noisecapture.ui.features.measurement.plot.PlotBitmapOverlay

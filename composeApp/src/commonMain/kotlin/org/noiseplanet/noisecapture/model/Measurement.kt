@@ -10,4 +10,5 @@ data class Measurement(
     val id: Long = Random.nextLong(),
     val acousticIndicators: List<AcousticIndicatorsData> = emptyList(),
     val userLocationHistory: List<Location> = emptyList(),
+    val recordedAudioUrl: String? = null,
 )

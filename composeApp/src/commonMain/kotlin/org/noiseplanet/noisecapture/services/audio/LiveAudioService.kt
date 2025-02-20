@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.services.liveaudio
+package org.noiseplanet.noisecapture.services.audio
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
