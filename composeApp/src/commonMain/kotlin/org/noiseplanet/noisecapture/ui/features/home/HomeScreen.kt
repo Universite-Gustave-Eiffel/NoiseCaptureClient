@@ -24,7 +24,6 @@ import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterView
  */
 @Composable
 fun HomeScreen(
-    onOpenSoundLevelMeterButtonClick: () -> Unit,
     viewModel: HomeScreenViewModel,
 ) {
     // - Layout
@@ -34,7 +33,7 @@ fun HomeScreen(
         color = Color.White
     ) {
         Column {
-            SoundLevelMeterHeaderView(onOpenSoundLevelMeterButtonClick, viewModel)
+            SoundLevelMeterHeaderView(viewModel)
 
             // TODO: Add last measurements section
 
@@ -48,7 +47,6 @@ fun HomeScreen(
 
 @Composable
 private fun SoundLevelMeterHeaderView(
-    onOpenSoundLevelMeterButtonClick: () -> Unit,
     viewModel: HomeScreenViewModel,
 ) {
     Column(
@@ -72,7 +70,6 @@ private fun SoundLevelMeterHeaderView(
             )
 
             NCButton(
-                onClick = onOpenSoundLevelMeterButtonClick,
                 viewModel = viewModel.soundLevelMeterButtonViewModel,
                 modifier = Modifier.height(50.dp)
                     .fillMaxWidth()

@@ -1,9 +1,7 @@
 package org.noiseplanet.noisecapture.ui.features.measurement
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
@@ -17,17 +15,30 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.ui.features.measurement.plot.spectrogram.SpectrogramPlotView
 import org.noiseplanet.noisecapture.ui.features.measurement.plot.spectrum.SpectrumPlotView
 
-@OptIn(ExperimentalFoundationApi::class, KoinExperimentalAPI::class)
+/**
+ * A horizontal pager on the measurement recording screens that allows user to switch between
+ * spectrum, spectrogram and map views.
+ */
 @Composable
-fun MeasurementPager() {
+fun MeasurementPager(
+    modifier: Modifier = Modifier,
+) {
+
+    // - Properties
+
     val animationScope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { MeasurementTabState.entries.size })
 
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+    // - Layout
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier,
+    ) {
         TabRow(selectedTabIndex = pagerState.currentPage) {
             MeasurementTabState.entries.forEach { entry ->
                 Tab(
@@ -39,22 +50,19 @@ fun MeasurementPager() {
         }
         HorizontalPager(state = pagerState) { page ->
             when (MeasurementTabState.entries[page]) {
-                MeasurementTabState.SPECTROGRAM -> Box(Modifier.fillMaxSize()) {
+                MeasurementTabState.SPECTROGRAM -> Box {
                     SpectrogramPlotView(
                         viewModel = koinViewModel(),
-                        modifier = Modifier.fillMaxSize()
                     )
                 }
 
-                MeasurementTabState.SPECTRUM -> Box(Modifier.fillMaxSize()) {
+                MeasurementTabState.SPECTRUM -> Box {
                     SpectrumPlotView(
                         viewModel = koinViewModel(),
-                        modifier = Modifier.fillMaxSize()
                     )
                 }
 
                 else -> Surface(
-                    Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     Text(

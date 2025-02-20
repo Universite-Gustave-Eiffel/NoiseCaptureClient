@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
@@ -45,14 +46,11 @@ class SoundLevelMeterViewModel(
     private val liveAudioService: LiveAudioService by inject()
 
     val playPauseButtonViewModel = ButtonViewModel(
+        onClick = this::toggleAudioSource,
         icon = liveAudioService.isRunningFlow.map { isRunning ->
-            if (isRunning) {
-                Icons.Filled.Pause
-            } else {
-                Icons.Filled.PlayArrow
-            }
+            if (isRunning) Icons.Filled.Pause else Icons.Filled.PlayArrow
         },
-        style = ButtonStyle.SECONDARY
+        style = flowOf(ButtonStyle.SECONDARY)
     )
 
     val vuMeterTicks: IntArray = IntArray(size = VU_METER_TICKS_COUNT) { index ->
@@ -83,17 +81,13 @@ class SoundLevelMeterViewModel(
     }
 
 
-    // - Public functions
+    // - Private functions
 
-    fun toggleAudioSource() {
+    private fun toggleAudioSource() {
         if (liveAudioService.isRunning) {
             liveAudioService.stopListening()
         } else {
             liveAudioService.startListening()
         }
-    }
-
-    fun startAudioSource() {
-        liveAudioService.startListening()
     }
 }

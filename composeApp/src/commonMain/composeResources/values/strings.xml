@@ -28,6 +28,8 @@
 
     <!--  MeasurementScreen  -->
     <string name="measurement_title">New measurement</string>
+    <string name="measurement_start_recording_button_title">Start recording</string>
+    <string name="measurement_end_recording_button_title">End recording</string>
 
 
     <!-- Settings -->

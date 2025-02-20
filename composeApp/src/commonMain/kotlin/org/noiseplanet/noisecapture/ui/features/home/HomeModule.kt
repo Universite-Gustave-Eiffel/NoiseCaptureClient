@@ -5,7 +5,7 @@ import org.koin.dsl.module
 
 val homeModule = module {
 
-    viewModel { (onClickSettingsButton: () -> Unit) ->
-        HomeScreenViewModel(onClickSettingsButton)
+    viewModel { (onClickSettingsButton: () -> Unit, onClickOpenSoundLevelMeterButton: () -> Unit) ->
+        HomeScreenViewModel(onClickSettingsButton, onClickOpenSoundLevelMeterButton)
     }
 }
