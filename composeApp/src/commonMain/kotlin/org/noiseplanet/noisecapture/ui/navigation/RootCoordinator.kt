@@ -119,13 +119,14 @@ fun RootCoordinator(
                     parametersOf({
                         // Callback triggered when pressing the settings app bar button
                         navController.navigate(Route.Settings.name)
+                    }, {
+                        // Callback triggered when pressing the open sound level meter button
+                        navController.navigate(Route.Measurement.name)
                     })
                 }
                 appBarState.setCurrentScreenViewModel(screenViewModel)
 
-                HomeScreen(viewModel = screenViewModel, onOpenSoundLevelMeterButtonClick = {
-                    navController.navigate(Route.Measurement.name)
-                })
+                HomeScreen(viewModel = screenViewModel)
             }
 
             composable(route = Route.RequestPermission.name) {

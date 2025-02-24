@@ -1,10 +1,13 @@
 package org.noiseplanet.noisecapture.ui.components.spl
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -36,89 +39,91 @@ fun SoundLevelMeterView(
 
     // - Layout
 
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.padding(top = 16.dp)
-    ) {
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth()
+    Box(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(top = 16.dp)
         ) {
-            Column(horizontalAlignment = Alignment.Start) {
-                Text(
-                    text = stringResource(viewModel.currentDbALabel),
-                    style = MaterialTheme.typography.labelLarge.copy(
-                        fontWeight = FontWeight.SemiBold
-                    ),
-                )
-
-                val isSplInRange = currentSoundPressureLevel in VU_METER_DB_MIN..VU_METER_DB_MAX
-                val roundedSpl = round(currentSoundPressureLevel * 10.0) / 10.0
-
-                Text(
-                    text = if (isSplInRange) roundedSpl.toString() else "-",
-                    style = MaterialTheme.typography.headlineLarge.copy(
-                        fontWeight = FontWeight.Black,
-                        fontSize = 36.sp,
-                        color = NoiseLevelColorRamp.getColorForSPLValue(roundedSpl)
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth()
+            ) {
+                Column(horizontalAlignment = Alignment.Start) {
+                    Text(
+                        text = stringResource(viewModel.currentDbALabel),
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            fontWeight = FontWeight.SemiBold
+                        ),
                     )
-                )
-            }
 
-            if (viewModel.showMinMaxSPL) {
-                Row(
-                    Modifier.align(Alignment.Top),
-                ) {
-                    listOf(
-                        MeasurementStatistics(
-                            label = stringResource(viewModel.minDbALabel),
-                            value = "-",
-                        ),
-                        MeasurementStatistics(
-                            label = stringResource(viewModel.avgDbALabel),
-                            value = "-",
-                        ),
-                        MeasurementStatistics(
-                            label = stringResource(viewModel.maxDbALabel),
-                            value = "-",
-                        ),
-                    ).forEach {
-                        Column(
-                            horizontalAlignment = Alignment.Start,
-                            modifier = Modifier.width(50.dp),
-                        ) {
-                            Text(
-                                text = it.label,
-                                style = MaterialTheme.typography.labelLarge
-                            )
-                            Text(
-                                text = it.value,
-                                style = MaterialTheme.typography.headlineLarge.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 20.sp,
-                                    textAlign = TextAlign.Start
+                    val isSplInRange = currentSoundPressureLevel in VU_METER_DB_MIN..VU_METER_DB_MAX
+                    val roundedSpl = round(currentSoundPressureLevel * 10.0) / 10.0
+
+                    Text(
+                        text = if (isSplInRange) roundedSpl.toString() else "-",
+                        style = MaterialTheme.typography.headlineLarge.copy(
+                            fontWeight = FontWeight.Black,
+                            fontSize = 36.sp,
+                            color = NoiseLevelColorRamp.getColorForSPLValue(roundedSpl)
+                        )
+                    )
+                }
+
+                if (viewModel.showMinMaxSPL) {
+                    Row(
+                        Modifier.align(Alignment.Top),
+                    ) {
+                        listOf(
+                            MeasurementStatistics(
+                                label = stringResource(viewModel.minDbALabel),
+                                value = "-",
+                            ),
+                            MeasurementStatistics(
+                                label = stringResource(viewModel.avgDbALabel),
+                                value = "-",
+                            ),
+                            MeasurementStatistics(
+                                label = stringResource(viewModel.maxDbALabel),
+                                value = "-",
+                            ),
+                        ).forEach {
+                            Column(
+                                horizontalAlignment = Alignment.Start,
+                                modifier = Modifier.width(50.dp),
+                            ) {
+                                Text(
+                                    text = it.label,
+                                    style = MaterialTheme.typography.labelLarge
                                 )
-                            )
+                                Text(
+                                    text = it.value,
+                                    style = MaterialTheme.typography.headlineLarge.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 20.sp,
+                                        textAlign = TextAlign.Start
+                                    )
+                                )
+                            }
                         }
                     }
                 }
+
+                if (viewModel.showPlayPauseButton) {
+                    NCButton(
+                        viewModel = viewModel.playPauseButtonViewModel,
+                        modifier = Modifier.size(40.dp)
+                    )
+                }
             }
 
-            if (viewModel.showPlayPauseButton) {
-                NCButton(
-                    onClick = viewModel::toggleAudioSource,
-                    viewModel = viewModel.playPauseButtonViewModel
-                )
-            }
+            VuMeter(
+                ticks = viewModel.vuMeterTicks,
+                minimum = VU_METER_DB_MIN,
+                maximum = VU_METER_DB_MAX,
+                value = currentSoundPressureLevel,
+            )
         }
-
-        VuMeter(
-            ticks = viewModel.vuMeterTicks,
-            minimum = VU_METER_DB_MIN,
-            maximum = VU_METER_DB_MAX,
-            value = currentSoundPressureLevel,
-        )
     }
 }
 

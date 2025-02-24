@@ -18,6 +18,7 @@ import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel
 
 class HomeScreenViewModel(
     private val onClickSettingsButton: () -> Unit,
+    private val onClickOpenSoundLevelMeterButton: () -> Unit,
 ) : ViewModel(), KoinComponent, ScreenViewModel {
 
     // - Properties
@@ -29,6 +30,7 @@ class HomeScreenViewModel(
 
     val hintText = Res.string.home_slm_hint
     val soundLevelMeterButtonViewModel = ButtonViewModel(
+        onClick = onClickOpenSoundLevelMeterButton,
         title = Res.string.home_slm_button_title,
         icon = Icons.Filled.Mic,
         style = ButtonStyle.SECONDARY,
