@@ -10,7 +10,7 @@ class WasmJSPlatform : Platform {
         // location background permission check.
         get() = listOf(
             Permission.RECORD_AUDIO,
-//            Permission.LOCATION_BACKGROUND
+            Permission.LOCATION_BACKGROUND
         )
 }
 

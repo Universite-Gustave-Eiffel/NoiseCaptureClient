@@ -1,13 +1,16 @@
 package org.noiseplanet.noisecapture.ui.features.measurement
 
 import androidx.lifecycle.ViewModel
-import org.noiseplanet.noisecapture.services.MeasurementsService
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
+import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel
+import org.noiseplanet.noisecapture.ui.features.measurement.controls.RecordingControlsViewModel
 
-class MeasurementScreenViewModel(
-    private val measurementsService: MeasurementsService,
-) : ViewModel() {
+class MeasurementScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
 
-    fun startRecordingAudio() = measurementsService.startRecordingAudio()
+    // - Properties
 
-    fun stopRecordingAudio() = measurementsService.stopRecordingAudio()
+    val soundLevelMeterViewModel: SoundLevelMeterViewModel by inject()
+    val recordingControlsViewModel = RecordingControlsViewModel()
 }

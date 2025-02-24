@@ -8,12 +8,13 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.permission.PermissionState
-import org.noiseplanet.noisecapture.services.PermissionService
+import org.noiseplanet.noisecapture.services.permission.PermissionService
+import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.permission.stateview.PermissionStateViewModel
 
 class RequestPermissionScreenViewModel(
     private val permissionService: PermissionService,
-) : ViewModel(), KoinComponent {
+) : ViewModel(), KoinComponent, ScreenViewModel {
 
     private val requiredPermissions = getPlatform().requiredPermissions
 

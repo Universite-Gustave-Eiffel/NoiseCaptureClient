@@ -2,14 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>TODO: Localize this</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>TODO: Localize this</string>
-	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>TODO: Localize this</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>TODO: Localize this</string>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>
@@ -28,13 +22,26 @@
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>TODO: Explain bluetooth usage needs</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>TODO: Explain foreground and background location usage needs</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>TODO: Explain background location usage needs</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>TODO: Explain foreground location usage needs</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>TODO: Explain microphone usage needs</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
 		<false/>
 	</dict>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+		<string>location</string>
+	</array>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UIRequiredDeviceCapabilities</key>

@@ -15,16 +15,17 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionState
-import org.noiseplanet.noisecapture.services.PermissionService
+import org.noiseplanet.noisecapture.services.permission.PermissionService
 
 class PermissionStateViewModel(
     private val permission: Permission,
     private val permissionService: PermissionService,
 ) : ViewModel() {
 
-    val permissionName: String = permission.name
+    private val stateFlow: Flow<PermissionState> =
+        permissionService.getPermissionStateFlow(permission)
 
-    val stateFlow: Flow<PermissionState> = permissionService.getPermissionStateFlow(permission)
+    val permissionName: String = permission.name
 
     val stateIcon: Flow<ImageVector> = stateFlow.map { state ->
         when (state) {

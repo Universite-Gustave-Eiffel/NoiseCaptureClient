@@ -13,7 +13,8 @@ class AndroidPlatform : Platform {
             Permission.RECORD_AUDIO,
             Permission.LOCATION_SERVICE_ON,
             Permission.LOCATION_FOREGROUND,
-            Permission.LOCATION_BACKGROUND
+            Permission.LOCATION_BACKGROUND,
+            Permission.POST_NOTIFICATIONS,
         )
 }
 

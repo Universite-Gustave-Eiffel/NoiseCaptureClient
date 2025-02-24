@@ -13,18 +13,32 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
+import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.log.Logger
+import org.noiseplanet.noisecapture.model.MicrophoneLocation
+import org.noiseplanet.noisecapture.util.NSNotificationListener
 import org.noiseplanet.noisecapture.util.checkNoError
+import org.noiseplanet.noisecapture.util.injectLogger
 import platform.AVFAudio.AVAudioEngine
 import platform.AVFAudio.AVAudioPCMBuffer
 import platform.AVFAudio.AVAudioSession
-import platform.AVFAudio.AVAudioSessionCategoryRecord
+import platform.AVFAudio.AVAudioSessionCategoryOptionMixWithOthers
+import platform.AVFAudio.AVAudioSessionCategoryPlayAndRecord
+import platform.AVFAudio.AVAudioSessionInterruptionNotification
+import platform.AVFAudio.AVAudioSessionInterruptionOptionKey
+import platform.AVFAudio.AVAudioSessionInterruptionOptionShouldResume
+import platform.AVFAudio.AVAudioSessionInterruptionReasonKey
+import platform.AVFAudio.AVAudioSessionInterruptionTypeBegan
+import platform.AVFAudio.AVAudioSessionInterruptionTypeEnded
+import platform.AVFAudio.AVAudioSessionInterruptionTypeKey
+import platform.AVFAudio.AVAudioSessionModeMeasurement
 import platform.AVFAudio.AVAudioTime
 import platform.AVFAudio.sampleRate
 import platform.AVFAudio.setActive
 import platform.AVFAudio.setPreferredIOBufferDuration
 import platform.AVFAudio.setPreferredSampleRate
 import platform.Foundation.NSError
+import platform.Foundation.NSNotification
 import platform.Foundation.NSTimeInterval
 import platform.posix.uint32_t
 
@@ -34,38 +48,184 @@ import platform.posix.uint32_t
  * [Swift documentation](https://developer.apple.com/documentation/avfaudio/avaudioengine)
  */
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
-internal class IOSAudioSource(
-    private val logger: Logger,
-) : AudioSource {
+internal class IOSAudioSource : AudioSource, KoinComponent {
+
+    // - Constants
 
     companion object {
 
         const val SAMPLES_BUFFER_SIZE: uint32_t = 1024u
     }
 
+
+    // - Properties
+
     private val audioSamplesChannel = Channel<AudioSamples>(
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+    private val stateChannel = Channel<AudioSourceState>(
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
 
     private val audioSession = AVAudioSession.sharedInstance()
     private var audioEngine: AVAudioEngine? = null
 
+    private val interruptionNotificationHandler = NSNotificationListener(
+        notificationName = AVAudioSessionInterruptionNotification,
+        `object` = audioSession,
+        callback = { handleSessionInterruptionNotification(it) }
+    )
 
-    override suspend fun setup(): Flow<AudioSamples> {
-        try {
-            setupAudioSession()
-        } catch (e: IllegalStateException) {
-            logger.error("Error during audio source setup", e)
+    private val logger: Logger by injectLogger()
+
+
+    // - AudioSource
+
+    override var state: AudioSourceState = AudioSourceState.UNINITIALIZED
+        set(value) {
+            field = value
+            stateChannel.trySend(value)
         }
 
+    override val audioSamples: Flow<AudioSamples> = audioSamplesChannel.receiveAsFlow()
+    override val stateFlow: Flow<AudioSourceState> = stateChannel.receiveAsFlow()
+
+    override fun setup() {
+        if (state != AudioSourceState.UNINITIALIZED) {
+            logger.debug("Audio source is already initialized, skipping setup.")
+            return
+        }
+
+        try {
+            setupAudioSession()
+            setupAudioEngine()
+        } catch (e: IllegalStateException) {
+            logger.error("Error during audio source setup", e)
+            state = AudioSourceState.UNINITIALIZED
+            return
+        }
+
+        // Start listening to interruption notifications
+        interruptionNotificationHandler.startListening()
+        state = AudioSourceState.READY
+    }
+
+    override fun start() {
+        when (state) {
+            AudioSourceState.UNINITIALIZED -> {
+                logger.error("Audio source not initialized. Call setup() first.")
+                return
+            }
+
+            AudioSourceState.RUNNING -> {
+                logger.debug("Audio source already started.")
+                return
+            }
+
+            AudioSourceState.READY, AudioSourceState.PAUSED -> {
+                logger.debug("Starting audio source")
+                memScoped {
+                    val error: ObjCObjectVar<NSError?> = alloc()
+                    audioEngine?.startAndReturnError(error.ptr)
+                    checkNoError(error.value) { "Error while starting AVAudioEngine" }
+                    state = AudioSourceState.RUNNING
+                }
+            }
+        }
+    }
+
+    override fun pause() {
+        when (state) {
+            AudioSourceState.UNINITIALIZED -> {
+                logger.error("Audio source not initialized. Call setup() first.")
+                return
+            }
+
+            AudioSourceState.RUNNING -> {
+                logger.debug("Pausing audio source.")
+                audioEngine?.stop()
+                state = AudioSourceState.PAUSED
+            }
+
+            AudioSourceState.READY, AudioSourceState.PAUSED -> {
+                logger.debug("Audio source already paused.")
+                return
+            }
+        }
+    }
+
+    override fun release() {
+        if (state == AudioSourceState.UNINITIALIZED) {
+            logger.debug("Audio source already uninitialized, skipping cleanup.")
+            return
+        }
+
+        // Stop and release audio engine...
+        audioEngine?.stop()
+        audioEngine = null
+        // ... and stop audio session
+        setAudioSessionActive(false)
+        // Stop listening to interruption notifications
+        interruptionNotificationHandler.stopListening()
+        // Lastly, update state
+        state = AudioSourceState.UNINITIALIZED
+    }
+
+    override fun getMicrophoneLocation(): MicrophoneLocation {
+        return MicrophoneLocation.LOCATION_UNKNOWN
+    }
+
+
+    // - Private functions
+
+    /**
+     * Setup underlying [AVAudioSession].
+     *
+     * @throws IllegalStateException if an error occurs during setup.
+     */
+    private fun setupAudioSession() {
+        logger.debug("Initializing AVAudioSession...")
+
+        memScoped {
+            val error: ObjCObjectVar<NSError?> = alloc()
+
+            audioSession.setCategory(
+                category = AVAudioSessionCategoryPlayAndRecord,
+                mode = AVAudioSessionModeMeasurement,
+                options = AVAudioSessionCategoryOptionMixWithOthers,
+                error = error.ptr,
+            )
+            checkNoError(error.value) { "Error while setting AVAudioSession category" }
+
+            val sampleRate = audioSession.sampleRate
+            audioSession.setPreferredSampleRate(sampleRate, error.ptr)
+            checkNoError(error.value) { "Error while setting AVAudioSession sample rate" }
+
+            val bufferDuration: NSTimeInterval =
+                1.0 / sampleRate * SAMPLES_BUFFER_SIZE.toDouble()
+            audioSession.setPreferredIOBufferDuration(bufferDuration, error.ptr)
+            checkNoError(error.value) { "Error while setting AVAudioSession buffer size" }
+        }
+        setAudioSessionActive(true)
+
+        logger.debug("AVAudioSession initialized")
+    }
+
+    /**
+     * Setup underlying [AVAudioEngine] with the current [AVAudioSession].
+     *
+     * @throws IllegalStateException if an error occurs during setup.
+     */
+    private fun setupAudioEngine() {
         val audioEngine = AVAudioEngine()
         val inputNode = audioEngine.inputNode
         val busNumber: ULong = 0u // Mono input
+        val inputFormat = inputNode.inputFormatForBus(busNumber)
 
         inputNode.installTapOnBus(
             bus = busNumber,
             bufferSize = SAMPLES_BUFFER_SIZE,
-            format = inputNode.outputFormatForBus(busNumber),
+            format = inputFormat,
         ) { buffer, audioTime ->
             try {
                 processBuffer(buffer, audioTime)
@@ -73,41 +233,71 @@ internal class IOSAudioSource(
                 logger.warning("Wrong buffer data received from AVAudioEngine. Skipping.", e)
             }
         }
-
-        try {
-            logger.debug("Starting AVAudioEngine...")
-            memScoped {
-                val error: ObjCObjectVar<NSError?> = alloc()
-                audioEngine.startAndReturnError(error.ptr)
-                checkNoError(error.value) { "Error while starting AVAudioEngine" }
-            }
-            logger.debug("AVAudioEngine is now running")
-        } catch (e: IllegalStateException) {
-            logger.error("Error setting up audio source", e)
-        }
+        logger.debug("AVAudioEngine is now ready to receive incoming audio samples")
 
         // Keep a reference to audio engine to be able to stop it afterwards
         this.audioEngine = audioEngine
-
-        return audioSamplesChannel.receiveAsFlow()
     }
 
-    override fun release() {
-        // Stop audio engine...
-        audioEngine?.stop()
-        // ... and audio session
+    /**
+     * Starts or stops the shared audio session.
+     *
+     * @param isActive True to start session, false to stop.
+     *
+     * @throws IllegalStateException if an error occurred while starting or stopping audio source
+     */
+    private fun setAudioSessionActive(isActive: Boolean) {
         memScoped {
             val error: ObjCObjectVar<NSError?> = alloc()
             audioSession.setActive(
-                active = false,
+                active = true,
                 error = error.ptr
             )
-            checkNoError(error.value) { "Error while stopping AVAudioSession" }
+            checkNoError(error.value) {
+                if (isActive) {
+                    "Error while starting AVAudioSession"
+                } else {
+                    "Error while stopping AVAudioSession"
+                }
+            }
         }
     }
 
-    override fun getMicrophoneLocation(): AudioSource.MicrophoneLocation {
-        return AudioSource.MicrophoneLocation.LOCATION_UNKNOWN
+    /**
+     * Handles audio session interruption notification.
+     * [Swift documentation](https://developer.apple.com/documentation/avfaudio/handling_audio_interruptions)
+     *
+     * @param notification Interruption notification body.
+     */
+    private fun handleSessionInterruptionNotification(notification: NSNotification) {
+        // Extract underlying variables from NSNotification object
+        val userInfo = notification.userInfo ?: return
+        val typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? Long ?: return
+
+        when (typeValue.toULong()) {
+            AVAudioSessionInterruptionTypeBegan -> {
+                logger.debug("Received audio interruption notification")
+                // TODO: Trigger delegate callback to update UI?
+
+                val reason = userInfo[AVAudioSessionInterruptionReasonKey] as? Long ?: return
+                logger.debug("Reason: $reason")
+                pause()
+            }
+
+            AVAudioSessionInterruptionTypeEnded -> {
+                logger.debug("Received end of audio interruption notification")
+                // TODO: Trigger delegate callback to update UI?
+
+                val options = userInfo[AVAudioSessionInterruptionOptionKey] as? Long ?: return
+                if (options.toULong() == AVAudioSessionInterruptionOptionShouldResume) {
+                    logger.debug("Resuming recording")
+                    start()
+
+                    // TODO: Audio session is not restarting even if shouldResume is true
+                    //       Do we need to start a new session? Restart audio engine?
+                }
+            }
+        }
     }
 
     /**
@@ -143,39 +333,5 @@ internal class IOSAudioSource(
                 )
             )
         }
-    }
-
-    /**
-     * Setup and activate [AVAudioSession].
-     */
-    private fun setupAudioSession() {
-        logger.debug("Starting AVAudioSession...")
-
-        memScoped {
-            val error: ObjCObjectVar<NSError?> = alloc()
-            audioSession.setCategory(
-                category = AVAudioSessionCategoryRecord,
-                error = error.ptr
-            )
-            checkNoError(error.value) { "Error while setting AVAudioSession category" }
-
-            val sampleRate = audioSession.sampleRate
-            audioSession.setPreferredSampleRate(sampleRate, error.ptr)
-            checkNoError(error.value) { "Error while setting AVAudioSession sample rate" }
-
-            val bufferDuration: NSTimeInterval =
-                1.0 / sampleRate * SAMPLES_BUFFER_SIZE.toDouble()
-            audioSession.setPreferredIOBufferDuration(bufferDuration, error.ptr)
-            checkNoError(error.value) { "Error while setting AVAudioSession buffer size" }
-
-            // TODO: Figure out how to add an observer for NSNotification.Name.AVAudioSessionInterruption
-            //       so we can listen to external AVAudioSession interruptions
-            audioSession.setActive(
-                active = true,
-                error = error.ptr
-            )
-            checkNoError(error.value) { "Error while starting AVAudioSession" }
-        }
-        logger.debug("AVAudioSession is now active")
     }
 }

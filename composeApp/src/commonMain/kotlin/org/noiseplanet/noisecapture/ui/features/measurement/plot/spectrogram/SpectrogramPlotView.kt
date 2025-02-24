@@ -23,8 +23,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.toSize
 import org.noiseplanet.noisecapture.model.SpectrogramScaleMode
-import org.noiseplanet.noisecapture.services.DefaultMeasurementService.Companion.FFT_HOP
-import org.noiseplanet.noisecapture.ui.features.measurement.DEFAULT_SAMPLE_RATE
+import org.noiseplanet.noisecapture.services.audio.DefaultLiveAudioService.Companion.FFT_HOP
 import org.noiseplanet.noisecapture.ui.features.measurement.plot.PlotAxisBuilder
 import org.noiseplanet.noisecapture.ui.features.measurement.plot.PlotBitmapOverlay
 import org.noiseplanet.noisecapture.ui.features.measurement.plot.spectrogram.SpectrogramPlotViewModel.Companion.REFERENCE_LEGEND_TEXT
@@ -33,6 +32,10 @@ import org.noiseplanet.noisecapture.util.toFrequencyString
 import kotlin.math.log10
 import kotlin.math.max
 import kotlin.math.min
+
+
+private const val DEFAULT_SAMPLE_RATE = 48000.0
+
 
 @Composable
 fun SpectrogramPlotView(

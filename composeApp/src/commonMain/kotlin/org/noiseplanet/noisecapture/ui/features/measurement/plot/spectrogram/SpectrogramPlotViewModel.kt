@@ -11,15 +11,17 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.audio.ANDROID_GAIN
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.SpectrogramScaleMode
-import org.noiseplanet.noisecapture.services.MeasurementsService
+import org.noiseplanet.noisecapture.services.audio.LiveAudioService
+import org.noiseplanet.noisecapture.util.injectLogger
 
-class SpectrogramPlotViewModel(
-    private val measurementsService: MeasurementsService,
-    private val logger: Logger,
-) : ViewModel() {
+class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
+
+    // - Constants
 
     companion object {
 
@@ -30,6 +32,12 @@ class SpectrogramPlotViewModel(
         const val REFERENCE_LEGEND_TEXT = " +99s "
         const val SPECTROGRAM_STRIP_WIDTH = 32
     }
+
+
+    // - Properties
+
+    private val measurementsService: LiveAudioService by inject()
+    private val logger: Logger by injectLogger()
 
     private var canvasSize: IntSize = IntSize.Zero
     private val spectrogramBitmaps = mutableStateListOf<SpectrogramBitmap>()
@@ -46,10 +54,12 @@ class SpectrogramPlotViewModel(
     val spectrogramBitmapFlow: StateFlow<List<SpectrogramBitmap>>
         get() = MutableStateFlow(spectrogramBitmaps)
 
+
+    // - Lifecycle
+
     init {
         viewModelScope.launch {
             // Listen to spectrum data updates and build spectrogram along the way
-            // TODO: We may want to pause this when the app goes into background
             measurementsService.getSpectrumDataFlow()
                 .collect { spectrumData ->
                     currentStripData?.let { currentStripData ->
@@ -82,6 +92,9 @@ class SpectrogramPlotViewModel(
                 }
         }
     }
+
+
+    // - Public functions
 
     /**
      * Updates the canvas size used to generate spectrogram bitmaps.

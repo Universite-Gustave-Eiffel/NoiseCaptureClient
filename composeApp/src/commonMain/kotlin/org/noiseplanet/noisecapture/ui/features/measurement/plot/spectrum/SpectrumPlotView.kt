@@ -25,8 +25,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
-import org.noiseplanet.noisecapture.ui.features.measurement.SPECTRUM_PLOT_SQUARE_OFFSET
-import org.noiseplanet.noisecapture.ui.features.measurement.SPECTRUM_PLOT_SQUARE_WIDTH
 import org.noiseplanet.noisecapture.ui.features.measurement.plot.PlotAxisBuilder
 import org.noiseplanet.noisecapture.ui.features.measurement.plot.PlotBitmapOverlay
 import org.noiseplanet.noisecapture.ui.features.measurement.plot.spectrum.SpectrumPlotViewModel.Companion.DBA_MAX
@@ -34,6 +32,11 @@ import org.noiseplanet.noisecapture.ui.features.measurement.plot.spectrum.Spectr
 import org.noiseplanet.noisecapture.util.toFrequencyString
 import kotlin.math.max
 import kotlin.math.min
+
+
+private val SPECTRUM_PLOT_SQUARE_WIDTH = 10.dp
+private val SPECTRUM_PLOT_SQUARE_OFFSET = 1.dp
+
 
 @Composable
 fun SpectrumPlotView(
@@ -60,7 +63,7 @@ fun SpectrumPlotView(
         )
 
 
-    Canvas(modifier) {
+    Canvas(modifier = modifier.fillMaxSize()) {
         val pathEffect = PathEffect.dashPathEffect(
             floatArrayOf(
                 SPECTRUM_PLOT_SQUARE_WIDTH.toPx(),
@@ -89,7 +92,7 @@ fun SpectrumPlotView(
             )
             val splGradient =
                 Brush.horizontalGradient(
-                    *viewModel.spectrumColorRamp,
+                    *viewModel.spectrumColorRamp.toTypedArray(),
                     startX = 0F,
                     endX = size.width
                 )

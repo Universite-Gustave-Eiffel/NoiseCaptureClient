@@ -5,13 +5,18 @@
     <!--  PlatformInfoScreen  -->
     <string name="platform_info_title">Platform information</string>
 
+
     <!--  HomeScreen  -->
-    <string name="menu_new_measurement">New measurement</string>
-    <string name="menu_history">Measurements history</string>
-    <string name="menu_feedback">Measurement feedback</string>
-    <string name="menu_statistics">Measurements statistics</string>
-    <string name="menu_map">Last measurement map</string>
-    <string name="menu_settings">Settings</string>
+    <string name="home_slm_hint">Visualise and measure the noise level around you as you navigate your surroundings!</string>
+    <string name="home_slm_button_title">Open sound level meter</string>
+
+
+    <!--  Sound level meter  -->
+    <string name="sound_level_meter_current_dba">Current dB(A)</string>
+    <string name="sound_level_meter_min_dba">Min</string>
+    <string name="sound_level_meter_avg_dba">Avg</string>
+    <string name="sound_level_meter_max_dba">Max</string>
+
 
     <!--  PermissionScreen  -->
     <string name="request_permission_title">Permissions</string>
@@ -23,6 +28,8 @@
 
     <!--  MeasurementScreen  -->
     <string name="measurement_title">New measurement</string>
+    <string name="measurement_start_recording_button_title">Start recording</string>
+    <string name="measurement_end_recording_button_title">End recording</string>
 
 
     <!-- Settings -->
@@ -49,10 +56,14 @@
     <string name="settings_measurements_windowing_description">Real time measurement windowing mode (doesn't affect the end result)</string>
     <string name="settings_measurements_limit_duration_title">Limit duration</string>
     <string name="settings_measurements_limit_duration_description">Limit measurements duration to a certain length</string>
-    <string name="settings_measurements_max_duration_title">Max duration (in seconds)</string>
+    <string name="settings_measurements_max_duration_title">Max duration (seconds)</string>
     <string name="settings_measurements_max_duration_description">Measurements will automatically stop after this amount of time has elapsed</string>
     <string name="settings_measurements_spectrogram_mode_title">Spectrogram mode</string>
     <string name="settings_measurements_spectrogram_mode_description">Set the spectrogram scale mode (logarithmic or linear)</string>
+    <string name="settings_measurements_save_audio_title">Save recorded audio</string>
+    <string name="settings_measurements_save_audio_description">When making a measurement, store the recorded audio locally so it can be played back and downloaded (takes about 1Mb of storage per minute).</string>
+    <string name="settings_measurements_limit_audio_duration_title">Max recorded audio length (minutes)</string>
+    <string name="settings_measurements_limit_audio_duration_description">Limits the duration of recorded audio clips after this amount of time has elapsed to limit impact on storage. The measurement can still continue afterwards, but audio won't be saved anymore.</string>
 
     <string name="settings_section_calibration">CALIBRATION</string>
     <string name="settings_calibration_gain_correction_title">Signal gain correction (dB)</string>
@@ -108,6 +119,10 @@
     <string name="measurement_windowing_mode_rect_title">Rect</string>
     <string name="measurement_windowing_mode_rect_description">Rectangular</string>
 
+
+    <!-- Ongoing measurement notification -->
+    <string name="ongoing_measurement_notification_title">Currently recording audio</string>
+    <string name="ongoing_measurement_notification_body">The NoiseCapture app is currently recording surrounding audio to analyse acoustic parameters. Don't kill the app if you want the recording session to keep going.</string>
 
     <!-- Misc -->
     <string name="na">N/A</string>

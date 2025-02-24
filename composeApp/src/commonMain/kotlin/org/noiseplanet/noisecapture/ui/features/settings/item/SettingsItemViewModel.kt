@@ -4,8 +4,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import org.jetbrains.compose.resources.StringResource
-import org.noiseplanet.noisecapture.services.SettingsKey
-import org.noiseplanet.noisecapture.services.UserSettingsService
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import org.noiseplanet.noisecapture.services.settings.SettingsKey
+import org.noiseplanet.noisecapture.services.settings.UserSettingsService
 import org.noiseplanet.noisecapture.util.IterableEnum
 import org.noiseplanet.noisecapture.util.ShortNameRepresentable
 
@@ -20,9 +22,14 @@ open class SettingsItemViewModel<T>(
     val isLastInSection: Boolean = false,
     val isEnabled: Flow<Boolean> = flow { emit(true) },
     val settingKey: SettingsKey<T>,
+) : KoinComponent {
 
-    protected val settingsService: UserSettingsService,
-) {
+    // - Properties
+
+    private val settingsService: UserSettingsService by inject()
+
+
+    // - Public functions
 
     /**
      * Returns this setting's value directly
@@ -54,15 +61,13 @@ class SettingsEnumItemViewModel<T>(
     isLastInSection: Boolean = false,
     isEnabled: Flow<Boolean> = flow { emit(true) },
     settingKey: SettingsKey<T>,
-    settingsService: UserSettingsService,
 ) : SettingsItemViewModel<T>(
     title = title,
     description = description,
     isFirstInSection = isFirstInSection,
     isLastInSection = isLastInSection,
     isEnabled = isEnabled,
-    settingKey = settingKey,
-    settingsService = settingsService
+    settingKey = settingKey
 ) where T : Enum<T>, T : IterableEnum<T>, T : ShortNameRepresentable {
 
     private val entries = settingKey.defaultValue.entries()

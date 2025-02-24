@@ -62,6 +62,7 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.preference)
             implementation(libs.koin.android)
+            implementation(libs.google.play.services.android.location)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -104,8 +105,8 @@ android {
         applicationId = "org.noiseplanet.noisecapturekmp"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "0.1"
+        versionCode = 2
+        versionName = "0.2.0"
     }
     packaging {
         resources {

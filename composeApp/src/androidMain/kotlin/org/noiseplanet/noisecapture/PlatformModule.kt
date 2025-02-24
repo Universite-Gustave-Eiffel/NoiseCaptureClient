@@ -5,11 +5,16 @@ import androidx.preference.PreferenceManager
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.SharedPreferencesSettings
 import org.koin.core.module.Module
-import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
 import org.noiseplanet.noisecapture.audio.AndroidAudioSource
 import org.noiseplanet.noisecapture.audio.AudioSource
 import org.noiseplanet.noisecapture.log.Logger
+import org.noiseplanet.noisecapture.services.audio.AndroidAudioRecordingService
+import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
+import org.noiseplanet.noisecapture.services.location.AndroidUserLocationProvider
+import org.noiseplanet.noisecapture.services.location.UserLocationProvider
+import org.noiseplanet.noisecapture.services.measurement.AndroidMeasurementRecordingService
+import org.noiseplanet.noisecapture.services.measurement.MeasurementRecordingService
 
 /**
  * Registers koin components specific to this platform
@@ -22,13 +27,29 @@ val platformModule: Module = module {
     }
 
     factory<AudioSource> {
-        AndroidAudioSource(logger = get {
-            parametersOf("AudioSource")
-        })
+        AndroidAudioSource()
+    }
+
+    factory<UserLocationProvider> {
+        AndroidUserLocationProvider()
     }
 
     single<Settings> {
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(get())
         SharedPreferencesSettings(sharedPreferences)
+    }
+
+    single<AudioRecordingService> {
+        AndroidAudioRecordingService()
+    }
+
+    /**
+     * Override the default [MeasurementRecordingService] implementation with the one
+     * wrapped into a foreground service.
+     */
+    single<MeasurementRecordingService> {
+        AndroidMeasurementRecordingService(
+            context = get()
+        )
     }
 }

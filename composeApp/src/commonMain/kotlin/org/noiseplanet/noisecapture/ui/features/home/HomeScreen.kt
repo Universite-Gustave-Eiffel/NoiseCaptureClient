@@ -1,54 +1,78 @@
 package org.noiseplanet.noisecapture.ui.features.home
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import org.koin.compose.koinInject
-import org.noiseplanet.noisecapture.ui.features.home.menuitem.HomeScreenViewModel
-import org.noiseplanet.noisecapture.ui.features.home.menuitem.MenuItem
+import org.jetbrains.compose.resources.stringResource
+import org.noiseplanet.noisecapture.ui.components.button.NCButton
+import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterView
 
 /**
  * Home screen layout.
- *
- * TODO: Improve UI once more clearly defined
  */
 @Composable
 fun HomeScreen(
-    navigationController: NavController,
-    viewModel: HomeScreenViewModel = koinInject(),
+    viewModel: HomeScreenViewModel,
 ) {
+    // - Layout
+
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+        color = Color.White
     ) {
         Column {
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 96.dp),
-                contentPadding = PaddingValues(
-                    start = 24.dp,
-                    top = 24.dp,
-                    end = 24.dp,
-                    bottom = 24.dp
-                ),
-                content = {
-                    items(viewModel.menuItems) { viewModel ->
-                        MenuItem(
-                            viewModel,
-                            navigateTo = { route ->
-                                navigationController.navigate(route.name)
-                            },
-                        )
-                    }
-                }
+            SoundLevelMeterHeaderView(viewModel)
+
+            // TODO: Add last measurements section
+
+            // TODO: Add device calibration section
+
+            // TODO: Add more info section
+        }
+    }
+}
+
+
+@Composable
+private fun SoundLevelMeterHeaderView(
+    viewModel: HomeScreenViewModel,
+) {
+    Column(
+        modifier = Modifier.background(MaterialTheme.colorScheme.background)
+    ) {
+        SoundLevelMeterView(viewModel.soundLevelMeterViewModel)
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(
+                top = 8.dp,
+                bottom = 16.dp,
+                start = 16.dp,
+                end = 16.dp
+            )
+        ) {
+            Text(
+                text = stringResource(viewModel.hintText),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.alpha(0.75f)
+            )
+
+            NCButton(
+                viewModel = viewModel.soundLevelMeterButtonViewModel,
+                modifier = Modifier.height(50.dp)
+                    .fillMaxWidth()
             )
         }
     }

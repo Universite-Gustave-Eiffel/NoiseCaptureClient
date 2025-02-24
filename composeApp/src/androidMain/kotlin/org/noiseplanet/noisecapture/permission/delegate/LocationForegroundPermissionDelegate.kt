@@ -33,7 +33,7 @@ internal class LocationForegroundPermissionDelegate(
     }
 }
 
-internal val fineLocationPermissions: List<String> =
+private val fineLocationPermissions: List<String> =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         listOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
