@@ -3,8 +3,8 @@ name: Deploy NoiseCapture as a static website
 
 on:
   push:
-    tags:
-      - "v*"
+    branches:
+      - main
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
