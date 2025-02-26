@@ -1,7 +1,15 @@
+import com.codingfeline.buildkonfig.compiler.FieldSpec.Type
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
+
+buildscript {
+    dependencies {
+        classpath(libs.kotlin.gradle.plugin)
+        classpath(libs.buildkonfig.gradle.plugin)
+    }
+}
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -9,6 +17,25 @@ plugins {
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.serialization)
+    alias(libs.plugins.buildKonfigGradlePlugin)
+}
+
+class App {
+
+    val packageName: String by project
+    val versionName: String by project
+    val versionCode: String by project
+}
+
+val app = App()
+
+buildkonfig {
+    packageName = app.packageName
+
+    defaultConfigs {
+        buildConfigField(Type.STRING, name = "versionName", value = app.versionName, const = true)
+        buildConfigField(Type.INT, name = "versionCode", value = app.versionCode)
+    }
 }
 
 kotlin {
@@ -94,19 +121,18 @@ kotlin {
 }
 
 android {
-    namespace = "org.noiseplanet.noisecapture"
+    namespace = app.packageName
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     sourceSets["main"].res.srcDirs("src/androidMain/res")
-    sourceSets["main"].resources.srcDirs("src/commonMain/resources")
 
     defaultConfig {
         applicationId = "org.noiseplanet.noisecapturekmp"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 2
-        versionName = "0.2.0"
+        versionCode = app.versionCode.toInt()
+        versionName = app.versionName
     }
     packaging {
         resources {
