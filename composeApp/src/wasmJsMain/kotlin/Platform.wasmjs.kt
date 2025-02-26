@@ -13,5 +13,3 @@ class WasmJSPlatform : Platform {
             Permission.LOCATION_BACKGROUND
         )
 }
-
-actual fun getPlatform(): Platform = WasmJSPlatform()

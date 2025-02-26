@@ -17,5 +17,3 @@ class AndroidPlatform : Platform {
             Permission.POST_NOTIFICATIONS,
         )
 }
-
-actual fun getPlatform(): Platform = AndroidPlatform()

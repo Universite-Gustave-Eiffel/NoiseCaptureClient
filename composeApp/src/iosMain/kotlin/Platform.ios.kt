@@ -15,5 +15,3 @@ class IOSPlatform : Platform {
             Permission.LOCATION_BACKGROUND
         )
 }
-
-actual fun getPlatform(): Platform = IOSPlatform()
