@@ -1,3 +1,4 @@
+import org.noiseplanet.noisecapture.model.UserAgent
 import org.noiseplanet.noisecapture.permission.Permission
 
 /**
@@ -6,9 +7,10 @@ import org.noiseplanet.noisecapture.permission.Permission
 interface Platform {
 
     /**
-     * Platform name (e.g. iOS, Android, Web, ...)
+     * Information about the device this app is running on,
+     * as well as the app version that is currently running.
      */
-    val name: String
+    val userAgent: UserAgent
 
     /**
      * Permissions required to run the app on this platform.
@@ -22,8 +24,3 @@ interface Platform {
             Permission.LOCATION_SERVICE_ON
         )
 }
-
-/**
- * Gets the [Platform] implementation for the current target.
- */
-expect fun getPlatform(): Platform
