@@ -1,9 +1,20 @@
 import android.os.Build
+import org.noiseplanet.noisecapture.BuildKonfig
+import org.noiseplanet.noisecapture.model.UserAgent
 import org.noiseplanet.noisecapture.permission.Permission
 
 class AndroidPlatform : Platform {
 
-    override val name: String = "Android ${Build.VERSION.SDK_INT}"
+    override val userAgent: UserAgent
+        get() = UserAgent(
+            versionName = BuildKonfig.versionName,
+            versionCode = BuildKonfig.versionCode,
+            deviceManufacturer = Build.MANUFACTURER,
+            deviceModelName = Build.DEVICE,
+            deviceModelCode = Build.PRODUCT,
+            osName = "Android",
+            osVersion = "${Build.VERSION.SDK_INT} (${Build.VERSION.RELEASE})",
+        )
 
     override val requiredPermissions: List<Permission>
         /**
@@ -17,5 +28,3 @@ class AndroidPlatform : Platform {
             Permission.POST_NOTIFICATIONS,
         )
 }
-
-actual fun getPlatform(): Platform = AndroidPlatform()

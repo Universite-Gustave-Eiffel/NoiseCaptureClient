@@ -1,5 +1,7 @@
 package org.noiseplanet.noisecapture
 
+import Platform
+import WasmJSPlatform
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.StorageSettings
 import org.koin.core.module.Module
@@ -13,6 +15,10 @@ import org.noiseplanet.noisecapture.services.location.UserLocationProvider
 import org.noiseplanet.noisecapture.services.location.WasmJSUserLocationProvider
 
 val platformModule: Module = module {
+
+    single<Platform> {
+        WasmJSPlatform()
+    }
 
     factory<Logger> { params ->
         val tag: String? = params.values.firstOrNull() as? String

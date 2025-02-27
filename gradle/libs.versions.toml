@@ -9,12 +9,14 @@ androidx-activity-compose = "1.10.0"
 androidx-viewmodel-compose = "2.8.4"
 androidx-navigation = "2.8.0-alpha11"
 androidx-preference = "1.2.1"
+build-konfig-gradle-plugin = "0.17.0"
 compose-plugin = "1.7.3"
 coroutines = "1.8.0"
 detekt = "1.23.6"
 google-play-services-android-location = "21.3.0"
 koin = "4.0.0"
 kotlin = "2.0.20"
+kotlin-gradle-plugin = "1.9.0"
 kotlinx-datetime = "0.6.0"
 kotlinx-serialization = "1.7.3"
 settings-multiplatform = "1.2.0"
@@ -25,11 +27,13 @@ androidx-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecy
 androidx-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-viewmodel-compose" }
 androidx-navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "androidx-navigation" }
 androidx-preference = { module = "androidx.preference:preference-ktx", version.ref = "androidx-preference" }
+buildkonfig-gradle-plugin = { module = "com.codingfeline.buildkonfig:buildkonfig-gradle-plugin", version.ref = "build-konfig-gradle-plugin" }
 google-play-services-android-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "google-play-services-android-location" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
 koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin-gradle-plugin" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
@@ -46,3 +50,4 @@ detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose-plugin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+buildKonfigGradlePlugin = { id = "com.codingfeline.buildkonfig", version.ref = "build-konfig-gradle-plugin" }
