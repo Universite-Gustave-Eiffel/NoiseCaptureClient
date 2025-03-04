@@ -15,6 +15,7 @@ kotlin {
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         moduleName = "composeApp"
+        useEsModules() // Enables ES6 modules
         browser {
             commonWebpackConfig {
                 outputFileName = "composeApp.js"
