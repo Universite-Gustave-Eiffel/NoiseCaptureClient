@@ -1,15 +1,16 @@
 package org.noiseplanet.noisecapture.services.measurement
 
-import org.noiseplanet.noisecapture.model.Measurement
+import org.noiseplanet.noisecapture.model.measurement.Measurement
+import org.noiseplanet.noisecapture.model.measurement.MutableMeasurement
 
 interface MeasurementService {
 
     /**
-     * Stores the given measurement to the database
+     * Creates a new immutable measurement from mutable entry and stores it into the database
      *
-     * @param measurement Measurement to store
+     * @param mutableMeasurement Measurement to store
      */
-    fun storeMeasurement(measurement: Measurement)
+    fun storeMeasurement(mutableMeasurement: MutableMeasurement)
 
     /**
      * Gets locally stored measurements

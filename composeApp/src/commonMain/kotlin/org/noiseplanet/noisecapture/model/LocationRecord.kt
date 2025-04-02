@@ -1,5 +1,7 @@
 package org.noiseplanet.noisecapture.model
 
+import kotlinx.serialization.Serializable
+
 /**
  * Location data at a given time
  *
@@ -15,7 +17,8 @@ package org.noiseplanet.noisecapture.model
  *                      May not always be available, hence optional.
  * @param accuracy      Accuracy values associated with each of the measured values. See [LocationAccuracy].
  */
-data class Location(
+@Serializable
+data class LocationRecord(
     val timestamp: Double,
     val coordinates: Coordinates,
     val speed: Double?,
@@ -39,6 +42,7 @@ data class Location(
  * @param orientation   The maximum deviation (measured in degrees) between the reported heading and
  *                      the true geomagnetic heading. May not always be available, hence optional.
  */
+@Serializable
 data class LocationAccuracy(
     val horizontal: Double,
     val speed: Double? = null,
@@ -51,6 +55,7 @@ data class LocationAccuracy(
 /**
  * A point with latitude and longitude values
  */
+@Serializable
 data class Coordinates(
     val lat: Double,
     val lon: Double,

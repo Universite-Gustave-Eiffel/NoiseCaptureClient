@@ -10,8 +10,8 @@ import org.noiseplanet.noisecapture.interop.createGeolocationOptions
 import org.noiseplanet.noisecapture.interop.navigator
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.Coordinates
-import org.noiseplanet.noisecapture.model.Location
 import org.noiseplanet.noisecapture.model.LocationAccuracy
+import org.noiseplanet.noisecapture.model.LocationRecord
 import org.noiseplanet.noisecapture.util.injectLogger
 
 class WasmJSUserLocationProvider : KoinComponent, UserLocationProvider {
@@ -28,7 +28,7 @@ class WasmJSUserLocationProvider : KoinComponent, UserLocationProvider {
 
     private val logger: Logger by injectLogger()
 
-    private val locationsFlow = MutableSharedFlow<Location>(
+    private val locationsFlow = MutableSharedFlow<LocationRecord>(
         replay = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
@@ -41,10 +41,10 @@ class WasmJSUserLocationProvider : KoinComponent, UserLocationProvider {
 
     // - UserLocationProvider
 
-    override val currentLocation: Location?
+    override val currentLocation: LocationRecord?
         get() = locationsFlow.replayCache.firstOrNull()
 
-    override val liveLocation: Flow<Location>
+    override val liveLocation: Flow<LocationRecord>
         get() = locationsFlow.asSharedFlow()
 
     override fun startUpdatingLocation() {
@@ -75,13 +75,13 @@ class WasmJSUserLocationProvider : KoinComponent, UserLocationProvider {
     // - Private functions
 
     /**
-     * Parses the raw geolocation data to a [Location] object.
+     * Parses the raw geolocation data to a [LocationRecord] object.
      *
      * @param rawLocation Raw geolocation data.
      *
-     * @return [Location] instance from raw data.
+     * @return [LocationRecord] instance from raw data.
      */
-    private fun buildLocationFromRawData(rawLocation: GeolocationPosition): Location {
+    private fun buildLocationFromRawData(rawLocation: GeolocationPosition): LocationRecord {
         val coordinates = Coordinates(
             lat = rawLocation.coords.latitude,
             lon = rawLocation.coords.longitude,
@@ -90,7 +90,7 @@ class WasmJSUserLocationProvider : KoinComponent, UserLocationProvider {
             horizontal = rawLocation.coords.accuracy,
             vertical = rawLocation.coords.altitudeAccuracy,
         )
-        return Location(
+        return LocationRecord(
             timestamp = rawLocation.timestamp,
             coordinates = coordinates,
             altitude = rawLocation.coords.altitude,

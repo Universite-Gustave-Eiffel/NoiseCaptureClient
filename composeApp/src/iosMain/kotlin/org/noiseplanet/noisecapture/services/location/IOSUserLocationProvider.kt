@@ -12,8 +12,8 @@ import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.Coordinates
-import org.noiseplanet.noisecapture.model.Location
 import org.noiseplanet.noisecapture.model.LocationAccuracy
+import org.noiseplanet.noisecapture.model.LocationRecord
 import org.noiseplanet.noisecapture.util.injectLogger
 import platform.CoreLocation.CLHeading
 import platform.CoreLocation.CLLocation
@@ -45,7 +45,7 @@ class IOSUserLocationProvider : UserLocationProvider, KoinComponent {
         // Initialize this property lazily so we can create it from the desired thread.
         CLLocationManager()
     }
-    private val locationFlow = MutableSharedFlow<Location>(
+    private val locationFlow = MutableSharedFlow<LocationRecord>(
         replay = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
@@ -72,10 +72,10 @@ class IOSUserLocationProvider : UserLocationProvider, KoinComponent {
 
     // - UserLocationProvider
 
-    override val currentLocation: Location?
+    override val currentLocation: LocationRecord?
         get() = locationFlow.replayCache.firstOrNull()
 
-    override val liveLocation: Flow<Location>
+    override val liveLocation: Flow<LocationRecord>
         get() = locationFlow.asSharedFlow()
 
     override fun startUpdatingLocation() {
@@ -120,7 +120,7 @@ class IOSUserLocationProvider : UserLocationProvider, KoinComponent {
                 a = rawLocation.timestamp.timeIntervalSince1970,
                 b = rawHeading?.timestamp?.timeIntervalSince1970 ?: 0.0,
             )
-            val location = Location(
+            val location = LocationRecord(
                 timestamp = timestamp,
                 coordinates = coordinates,
                 speed = rawLocation.speed,

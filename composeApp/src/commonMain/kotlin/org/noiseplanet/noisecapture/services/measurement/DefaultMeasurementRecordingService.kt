@@ -16,10 +16,9 @@ import kotlinx.datetime.format.FormatStringsInDatetimeFormats
 import kotlinx.datetime.format.byUnicodePattern
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.noiseplanet.noisecapture.audio.AcousticIndicatorsData
 import org.noiseplanet.noisecapture.log.Logger
-import org.noiseplanet.noisecapture.model.Location
-import org.noiseplanet.noisecapture.model.Measurement
+import org.noiseplanet.noisecapture.model.measurement.LeqsRecord
+import org.noiseplanet.noisecapture.model.measurement.MutableMeasurement
 import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.services.location.UserLocationService
@@ -57,11 +56,7 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
     private val _isRecording = MutableStateFlow(value = false)
 
     // Stores the collected acoustic indicators and location data.
-    // TODO: This is just a placeholder until a proper Measurement model is established
-    //       in which case having a mutable measurement object would make more sense here
-    //       rather than a series of individual properties
-    private var ongoingUserLocationHistory: MutableList<Location> = mutableListOf()
-    private var ongoingAcousticIndicators: MutableList<AcousticIndicatorsData> = mutableListOf()
+    private var measurement: MutableMeasurement? = null
 
 
     // - RecordingService
@@ -125,14 +120,10 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
         audioRecordingService.stopRecordingToFile()
 
         // Store measurement
-        measurementService.storeMeasurement(
-            Measurement(
-                userLocationHistory = ongoingUserLocationHistory,
-                acousticIndicators = ongoingAcousticIndicators,
-            )
-        )
-        ongoingAcousticIndicators.clear()
-        ongoingAcousticIndicators.clear()
+        measurement?.let {
+            measurementService.storeMeasurement(it)
+        }
+        measurement = null
     }
 
 
@@ -144,8 +135,9 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
      */
     private fun createMeasurementAndSubscribe() {
         // Clear any previously ongoing recording data
-        ongoingAcousticIndicators.clear()
-        ongoingUserLocationHistory.clear()
+        measurement = MutableMeasurement(
+            startedAt = Clock.System.now()
+        )
         recordingJob?.cancel()
 
         // Start listening to the various data sources during the recording session
@@ -154,12 +146,23 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
                 launch {
                     userLocationService.liveLocation.collect { location ->
                         logger.debug("New location received: $location")
-                        ongoingUserLocationHistory.add(location)
+                        measurement?.apply {
+                            locationSequence.add(location)
+                        }
                     }
                 }
                 launch {
                     liveAudioService.getAcousticIndicatorsFlow().collect { indicators ->
-                        ongoingAcousticIndicators.add(indicators)
+                        measurement?.apply {
+                            val leqsRecord = LeqsRecord(
+                                timestamp = Clock.System.now(),
+                                lzeq = indicators.laeq,
+                                laeq = indicators.laeq,
+                                lceq = indicators.laeq,
+                                leqsPerThirdOctaveBand = indicators.thirdOctave.toList()
+                            )
+                            leqsSequence.add(leqsRecord)
+                        }
                     }
                 }
             }
