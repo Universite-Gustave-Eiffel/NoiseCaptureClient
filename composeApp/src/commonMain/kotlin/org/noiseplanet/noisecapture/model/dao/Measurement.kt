@@ -1,10 +1,8 @@
-package org.noiseplanet.noisecapture.model.measurement
+package org.noiseplanet.noisecapture.model.dao
 
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
-import org.noiseplanet.noisecapture.model.LocationRecord
 import org.noiseplanet.noisecapture.model.UserAgent
-import kotlin.time.Duration
 
 /**
  * Represents a measurement consisting of acoustic indicators recorded at different locations
@@ -15,7 +13,7 @@ data class Measurement(
 
     val startedAt: Instant,
     val endedAt: Instant,
-    val duration: Duration,
+    val durationSeconds: Long,
 
     val userAgent: UserAgent,
 

@@ -3,7 +3,7 @@ package org.noiseplanet.noisecapture.services.location
 import kotlinx.coroutines.flow.Flow
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.noiseplanet.noisecapture.model.LocationRecord
+import org.noiseplanet.noisecapture.model.dao.LocationRecord
 
 
 /**

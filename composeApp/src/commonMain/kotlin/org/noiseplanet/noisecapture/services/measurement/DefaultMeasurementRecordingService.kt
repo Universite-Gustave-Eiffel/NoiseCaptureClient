@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.services.measurement
 
+import Platform
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -17,15 +18,19 @@ import kotlinx.datetime.format.byUnicodePattern
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.log.Logger
-import org.noiseplanet.noisecapture.model.measurement.LeqsRecord
-import org.noiseplanet.noisecapture.model.measurement.MutableMeasurement
+import org.noiseplanet.noisecapture.model.dao.LeqsRecord
+import org.noiseplanet.noisecapture.model.dao.Measurement
+import org.noiseplanet.noisecapture.model.dao.MutableMeasurement
 import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.services.location.UserLocationService
 import org.noiseplanet.noisecapture.services.settings.SettingsKey
 import org.noiseplanet.noisecapture.services.settings.UserSettingsService
+import org.noiseplanet.noisecapture.services.storage.StorageService
 import org.noiseplanet.noisecapture.util.injectLogger
 import kotlin.time.Duration.Companion.seconds
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 
 @OptIn(FormatStringsInDatetimeFormats::class)
@@ -41,12 +46,13 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
 
     // - Properties
 
-    private val measurementService: MeasurementService by inject()
+    private val measurementStorageService: StorageService<Measurement> by inject()
     private val userLocationService: UserLocationService by inject()
     private val liveAudioService: LiveAudioService by inject()
     private val audioRecordingService: AudioRecordingService by inject()
     private val settingsService: UserSettingsService by inject()
 
+    private val platform: Platform by inject()
     private val logger: Logger by injectLogger()
 
     private val scope = CoroutineScope(Dispatchers.Default)
@@ -86,8 +92,8 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
             audioRecordingService.recordingStopListener =
                 object : AudioRecordingService.RecordingStopListener {
                     override fun onRecordingStop(fileUrl: String) {
-                        // TODO: Attach this URL to the recorded measurement so audio can be played back later.
                         logger.debug("Recorded audio URL: $fileUrl")
+                        measurement?.recordedAudioUrl = fileUrl
                     }
                 }
 
@@ -119,11 +125,8 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
         // End audio recording
         audioRecordingService.stopRecordingToFile()
 
-        // Store measurement
-        measurement?.let {
-            measurementService.storeMeasurement(it)
-        }
-        measurement = null
+        // Store result
+        finalizeMeasurementAndStore()
     }
 
 
@@ -155,6 +158,7 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
                     liveAudioService.getAcousticIndicatorsFlow().collect { indicators ->
                         measurement?.apply {
                             val leqsRecord = LeqsRecord(
+                                // TODO: Properly fill LZeq and LCeq
                                 timestamp = Clock.System.now(),
                                 lzeq = indicators.laeq,
                                 laeq = indicators.laeq,
@@ -165,6 +169,32 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
                         }
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * Creates an immutable measurement from recorded data, fills in missing properties and stores
+     * the result in persistent storage.
+     */
+    @OptIn(ExperimentalUuidApi::class)
+    private fun finalizeMeasurementAndStore() {
+        measurement?.let {
+            val now = Clock.System.now()
+            val immutableMeasurement = Measurement(
+                uuid = Uuid.random().toString(),
+                startedAt = it.startedAt,
+                endedAt = now,
+                durationSeconds = now.minus(it.startedAt).inWholeSeconds,
+                userAgent = platform.userAgent,
+                locationSequence = it.locationSequence,
+                leqsSequence = it.leqsSequence,
+                recordedAudioUrl = it.recordedAudioUrl
+            )
+            scope.launch {
+                // Store measurement
+                measurementStorageService.set(immutableMeasurement.uuid, immutableMeasurement)
+                measurement = null
             }
         }
     }

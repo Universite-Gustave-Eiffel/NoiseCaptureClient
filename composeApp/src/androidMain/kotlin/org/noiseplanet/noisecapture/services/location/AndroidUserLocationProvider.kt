@@ -17,9 +17,9 @@ import kotlinx.coroutines.runBlocking
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.noiseplanet.noisecapture.log.Logger
-import org.noiseplanet.noisecapture.model.Coordinates
-import org.noiseplanet.noisecapture.model.LocationAccuracy
-import org.noiseplanet.noisecapture.model.LocationRecord
+import org.noiseplanet.noisecapture.model.dao.Coordinates
+import org.noiseplanet.noisecapture.model.dao.LocationAccuracy
+import org.noiseplanet.noisecapture.model.dao.LocationRecord
 import org.noiseplanet.noisecapture.util.injectLogger
 import org.noiseplanet.noisecapture.util.throttleLatest
 import java.util.concurrent.Executors

@@ -1,7 +1,7 @@
 package org.noiseplanet.noisecapture.services.location
 
 import kotlinx.coroutines.flow.Flow
-import org.noiseplanet.noisecapture.model.LocationRecord
+import org.noiseplanet.noisecapture.model.dao.LocationRecord
 
 /**
  * Get user location updates

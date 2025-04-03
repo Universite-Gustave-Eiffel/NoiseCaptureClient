@@ -11,9 +11,9 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.log.Logger
-import org.noiseplanet.noisecapture.model.Coordinates
-import org.noiseplanet.noisecapture.model.LocationAccuracy
-import org.noiseplanet.noisecapture.model.LocationRecord
+import org.noiseplanet.noisecapture.model.dao.Coordinates
+import org.noiseplanet.noisecapture.model.dao.LocationAccuracy
+import org.noiseplanet.noisecapture.model.dao.LocationRecord
 import org.noiseplanet.noisecapture.util.injectLogger
 import platform.CoreLocation.CLHeading
 import platform.CoreLocation.CLLocation

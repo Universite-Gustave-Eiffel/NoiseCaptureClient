@@ -9,9 +9,9 @@ import org.noiseplanet.noisecapture.interop.GeolocationPosition
 import org.noiseplanet.noisecapture.interop.createGeolocationOptions
 import org.noiseplanet.noisecapture.interop.navigator
 import org.noiseplanet.noisecapture.log.Logger
-import org.noiseplanet.noisecapture.model.Coordinates
-import org.noiseplanet.noisecapture.model.LocationAccuracy
-import org.noiseplanet.noisecapture.model.LocationRecord
+import org.noiseplanet.noisecapture.model.dao.Coordinates
+import org.noiseplanet.noisecapture.model.dao.LocationAccuracy
+import org.noiseplanet.noisecapture.model.dao.LocationRecord
 import org.noiseplanet.noisecapture.util.injectLogger
 
 class WasmJSUserLocationProvider : KoinComponent, UserLocationProvider {

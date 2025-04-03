@@ -1,7 +1,7 @@
 package org.noiseplanet.noisecapture.services.measurement
 
-import org.noiseplanet.noisecapture.model.measurement.Measurement
-import org.noiseplanet.noisecapture.model.measurement.MutableMeasurement
+import org.noiseplanet.noisecapture.model.dao.Measurement
+import org.noiseplanet.noisecapture.model.dao.MutableMeasurement
 
 interface MeasurementService {
 
@@ -10,7 +10,7 @@ interface MeasurementService {
      *
      * @param mutableMeasurement Measurement to store
      */
-    fun storeMeasurement(mutableMeasurement: MutableMeasurement)
+    suspend fun storeMeasurement(mutableMeasurement: MutableMeasurement)
 
     /**
      * Gets locally stored measurements

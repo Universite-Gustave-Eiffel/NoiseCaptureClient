@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.model.measurement
+package org.noiseplanet.noisecapture.model.dao
 
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
