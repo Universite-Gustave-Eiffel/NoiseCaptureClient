@@ -27,7 +27,7 @@ class AcousticIndicatorsProcessing(val sampleRate: Int, val dbGain: Double = AND
     private var windowLength = (sampleRate * WINDOW_TIME).toInt()
     private var windowData = FloatArray(windowLength)
     private var windowDataCursor = 0
-    private val nominalFrequencies: List<Double>
+    private val nominalFrequencies: List<Int>
 
     private val spectrumChannel: SpectrumChannel = SpectrumChannel().apply {
         this.loadConfiguration(
@@ -36,7 +36,7 @@ class AcousticIndicatorsProcessing(val sampleRate: Int, val dbGain: Double = AND
                 else -> get44100HZ()
             }
         )
-        this@AcousticIndicatorsProcessing.nominalFrequencies = this.getNominalFrequency()
+        nominalFrequencies = this.getNominalFrequency()
     }
 
     suspend fun processSamples(samples: AudioSamples): List<AcousticIndicatorsData> {
@@ -60,22 +60,23 @@ class AcousticIndicatorsProcessing(val sampleRate: Int, val dbGain: Double = AND
             if (windowDataCursor == windowLength) {
                 // window complete
                 val rms =
-                    sqrt(windowData.fold(0.0) { acc, sample -> acc + sample * sample } / windowData.size)
+                    sqrt(windowData.fold(0.0) { acc, sample ->
+                        acc + sample * sample
+                    } / windowData.size)
                 val leq = dbGain + 20 * log10(rms)
                 val laeq = dbGain + spectrumChannel.processSamplesWeightA(windowData)
                 val thirdOctave = spectrumChannel.processSamples(windowData)
                 val thirdOctaveGain = 10 * log10(10.0.pow(dbGain / 10.0) / thirdOctave.size)
-                thirdOctave.forEachIndexed { index, value ->
-                    thirdOctave[index] = value + thirdOctaveGain
-                }
+                val leqsPerThirdOctave = nominalFrequencies
+                    .zip(thirdOctave.map { it + thirdOctaveGain })
+                    .toMap()
                 acousticIndicatorsDataList.add(
                     AcousticIndicatorsData(
                         samples.epoch,
                         leq,
                         laeq,
                         rms,
-                        thirdOctave,
-                        nominalFrequencies
+                        leqsPerThirdOctave,
                     )
                 )
                 windowDataCursor = 0
@@ -91,33 +92,5 @@ data class AcousticIndicatorsData(
     val leq: Double,
     val laeq: Double,
     val rms: Double,
-    val thirdOctave: DoubleArray,
-    val nominalFrequencies: List<Double>,
-) {
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-
-        other as AcousticIndicatorsData
-
-        if (epoch != other.epoch) return false
-        if (leq != other.leq) return false
-        if (laeq != other.laeq) return false
-        if (rms != other.rms) return false
-        if (!thirdOctave.contentEquals(other.thirdOctave)) return false
-        if (nominalFrequencies != other.nominalFrequencies) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = epoch.hashCode()
-        result = 31 * result + leq.hashCode()
-        result = 31 * result + laeq.hashCode()
-        result = 31 * result + rms.hashCode()
-        result = 31 * result + thirdOctave.contentHashCode()
-        result = 31 * result + nominalFrequencies.hashCode()
-        return result
-    }
-}
+    val leqsPerThirdOctave: Map<Int, Double>,
+)

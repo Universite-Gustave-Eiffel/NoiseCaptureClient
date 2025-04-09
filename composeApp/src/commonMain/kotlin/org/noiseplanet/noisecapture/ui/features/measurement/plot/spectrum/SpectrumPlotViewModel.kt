@@ -4,9 +4,9 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 
 class SpectrumPlotViewModel : ViewModel(), KoinComponent {
@@ -16,7 +16,7 @@ class SpectrumPlotViewModel : ViewModel(), KoinComponent {
     data class AxisSettings(
         val minimumX: Double,
         val maximumX: Double,
-        val nominalFrequencies: List<Double>,
+        val nominalFrequencies: List<Int>,
     )
 
 
@@ -40,16 +40,16 @@ class SpectrumPlotViewModel : ViewModel(), KoinComponent {
         Pair(rampIndex.toFloat(), color)
     }
 
-    val rawSplFlow: Flow<DoubleArray> = liveAudioService
+    val rawSplFlow: Flow<Map<Int, Double>> = liveAudioService
         .getAcousticIndicatorsFlow()
-        .map { it.thirdOctave }
+        .map { it.leqsPerThirdOctave }
 
-    val weightedSplFlow: Flow<DoubleArray> = liveAudioService
+    val weightedSplFlow: Flow<Map<Int, Double>> = liveAudioService
         .getWeightedSoundPressureLevelFlow()
 
     val axisSettingsFlow: Flow<AxisSettings> = liveAudioService
         .getAcousticIndicatorsFlow()
-        .map { it.nominalFrequencies }
+        .map { it.leqsPerThirdOctave.keys.toList() }
         .distinctUntilChanged()
         .map {
             AxisSettings(

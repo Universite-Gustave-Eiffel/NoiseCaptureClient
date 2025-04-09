@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.IntSize
 import org.noiseplanet.noisecapture.audio.signal.window.SpectrumData
-import org.noiseplanet.noisecapture.model.SpectrogramScaleMode
+import org.noiseplanet.noisecapture.model.enums.SpectrogramScaleMode
 import org.noiseplanet.noisecapture.services.audio.DefaultLiveAudioService.Companion.FFT_SIZE
 import org.noiseplanet.noisecapture.util.toComposeColor
 import org.noiseplanet.noisecapture.util.toImageBitmap

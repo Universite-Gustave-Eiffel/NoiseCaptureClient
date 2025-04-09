@@ -4,6 +4,8 @@ import io.github.xxfast.kstore.KStore
 import io.github.xxfast.kstore.extensions.getOrEmpty
 import kotlinx.serialization.Serializable
 import org.koin.core.component.KoinComponent
+import org.noiseplanet.noisecapture.model.dao.LeqSequenceFragment
+import org.noiseplanet.noisecapture.model.dao.LocationSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.services.storage.StorageService
 import kotlin.reflect.KClass
@@ -72,6 +74,8 @@ class KStoreStorageService<RecordType : @Serializable Any>(
         // Check at runtime for record type
         return when (type) {
             Measurement::class -> storeProvider.storeOf<Measurement>(key)
+            LeqSequenceFragment::class -> storeProvider.storeOf<LeqSequenceFragment>(key)
+            LocationSequenceFragment::class -> storeProvider.storeOf<LocationSequenceFragment>(key)
 
             // Add other types that can be stored here.
 

@@ -11,6 +11,18 @@ import kotlinx.serialization.Serializable
  */
 interface StorageService<T : @Serializable Any> {
 
+    companion object {
+
+        /**
+         * Gets the class name of a typed storage service, for dependency injection.
+         *
+         * @return Record type class name followed by "StorageService"
+         */
+        inline fun <reified T> className(): String {
+            return "${T::class.simpleName!!}StorageService"
+        }
+    }
+
     /**
      * Gets all stored entities of this type
      *

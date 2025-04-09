@@ -1,5 +1,5 @@
 import org.noiseplanet.noisecapture.interop.navigator
-import org.noiseplanet.noisecapture.model.UserAgent
+import org.noiseplanet.noisecapture.model.dao.UserAgent
 import org.noiseplanet.noisecapture.permission.Permission
 
 class WasmJSPlatform : Platform {

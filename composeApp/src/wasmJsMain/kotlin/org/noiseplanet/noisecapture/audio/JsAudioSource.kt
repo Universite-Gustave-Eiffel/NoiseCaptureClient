@@ -12,7 +12,7 @@ import org.noiseplanet.noisecapture.interop.AudioContext
 import org.noiseplanet.noisecapture.interop.AudioNode
 import org.noiseplanet.noisecapture.interop.ScriptProcessorNode
 import org.noiseplanet.noisecapture.log.Logger
-import org.noiseplanet.noisecapture.model.MicrophoneLocation
+import org.noiseplanet.noisecapture.model.enums.MicrophoneLocation
 import org.noiseplanet.noisecapture.util.injectLogger
 import org.w3c.dom.mediacapture.MediaStreamConstraints
 

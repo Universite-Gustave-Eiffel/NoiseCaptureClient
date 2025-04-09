@@ -68,7 +68,7 @@ interface LiveAudioService {
     /**
      * Get a [Flow] of sound pressure levels weighted by frequency band.
      */
-    fun getWeightedSoundPressureLevelFlow(): Flow<DoubleArray>
+    fun getWeightedSoundPressureLevelFlow(): Flow<Map<Int, Double>>
 
     /**
      * Get a [Flow] of [SpectrumData] from the currently running recording.

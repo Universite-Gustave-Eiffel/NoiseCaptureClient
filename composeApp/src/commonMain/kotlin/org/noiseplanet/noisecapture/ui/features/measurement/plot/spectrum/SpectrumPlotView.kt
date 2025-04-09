@@ -53,10 +53,10 @@ fun SpectrumPlotView(
         0
     )
 
-    val rawSpl: DoubleArray by viewModel.rawSplFlow
-        .collectAsState(DoubleArray(0))
-    val weightedSpl: DoubleArray by viewModel.weightedSplFlow
-        .collectAsState(DoubleArray(0))
+    val rawSpl: Map<Int, Double> by viewModel.rawSplFlow
+        .collectAsState(emptyMap())
+    val weightedSpl: Map<Int, Double> by viewModel.weightedSplFlow
+        .collectAsState(emptyMap())
     val axisSettings: SpectrumPlotViewModel.AxisSettings by viewModel.axisSettingsFlow
         .collectAsState(
             SpectrumPlotViewModel.AxisSettings(0.0, 0.0, emptyList())
@@ -77,6 +77,9 @@ fun SpectrumPlotView(
         val maxXAxisHeight = preparedSpectrumOverlayBitmap.horizontalLegendSize.height
         val chartHeight = (size.height - maxXAxisHeight - axisBuilder.tickLength.toPx())
         val barHeight = chartHeight / rawSpl.size - SPECTRUM_PLOT_SQUARE_OFFSET.toPx()
+
+
+        // TODO: Use new map property instead of double array
 
         rawSpl.forEachIndexed { index, spl ->
             val barYOffset =

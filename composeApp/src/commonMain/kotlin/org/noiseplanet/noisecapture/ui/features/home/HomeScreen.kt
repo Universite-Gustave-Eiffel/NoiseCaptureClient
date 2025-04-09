@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.ui.features.home
 
+import Platform
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,8 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
+import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
 import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterView
 
@@ -26,6 +29,10 @@ import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterView
 fun HomeScreen(
     viewModel: HomeScreenViewModel,
 ) {
+    val logger: Logger = koinInject()
+    val platform: Platform = koinInject()
+    logger.info(platform.userAgent.toString())
+
     // - Layout
 
     Surface(

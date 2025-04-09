@@ -1,7 +1,7 @@
 package org.noiseplanet.noisecapture.audio
 
 import kotlinx.coroutines.flow.Flow
-import org.noiseplanet.noisecapture.model.MicrophoneLocation
+import org.noiseplanet.noisecapture.model.enums.MicrophoneLocation
 
 /**
  * Common interface to access Audio samples from device microphone.

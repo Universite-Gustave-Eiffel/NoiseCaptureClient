@@ -9,6 +9,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.format
@@ -18,7 +19,10 @@ import kotlinx.datetime.format.byUnicodePattern
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.log.Logger
-import org.noiseplanet.noisecapture.model.dao.LeqsRecord
+import org.noiseplanet.noisecapture.model.dao.LeqRecord
+import org.noiseplanet.noisecapture.model.dao.LeqSequenceFragment
+import org.noiseplanet.noisecapture.model.dao.LocationRecord
+import org.noiseplanet.noisecapture.model.dao.LocationSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.model.dao.MutableMeasurement
 import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
@@ -26,7 +30,7 @@ import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.services.location.UserLocationService
 import org.noiseplanet.noisecapture.services.settings.SettingsKey
 import org.noiseplanet.noisecapture.services.settings.UserSettingsService
-import org.noiseplanet.noisecapture.services.storage.StorageService
+import org.noiseplanet.noisecapture.services.storage.injectStorageService
 import org.noiseplanet.noisecapture.util.injectLogger
 import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.ExperimentalUuidApi
@@ -41,12 +45,21 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
     private companion object {
 
         const val OUTPUT_FILE_DATE_FORMAT = "yyyy-MM-dd_HH-mm-ss"
+
+        // Duration of a location or leq sequence fragment. Every time this amount of time elapses,
+        // sequence values will be stored in filesystem and a new sequence fragment will be created.
+        // That way, a very long measurement won't infinitely take up more and more RAM space.
+        const val SEQUENCE_FRAGMENT_DURATION_MILLISECONDS: Long = 1_000
     }
 
 
     // - Properties
 
-    private val measurementStorageService: StorageService<Measurement> by inject()
+    // TODO: Move those to a MeasurementRepository class
+    private val measurementStorageService by injectStorageService<Measurement>()
+    private val leqSequenceStorageService by injectStorageService<LeqSequenceFragment>()
+    private val locationSequenceStorageService by injectStorageService<LocationSequenceFragment>()
+
     private val userLocationService: UserLocationService by inject()
     private val liveAudioService: LiveAudioService by inject()
     private val audioRecordingService: AudioRecordingService by inject()
@@ -63,6 +76,8 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
 
     // Stores the collected acoustic indicators and location data.
     private var measurement: MutableMeasurement? = null
+    private var currentLeqSequenceFragment: LeqSequenceFragment? = null
+    private var currentLocationSequenceFragment: LocationSequenceFragment? = null
 
 
     // - RecordingService
@@ -136,37 +151,52 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
      * Creates a new ongoing measurement and subscribes to acoustic indicators and user
      * location flows to populate it during the recording session
      */
+    @OptIn(ExperimentalUuidApi::class)
     private fun createMeasurementAndSubscribe() {
         // Clear any previously ongoing recording data
         measurement = MutableMeasurement(
-            startedAt = Clock.System.now()
+            uuid = Uuid.random().toString(),
+            startTimestamp = Clock.System.now().toEpochMilliseconds()
         )
+        currentLeqSequenceFragment = null
+        currentLocationSequenceFragment = null
         recordingJob?.cancel()
 
         // Start listening to the various data sources during the recording session
         recordingJob = scope.launch {
             coroutineScope {
+
+                // Subscribe to location updates
                 launch {
                     userLocationService.liveLocation.collect { location ->
                         logger.debug("New location received: $location")
-                        measurement?.apply {
-                            locationSequence.add(location)
-                        }
+                        onNewLocationRecord(location)
                     }
                 }
+
+                // Subscribe to
                 launch {
                     liveAudioService.getAcousticIndicatorsFlow().collect { indicators ->
-                        measurement?.apply {
-                            val leqsRecord = LeqsRecord(
-                                // TODO: Properly fill LZeq and LCeq
-                                timestamp = Clock.System.now(),
-                                lzeq = indicators.laeq,
-                                laeq = indicators.laeq,
-                                lceq = indicators.laeq,
-                                leqsPerThirdOctaveBand = indicators.thirdOctave.toList()
-                            )
-                            leqsSequence.add(leqsRecord)
-                        }
+                        // TODO: This could be done already in LiveAudioService
+                        // Map acoustic indicators to LeqRecord
+                        val leqRecord = LeqRecord(
+                            // TODO: Properly fill LZeq and LCeq
+                            timestamp = Clock.System.now().toEpochMilliseconds(),
+                            lzeq = indicators.laeq,
+                            laeq = indicators.laeq,
+                            lceq = indicators.laeq,
+                            leqsPerThirdOctave = indicators.leqsPerThirdOctave
+                        )
+                        onNewLeqRecord(leqRecord)
+                    }
+                }
+
+                // Schedule another job that will store current sequence fragment every n seconds
+                // and add the stored sequence id to the ongoing measurement.
+                launch {
+                    while (isActive) {
+                        delay(SEQUENCE_FRAGMENT_DURATION_MILLISECONDS)
+                        onSequenceFragmentEnd()
                     }
                 }
             }
@@ -174,24 +204,80 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
     }
 
     /**
+     * Handles a new incoming location record.
+     */
+    private fun onNewLocationRecord(record: LocationRecord) {
+        val measurement = measurement ?: return
+        // If we already have an ongoing sequence, simply push the new
+        // record to the list
+        currentLocationSequenceFragment?.apply {
+            push(record)
+        } ?: run {
+            // Otherwise, create a new sequence before pushing the new record
+            currentLocationSequenceFragment =
+                LocationSequenceFragment(measurementId = measurement.uuid)
+            currentLocationSequenceFragment?.push(record)
+        }
+    }
+
+    /**
+     * Handles a new incoming Leq record.
+     */
+    private fun onNewLeqRecord(record: LeqRecord) {
+        val measurement = measurement ?: return
+        // If we already have an ongoing sequence, simply push the new
+        // record to the list
+        currentLeqSequenceFragment?.apply {
+            push(record)
+        } ?: run {
+            // Otherwise, create a new sequence before pushing the new record
+            currentLeqSequenceFragment =
+                LeqSequenceFragment(measurementId = measurement.uuid)
+            currentLeqSequenceFragment?.push(record)
+        }
+    }
+
+    /**
+     * Called every N seconds to end current sequence fragment,
+     * store values and start a new fragment.
+     */
+    private suspend fun onSequenceFragmentEnd() {
+        // Store values to local storage and add id to measurement
+        currentLocationSequenceFragment?.let {
+            measurement?.locationSequenceIds?.add(it.uuid)
+            locationSequenceStorageService.set(it.uuid, it)
+        }
+        currentLeqSequenceFragment?.let {
+            measurement?.leqsSequenceIds?.add(it.uuid)
+            leqSequenceStorageService.set(it.uuid, it)
+        }
+        // Clear fragments so a new sequence can begin
+        currentLeqSequenceFragment = null
+        currentLocationSequenceFragment = null
+    }
+
+    /**
      * Creates an immutable measurement from recorded data, fills in missing properties and stores
      * the result in persistent storage.
      */
-    @OptIn(ExperimentalUuidApi::class)
     private fun finalizeMeasurementAndStore() {
         measurement?.let {
-            val now = Clock.System.now()
-            val immutableMeasurement = Measurement(
-                uuid = Uuid.random().toString(),
-                startedAt = it.startedAt,
-                endedAt = now,
-                durationSeconds = now.minus(it.startedAt).inWholeSeconds,
-                userAgent = platform.userAgent,
-                locationSequence = it.locationSequence,
-                leqsSequence = it.leqsSequence,
-                recordedAudioUrl = it.recordedAudioUrl
-            )
+            val now = Clock.System.now().toEpochMilliseconds()
+
             scope.launch {
+                // End and save ongoing leq and location sequence fragments.
+                onSequenceFragmentEnd()
+                // Build immutable measurement for storage
+                val immutableMeasurement = Measurement(
+                    uuid = it.uuid,
+                    startTimestamp = it.startTimestamp,
+                    endTimestamp = now,
+                    duration = now - it.startTimestamp,
+                    userAgent = platform.userAgent,
+                    locationSequenceIds = it.locationSequenceIds,
+                    leqsSequenceIds = it.leqsSequenceIds,
+                    recordedAudioUrl = it.recordedAudioUrl
+                )
                 // Store measurement
                 measurementStorageService.set(immutableMeasurement.uuid, immutableMeasurement)
                 measurement = null
