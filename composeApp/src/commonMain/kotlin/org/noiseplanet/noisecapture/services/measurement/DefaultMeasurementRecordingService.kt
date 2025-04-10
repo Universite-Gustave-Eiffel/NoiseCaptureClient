@@ -28,6 +28,7 @@ import org.noiseplanet.noisecapture.services.location.UserLocationService
 import org.noiseplanet.noisecapture.services.settings.SettingsKey
 import org.noiseplanet.noisecapture.services.settings.UserSettingsService
 import org.noiseplanet.noisecapture.util.injectLogger
+import kotlin.concurrent.Volatile
 import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.ExperimentalUuidApi
 
@@ -44,7 +45,7 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
         // Duration of a location or leq sequence fragment. Every time this amount of time elapses,
         // sequence values will be stored in filesystem and a new sequence fragment will be created.
         // That way, a very long measurement won't infinitely take up more and more RAM space.
-        const val SEQUENCE_FRAGMENT_DURATION_MILLISECONDS: Long = 1_000
+        const val SEQUENCE_FRAGMENT_DURATION_MILLISECONDS: Long = 10_000 // 10 seconds
     }
 
 
@@ -66,7 +67,10 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
     private val _isRecording = MutableStateFlow(value = false)
 
     // Stores the collected acoustic indicators and location data.
+    @Volatile
     private var currentLeqSequenceFragment: LeqSequenceFragment? = null
+
+    @Volatile
     private var currentLocationSequenceFragment: LocationSequenceFragment? = null
 
 
@@ -241,7 +245,6 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
         currentLeqSequenceFragment?.let {
             measurementService.pushToOngoingMeasurement(it)
         }
-        // Clear fragments so a new sequence can begin
         currentLeqSequenceFragment = null
         currentLocationSequenceFragment = null
     }
