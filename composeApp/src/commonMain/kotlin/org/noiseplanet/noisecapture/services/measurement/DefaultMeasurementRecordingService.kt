@@ -1,6 +1,5 @@
 package org.noiseplanet.noisecapture.services.measurement
 
-import Platform
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -23,18 +22,14 @@ import org.noiseplanet.noisecapture.model.dao.LeqRecord
 import org.noiseplanet.noisecapture.model.dao.LeqSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.LocationRecord
 import org.noiseplanet.noisecapture.model.dao.LocationSequenceFragment
-import org.noiseplanet.noisecapture.model.dao.Measurement
-import org.noiseplanet.noisecapture.model.dao.MutableMeasurement
 import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.services.location.UserLocationService
 import org.noiseplanet.noisecapture.services.settings.SettingsKey
 import org.noiseplanet.noisecapture.services.settings.UserSettingsService
-import org.noiseplanet.noisecapture.services.storage.injectStorageService
 import org.noiseplanet.noisecapture.util.injectLogger
 import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 
 
 @OptIn(FormatStringsInDatetimeFormats::class)
@@ -55,17 +50,13 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
 
     // - Properties
 
-    // TODO: Move those to a MeasurementRepository class
-    private val measurementStorageService by injectStorageService<Measurement>()
-    private val leqSequenceStorageService by injectStorageService<LeqSequenceFragment>()
-    private val locationSequenceStorageService by injectStorageService<LocationSequenceFragment>()
+    private val measurementService: MeasurementService by inject()
 
     private val userLocationService: UserLocationService by inject()
     private val liveAudioService: LiveAudioService by inject()
     private val audioRecordingService: AudioRecordingService by inject()
     private val settingsService: UserSettingsService by inject()
 
-    private val platform: Platform by inject()
     private val logger: Logger by injectLogger()
 
     private val scope = CoroutineScope(Dispatchers.Default)
@@ -75,7 +66,6 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
     private val _isRecording = MutableStateFlow(value = false)
 
     // Stores the collected acoustic indicators and location data.
-    private var measurement: MutableMeasurement? = null
     private var currentLeqSequenceFragment: LeqSequenceFragment? = null
     private var currentLocationSequenceFragment: LocationSequenceFragment? = null
 
@@ -108,7 +98,7 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
                 object : AudioRecordingService.RecordingStopListener {
                     override fun onRecordingStop(fileUrl: String) {
                         logger.debug("Recorded audio URL: $fileUrl")
-                        measurement?.recordedAudioUrl = fileUrl
+                        measurementService.setOngoingMeasurementRecordedAudioUrl(fileUrl)
                     }
                 }
 
@@ -141,7 +131,10 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
         audioRecordingService.stopRecordingToFile()
 
         // Store result
-        finalizeMeasurementAndStore()
+        scope.launch {
+            onSequenceFragmentEnd()
+            measurementService.endAndSaveOngoingMeasurement()
+        }
     }
 
 
@@ -154,13 +147,12 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
     @OptIn(ExperimentalUuidApi::class)
     private fun createMeasurementAndSubscribe() {
         // Clear any previously ongoing recording data
-        measurement = MutableMeasurement(
-            uuid = Uuid.random().toString(),
-            startTimestamp = Clock.System.now().toEpochMilliseconds()
-        )
         currentLeqSequenceFragment = null
         currentLocationSequenceFragment = null
         recordingJob?.cancel()
+
+        // Open a new ongoing measurement in measurement service
+        measurementService.openOngoingMeasurement()
 
         // Start listening to the various data sources during the recording session
         recordingJob = scope.launch {
@@ -177,7 +169,7 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
                 // Subscribe to
                 launch {
                     liveAudioService.getAcousticIndicatorsFlow().collect { indicators ->
-                        // TODO: This could be done already in LiveAudioService
+                        // TODO: This could be done already in LiveAudioService?
                         // Map acoustic indicators to LeqRecord
                         val leqRecord = LeqRecord(
                             // TODO: Properly fill LZeq and LCeq
@@ -207,7 +199,7 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
      * Handles a new incoming location record.
      */
     private fun onNewLocationRecord(record: LocationRecord) {
-        val measurement = measurement ?: return
+        val ongoingMeasurementUuid = measurementService.ongoingMeasurementUuid ?: return
         // If we already have an ongoing sequence, simply push the new
         // record to the list
         currentLocationSequenceFragment?.apply {
@@ -215,7 +207,7 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
         } ?: run {
             // Otherwise, create a new sequence before pushing the new record
             currentLocationSequenceFragment =
-                LocationSequenceFragment(measurementId = measurement.uuid)
+                LocationSequenceFragment(measurementId = ongoingMeasurementUuid)
             currentLocationSequenceFragment?.push(record)
         }
     }
@@ -224,7 +216,7 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
      * Handles a new incoming Leq record.
      */
     private fun onNewLeqRecord(record: LeqRecord) {
-        val measurement = measurement ?: return
+        val ongoingMeasurementUuid = measurementService.ongoingMeasurementUuid ?: return
         // If we already have an ongoing sequence, simply push the new
         // record to the list
         currentLeqSequenceFragment?.apply {
@@ -232,7 +224,7 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
         } ?: run {
             // Otherwise, create a new sequence before pushing the new record
             currentLeqSequenceFragment =
-                LeqSequenceFragment(measurementId = measurement.uuid)
+                LeqSequenceFragment(measurementId = ongoingMeasurementUuid)
             currentLeqSequenceFragment?.push(record)
         }
     }
@@ -244,44 +236,13 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
     private suspend fun onSequenceFragmentEnd() {
         // Store values to local storage and add id to measurement
         currentLocationSequenceFragment?.let {
-            measurement?.locationSequenceIds?.add(it.uuid)
-            locationSequenceStorageService.set(it.uuid, it)
+            measurementService.pushToOngoingMeasurement(it)
         }
         currentLeqSequenceFragment?.let {
-            measurement?.leqsSequenceIds?.add(it.uuid)
-            leqSequenceStorageService.set(it.uuid, it)
+            measurementService.pushToOngoingMeasurement(it)
         }
         // Clear fragments so a new sequence can begin
         currentLeqSequenceFragment = null
         currentLocationSequenceFragment = null
-    }
-
-    /**
-     * Creates an immutable measurement from recorded data, fills in missing properties and stores
-     * the result in persistent storage.
-     */
-    private fun finalizeMeasurementAndStore() {
-        measurement?.let {
-            val now = Clock.System.now().toEpochMilliseconds()
-
-            scope.launch {
-                // End and save ongoing leq and location sequence fragments.
-                onSequenceFragmentEnd()
-                // Build immutable measurement for storage
-                val immutableMeasurement = Measurement(
-                    uuid = it.uuid,
-                    startTimestamp = it.startTimestamp,
-                    endTimestamp = now,
-                    duration = now - it.startTimestamp,
-                    userAgent = platform.userAgent,
-                    locationSequenceIds = it.locationSequenceIds,
-                    leqsSequenceIds = it.leqsSequenceIds,
-                    recordedAudioUrl = it.recordedAudioUrl
-                )
-                // Store measurement
-                measurementStorageService.set(immutableMeasurement.uuid, immutableMeasurement)
-                measurement = null
-            }
-        }
     }
 }
