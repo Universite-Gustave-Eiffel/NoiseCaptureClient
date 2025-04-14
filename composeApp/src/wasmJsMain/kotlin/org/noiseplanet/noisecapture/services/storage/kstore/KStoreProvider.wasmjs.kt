@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
  * WasmJs KStore provider using key/value localstorage and JSON encoding/decoding
  */
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
-actual class KStoreProvider {
+internal actual class KStoreProvider {
 
     /**
      * Returns a [KStore] instance for the given unique key.

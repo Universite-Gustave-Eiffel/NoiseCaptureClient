@@ -11,8 +11,6 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.log.Logger
-import org.noiseplanet.noisecapture.model.dao.Coordinates
-import org.noiseplanet.noisecapture.model.dao.LocationAccuracy
 import org.noiseplanet.noisecapture.model.dao.LocationRecord
 import org.noiseplanet.noisecapture.util.injectLogger
 import platform.CoreLocation.CLHeading
@@ -103,31 +101,26 @@ class IOSUserLocationProvider : UserLocationProvider, KoinComponent {
 
         // Create Location object from raw values
         rawLocation.coordinate.useContents {
-            val coordinates = Coordinates(
-                lat = latitude,
-                lon = longitude
-            )
-            val accuracy = LocationAccuracy(
-                horizontal = rawLocation.horizontalAccuracy,
-                vertical = rawLocation.verticalAccuracy,
-                speed = rawLocation.speedAccuracy,
-                direction = rawLocation.courseAccuracy,
-                orientation = rawHeading?.headingAccuracy
-            )
             // Our timestamp value for this point will be the latest value between heading
             // and location objects
             val timestamp = maxOf(
                 a = rawLocation.timestamp.timeIntervalSince1970,
                 b = rawHeading?.timestamp?.timeIntervalSince1970 ?: 0.0,
-            )
+            ).toLong()
+
             val location = LocationRecord(
                 timestamp = timestamp,
-                coordinates = coordinates,
+                lat = latitude,
+                lon = longitude,
                 speed = rawLocation.speed,
                 altitude = rawLocation.altitude,
                 direction = rawLocation.course,
                 orientation = rawHeading?.trueHeading,
-                accuracy = accuracy,
+                horizontalAccuracy = rawLocation.horizontalAccuracy,
+                verticalAccuracy = rawLocation.verticalAccuracy,
+                speedAccuracy = rawLocation.speedAccuracy,
+                directionAccuracy = rawLocation.courseAccuracy,
+                orientationAccuracy = rawHeading?.headingAccuracy,
             )
 
             // Emit new location data through mutable shared flow

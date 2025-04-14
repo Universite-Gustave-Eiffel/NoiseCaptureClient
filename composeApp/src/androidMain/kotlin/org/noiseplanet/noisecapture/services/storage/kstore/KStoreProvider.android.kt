@@ -14,7 +14,7 @@ import java.io.File
  * Android KStoreProvider implementation using internal file storage and JSON for encoding/decoding
  */
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
-actual class KStoreProvider : KoinComponent {
+internal actual class KStoreProvider : KoinComponent {
 
     // - Properties
 

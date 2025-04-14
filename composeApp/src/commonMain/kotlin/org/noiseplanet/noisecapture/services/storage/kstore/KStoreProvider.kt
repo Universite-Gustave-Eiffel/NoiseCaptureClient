@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
  * interfaces because of JVM limitations.
  */
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
-expect class KStoreProvider() {
+internal expect class KStoreProvider() {
 
     /**
      * Returns a [KStore] instance for the given unique key.
