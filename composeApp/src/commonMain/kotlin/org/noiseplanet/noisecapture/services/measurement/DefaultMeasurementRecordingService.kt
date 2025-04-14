@@ -45,7 +45,7 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
         // Duration of a location or leq sequence fragment. Every time this amount of time elapses,
         // sequence values will be stored in filesystem and a new sequence fragment will be created.
         // That way, a very long measurement won't infinitely take up more and more RAM space.
-        const val SEQUENCE_FRAGMENT_DURATION_MILLISECONDS: Long = 10_000 // 10 seconds
+        const val SEQUENCE_FRAGMENT_DURATION_MILLISECONDS: Long = 30_000 // 10 seconds
     }
 
 
