@@ -18,6 +18,10 @@ internal actual class KStoreProvider {
      * @return [KStore] object, created if necessary.
      */
     actual inline fun <reified T : @Serializable Any> storeOf(key: String): KStore<T> {
-        TODO("Not yet implemented")
+        // For WasmJS, we don't use file storage but simple key/value pairs in the browser's local storage
+        // TODO: In the eventuality that we reach storage limitations with local storage we might
+        //       want to switch to using Indexed DB but this isn't yet supported by KStore so
+        //       a custom implementation would be necessary.
+        return io.github.xxfast.kstore.storage.storeOf(key)
     }
 }

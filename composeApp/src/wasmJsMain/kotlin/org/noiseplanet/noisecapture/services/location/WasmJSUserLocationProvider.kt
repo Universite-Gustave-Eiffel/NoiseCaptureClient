@@ -9,8 +9,6 @@ import org.noiseplanet.noisecapture.interop.GeolocationPosition
 import org.noiseplanet.noisecapture.interop.createGeolocationOptions
 import org.noiseplanet.noisecapture.interop.navigator
 import org.noiseplanet.noisecapture.log.Logger
-import org.noiseplanet.noisecapture.model.dao.Coordinates
-import org.noiseplanet.noisecapture.model.dao.LocationAccuracy
 import org.noiseplanet.noisecapture.model.dao.LocationRecord
 import org.noiseplanet.noisecapture.util.injectLogger
 
@@ -82,24 +80,18 @@ class WasmJSUserLocationProvider : KoinComponent, UserLocationProvider {
      * @return [LocationRecord] instance from raw data.
      */
     private fun buildLocationFromRawData(rawLocation: GeolocationPosition): LocationRecord {
-        val coordinates = Coordinates(
+        return LocationRecord(
+            timestamp = rawLocation.timestamp.toLong(),
             lat = rawLocation.coords.latitude,
             lon = rawLocation.coords.longitude,
-        )
-        val accuracy = LocationAccuracy(
-            horizontal = rawLocation.coords.accuracy,
-            vertical = rawLocation.coords.altitudeAccuracy,
-        )
-        return LocationRecord(
-            timestamp = rawLocation.timestamp,
-            coordinates = coordinates,
             altitude = rawLocation.coords.altitude,
             speed = rawLocation.coords.speed,
             // For JS, direction and orientation are represented by the same property
             // https://developer.mozilla.org/en-US/docs/Web/API/GeolocationCoordinates/heading
             direction = rawLocation.coords.heading,
             orientation = rawLocation.coords.heading,
-            accuracy = accuracy,
+            horizontalAccuracy = rawLocation.coords.accuracy,
+            verticalAccuracy = rawLocation.coords.altitudeAccuracy,
         )
     }
 }
