@@ -2,12 +2,22 @@ package org.noiseplanet.noisecapture.services.storage.kstore
 
 import io.github.xxfast.kstore.KStore
 import kotlinx.serialization.Serializable
+import org.koin.core.component.KoinComponent
+import org.noiseplanet.noisecapture.log.Logger
+import org.noiseplanet.noisecapture.util.injectLogger
 
 /**
  * WasmJs KStore provider using key/value localstorage and JSON encoding/decoding
  */
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
-internal actual class KStoreProvider {
+internal actual class KStoreProvider : KoinComponent {
+
+    // - Properties
+
+    private val logger: Logger by injectLogger()
+
+
+    // - KStoreProvider
 
     /**
      * Returns a [KStore] instance for the given unique key.
@@ -22,6 +32,12 @@ internal actual class KStoreProvider {
         // TODO: In the eventuality that we reach storage limitations with local storage we might
         //       want to switch to using Indexed DB but this isn't yet supported by KStore so
         //       a custom implementation would be necessary.
-        return io.github.xxfast.kstore.storage.storeOf(key)
+        logger.warning("CREATING KSTORE")
+        return io.github.xxfast.kstore.storeOf(
+            codec = KStoreOPFSCodec(
+                filePath = "$key.json",
+                logger = logger,
+            )
+        )
     }
 }
