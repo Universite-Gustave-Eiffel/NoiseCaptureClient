@@ -17,9 +17,7 @@ import kotlinx.coroutines.runBlocking
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.noiseplanet.noisecapture.log.Logger
-import org.noiseplanet.noisecapture.model.Coordinates
-import org.noiseplanet.noisecapture.model.Location
-import org.noiseplanet.noisecapture.model.LocationAccuracy
+import org.noiseplanet.noisecapture.model.dao.LocationRecord
 import org.noiseplanet.noisecapture.util.injectLogger
 import org.noiseplanet.noisecapture.util.throttleLatest
 import java.util.concurrent.Executors
@@ -85,7 +83,7 @@ class AndroidUserLocationProvider :
 
     // - UserLocationProvider
 
-    override val liveLocation: Flow<Location>
+    override val liveLocation: Flow<LocationRecord>
         get() = rawOrientationFlow
             // Device orientation is given every 20ms minimum, so we throttle the values to
             // match location updates frequency
@@ -97,7 +95,7 @@ class AndroidUserLocationProvider :
                 buildLocationFromRawData(location, orientation)
             }
 
-    override val currentLocation: Location?
+    override val currentLocation: LocationRecord?
         get() = runBlocking { liveLocation.lastOrNull() }
 
     override fun startUpdatingLocation() {
@@ -141,7 +139,7 @@ class AndroidUserLocationProvider :
     // - Private functions
 
     /**
-     * Converts the given raw location and orientation data to a [Location] instance.
+     * Converts the given raw location and orientation data to a [LocationRecord] instance.
      *
      * @param rawLocation Raw [android.location.Location] object.
      * @param rawOrientation Raw [DeviceOrientation] object.
@@ -149,12 +147,7 @@ class AndroidUserLocationProvider :
     private fun buildLocationFromRawData(
         rawLocation: RawLocation,
         rawOrientation: DeviceOrientation,
-    ): Location {
-        val coordinates = Coordinates(
-            lon = rawLocation.longitude,
-            lat = rawLocation.latitude
-        )
-
+    ): LocationRecord {
         val accuracy = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             LocationAccuracy(
                 horizontal = rawLocation.accuracy.toDouble(),
@@ -171,14 +164,34 @@ class AndroidUserLocationProvider :
             )
         }
 
-        return Location(
-            timestamp = rawLocation.time.toDouble(),
-            coordinates = coordinates,
+        return LocationRecord(
+            timestamp = rawLocation.time,
+            lat = rawLocation.latitude,
+            lon = rawLocation.longitude,
             altitude = rawLocation.altitude,
             speed = rawLocation.speed.toDouble(),
             direction = rawLocation.bearing.toDouble(),
             orientation = rawOrientation.headingDegrees.toDouble(),
-            accuracy = accuracy,
+            horizontalAccuracy = accuracy.horizontal,
+            verticalAccuracy = accuracy.vertical,
+            orientationAccuracy = accuracy.orientation,
+            directionAccuracy = accuracy.direction,
+            speedAccuracy = accuracy.speed,
         )
     }
 }
+
+
+/**
+ * Wrapper for LocationAccuracy used to set different properties based on available Android version.
+ *
+ * TODO: Move to separate file
+ */
+private data class LocationAccuracy(
+    val horizontal: Double,
+    val orientation: Double,
+
+    val vertical: Double? = null,
+    val speed: Double? = null,
+    val direction: Double? = null,
+)

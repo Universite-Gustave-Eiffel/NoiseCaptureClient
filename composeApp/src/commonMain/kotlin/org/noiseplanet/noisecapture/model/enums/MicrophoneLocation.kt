@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.model
+package org.noiseplanet.noisecapture.model.enums
 
 enum class MicrophoneLocation {
     LOCATION_UNKNOWN,

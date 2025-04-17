@@ -1437,10 +1437,10 @@ class SpectrumChannelTest {
         val frequencies = sc.getNominalFrequency()
         val thirdOctaves = sc.processSamples(signal)
 
-        assertEquals(expectedLevel, thirdOctaves[frequencies.indexOf(125.0)], 0.1);
-        assertEquals(expectedLevel, thirdOctaves[frequencies.indexOf(1000.0)], 0.1);
-        assertEquals(expectedLevel, thirdOctaves[frequencies.indexOf(1600.0)], 0.1);
-        assertEquals(expectedLevel, thirdOctaves[frequencies.indexOf(4000.0)], 0.1);
+        assertEquals(expectedLevel, thirdOctaves[frequencies.indexOf(125)], 0.1);
+        assertEquals(expectedLevel, thirdOctaves[frequencies.indexOf(1000)], 0.1);
+        assertEquals(expectedLevel, thirdOctaves[frequencies.indexOf(1600)], 0.1);
+        assertEquals(expectedLevel, thirdOctaves[frequencies.indexOf(4000)], 0.1);
     }
 
     /**

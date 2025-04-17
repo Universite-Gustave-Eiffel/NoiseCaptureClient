@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.model
+package org.noiseplanet.noisecapture.model.dao
 
 import kotlinx.serialization.Serializable
 import org.noiseplanet.noisecapture.BuildKonfig

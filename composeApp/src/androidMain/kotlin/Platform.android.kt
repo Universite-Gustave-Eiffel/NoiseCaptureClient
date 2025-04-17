@@ -1,6 +1,6 @@
 import android.os.Build
 import org.noiseplanet.noisecapture.BuildKonfig
-import org.noiseplanet.noisecapture.model.UserAgent
+import org.noiseplanet.noisecapture.model.dao.UserAgent
 import org.noiseplanet.noisecapture.permission.Permission
 
 class AndroidPlatform : Platform {

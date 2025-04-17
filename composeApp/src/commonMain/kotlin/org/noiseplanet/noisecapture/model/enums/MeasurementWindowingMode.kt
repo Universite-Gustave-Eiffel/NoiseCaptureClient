@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.model
+package org.noiseplanet.noisecapture.model.enums
 
 import kotlinx.serialization.Serializable
 import noisecapture.composeapp.generated.resources.Res

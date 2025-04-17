@@ -1,5 +1,4 @@
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
@@ -59,7 +58,6 @@ kotlin {
     }
 
     androidTarget {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
         }
@@ -84,13 +82,6 @@ kotlin {
             }
         }
 
-        androidMain.dependencies {
-            implementation(compose.preview)
-            implementation(libs.androidx.activity.compose)
-            implementation(libs.androidx.preference)
-            implementation(libs.koin.android)
-            implementation(libs.google.play.services.android.location)
-        }
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -99,19 +90,43 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
+
             implementation(libs.androidx.navigation.compose)
             implementation(libs.androidx.viewmodel.compose)
             implementation(libs.androidx.runtime.compose)
+
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
+
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.datetime)
             implementation(libs.kotlinx.serialization)
+
+            implementation(libs.kstore)
+
             implementation(libs.settings.multiplatform)
             implementation(libs.settings.multiplatform.serialization)
             implementation(libs.settings.multiplatform.coroutines)
         }
+
+        androidMain.dependencies {
+            implementation(compose.preview)
+            implementation(libs.androidx.activity.compose)
+            implementation(libs.androidx.preference)
+            implementation(libs.koin.android)
+            implementation(libs.google.play.services.android.location)
+            implementation(libs.kstore.file)
+        }
+
+        iosMain.dependencies {
+            implementation(libs.kstore.file)
+        }
+
+        wasmJsMain.dependencies {
+            implementation(libs.kstore.storage)
+        }
+
         commonTest.dependencies {
             implementation(kotlin("test"))
             implementation(libs.kotlinx.coroutines.test)

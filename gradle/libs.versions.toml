@@ -5,13 +5,13 @@ agp = "8.8.1"
 android-compileSdk = "35"
 android-minSdk = "24"
 android-targetSdk = "35"
-androidx-activity-compose = "1.10.0"
+androidx-activity-compose = "1.10.1"
 androidx-viewmodel-compose = "2.8.4"
 androidx-navigation = "2.8.0-alpha11"
 androidx-preference = "1.2.1"
 build-konfig-gradle-plugin = "0.17.0"
 compose-plugin = "1.7.3"
-coroutines = "1.8.0"
+coroutines = "1.9.0-RC"
 detekt = "1.23.6"
 google-play-services-android-location = "21.3.0"
 koin = "4.0.0"
@@ -19,6 +19,7 @@ kotlin = "2.0.20"
 kotlin-gradle-plugin = "1.9.0"
 kotlinx-datetime = "0.6.0"
 kotlinx-serialization = "1.7.3"
+kstore = "0.9.1"
 settings-multiplatform = "1.2.0"
 
 [libraries]
@@ -38,6 +39,9 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+kstore = { module = "io.github.xxfast:kstore", version.ref = "kstore" }
+kstore-file = { module = "io.github.xxfast:kstore-file", version.ref = "kstore" }
+kstore-storage = { module = "io.github.xxfast:kstore-storage", version.ref = "kstore" }
 settings-multiplatform = { module = "com.russhwolf:multiplatform-settings", version.ref = "settings-multiplatform" }
 settings-multiplatform-serialization = { module = "com.russhwolf:multiplatform-settings-serialization", version.ref = "settings-multiplatform" }
 settings-multiplatform-coroutines = { module = "com.russhwolf:multiplatform-settings-coroutines", version.ref = "settings-multiplatform" }

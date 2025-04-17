@@ -15,7 +15,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.audio.ANDROID_GAIN
 import org.noiseplanet.noisecapture.log.Logger
-import org.noiseplanet.noisecapture.model.SpectrogramScaleMode
+import org.noiseplanet.noisecapture.model.enums.SpectrogramScaleMode
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.util.injectLogger
 
@@ -36,7 +36,7 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
 
     // - Properties
 
-    private val measurementsService: LiveAudioService by inject()
+    private val liveAudioService: LiveAudioService by inject()
     private val logger: Logger by injectLogger()
 
     private var canvasSize: IntSize = IntSize.Zero
@@ -44,7 +44,7 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
 
     val scaleMode = SpectrogramScaleMode.SCALE_LOG
 
-    val sampleRateFlow: Flow<Double> = measurementsService
+    val sampleRateFlow: Flow<Double> = liveAudioService
         .getSpectrumDataFlow()
         .map { it.sampleRate.toDouble() }
 
@@ -60,7 +60,7 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
     init {
         viewModelScope.launch {
             // Listen to spectrum data updates and build spectrogram along the way
-            measurementsService.getSpectrumDataFlow()
+            liveAudioService.getSpectrumDataFlow()
                 .collect { spectrumData ->
                     currentStripData?.let { currentStripData ->
                         // Update current strip data

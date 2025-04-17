@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.model
+package org.noiseplanet.noisecapture.model.enums
 
 import kotlinx.serialization.Serializable
 import noisecapture.composeapp.generated.resources.Res
@@ -22,7 +22,7 @@ enum class SpectrogramScaleMode : IterableEnum<SpectrogramScaleMode>, ShortNameR
         override val shortName: StringResource =
             Res.string.spectrogram_scale_mode_linear_title
     },
-    
+
     SCALE_LOG {
 
         override val fullName: StringResource =

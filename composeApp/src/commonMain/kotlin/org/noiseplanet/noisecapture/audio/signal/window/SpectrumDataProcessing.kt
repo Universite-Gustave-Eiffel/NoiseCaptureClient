@@ -119,6 +119,9 @@ class SpectrumDataProcessing(
         }
     }
 
+    /**
+     * TODO: Move to an extension in test files since it is not used by app code.
+     */
     fun reconstructOriginalSignal(processedWindows: List<Window>): FloatArray {
         val sum = FloatArray(processedWindows.size + processedWindows.size * windowHop)
         for (i in processedWindows.indices) {

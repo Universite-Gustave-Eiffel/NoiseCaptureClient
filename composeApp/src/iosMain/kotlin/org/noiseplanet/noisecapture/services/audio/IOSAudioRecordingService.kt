@@ -9,6 +9,7 @@ import kotlinx.cinterop.ptr
 import kotlinx.cinterop.value
 import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.log.Logger
+import org.noiseplanet.noisecapture.util.NSFileManagerUtils
 import org.noiseplanet.noisecapture.util.checkNoError
 import org.noiseplanet.noisecapture.util.injectLogger
 import platform.AVFAudio.AVAudioQuality
@@ -20,11 +21,7 @@ import platform.AVFAudio.AVNumberOfChannelsKey
 import platform.AVFAudio.AVSampleRateKey
 import platform.CoreAudioTypes.AudioFormatID
 import platform.CoreAudioTypes.kAudioFormatMPEG4AAC
-import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSError
-import platform.Foundation.NSFileManager
-import platform.Foundation.NSURL
-import platform.Foundation.NSUserDomainMask
 
 
 /**
@@ -60,7 +57,7 @@ class IOSAudioRecordingService : AudioRecordingService, KoinComponent {
         logger.debug("Start recording to $outputFileName")
 
         // Get an URL pointing to the output file
-        val documentsUrl = getDocumentsDirectory()
+        val documentsUrl = NSFileManagerUtils.getDocumentsDirectory()
         val fileUrl = documentsUrl?.URLByAppendingPathComponent("$outputFileName.m4a")
         checkNotNull(fileUrl) { "Could not create URL for file with name $outputFileName" }
 
@@ -104,21 +101,5 @@ class IOSAudioRecordingService : AudioRecordingService, KoinComponent {
 
         // Drop recorder reference
         audioRecorder = null
-    }
-
-
-    // - Private functions
-
-    /**
-     * Gets an [NSURL] pointing to the app's documents directory.
-     *
-     * @return URL to documents directory or nil if not found or not accessible.
-     */
-    private fun getDocumentsDirectory(): NSURL? {
-        val urls = NSFileManager.defaultManager.URLsForDirectory(
-            directory = NSDocumentDirectory,
-            inDomains = NSUserDomainMask
-        )
-        return urls.firstOrNull() as? NSURL?
     }
 }

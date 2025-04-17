@@ -2,10 +2,10 @@ package org.noiseplanet.noisecapture.services.settings
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.serializer
-import org.noiseplanet.noisecapture.model.AcousticsKnowledgeLevel
-import org.noiseplanet.noisecapture.model.CalibrationTestAudioOutput
-import org.noiseplanet.noisecapture.model.MeasurementWindowingMode
-import org.noiseplanet.noisecapture.model.SpectrogramScaleMode
+import org.noiseplanet.noisecapture.model.enums.AcousticsKnowledgeLevel
+import org.noiseplanet.noisecapture.model.enums.CalibrationTestAudioOutput
+import org.noiseplanet.noisecapture.model.enums.MeasurementWindowingMode
+import org.noiseplanet.noisecapture.model.enums.SpectrogramScaleMode
 
 /**
  * User settings keys. Each value must be serializable.
