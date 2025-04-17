@@ -53,10 +53,10 @@ fun SpectrumPlotView(
         0
     )
 
-    val rawSpl: DoubleArray by viewModel.rawSplFlow
-        .collectAsState(DoubleArray(0))
-    val weightedSpl: DoubleArray by viewModel.weightedSplFlow
-        .collectAsState(DoubleArray(0))
+    val rawSplPerThirdOctave: Map<Int, Double> by viewModel.rawSplFlow
+        .collectAsState(emptyMap())
+    val weightedSplPerThirdOctave: Map<Int, Double> by viewModel.weightedSplFlow
+        .collectAsState(emptyMap())
     val axisSettings: SpectrumPlotViewModel.AxisSettings by viewModel.axisSettingsFlow
         .collectAsState(
             SpectrumPlotViewModel.AxisSettings(0.0, 0.0, emptyList())
@@ -76,13 +76,18 @@ fun SpectrumPlotView(
         val barMaxWidth: Float = size.width - maxYAxisWidth
         val maxXAxisHeight = preparedSpectrumOverlayBitmap.horizontalLegendSize.height
         val chartHeight = (size.height - maxXAxisHeight - axisBuilder.tickLength.toPx())
-        val barHeight = chartHeight / rawSpl.size - SPECTRUM_PLOT_SQUARE_OFFSET.toPx()
+        val barHeight = chartHeight / rawSplPerThirdOctave.size - SPECTRUM_PLOT_SQUARE_OFFSET.toPx()
 
-        rawSpl.forEachIndexed { index, spl ->
+
+        // TODO: Use new map property instead of double array
+
+        rawSplPerThirdOctave.keys.forEachIndexed { index, frequency ->
+            val spl = rawSplPerThirdOctave[frequency] ?: return@forEachIndexed
+            val weightedSpl = weightedSplPerThirdOctave[frequency] ?: return@forEachIndexed
             val barYOffset =
-                (barHeight + SPECTRUM_PLOT_SQUARE_OFFSET.toPx()) * (rawSpl.size - 1 - index)
+                (barHeight + SPECTRUM_PLOT_SQUARE_OFFSET.toPx()) * (rawSplPerThirdOctave.size - 1 - index)
             val splRatio = (spl - DBA_MIN) / (DBA_MAX - DBA_MIN)
-            val splWeighted = max(spl, weightedSpl[index])
+            val splWeighted = max(spl, weightedSpl)
             val splWeightedRatio = min(
                 1.0,
                 max(

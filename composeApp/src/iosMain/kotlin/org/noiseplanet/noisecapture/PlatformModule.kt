@@ -1,5 +1,7 @@
 package org.noiseplanet.noisecapture
 
+import IOSPlatform
+import Platform
 import com.russhwolf.settings.ExperimentalSettingsImplementation
 import com.russhwolf.settings.KeychainSettings
 import com.russhwolf.settings.Settings
@@ -19,6 +21,10 @@ import platform.Foundation.NSBundle
  */
 @OptIn(ExperimentalSettingsImplementation::class)
 val platformModule: Module = module {
+
+    single<Platform> {
+        IOSPlatform()
+    }
 
     factory<Logger> { params ->
         val tag: String? = params.values.firstOrNull() as? String

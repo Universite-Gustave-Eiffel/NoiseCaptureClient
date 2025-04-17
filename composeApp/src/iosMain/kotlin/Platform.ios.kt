@@ -1,11 +1,18 @@
+import org.noiseplanet.noisecapture.model.dao.UserAgent
 import org.noiseplanet.noisecapture.permission.Permission
 import platform.UIKit.UIDevice
 
 @Suppress("MatchingDeclarationName")
 class IOSPlatform : Platform {
 
-    override val name: String =
-        UIDevice.currentDevice.systemName() + " " + UIDevice.currentDevice.systemVersion
+    override val userAgent: UserAgent
+        get() = UserAgent(
+            deviceManufacturer = "Apple",
+            deviceModelCode = UIDevice.currentDevice.model,
+            deviceModelName = UIDevice.currentDevice.name,
+            osName = UIDevice.currentDevice.systemName,
+            osVersion = UIDevice.currentDevice.systemVersion,
+        )
 
     override val requiredPermissions: List<Permission>
         get() = listOf(
@@ -15,5 +22,3 @@ class IOSPlatform : Platform {
             Permission.LOCATION_BACKGROUND
         )
 }
-
-actual fun getPlatform(): Platform = IOSPlatform()

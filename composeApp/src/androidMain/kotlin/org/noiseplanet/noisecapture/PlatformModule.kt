@@ -1,6 +1,8 @@
 package org.noiseplanet.noisecapture
 
 import AndroidLogger
+import AndroidPlatform
+import Platform
 import androidx.preference.PreferenceManager
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.SharedPreferencesSettings
@@ -20,6 +22,10 @@ import org.noiseplanet.noisecapture.services.measurement.MeasurementRecordingSer
  * Registers koin components specific to this platform
  */
 val platformModule: Module = module {
+
+    single<Platform> {
+        AndroidPlatform()
+    }
 
     factory<Logger> { params ->
         val tag: String? = params.values.firstOrNull() as? String

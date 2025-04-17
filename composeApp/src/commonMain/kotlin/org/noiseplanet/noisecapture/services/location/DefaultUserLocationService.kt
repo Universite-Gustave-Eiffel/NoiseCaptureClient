@@ -3,7 +3,7 @@ package org.noiseplanet.noisecapture.services.location
 import kotlinx.coroutines.flow.Flow
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.noiseplanet.noisecapture.model.Location
+import org.noiseplanet.noisecapture.model.dao.LocationRecord
 
 
 /**
@@ -18,10 +18,10 @@ class DefaultUserLocationService : UserLocationService, KoinComponent {
 
     // - UserLocationService
 
-    override val currentLocation: Location?
+    override val currentLocation: LocationRecord?
         get() = locationProvider.currentLocation
 
-    override val liveLocation: Flow<Location>
+    override val liveLocation: Flow<LocationRecord>
         get() = locationProvider.liveLocation
 
     override fun startUpdatingLocation() {

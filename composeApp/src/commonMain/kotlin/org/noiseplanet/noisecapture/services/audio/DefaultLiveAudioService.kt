@@ -154,19 +154,19 @@ class DefaultLiveAudioService(
             }
     }
 
-    override fun getWeightedSoundPressureLevelFlow(): Flow<DoubleArray> {
-        var levelDisplayBands: Array<LevelDisplayWeightedDecay>? = null
+    override fun getWeightedSoundPressureLevelFlow(): Flow<Map<Int, Double>> {
+        var levelDisplayBands: Map<Int, LevelDisplayWeightedDecay>? = null
 
         return getAcousticIndicatorsFlow()
             .map { indicators ->
                 if (levelDisplayBands == null) {
-                    levelDisplayBands = Array(indicators.nominalFrequencies.size) {
+                    levelDisplayBands = indicators.leqsPerThirdOctave.mapValues {
                         LevelDisplayWeightedDecay(SPL_DECAY_RATE, SPL_WINDOW_TIME)
                     }
                 }
-                DoubleArray(indicators.nominalFrequencies.size) { index ->
-                    levelDisplayBands?.get(index)
-                        ?.getWeightedValue(indicators.thirdOctave[index])
+                indicators.leqsPerThirdOctave.mapValues { entry ->
+                    levelDisplayBands?.get(entry.key)
+                        ?.getWeightedValue(entry.value)
                         ?: 0.0
                 }
             }
