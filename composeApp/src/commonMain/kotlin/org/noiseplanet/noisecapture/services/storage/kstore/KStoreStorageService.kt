@@ -2,15 +2,14 @@ package org.noiseplanet.noisecapture.services.storage.kstore
 
 import io.github.xxfast.kstore.KStore
 import io.github.xxfast.kstore.extensions.getOrEmpty
+import io.github.xxfast.kstore.extensions.minus
 import io.github.xxfast.kstore.extensions.plus
 import kotlinx.serialization.Serializable
 import org.koin.core.component.KoinComponent
-import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.dao.LeqSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.LocationSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.services.storage.StorageService
-import org.noiseplanet.noisecapture.util.injectLogger
 import kotlin.reflect.KClass
 
 
@@ -30,8 +29,6 @@ class KStoreStorageService<RecordType : @Serializable Any>(
 ) : StorageService<RecordType>, KoinComponent {
 
     // - Properties
-
-    private val logger: Logger by injectLogger()
 
     private val storeProvider = KStoreProvider()
     private val indexStore: KStore<List<String>> = storeProvider.storeOf(key = "$prefix/index.json")
@@ -53,22 +50,23 @@ class KStoreStorageService<RecordType : @Serializable Any>(
     }
 
     override suspend fun set(uuid: String, newValue: RecordType) {
-
         val index = indexStore.getOrEmpty()
-        // Insert new measurement id in index if needed
+        // Insert new record id in index if needed
         if (!index.contains(uuid)) {
             indexStore.plus(uuid)
         }
-
-        // Store measurement
+        // Store record
         val store = getStoreForRecord(uuid)
         store.set(newValue)
     }
 
     override suspend fun delete(uuid: String) {
-
-        // TODO: Update index
-
+        val index = indexStore.getOrEmpty()
+        // Remove record id from index if needed
+        if (index.contains(uuid)) {
+            indexStore.minus(uuid)
+        }
+        // Delete record
         val store = getStoreForRecord(uuid)
         store.delete()
     }
