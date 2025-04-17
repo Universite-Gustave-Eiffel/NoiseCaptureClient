@@ -18,6 +18,16 @@ import org.w3c.files.FileReader
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
+
+/**
+ * Custom KStore [Codec] implementation that serialises values to Json and stores
+ * results in local storage using OPFS.
+ *
+ * @param filePath Path to the file that will be stored (e.g. "data/values.json").
+ * @param json Json serialisation configuration.
+ * @param serializer Serializer to use for values.
+ * @param logger Logger for logging.
+ */
 class KStoreOPFSCodec<T : @Serializable Any>(
     private val filePath: String,
     private val json: Json,
@@ -144,7 +154,7 @@ inline fun <reified T : @Serializable Any> KStoreOPFSCodec(
     logger = logger,
 )
 
-class FileNotFoundException(
+private class FileNotFoundException(
     message: String? = null,
     cause: Throwable? = null,
 ) : Exception(message, cause)

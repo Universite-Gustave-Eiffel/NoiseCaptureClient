@@ -28,11 +28,8 @@ internal actual class KStoreProvider : KoinComponent {
      * @return [KStore] object, created if necessary.
      */
     actual inline fun <reified T : @Serializable Any> storeOf(key: String): KStore<T> {
-        // For WasmJS, we don't use file storage but simple key/value pairs in the browser's local storage
-        // TODO: In the eventuality that we reach storage limitations with local storage we might
-        //       want to switch to using Indexed DB but this isn't yet supported by KStore so
-        //       a custom implementation would be necessary.
-        logger.warning("CREATING KSTORE")
+        // For WasmJS, KStore doesn't support file storage out of the box so we use a custom codec
+        // that will store the serialised values in JSON files using OPFS interop.
         return io.github.xxfast.kstore.storeOf(
             codec = KStoreOPFSCodec(
                 filePath = "$key.json",
