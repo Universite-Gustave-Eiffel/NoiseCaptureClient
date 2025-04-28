@@ -15,6 +15,7 @@ import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.enums.MicrophoneLocation
 import org.noiseplanet.noisecapture.util.injectLogger
 import org.w3c.dom.mediacapture.MediaStreamConstraints
+import org.w3c.dom.mediacapture.MediaTrackConstraints
 
 
 /**
@@ -70,12 +71,12 @@ internal class JsAudioSource : AudioSource, KoinComponent {
 
         window.navigator.mediaDevices.getUserMedia(
             MediaStreamConstraints(
-                // TODO: Not sure this has any effect...
-                audio = object {
-                    val echoCancellation = false
-                    val autoGainControl = false
-                    val noiseSuppression = false
-                }.toJsReference()
+                audio = MediaTrackConstraints(
+                    advanced = JsArray(),
+                    autoGainControl = false.toJsBoolean(),
+                    noiseSuppression = false.toJsBoolean(),
+                    echoCancellation = false.toJsBoolean(),
+                )
             )
         ).then(onFulfilled = { mediaStream ->
             audioContext = AudioContext()
@@ -110,7 +111,10 @@ internal class JsAudioSource : AudioSource, KoinComponent {
         }, onRejected = { error ->
             logger.error("Error while setting up audio source: $error")
             error
-        })
+        }).catch { error ->
+            logger.error("Error while setting up audio source: $error")
+            error
+        }
     }
 
     override fun start() {
