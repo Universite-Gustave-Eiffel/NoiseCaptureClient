@@ -98,10 +98,6 @@ class KStoreOPFSCodec<T : @Serializable Any>(
         val fileName = pathComponents.last()
 
         return try {
-            // Request persistent storage if not already granted
-            // TODO: Move this to an app level permission check instead
-            storage.persist().await<JsBoolean>()
-
             // Get OPFS root directory
             val opfsRoot: FileSystemDirectoryHandle = storage.getDirectory().await()
 
