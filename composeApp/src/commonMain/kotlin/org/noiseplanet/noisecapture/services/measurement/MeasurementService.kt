@@ -91,7 +91,8 @@ interface MeasurementService {
     fun setOngoingMeasurementRecordedAudioUrl(url: String)
 
     /**
-     * Ends the ongoing measurement and saves the result to local storage.
+     * Saves the current state of the ongoing measurement, either creating a new entry or just
+     * updating the current one.
      */
-    suspend fun endAndSaveOngoingMeasurement()
+    suspend fun saveOngoingMeasurement()
 }

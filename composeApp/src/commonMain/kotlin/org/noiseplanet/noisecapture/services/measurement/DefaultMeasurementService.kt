@@ -85,7 +85,7 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
         ongoingMeasurement?.recordedAudioUrl = url
     }
 
-    override suspend fun endAndSaveOngoingMeasurement() {
+    override suspend fun saveOngoingMeasurement() {
         val ongoingMeasurement = ongoingMeasurement ?: return
         val now = Clock.System.now().toEpochMilliseconds()
 

@@ -134,10 +134,9 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
         // End audio recording
         audioRecordingService.stopRecordingToFile()
 
-        // Store result
+        // Store any uncompleted sequence fragment and store measurement
         scope.launch {
             onSequenceFragmentEnd()
-            measurementService.endAndSaveOngoingMeasurement()
         }
     }
 
@@ -245,6 +244,8 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
         currentLeqSequenceFragment?.let {
             measurementService.pushToOngoingMeasurement(it)
         }
+        // Save ongoing measurement up until now, in case it gets interrupted later on.
+        measurementService.saveOngoingMeasurement()
         currentLeqSequenceFragment = null
         currentLocationSequenceFragment = null
     }
