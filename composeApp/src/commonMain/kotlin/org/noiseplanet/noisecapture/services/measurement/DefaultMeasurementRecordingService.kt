@@ -110,7 +110,7 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
             // based on the limit fixed in settings
             recordingLimitJob = scope.launch {
                 val maxDurationInSeconds =
-                    settingsService.get(SettingsKey.SettingLimitSavedAudioDurationMinutes)// * 60u
+                    settingsService.get(SettingsKey.SettingLimitSavedAudioDurationMinutes) * 60u
                 delay(maxDurationInSeconds.toLong().seconds.inWholeMilliseconds)
                 audioRecordingService.stopRecordingToFile()
             }
