@@ -20,6 +20,7 @@ import kotlin.uuid.Uuid
 @OptIn(ExperimentalUuidApi::class)
 data class LeqSequenceFragment(
     override val uuid: String = Uuid.random().toString(),
+    override val index: Int,
     override val measurementId: String,
     override val timestamp: MutableList<Long> = mutableListOf(),
 

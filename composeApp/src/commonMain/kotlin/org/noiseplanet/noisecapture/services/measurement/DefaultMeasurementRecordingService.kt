@@ -8,7 +8,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.format
@@ -20,7 +19,6 @@ import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.dao.LeqRecord
 import org.noiseplanet.noisecapture.model.dao.LeqSequenceFragment
-import org.noiseplanet.noisecapture.model.dao.LocationRecord
 import org.noiseplanet.noisecapture.model.dao.LocationSequenceFragment
 import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
@@ -30,7 +28,6 @@ import org.noiseplanet.noisecapture.services.settings.UserSettingsService
 import org.noiseplanet.noisecapture.util.injectLogger
 import kotlin.concurrent.Volatile
 import kotlin.time.Duration.Companion.seconds
-import kotlin.uuid.ExperimentalUuidApi
 
 
 @OptIn(FormatStringsInDatetimeFormats::class)
@@ -41,11 +38,6 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
     private companion object {
 
         const val OUTPUT_FILE_DATE_FORMAT = "yyyy-MM-dd_HH-mm-ss"
-
-        // Duration of a location or leq sequence fragment. Every time this amount of time elapses,
-        // sequence values will be stored in filesystem and a new sequence fragment will be created.
-        // That way, a very long measurement won't infinitely take up more and more RAM space.
-        const val SEQUENCE_FRAGMENT_DURATION_MILLISECONDS: Long = 30_000 // 30 seconds
     }
 
 
@@ -136,7 +128,7 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
 
         // Store any uncompleted sequence fragment and store measurement
         scope.launch {
-            onSequenceFragmentEnd()
+            measurementService.closeOngoingMeasurement()
         }
     }
 
@@ -147,7 +139,6 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
      * Creates a new ongoing measurement and subscribes to acoustic indicators and user
      * location flows to populate it during the recording session
      */
-    @OptIn(ExperimentalUuidApi::class)
     private fun createMeasurementAndSubscribe() {
         // Clear any previously ongoing recording data
         currentLeqSequenceFragment = null
@@ -165,7 +156,7 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
                 launch {
                     userLocationService.liveLocation.collect { location ->
                         logger.debug("New location received: $location")
-                        onNewLocationRecord(location)
+                        measurementService.pushToOngoingMeasurement(location)
                     }
                 }
 
@@ -182,71 +173,10 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
                             lceq = indicators.laeq,
                             leqsPerThirdOctave = indicators.leqsPerThirdOctave
                         )
-                        onNewLeqRecord(leqRecord)
-                    }
-                }
-
-                // Schedule another job that will store current sequence fragment every n seconds
-                // and add the stored sequence id to the ongoing measurement.
-                launch {
-                    while (isActive) {
-                        delay(SEQUENCE_FRAGMENT_DURATION_MILLISECONDS)
-                        onSequenceFragmentEnd()
+                        measurementService.pushToOngoingMeasurement(leqRecord)
                     }
                 }
             }
         }
-    }
-
-    /**
-     * Handles a new incoming location record.
-     */
-    private fun onNewLocationRecord(record: LocationRecord) {
-        val ongoingMeasurementUuid = measurementService.ongoingMeasurementUuid ?: return
-        // If we already have an ongoing sequence, simply push the new
-        // record to the list
-        currentLocationSequenceFragment?.apply {
-            push(record)
-        } ?: run {
-            // Otherwise, create a new sequence before pushing the new record
-            currentLocationSequenceFragment =
-                LocationSequenceFragment(measurementId = ongoingMeasurementUuid)
-            currentLocationSequenceFragment?.push(record)
-        }
-    }
-
-    /**
-     * Handles a new incoming Leq record.
-     */
-    private fun onNewLeqRecord(record: LeqRecord) {
-        val ongoingMeasurementUuid = measurementService.ongoingMeasurementUuid ?: return
-        // If we already have an ongoing sequence, simply push the new
-        // record to the list
-        currentLeqSequenceFragment?.apply {
-            push(record)
-        } ?: run {
-            // Otherwise, create a new sequence before pushing the new record
-            currentLeqSequenceFragment =
-                LeqSequenceFragment(measurementId = ongoingMeasurementUuid)
-            currentLeqSequenceFragment?.push(record)
-        }
-    }
-
-    /**
-     * Called every N seconds to end current sequence fragment,
-     * store values and start a new fragment.
-     */
-    private suspend fun onSequenceFragmentEnd() {
-        // Store values to local storage and add id to measurement
-        currentLocationSequenceFragment?.let {
-            measurementService.pushToOngoingMeasurement(it)
-        }
-        currentLeqSequenceFragment?.let {
-            measurementService.pushToOngoingMeasurement(it)
-        }
-        // Save ongoing measurement up until now, in case it gets interrupted later on.
-        measurementService.saveOngoingMeasurement()
-        currentLeqSequenceFragment = null
-        currentLocationSequenceFragment = null
     }
 }
