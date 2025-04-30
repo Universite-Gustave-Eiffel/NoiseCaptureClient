@@ -70,6 +70,12 @@ interface SequenceFragment<T> {
     val duration: Long?
         get() = endTimestamp?.let { startTimestamp?.minus(it) }
 
+    /**
+     * Number of elements in the sequence.
+     */
+    val size: Int
+        get() = timestamp.size
+
 
     // - Public unctions
 

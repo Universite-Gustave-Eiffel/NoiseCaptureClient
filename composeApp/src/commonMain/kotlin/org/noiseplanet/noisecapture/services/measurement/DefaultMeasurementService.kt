@@ -1,12 +1,6 @@
 package org.noiseplanet.noisecapture.services.measurement
 
 import Platform
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -34,10 +28,10 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
 
     private companion object {
 
-        // Duration of a location or leq sequence fragment. Every time this amount of time elapses,
-        // sequence values will be stored in filesystem and a new sequence fragment will be created.
-        // That way, a very long measurement won't infinitely take up more and more RAM space.
-        const val SEQUENCE_FRAGMENT_DURATION_MILLISECONDS: Long = 30_000 // 30 seconds
+        // Sets the maximum number of records that can be in a sequence fragment. Whenever a
+        // sequence fragment reaches this limit, it gets stored and a new fragment is created.
+        // 250 records is roughly 30 seconds of data coming at 125ms interval.
+        const val SEQUENCE_FRAGMENT_MAX_SIZE: Int = 250
     }
 
 
@@ -45,9 +39,6 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
 
     private val logger: Logger by injectLogger()
     private val platform: Platform by inject()
-
-    private val scope = CoroutineScope(Dispatchers.Default)
-    private var sequenceFragmentationJob: Job? = null
 
     private val measurementStorageService: StorageService<Measurement> by injectStorageService()
     private val leqSequenceStorageService: StorageService<LeqSequenceFragment> by injectStorageService()
@@ -99,15 +90,6 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
             startTimestamp = Clock.System.now().toEpochMilliseconds()
         )
         logger.info("Starting new measurement with id ${ongoingMeasurement?.uuid}")
-
-        // Schedule another job that will store current sequence fragment every n seconds
-        // and add the stored sequence id to the ongoing measurement.
-        sequenceFragmentationJob = scope.launch {
-            while (isActive) {
-                delay(SEQUENCE_FRAGMENT_DURATION_MILLISECONDS)
-                onSequenceFragmentEnd()
-            }
-        }
     }
 
     override suspend fun pushToOngoingMeasurement(record: LeqRecord) {
@@ -123,6 +105,13 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
                 index = ongoingMeasurement.leqsSequenceIds.size
             )
             currentLeqSequenceFragment?.push(record)
+        }
+        // Check if sequence fragment has reached its limit.
+        // Since location updates come at an irregular rate, we rely on leq records to determine
+        // when fragments should stop.
+        val fragmentSize = currentLeqSequenceFragment?.size ?: return
+        if (fragmentSize >= SEQUENCE_FRAGMENT_MAX_SIZE) {
+            onSequenceFragmentEnd()
         }
     }
 
@@ -149,8 +138,6 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
     override suspend fun closeOngoingMeasurement() {
         // End currently ongoing sequence fragments and save measurement data
         onSequenceFragmentEnd()
-        // Cancel sequence fragmentation job
-        sequenceFragmentationJob?.cancel()
     }
 
 
