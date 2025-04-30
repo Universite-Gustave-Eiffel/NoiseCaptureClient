@@ -31,7 +31,7 @@ class KStoreStorageService<RecordType : @Serializable Any>(
     // - Properties
 
     private val storeProvider = KStoreProvider()
-    private val indexStore: KStore<List<String>> = storeProvider.storeOf(key = "$prefix/index.json")
+    private val indexStore: KStore<List<String>> = storeProvider.storeOf(key = "$prefix/index")
 
 
     // - StorageService

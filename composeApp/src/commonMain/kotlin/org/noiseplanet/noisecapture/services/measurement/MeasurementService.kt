@@ -1,6 +1,8 @@
 package org.noiseplanet.noisecapture.services.measurement
 
+import org.noiseplanet.noisecapture.model.dao.LeqRecord
 import org.noiseplanet.noisecapture.model.dao.LeqSequenceFragment
+import org.noiseplanet.noisecapture.model.dao.LocationRecord
 import org.noiseplanet.noisecapture.model.dao.LocationSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.Measurement
 
@@ -70,18 +72,18 @@ interface MeasurementService {
     fun openOngoingMeasurement()
 
     /**
-     * Pushes a new [LeqSequenceFragment] to the current ongoing measurement.
+     * Pushes a new [LeqRecord] to the current ongoing measurement.
      *
-     * @param fragment Sequence fragment to be pushed.
+     * @param record Record to be pushed.
      */
-    suspend fun pushToOngoingMeasurement(fragment: LeqSequenceFragment)
+    suspend fun pushToOngoingMeasurement(record: LeqRecord)
 
     /**
-     * Pushes a new [LocationSequenceFragment] to the current ongoing measurement.
+     * Pushes a new [LocationRecord] to the current ongoing measurement.
      *
-     * @param fragment Sequence fragment to be pushed.
+     * @param record Record to be pushed.
      */
-    suspend fun pushToOngoingMeasurement(fragment: LocationSequenceFragment)
+    suspend fun pushToOngoingMeasurement(record: LocationRecord)
 
     /**
      * Sets the recorded audio URL of the ongoing measurement.
@@ -91,7 +93,7 @@ interface MeasurementService {
     fun setOngoingMeasurementRecordedAudioUrl(url: String)
 
     /**
-     * Ends the ongoing measurement and saves the result to local storage.
+     * Closes the ongoing measurement, saving every remaining data to local storage.
      */
-    suspend fun endAndSaveOngoingMeasurement()
+    suspend fun closeOngoingMeasurement()
 }

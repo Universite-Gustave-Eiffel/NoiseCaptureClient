@@ -37,6 +37,11 @@ interface SequenceFragment<T> {
     val uuid: String
 
     /**
+     * Index of this fragment in the sequence, starting from 0.
+     */
+    val index: Int
+
+    /**
      * UUID of the measurement this sequence of values is attached to.
      */
     val measurementId: String
@@ -64,6 +69,12 @@ interface SequenceFragment<T> {
      */
     val duration: Long?
         get() = endTimestamp?.let { startTimestamp?.minus(it) }
+
+    /**
+     * Number of elements in the sequence.
+     */
+    val size: Int
+        get() = timestamp.size
 
 
     // - Public unctions

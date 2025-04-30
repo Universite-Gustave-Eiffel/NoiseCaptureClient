@@ -31,7 +31,7 @@ internal actual class KStoreProvider : KoinComponent {
         // For WasmJS, KStore doesn't support file storage out of the box so we use a custom codec
         // that will store the serialised values in JSON files using OPFS interop.
         return io.github.xxfast.kstore.storeOf(
-            codec = KStoreOPFSCodec(
+            codec = KStoreOpfsCodec(
                 filePath = "$key.json",
                 logger = logger,
             )
