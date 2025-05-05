@@ -78,7 +78,7 @@ class AcousticIndicatorsProcessing(val sampleRate: Int, val dbGain: Double = AND
                         samples.epoch,
                         max(leq, -999.0),   // Clip values to -999dB to avoid -Inf in JSON exports
                         max(laeq, -999.0),  // Clip values to -999dB to avoid -Inf in JSON exports
-                        max(rms, -999.0),   // Clip values to -999dB to avoid -Inf in JSON exports
+                        rms,
                         leqsPerThirdOctave,
                     )
                 )
