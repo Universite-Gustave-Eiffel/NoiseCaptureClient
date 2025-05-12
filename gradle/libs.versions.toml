@@ -14,6 +14,7 @@ compose-plugin = "1.8.0-rc01"
 coroutines = "1.10.2"
 detekt = "1.23.8"
 google-play-services-android-location = "21.3.0"
+human-readable = "1.11.0"
 koin = "4.0.4"
 kotlin = "2.1.20"
 kotlinx-datetime = "0.6.2"
@@ -29,6 +30,7 @@ androidx-navigation-compose = { module = "org.jetbrains.androidx.navigation:navi
 androidx-preference = { module = "androidx.preference:preference-ktx", version.ref = "androidx-preference" }
 buildkonfig-gradle-plugin = { module = "com.codingfeline.buildkonfig:buildkonfig-gradle-plugin", version.ref = "build-konfig-gradle-plugin" }
 google-play-services-android-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "google-play-services-android-location" }
+humanreadable = { module = "nl.jacobras:Human-Readable", version.ref = "human-readable" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
 koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }
