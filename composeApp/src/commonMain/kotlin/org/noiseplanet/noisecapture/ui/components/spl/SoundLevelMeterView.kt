@@ -47,7 +47,7 @@ fun SoundLevelMeterView(
         ) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.Top,
                 modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth()
             ) {
                 Column(horizontalAlignment = Alignment.Start) {
@@ -76,33 +76,39 @@ fun SoundLevelMeterView(
                         Modifier.align(Alignment.Top),
                     ) {
                         listOf(
-                            MeasurementStatistics(
+                            LeqMetricViewModel(
                                 label = stringResource(viewModel.minDbALabel),
-                                value = currentLeqMetrics?.min?.toString() ?: "-",
+                                value = currentLeqMetrics?.min,
                             ),
-                            MeasurementStatistics(
+                            LeqMetricViewModel(
                                 label = stringResource(viewModel.avgDbALabel),
-                                value = currentLeqMetrics?.average?.toString() ?: "-",
+                                value = currentLeqMetrics?.average,
                             ),
-                            MeasurementStatistics(
+                            LeqMetricViewModel(
                                 label = stringResource(viewModel.maxDbALabel),
-                                value = currentLeqMetrics?.max?.toString() ?: "-",
+                                value = currentLeqMetrics?.max,
                             ),
-                        ).forEach {
+                        ).forEach { metric ->
                             Column(
                                 horizontalAlignment = Alignment.Start,
-                                modifier = Modifier.width(50.dp),
+                                modifier = Modifier.width(56.dp),
                             ) {
                                 Text(
-                                    text = it.label,
+                                    text = metric.label,
                                     style = MaterialTheme.typography.labelLarge
                                 )
+                                val value = metric.value
                                 Text(
-                                    text = it.value,
-                                    style = MaterialTheme.typography.headlineLarge.copy(
+                                    text = if (value != null && value in VU_METER_DB_MIN..VU_METER_DB_MAX) {
+                                        value.toString()
+                                    } else "-",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 20.sp,
-                                        textAlign = TextAlign.Start
+                                        textAlign = TextAlign.Start,
+                                        color = metric.value?.let {
+                                            NoiseLevelColorRamp.getColorForSPLValue(it)
+                                        } ?: MaterialTheme.colorScheme.onSurface,
                                     )
                                 )
                             }
@@ -129,7 +135,7 @@ fun SoundLevelMeterView(
 }
 
 
-private data class MeasurementStatistics(
+private data class LeqMetricViewModel(
     val label: String,
-    val value: String,
+    val value: Double?,
 )
