@@ -25,7 +25,7 @@ import org.noiseplanet.noisecapture.ui.components.button.NCButton
 import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel.Companion.VU_METER_DB_MAX
 import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel.Companion.VU_METER_DB_MIN
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
-import kotlin.math.round
+import org.noiseplanet.noisecapture.util.roundTo
 
 
 @Composable
@@ -35,6 +35,7 @@ fun SoundLevelMeterView(
     // - Properties
 
     val currentSoundPressureLevel by viewModel.soundPressureLevelFlow.collectAsState(0.0)
+    val currentLeqMetrics by viewModel.leqMetricsFlow.collectAsState(null)
 
 
     // - Layout
@@ -58,7 +59,7 @@ fun SoundLevelMeterView(
                     )
 
                     val isSplInRange = currentSoundPressureLevel in VU_METER_DB_MIN..VU_METER_DB_MAX
-                    val roundedSpl = round(currentSoundPressureLevel * 10.0) / 10.0
+                    val roundedSpl = currentSoundPressureLevel.roundTo(1)
 
                     Text(
                         text = if (isSplInRange) roundedSpl.toString() else "-",
@@ -77,15 +78,15 @@ fun SoundLevelMeterView(
                         listOf(
                             MeasurementStatistics(
                                 label = stringResource(viewModel.minDbALabel),
-                                value = "-",
+                                value = currentLeqMetrics?.min?.toString() ?: "-",
                             ),
                             MeasurementStatistics(
                                 label = stringResource(viewModel.avgDbALabel),
-                                value = "-",
+                                value = currentLeqMetrics?.average?.toString() ?: "-",
                             ),
                             MeasurementStatistics(
                                 label = stringResource(viewModel.maxDbALabel),
-                                value = "-",
+                                value = currentLeqMetrics?.max?.toString() ?: "-",
                             ),
                         ).forEach {
                             Column(

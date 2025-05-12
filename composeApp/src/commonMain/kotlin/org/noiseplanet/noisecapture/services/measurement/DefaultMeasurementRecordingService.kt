@@ -168,7 +168,7 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
                         val leqRecord = LeqRecord(
                             // TODO: Properly fill LZeq and LCeq
                             timestamp = Clock.System.now().toEpochMilliseconds(),
-                            lzeq = indicators.laeq,
+                            lzeq = indicators.leq,
                             laeq = indicators.laeq,
                             lceq = indicators.laeq,
                             leqsPerThirdOctave = indicators.leqsPerThirdOctave

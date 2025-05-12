@@ -17,7 +17,9 @@ import noisecapture.composeapp.generated.resources.sound_level_meter_min_dba
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.audio.AudioSourceState
+import org.noiseplanet.noisecapture.model.dao.LeqMetrics
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
+import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.ui.components.button.ButtonStyle
 import org.noiseplanet.noisecapture.ui.components.button.ButtonViewModel
 
@@ -44,6 +46,7 @@ class SoundLevelMeterViewModel(
     // - Properties
 
     private val liveAudioService: LiveAudioService by inject()
+    private val measurementService: MeasurementService by inject()
 
     val playPauseButtonViewModel = ButtonViewModel(
         onClick = this::toggleAudioSource,
@@ -59,6 +62,9 @@ class SoundLevelMeterViewModel(
 
     val soundPressureLevelFlow: Flow<Double>
         get() = liveAudioService.getWeightedLeqFlow()
+
+    val leqMetricsFlow: Flow<LeqMetrics?>
+        get() = measurementService.getOngoingMeasurementLeqMetricsFlow()
 
     val currentDbALabel = Res.string.sound_level_meter_current_dba
     val minDbALabel = Res.string.sound_level_meter_min_dba
