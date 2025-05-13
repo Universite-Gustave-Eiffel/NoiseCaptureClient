@@ -1,0 +1,86 @@
+package org.noiseplanet.noisecapture.ui.components.spl
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.sound_level_meter_avg_dba
+import noisecapture.composeapp.generated.resources.sound_level_meter_max_dba
+import noisecapture.composeapp.generated.resources.sound_level_meter_min_dba
+import org.jetbrains.compose.resources.stringResource
+import org.noiseplanet.noisecapture.model.dao.LAeqMetrics
+import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel.Companion.VU_METER_DB_MAX
+import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel.Companion.VU_METER_DB_MIN
+import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
+
+
+@Composable
+fun LAeqMetricsView(
+    metrics: LAeqMetrics?,
+    modifier: Modifier = Modifier,
+) {
+    // - Properties
+
+    val minDbALabel = Res.string.sound_level_meter_min_dba
+    val avgDbALabel = Res.string.sound_level_meter_avg_dba
+    val maxDbALabel = Res.string.sound_level_meter_max_dba
+
+
+    // - Layout
+
+    Row(modifier = modifier) {
+        listOf(
+            LeqMetricViewModel(
+                label = stringResource(minDbALabel),
+                value = metrics?.min,
+            ),
+            LeqMetricViewModel(
+                label = stringResource(avgDbALabel),
+                value = metrics?.average,
+            ),
+            LeqMetricViewModel(
+                label = stringResource(maxDbALabel),
+                value = metrics?.max,
+            ),
+        ).forEach { metric ->
+            Column(
+                horizontalAlignment = Alignment.Start,
+                modifier = Modifier.width(56.dp),
+            ) {
+                Text(
+                    text = metric.label,
+                    style = MaterialTheme.typography.labelLarge
+                )
+                val value = metric.value
+                Text(
+                    text = if (value != null && value in VU_METER_DB_MIN..VU_METER_DB_MAX) {
+                        value.toString()
+                    } else "-",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        textAlign = TextAlign.Start,
+                        color = metric.value?.let {
+                            NoiseLevelColorRamp.getColorForSPLValue(it)
+                        } ?: MaterialTheme.colorScheme.onSurface,
+                    )
+                )
+            }
+        }
+    }
+}
+
+
+private data class LeqMetricViewModel(
+    val label: String,
+    val value: Double?,
+)

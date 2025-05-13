@@ -32,7 +32,7 @@ fun LastMeasurementsView(
         modifier = Modifier.padding(horizontal = 16.dp)
     ) {
         measurements.take(2).forEach { measurement ->
-            MeasurementHistoryCardView(
+            HomeRecentMeasurementView(
                 measurement,
                 onClick = onClickMeasurement,
                 modifier = modifier.weight(1f)

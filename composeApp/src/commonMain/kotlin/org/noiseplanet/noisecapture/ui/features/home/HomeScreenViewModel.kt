@@ -33,7 +33,7 @@ class HomeScreenViewModel(
         showPlayPauseButton = true
     )
 
-    val hintText = Res.string.home_slm_hint
+    val soundLevelMeterHintText = Res.string.home_slm_hint
     val soundLevelMeterButtonViewModel = ButtonViewModel(
         onClick = onClickOpenSoundLevelMeterButton,
         title = Res.string.home_slm_button_title,

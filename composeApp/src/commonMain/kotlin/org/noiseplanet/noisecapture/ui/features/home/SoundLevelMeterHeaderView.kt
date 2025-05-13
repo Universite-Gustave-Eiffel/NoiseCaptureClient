@@ -36,7 +36,7 @@ fun SoundLevelMeterHeaderView(
             )
         ) {
             Text(
-                text = stringResource(viewModel.hintText),
+                text = stringResource(viewModel.soundLevelMeterHintText),
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.alpha(0.75f)
             )

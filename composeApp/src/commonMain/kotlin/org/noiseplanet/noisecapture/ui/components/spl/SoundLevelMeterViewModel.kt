@@ -10,10 +10,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
-import noisecapture.composeapp.generated.resources.sound_level_meter_avg_dba
 import noisecapture.composeapp.generated.resources.sound_level_meter_current_dba
-import noisecapture.composeapp.generated.resources.sound_level_meter_max_dba
-import noisecapture.composeapp.generated.resources.sound_level_meter_min_dba
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.audio.AudioSourceState
@@ -67,9 +64,6 @@ class SoundLevelMeterViewModel(
         get() = measurementService.getOngoingMeasurementLaeqMetricsFlow()
 
     val currentDbALabel = Res.string.sound_level_meter_current_dba
-    val minDbALabel = Res.string.sound_level_meter_min_dba
-    val avgDbALabel = Res.string.sound_level_meter_avg_dba
-    val maxDbALabel = Res.string.sound_level_meter_max_dba
 
 
     // - Lifecycle
