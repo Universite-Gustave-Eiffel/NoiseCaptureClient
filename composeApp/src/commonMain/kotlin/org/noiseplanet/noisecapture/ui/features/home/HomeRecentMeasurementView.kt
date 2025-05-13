@@ -45,7 +45,10 @@ fun HomeRecentMeasurementView(
     Column(
         modifier = modifier.clickable { onClick(measurement) }
     ) {
-        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Text(
                 text = HumanReadable.timeAgo(startTime),
                 style = MaterialTheme.typography.titleMedium.copy(

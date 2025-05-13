@@ -49,7 +49,15 @@ fun HomeScreen(
         Column {
             SoundLevelMeterHeaderView(viewModel)
 
-            LastMeasurementsView(measurements, onClickMeasurement = {})
+            LastMeasurementsView(
+                measurements,
+                onClickMeasurement = {
+                    // TODO: Open measurement details screen
+                },
+                onClickShowAllMeasurements = {
+                    // TODO: Open measurements history screen
+                }
+            )
 
             // For debug purposes to visualise the measurements currently stored
             LazyColumn {
