@@ -22,6 +22,8 @@ import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBar
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBarState
 import org.noiseplanet.noisecapture.ui.components.appbar.rememberAppBarState
+import org.noiseplanet.noisecapture.ui.features.history.HistoryScreen
+import org.noiseplanet.noisecapture.ui.features.history.HistoryScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.home.HomeScreen
 import org.noiseplanet.noisecapture.ui.features.home.HomeScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.measurement.MeasurementScreen
@@ -128,7 +130,7 @@ fun RootCoordinator(
                         // TODO: Open measurement details
                     }, {
                         // Callback triggered when clicking the open history button or card
-                        // TODO: Open measurements history
+                        navController.navigate(Route.History.name)
                     })
                 }
                 appBarState.setCurrentScreenViewModel(screenViewModel)
@@ -155,6 +157,13 @@ fun RootCoordinator(
                 appBarState.setCurrentScreenViewModel(screenViewModel)
 
                 MeasurementScreen(screenViewModel)
+            }
+
+            composable(route = Route.History.name) {
+                val screenViewModel: HistoryScreenViewModel = koinInject()
+                appBarState.setCurrentScreenViewModel(screenViewModel)
+
+                HistoryScreen(screenViewModel)
             }
 
             composable(route = Route.Settings.name) {

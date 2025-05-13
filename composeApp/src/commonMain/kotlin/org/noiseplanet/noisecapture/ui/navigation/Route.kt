@@ -2,6 +2,7 @@ package org.noiseplanet.noisecapture.ui.navigation
 
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.app_name
+import noisecapture.composeapp.generated.resources.history_title
 import noisecapture.composeapp.generated.resources.measurement_title
 import noisecapture.composeapp.generated.resources.platform_info_title
 import noisecapture.composeapp.generated.resources.request_permission_title
@@ -24,7 +25,9 @@ enum class Route(
 
     PlatformInfo(title = Res.string.platform_info_title),
     RequestPermission(title = Res.string.request_permission_title),
+
     Measurement(title = Res.string.measurement_title, usesAudioSource = true),
+    History(title = Res.string.history_title),
 
     Settings(title = Res.string.settings_title),
 }

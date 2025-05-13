@@ -35,6 +35,10 @@
     <string name="measurement_end_recording_button_title">End recording</string>
 
 
+    <!-- HistoryScreen -->
+    <string name="history_title">Measurements history</string>
+
+
     <!-- Settings -->
     <string name="settings_title">Settings</string>
 
