@@ -14,7 +14,7 @@ object VuMeterOptions {
     /**
      * Maximum dB threshold for a value to be taken into account.
      */
-    const val DB_MAX: Double = 20.0
+    const val DB_MAX: Double = 120.0
 }
 
 
