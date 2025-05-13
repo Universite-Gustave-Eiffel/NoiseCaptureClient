@@ -17,9 +17,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel.Companion.VU_METER_DB_MAX
-import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel.Companion.VU_METER_DB_MIN
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
+import org.noiseplanet.noisecapture.util.VuMeterOptions
 
 private val BAR_HEIGHT: Dp = 24.dp
 
@@ -27,8 +26,8 @@ private val BAR_HEIGHT: Dp = 24.dp
 fun VuMeter(
     ticks: IntArray,
     value: Double,
-    minimum: Double = VU_METER_DB_MIN,
-    maximum: Double = VU_METER_DB_MAX,
+    minimum: Double = VuMeterOptions.DB_MIN,
+    maximum: Double = VuMeterOptions.DB_MAX,
     modifier: Modifier = Modifier,
 ) {
     val valueRatio = (value - minimum) / (maximum - minimum)

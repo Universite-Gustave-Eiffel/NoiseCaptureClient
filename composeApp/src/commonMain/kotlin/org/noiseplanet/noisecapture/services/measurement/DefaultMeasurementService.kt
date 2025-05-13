@@ -17,6 +17,7 @@ import org.noiseplanet.noisecapture.model.dao.MutableMeasurement
 import org.noiseplanet.noisecapture.services.storage.StorageService
 import org.noiseplanet.noisecapture.services.storage.injectStorageService
 import org.noiseplanet.noisecapture.util.injectLogger
+import org.noiseplanet.noisecapture.util.isInVuMeterRange
 import org.noiseplanet.noisecapture.util.roundTo
 import kotlin.concurrent.Volatile
 import kotlin.math.max
@@ -114,24 +115,26 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
             )
             currentLeqSequenceFragment?.push(record)
         }
-        // Update (or initialize) ongoing measurement's leq metrics
-        val laeqMetrics = ongoingMeasurement.laeqMetrics?.let { currentMetrics ->
-            val average = currentMetrics.average +
-                (record.laeq - currentMetrics.average) / currentMetrics.recordsCount
-            LAeqMetrics(
-                min = min(record.laeq, currentMetrics.min),
-                average = average.roundTo(1),
-                max = max(record.laeq, currentMetrics.max),
-                recordsCount = currentMetrics.recordsCount + 1
+        if (record.laeq.isInVuMeterRange()) {
+            // Update (or initialize) ongoing measurement's leq metrics
+            val laeqMetrics = ongoingMeasurement.laeqMetrics?.let { currentMetrics ->
+                val average = currentMetrics.average +
+                    (record.laeq - currentMetrics.average) / currentMetrics.recordsCount
+                LAeqMetrics(
+                    min = min(record.laeq, currentMetrics.min),
+                    average = average.roundTo(1),
+                    max = max(record.laeq, currentMetrics.max),
+                    recordsCount = currentMetrics.recordsCount + 1
+                )
+            } ?: LAeqMetrics(
+                min = record.laeq,
+                average = record.laeq,
+                max = record.laeq,
+                recordsCount = 1,
             )
-        } ?: LAeqMetrics(
-            min = record.laeq,
-            average = record.laeq,
-            max = record.laeq,
-            recordsCount = 1,
-        )
-        ongoingMeasurement.laeqMetrics = laeqMetrics
-        laeqMetricsFlow.emit(laeqMetrics)
+            ongoingMeasurement.laeqMetrics = laeqMetrics
+            laeqMetricsFlow.emit(laeqMetrics)
+        }
         // Check if sequence fragment has reached its limit.
         // Since location updates come at an irregular rate, we rely on leq records to determine
         // when fragments should stop.

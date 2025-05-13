@@ -22,9 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
-import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel.Companion.VU_METER_DB_MAX
-import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel.Companion.VU_METER_DB_MIN
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
+import org.noiseplanet.noisecapture.util.isInVuMeterRange
 import org.noiseplanet.noisecapture.util.roundTo
 
 
@@ -35,6 +34,7 @@ fun SoundLevelMeterView(
     // - Properties
 
     val currentSoundPressureLevel by viewModel.soundPressureLevelFlow.collectAsState(0.0)
+    val roundedSpl = currentSoundPressureLevel.roundTo(1)
     val currentLeqMetrics by viewModel.laeqMetricsFlow.collectAsState(null)
 
 
@@ -58,11 +58,8 @@ fun SoundLevelMeterView(
                         ),
                     )
 
-                    val isSplInRange = currentSoundPressureLevel in VU_METER_DB_MIN..VU_METER_DB_MAX
-                    val roundedSpl = currentSoundPressureLevel.roundTo(1)
-
                     Text(
-                        text = if (isSplInRange) roundedSpl.toString() else "-",
+                        text = if (roundedSpl.isInVuMeterRange()) roundedSpl.toString() else "-",
                         style = MaterialTheme.typography.headlineLarge.copy(
                             fontWeight = FontWeight.Black,
                             fontSize = 36.sp,
@@ -99,7 +96,7 @@ fun SoundLevelMeterView(
                                 )
                                 val value = metric.value
                                 Text(
-                                    text = if (value != null && value in VU_METER_DB_MIN..VU_METER_DB_MAX) {
+                                    text = if (value != null && value.isInVuMeterRange()) {
                                         value.toString()
                                     } else "-",
                                     style = MaterialTheme.typography.bodyMedium.copy(
@@ -126,8 +123,6 @@ fun SoundLevelMeterView(
 
             VuMeter(
                 ticks = viewModel.vuMeterTicks,
-                minimum = VU_METER_DB_MIN,
-                maximum = VU_METER_DB_MAX,
                 value = currentSoundPressureLevel,
             )
         }

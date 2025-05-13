@@ -22,6 +22,7 @@ import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.ui.components.button.ButtonStyle
 import org.noiseplanet.noisecapture.ui.components.button.ButtonViewModel
+import org.noiseplanet.noisecapture.util.VuMeterOptions
 
 class SoundLevelMeterViewModel(
     val showMinMaxSPL: Boolean = true,
@@ -37,9 +38,6 @@ class SoundLevelMeterViewModel(
          * Tick values will be determined from provided min and max values
          */
         const val VU_METER_TICKS_COUNT: Int = 6
-
-        const val VU_METER_DB_MIN = 20.0
-        const val VU_METER_DB_MAX = 120.0
     }
 
 
@@ -57,7 +55,8 @@ class SoundLevelMeterViewModel(
     )
 
     val vuMeterTicks: IntArray = IntArray(size = VU_METER_TICKS_COUNT) { index ->
-        (VU_METER_DB_MIN + ((VU_METER_DB_MAX - VU_METER_DB_MIN) / (VU_METER_TICKS_COUNT - 1) * index)).toInt()
+        val offset = (VuMeterOptions.DB_MAX - VuMeterOptions.DB_MIN) / (VU_METER_TICKS_COUNT - 1)
+        (VuMeterOptions.DB_MIN + (offset * index)).toInt()
     }
 
     val soundPressureLevelFlow: Flow<Double>
