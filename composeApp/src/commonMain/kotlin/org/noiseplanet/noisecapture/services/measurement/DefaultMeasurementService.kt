@@ -7,7 +7,7 @@ import kotlinx.datetime.Clock
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.log.Logger
-import org.noiseplanet.noisecapture.model.dao.LeqMetrics
+import org.noiseplanet.noisecapture.model.dao.LAeqMetrics
 import org.noiseplanet.noisecapture.model.dao.LeqRecord
 import org.noiseplanet.noisecapture.model.dao.LeqSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.LocationRecord
@@ -43,7 +43,7 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
 
     // - Properties
 
-    private val leqMetricsFlow: MutableStateFlow<LeqMetrics?> = MutableStateFlow(null)
+    private val laeqMetricsFlow: MutableStateFlow<LAeqMetrics?> = MutableStateFlow(null)
 
     private val logger: Logger by injectLogger()
     private val platform: Platform by inject()
@@ -115,23 +115,23 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
             currentLeqSequenceFragment?.push(record)
         }
         // Update (or initialize) ongoing measurement's leq metrics
-        val leqMetrics = ongoingMeasurement.leqMetrics?.let { currentMetrics ->
+        val laeqMetrics = ongoingMeasurement.laeqMetrics?.let { currentMetrics ->
             val average = currentMetrics.average +
-                (record.lzeq - currentMetrics.average) / currentMetrics.recordsCount
-            LeqMetrics(
-                min = min(record.lzeq, currentMetrics.min),
+                (record.laeq - currentMetrics.average) / currentMetrics.recordsCount
+            LAeqMetrics(
+                min = min(record.laeq, currentMetrics.min),
                 average = average.roundTo(1),
-                max = max(record.lzeq, currentMetrics.max),
+                max = max(record.laeq, currentMetrics.max),
                 recordsCount = currentMetrics.recordsCount + 1
             )
-        } ?: LeqMetrics(
-            min = record.lzeq,
-            average = record.lzeq,
-            max = record.lzeq,
+        } ?: LAeqMetrics(
+            min = record.laeq,
+            average = record.laeq,
+            max = record.laeq,
             recordsCount = 1,
         )
-        ongoingMeasurement.leqMetrics = leqMetrics
-        leqMetricsFlow.emit(leqMetrics)
+        ongoingMeasurement.laeqMetrics = laeqMetrics
+        laeqMetricsFlow.emit(laeqMetrics)
         // Check if sequence fragment has reached its limit.
         // Since location updates come at an irregular rate, we rely on leq records to determine
         // when fragments should stop.
@@ -166,8 +166,8 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
         onSequenceFragmentEnd()
     }
 
-    override fun getOngoingMeasurementLeqMetricsFlow(): Flow<LeqMetrics?> {
-        return leqMetricsFlow
+    override fun getOngoingMeasurementLaeqMetricsFlow(): Flow<LAeqMetrics?> {
+        return laeqMetricsFlow
     }
 
 
@@ -199,7 +199,7 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
      */
     private suspend fun saveOngoingMeasurement() {
         val ongoingMeasurement = ongoingMeasurement ?: return
-        val leqMetrics = ongoingMeasurement.leqMetrics ?: return
+        val leqMetrics = ongoingMeasurement.laeqMetrics ?: return
         val now = Clock.System.now().toEpochMilliseconds()
 
         logger.info("Storing measurement with id ${ongoingMeasurement.uuid}")
@@ -214,9 +214,9 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
             locationSequenceIds = ongoingMeasurement.locationSequenceIds,
             leqsSequenceIds = ongoingMeasurement.leqsSequenceIds,
             recordedAudioUrl = ongoingMeasurement.recordedAudioUrl,
-            leqMetrics = leqMetrics,
+            laeqMetrics = leqMetrics,
         )
         measurementStorageService.set(measurement.uuid, measurement)
-        leqMetricsFlow.emit(null)
+        laeqMetricsFlow.emit(null)
     }
 }

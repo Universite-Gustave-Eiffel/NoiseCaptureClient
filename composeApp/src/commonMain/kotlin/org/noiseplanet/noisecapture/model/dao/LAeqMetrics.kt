@@ -12,7 +12,7 @@ import kotlinx.serialization.Serializable
  * @param recordsCount Number of records taken into account.
  */
 @Serializable
-data class LeqMetrics(
+data class LAeqMetrics(
     val min: Double,
     val average: Double,
     val max: Double,
