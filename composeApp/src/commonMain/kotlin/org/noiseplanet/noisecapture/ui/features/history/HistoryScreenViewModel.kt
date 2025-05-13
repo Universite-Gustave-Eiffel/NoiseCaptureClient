@@ -2,6 +2,9 @@ package org.noiseplanet.noisecapture.ui.features.history
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.Flow
+import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.history_title
+import org.jetbrains.compose.resources.StringResource
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.model.dao.Measurement
@@ -16,4 +19,10 @@ class HistoryScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
     private val measurementService: MeasurementService by inject()
 
     val measurementsFlow: Flow<List<Measurement>> = measurementService.getAllMeasurementsFlow()
+
+
+    // - ScreenViewModel
+
+    override val title: StringResource
+        get() = Res.string.history_title
 }

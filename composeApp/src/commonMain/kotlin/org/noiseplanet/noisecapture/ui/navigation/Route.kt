@@ -1,33 +1,42 @@
 package org.noiseplanet.noisecapture.ui.navigation
 
-import noisecapture.composeapp.generated.resources.Res
-import noisecapture.composeapp.generated.resources.app_name
-import noisecapture.composeapp.generated.resources.history_title
-import noisecapture.composeapp.generated.resources.measurement_title
-import noisecapture.composeapp.generated.resources.platform_info_title
-import noisecapture.composeapp.generated.resources.request_permission_title
-import noisecapture.composeapp.generated.resources.settings_title
-import org.jetbrains.compose.resources.StringResource
+import kotlinx.serialization.Serializable
 
 /**
- * Describes the different navigation routes (i.e. screens)
+ * Base interface shared by all routes.
  *
- * @param title Title that will be displayed in the navigation bar
  * @param usesAudioSource If set to true, audio source will be started automatically when
  *                        navigating to this screen. If false, it will be paused instead.
  */
-enum class Route(
-    val title: StringResource,
-    val usesAudioSource: Boolean = false,
-) {
+interface Route {
 
-    Home(title = Res.string.app_name, usesAudioSource = true),
-
-    PlatformInfo(title = Res.string.platform_info_title),
-    RequestPermission(title = Res.string.request_permission_title),
-
-    Measurement(title = Res.string.measurement_title, usesAudioSource = true),
-    History(title = Res.string.history_title),
-
-    Settings(title = Res.string.settings_title),
+    val usesAudioSource: Boolean
+        get() = false
 }
+
+
+@Serializable
+data object HomeRoute : Route {
+
+    override val usesAudioSource: Boolean
+        get() = true
+}
+
+@Serializable
+data object PlatformInfoRoute : Route
+
+@Serializable
+data object RequestPermissionRoute : Route
+
+@Serializable
+data object MeasurementRecordingRoute : Route {
+
+    override val usesAudioSource: Boolean
+        get() = true
+}
+
+@Serializable
+data object HistoryRoute : Route
+
+@Serializable
+data object SettingsRoute : Route

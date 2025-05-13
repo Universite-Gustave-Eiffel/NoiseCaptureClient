@@ -16,6 +16,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.model.dao.Measurement
@@ -53,9 +54,9 @@ fun RootCoordinator(
 
     // - Lifecycle
 
-    navController.addOnDestinationChangedListener { _, destination, _ ->
+    navController.addOnDestinationChangedListener { navController, _, _ ->
         // Triggered when navigating to a new screen or from another screen
-        destination.route?.let {
+        navController.currentBackStackEntry?.toRoute<Route>()?.let {
             viewModel.toggleAudioSourceForScreen(it)
         }
     }
@@ -76,7 +77,7 @@ fun RootCoordinator(
                 Lifecycle.Event.ON_RESUME -> {
                     // When app comes back to foreground and the current screen uses incoming
                     // audio, resume audio source if not recording
-                    navController.currentDestination?.route?.let {
+                    navController.currentBackStackEntry?.toRoute<Route>()?.let {
                         viewModel.toggleAudioSourceForScreen(it)
                     }
                 }
@@ -108,7 +109,7 @@ fun RootCoordinator(
         // TODO: Handle swipe back gestures on iOS -> encapsulate UINavigationController?
         NavHost(
             navController = navController,
-            startDestination = Route.RequestPermission.name,
+            startDestination = RequestPermissionRoute,
             enterTransition = Transitions.enterTransition,
             exitTransition = Transitions.exitTransition,
             popEnterTransition = Transitions.popEnterTransition,
@@ -117,20 +118,20 @@ fun RootCoordinator(
                 .padding(top = innerPadding.calculateTopPadding())
                 .background(Color.White)
         ) {
-            composable(route = Route.Home.name) {
+            composable<HomeRoute> {
                 val screenViewModel: HomeScreenViewModel = koinInject {
                     parametersOf({
                         // Callback triggered when pressing the settings app bar button
-                        navController.navigate(Route.Settings.name)
+                        navController.navigate(SettingsRoute)
                     }, {
                         // Callback triggered when pressing the open sound level meter button
-                        navController.navigate(Route.Measurement.name)
+                        navController.navigate(MeasurementRecordingRoute)
                     }, { _: Measurement ->
                         // Callback triggered when clicking a measurement
                         // TODO: Open measurement details
                     }, {
                         // Callback triggered when clicking the open history button or card
-                        navController.navigate(Route.History.name)
+                        navController.navigate(HistoryRoute)
                     })
                 }
                 appBarState.setCurrentScreenViewModel(screenViewModel)
@@ -138,7 +139,7 @@ fun RootCoordinator(
                 HomeScreen(viewModel = screenViewModel)
             }
 
-            composable(route = Route.RequestPermission.name) {
+            composable<RequestPermissionRoute> {
                 // TODO: Silently check for permissions and bypass this step if
                 //       they are already all granted
                 val screenViewModel: RequestPermissionScreenViewModel = koinInject()
@@ -147,26 +148,26 @@ fun RootCoordinator(
                 RequestPermissionScreen(
                     viewModel = screenViewModel,
                     onClickNextButton = {
-                        navController.navigate(Route.Home.name)
+                        navController.navigate(HomeRoute)
                     }
                 )
             }
 
-            composable(route = Route.Measurement.name) {
+            composable<MeasurementRecordingRoute> {
                 val screenViewModel: MeasurementScreenViewModel = koinInject()
                 appBarState.setCurrentScreenViewModel(screenViewModel)
 
                 MeasurementScreen(screenViewModel)
             }
 
-            composable(route = Route.History.name) {
+            composable<HistoryRoute> {
                 val screenViewModel: HistoryScreenViewModel = koinInject()
                 appBarState.setCurrentScreenViewModel(screenViewModel)
 
                 HistoryScreen(screenViewModel)
             }
 
-            composable(route = Route.Settings.name) {
+            composable<SettingsRoute> {
                 val screenViewModel: SettingsScreenViewModel = koinInject()
                 appBarState.setCurrentScreenViewModel(screenViewModel)
 
