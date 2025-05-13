@@ -1,7 +1,7 @@
 package org.noiseplanet.noisecapture.services.measurement
 
 import kotlinx.coroutines.flow.Flow
-import org.noiseplanet.noisecapture.model.dao.LeqMetrics
+import org.noiseplanet.noisecapture.model.dao.LAeqMetrics
 import org.noiseplanet.noisecapture.model.dao.LeqRecord
 import org.noiseplanet.noisecapture.model.dao.LeqSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.LocationRecord
@@ -105,5 +105,5 @@ interface MeasurementService {
      *
      * @return Ongoing measurement leq metrics updated in real time.
      */
-    fun getOngoingMeasurementLeqMetricsFlow(): Flow<LeqMetrics?>
+    fun getOngoingMeasurementLaeqMetricsFlow(): Flow<LAeqMetrics?>
 }

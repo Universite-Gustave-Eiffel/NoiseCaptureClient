@@ -35,7 +35,7 @@ fun SoundLevelMeterView(
     // - Properties
 
     val currentSoundPressureLevel by viewModel.soundPressureLevelFlow.collectAsState(0.0)
-    val currentLeqMetrics by viewModel.leqMetricsFlow.collectAsState(null)
+    val currentLeqMetrics by viewModel.laeqMetricsFlow.collectAsState(null)
 
 
     // - Layout
