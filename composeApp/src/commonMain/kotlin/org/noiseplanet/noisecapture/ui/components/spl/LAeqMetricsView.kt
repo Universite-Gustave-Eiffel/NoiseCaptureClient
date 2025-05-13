@@ -18,9 +18,8 @@ import noisecapture.composeapp.generated.resources.sound_level_meter_max_dba
 import noisecapture.composeapp.generated.resources.sound_level_meter_min_dba
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.model.dao.LAeqMetrics
-import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel.Companion.VU_METER_DB_MAX
-import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel.Companion.VU_METER_DB_MIN
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
+import org.noiseplanet.noisecapture.util.isInVuMeterRange
 
 
 @Composable
@@ -62,7 +61,7 @@ fun LAeqMetricsView(
                 )
                 val value = metric.value
                 Text(
-                    text = if (value != null && value in VU_METER_DB_MIN..VU_METER_DB_MAX) {
+                    text = if (value != null && value.isInVuMeterRange()) {
                         value.toString()
                     } else "-",
                     style = MaterialTheme.typography.bodyMedium.copy(
