@@ -71,8 +71,16 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
         return measurementStorageService.getAll()
     }
 
+    override fun getAllMeasurementsFlow(): Flow<List<Measurement>> {
+        return measurementStorageService.subscribeAll()
+    }
+
     override suspend fun getMeasurement(uuid: String): Measurement? {
         return measurementStorageService.get(uuid)
+    }
+
+    override fun getMeasurementFlow(uuid: String): Flow<Measurement?> {
+        return measurementStorageService.subscribeOne(uuid)
     }
 
     override suspend fun getLeqSequenceForMeasurement(uuid: String): List<LeqSequenceFragment> {

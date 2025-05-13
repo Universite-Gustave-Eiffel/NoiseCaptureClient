@@ -18,6 +18,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
+import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBar
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBarState
 import org.noiseplanet.noisecapture.ui.components.appbar.rememberAppBarState
@@ -122,6 +123,12 @@ fun RootCoordinator(
                     }, {
                         // Callback triggered when pressing the open sound level meter button
                         navController.navigate(Route.Measurement.name)
+                    }, { _: Measurement ->
+                        // Callback triggered when clicking a measurement
+                        // TODO: Open measurement details
+                    }, {
+                        // Callback triggered when clicking the open history button or card
+                        // TODO: Open measurements history
                     })
                 }
                 appBarState.setCurrentScreenViewModel(screenViewModel)

@@ -11,6 +11,7 @@
     <string name="home_slm_button_title">Open sound level meter</string>
     <string name="home_last_measurements_section_header">Last measurements</string>
     <string name="home_last_measurement_duration">Duration</string>
+    <string name="home_open_history_button_title">Open history</string>
 
 
     <!--  Sound level meter  -->

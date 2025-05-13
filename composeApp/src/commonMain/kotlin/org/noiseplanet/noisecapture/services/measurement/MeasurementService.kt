@@ -36,6 +36,16 @@ interface MeasurementService {
     suspend fun getAllMeasurements(): List<Measurement>
 
     /**
+     * Gets a flow of all measurements, emitting a new value everytime a measurement is
+     * created or deleted.
+     *
+     * Note: A new value won't be emitted if an existing measurement is updated.
+     *
+     * @return A [Flow] of all measurements in storage.
+     */
+    fun getAllMeasurementsFlow(): Flow<List<Measurement>>
+
+    /**
      * Get a single measurement from its unique identifier.
      *
      * > Note: This only returns the base measurement objects but not the underlying leq
@@ -46,6 +56,16 @@ interface MeasurementService {
      * @return Measurement object if found in local storage, null otherwise
      */
     suspend fun getMeasurement(uuid: String): Measurement?
+
+    /**
+     * Subscribe to every updates made a particular measurement.
+     *
+     * @param uuid Measurement unique identifier
+     *
+     * @return A [Flow] of measurement values, null if there is no measurement for the
+     *         given identifier.
+     */
+    fun getMeasurementFlow(uuid: String): Flow<Measurement?>
 
     /**
      * Gets all Leq values for a measurement in the form of sequence fragments.

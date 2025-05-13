@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.services.storage
 
+import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
 
 
@@ -38,6 +39,25 @@ interface StorageService<T : @Serializable Any> {
      * @return Entity instance or null if not found in storage
      */
     suspend fun get(uuid: String): T?
+
+    /**
+     * Gets a [Flow] that is updated everytime a new entity is pushed or removed.
+     *
+     * Note: a new value won't be emitted if an existing entity is updated because that won't
+     *       update the internal index.
+     *
+     * @return A [Flow] of lists of all entities.
+     */
+    fun subscribeAll(): Flow<List<T>>
+
+    /**
+     * Gets a [Flow] that is updated everytime the target entity is updated.
+     * Emits null if the target entity is not found.
+     *
+     * @param uuid Unique entity identifier
+     * @return A [Flow] of entity instances.
+     */
+    fun subscribeOne(uuid: String): Flow<T?>
 
     /**
      * Sets an entity's stored value.

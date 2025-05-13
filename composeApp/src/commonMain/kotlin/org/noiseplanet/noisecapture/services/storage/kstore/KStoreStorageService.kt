@@ -4,6 +4,8 @@ import io.github.xxfast.kstore.KStore
 import io.github.xxfast.kstore.extensions.getOrEmpty
 import io.github.xxfast.kstore.extensions.minus
 import io.github.xxfast.kstore.extensions.plus
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
 import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.model.dao.LeqSequenceFragment
@@ -47,6 +49,20 @@ class KStoreStorageService<RecordType : @Serializable Any>(
     override suspend fun get(uuid: String): RecordType? {
         val store = getStoreForRecord(uuid)
         return store.get()
+    }
+
+    override fun subscribeAll(): Flow<List<RecordType>> {
+        return indexStore.updates.map { allIds ->
+            // Will emit a new value every time the index is updated
+            allIds?.mapNotNull { itemId ->
+                get(itemId)
+            } ?: emptyList()
+        }
+    }
+
+    override fun subscribeOne(uuid: String): Flow<RecordType?> {
+        val store = getStoreForRecord(uuid)
+        return store.updates
     }
 
     override suspend fun set(uuid: String, newValue: RecordType) {
