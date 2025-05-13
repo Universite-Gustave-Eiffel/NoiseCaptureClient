@@ -17,9 +17,12 @@ import noisecapture.composeapp.generated.resources.sound_level_meter_min_dba
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.audio.AudioSourceState
+import org.noiseplanet.noisecapture.model.dao.LAeqMetrics
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
+import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.ui.components.button.ButtonStyle
 import org.noiseplanet.noisecapture.ui.components.button.ButtonViewModel
+import org.noiseplanet.noisecapture.util.VuMeterOptions
 
 class SoundLevelMeterViewModel(
     val showMinMaxSPL: Boolean = true,
@@ -35,15 +38,13 @@ class SoundLevelMeterViewModel(
          * Tick values will be determined from provided min and max values
          */
         const val VU_METER_TICKS_COUNT: Int = 6
-
-        const val VU_METER_DB_MIN = 20.0
-        const val VU_METER_DB_MAX = 120.0
     }
 
 
     // - Properties
 
     private val liveAudioService: LiveAudioService by inject()
+    private val measurementService: MeasurementService by inject()
 
     val playPauseButtonViewModel = ButtonViewModel(
         onClick = this::toggleAudioSource,
@@ -54,11 +55,15 @@ class SoundLevelMeterViewModel(
     )
 
     val vuMeterTicks: IntArray = IntArray(size = VU_METER_TICKS_COUNT) { index ->
-        (VU_METER_DB_MIN + ((VU_METER_DB_MAX - VU_METER_DB_MIN) / (VU_METER_TICKS_COUNT - 1) * index)).toInt()
+        val offset = (VuMeterOptions.DB_MAX - VuMeterOptions.DB_MIN) / (VU_METER_TICKS_COUNT - 1)
+        (VuMeterOptions.DB_MIN + (offset * index)).toInt()
     }
 
     val soundPressureLevelFlow: Flow<Double>
         get() = liveAudioService.getWeightedLeqFlow()
+
+    val laeqMetricsFlow: Flow<LAeqMetrics?>
+        get() = measurementService.getOngoingMeasurementLaeqMetricsFlow()
 
     val currentDbALabel = Res.string.sound_level_meter_current_dba
     val minDbALabel = Res.string.sound_level_meter_min_dba

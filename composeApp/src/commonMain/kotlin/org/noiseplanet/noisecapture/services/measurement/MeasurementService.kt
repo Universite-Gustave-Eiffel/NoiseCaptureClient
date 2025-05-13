@@ -1,5 +1,7 @@
 package org.noiseplanet.noisecapture.services.measurement
 
+import kotlinx.coroutines.flow.Flow
+import org.noiseplanet.noisecapture.model.dao.LAeqMetrics
 import org.noiseplanet.noisecapture.model.dao.LeqRecord
 import org.noiseplanet.noisecapture.model.dao.LeqSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.LocationRecord
@@ -96,4 +98,12 @@ interface MeasurementService {
      * Closes the ongoing measurement, saving every remaining data to local storage.
      */
     suspend fun closeOngoingMeasurement()
+
+    /**
+     * Gets a flow of leq metrics (min/max/average) for the ongoing measurement, or
+     * null if no measurement is currently running.
+     *
+     * @return Ongoing measurement leq metrics updated in real time.
+     */
+    fun getOngoingMeasurementLaeqMetricsFlow(): Flow<LAeqMetrics?>
 }

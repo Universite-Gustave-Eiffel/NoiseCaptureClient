@@ -22,10 +22,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
-import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel.Companion.VU_METER_DB_MAX
-import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel.Companion.VU_METER_DB_MIN
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
-import kotlin.math.round
+import org.noiseplanet.noisecapture.util.isInVuMeterRange
+import org.noiseplanet.noisecapture.util.roundTo
 
 
 @Composable
@@ -35,6 +34,8 @@ fun SoundLevelMeterView(
     // - Properties
 
     val currentSoundPressureLevel by viewModel.soundPressureLevelFlow.collectAsState(0.0)
+    val roundedSpl = currentSoundPressureLevel.roundTo(1)
+    val currentLeqMetrics by viewModel.laeqMetricsFlow.collectAsState(null)
 
 
     // - Layout
@@ -46,7 +47,7 @@ fun SoundLevelMeterView(
         ) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.Top,
                 modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth()
             ) {
                 Column(horizontalAlignment = Alignment.Start) {
@@ -57,11 +58,8 @@ fun SoundLevelMeterView(
                         ),
                     )
 
-                    val isSplInRange = currentSoundPressureLevel in VU_METER_DB_MIN..VU_METER_DB_MAX
-                    val roundedSpl = round(currentSoundPressureLevel * 10.0) / 10.0
-
                     Text(
-                        text = if (isSplInRange) roundedSpl.toString() else "-",
+                        text = if (roundedSpl.isInVuMeterRange()) roundedSpl.toString() else "-",
                         style = MaterialTheme.typography.headlineLarge.copy(
                             fontWeight = FontWeight.Black,
                             fontSize = 36.sp,
@@ -75,33 +73,39 @@ fun SoundLevelMeterView(
                         Modifier.align(Alignment.Top),
                     ) {
                         listOf(
-                            MeasurementStatistics(
+                            LeqMetricViewModel(
                                 label = stringResource(viewModel.minDbALabel),
-                                value = "-",
+                                value = currentLeqMetrics?.min,
                             ),
-                            MeasurementStatistics(
+                            LeqMetricViewModel(
                                 label = stringResource(viewModel.avgDbALabel),
-                                value = "-",
+                                value = currentLeqMetrics?.average,
                             ),
-                            MeasurementStatistics(
+                            LeqMetricViewModel(
                                 label = stringResource(viewModel.maxDbALabel),
-                                value = "-",
+                                value = currentLeqMetrics?.max,
                             ),
-                        ).forEach {
+                        ).forEach { metric ->
                             Column(
                                 horizontalAlignment = Alignment.Start,
-                                modifier = Modifier.width(50.dp),
+                                modifier = Modifier.width(56.dp),
                             ) {
                                 Text(
-                                    text = it.label,
+                                    text = metric.label,
                                     style = MaterialTheme.typography.labelLarge
                                 )
+                                val value = metric.value
                                 Text(
-                                    text = it.value,
-                                    style = MaterialTheme.typography.headlineLarge.copy(
+                                    text = if (value != null && value.isInVuMeterRange()) {
+                                        value.toString()
+                                    } else "-",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 20.sp,
-                                        textAlign = TextAlign.Start
+                                        textAlign = TextAlign.Start,
+                                        color = metric.value?.let {
+                                            NoiseLevelColorRamp.getColorForSPLValue(it)
+                                        } ?: MaterialTheme.colorScheme.onSurface,
                                     )
                                 )
                             }
@@ -119,8 +123,6 @@ fun SoundLevelMeterView(
 
             VuMeter(
                 ticks = viewModel.vuMeterTicks,
-                minimum = VU_METER_DB_MIN,
-                maximum = VU_METER_DB_MAX,
                 value = currentSoundPressureLevel,
             )
         }
@@ -128,7 +130,7 @@ fun SoundLevelMeterView(
 }
 
 
-private data class MeasurementStatistics(
+private data class LeqMetricViewModel(
     val label: String,
-    val value: String,
+    val value: Double?,
 )

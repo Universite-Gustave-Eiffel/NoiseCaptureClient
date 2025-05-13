@@ -3,6 +3,7 @@ package org.noiseplanet.noisecapture.audio
 import org.noiseplanet.noisecapture.audio.signal.SpectrumChannel
 import org.noiseplanet.noisecapture.audio.signal.get44100HZ
 import org.noiseplanet.noisecapture.audio.signal.get48000HZ
+import org.noiseplanet.noisecapture.util.roundTo
 import kotlin.math.log10
 import kotlin.math.max
 import kotlin.math.min
@@ -71,14 +72,16 @@ class AcousticIndicatorsProcessing(val sampleRate: Int, val dbGain: Double = AND
                 val leqsPerThirdOctave = nominalFrequencies
                     .zip(thirdOctave.map {
                         // Clip values to -999dB to avoid -Inf in JSON exports
-                        max(it + thirdOctaveGain, -999.0)
+                        max(it + thirdOctaveGain, -999.0).roundTo(1)
                     }).toMap()
                 acousticIndicatorsDataList.add(
+                    // TODO: Adapt this to directly return LeqRecords
                     AcousticIndicatorsData(
                         samples.epoch,
-                        max(leq, -999.0),   // Clip values to -999dB to avoid -Inf in JSON exports
-                        max(laeq, -999.0),  // Clip values to -999dB to avoid -Inf in JSON exports
-                        rms,
+                        // Clip values to -999dB to avoid -Inf in JSON exports
+                        max(leq, -999.0).roundTo(1),
+                        max(laeq, -999.0).roundTo(1),
+                        rms.roundTo(1),
                         leqsPerThirdOctave,
                     )
                 )
