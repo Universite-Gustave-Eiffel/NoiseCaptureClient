@@ -3,6 +3,8 @@ package org.noiseplanet.noisecapture.ui.components.spl
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -59,18 +61,23 @@ fun LAeqMetricsView(
                     text = metric.label,
                     style = MaterialTheme.typography.labelLarge
                 )
+
                 val value = metric.value
-                Text(
+                BasicText(
                     text = if (value != null && value.isInVuMeterRange()) {
                         value.toString()
                     } else "-",
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
                         textAlign = TextAlign.Start,
                         color = metric.value?.let {
                             NoiseLevelColorRamp.getColorForSPLValue(it)
                         } ?: MaterialTheme.colorScheme.onSurface,
+                    ),
+                    autoSize = TextAutoSize.StepBased(
+                        minFontSize = 16.sp,
+                        maxFontSize = 20.sp,
+                        stepSize = 1.sp,
                     )
                 )
             }

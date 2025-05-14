@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -61,8 +62,7 @@ fun LastMeasurementsView(
     ) {
         CardView(
             backgroundColor = MaterialTheme.colorScheme.surface,
-            onClick = viewModel.onClickOpenHistoryButton,
-            modifier = Modifier.weight(1f).fillMaxHeight()
+            modifier = Modifier.fillMaxHeight().width(IntrinsicSize.Min)
         ) {
             Column(
                 verticalArrangement = Arrangement.SpaceBetween,
@@ -75,7 +75,7 @@ fun LastMeasurementsView(
                         text = "Statistics",
                         style = MaterialTheme.typography.titleMedium.copy(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        ),
                     )
 
                     Row(
@@ -97,20 +97,25 @@ fun LastMeasurementsView(
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
+                        val durationString = HumanReadable.duration(totalDuration)
+                        val (durationValue, durationUnit) = durationString.split(" ")
                         Text(
-                            text = HumanReadable.duration(totalDuration),
+                            text = durationValue,
                             style = statisticsValueStyle,
                             modifier = Modifier.alignByBaseline()
                         )
                         Text(
-                            text = "analysed",
+                            text = "$durationUnit total",
                             style = statisticsLabelStyle,
                             modifier = Modifier.alignByBaseline()
                         )
                     }
                 }
 
-                NCButton(viewModel = viewModel.openHistoryButtonViewModel)
+                NCButton(
+                    viewModel = viewModel.openHistoryButtonViewModel,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
 

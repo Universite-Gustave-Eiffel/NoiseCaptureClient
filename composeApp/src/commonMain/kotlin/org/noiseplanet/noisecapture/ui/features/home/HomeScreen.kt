@@ -1,7 +1,12 @@
 package org.noiseplanet.noisecapture.ui.features.home
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,7 +41,10 @@ fun HomeScreen(
         modifier = Modifier.fillMaxSize(),
         color = Color.White
     ) {
-        Column {
+        Column(
+            modifier = Modifier.verticalScroll(rememberScrollState())
+                .windowInsetsPadding(WindowInsets.navigationBars)
+        ) {
             SoundLevelMeterHeaderView(viewModel)
 
             LastMeasurementsView(viewModel.lastMeasurementsViewModel)
