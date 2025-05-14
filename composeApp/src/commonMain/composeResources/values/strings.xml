@@ -39,6 +39,10 @@
     <string name="history_title">Measurements history</string>
 
 
+    <!-- MeasurementDetailsScreen -->
+    <string name="measurement_details_title">Measurement details</string>
+
+
     <!-- Settings -->
     <string name="settings_title">Settings</string>
 

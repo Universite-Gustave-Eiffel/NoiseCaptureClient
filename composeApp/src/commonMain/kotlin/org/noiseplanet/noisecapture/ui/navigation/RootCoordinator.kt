@@ -23,6 +23,8 @@ import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBar
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBarState
 import org.noiseplanet.noisecapture.ui.components.appbar.rememberAppBarState
+import org.noiseplanet.noisecapture.ui.features.details.MeasurementDetailsScreen
+import org.noiseplanet.noisecapture.ui.features.details.MeasurementDetailsScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.history.HistoryScreen
 import org.noiseplanet.noisecapture.ui.features.history.HistoryScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.home.HomeScreen
@@ -109,7 +111,7 @@ fun RootCoordinator(
         // TODO: Handle swipe back gestures on iOS -> encapsulate UINavigationController?
         NavHost(
             navController = navController,
-            startDestination = RequestPermissionRoute,
+            startDestination = RequestPermissionRoute(),
             enterTransition = Transitions.enterTransition,
             exitTransition = Transitions.exitTransition,
             popEnterTransition = Transitions.popEnterTransition,
@@ -122,16 +124,16 @@ fun RootCoordinator(
                 val screenViewModel: HomeScreenViewModel = koinInject {
                     parametersOf({
                         // Callback triggered when pressing the settings app bar button
-                        navController.navigate(SettingsRoute)
+                        navController.navigate(SettingsRoute())
                     }, {
                         // Callback triggered when pressing the open sound level meter button
-                        navController.navigate(MeasurementRecordingRoute)
-                    }, { _: Measurement ->
+                        navController.navigate(MeasurementRecordingRoute())
+                    }, { measurement: Measurement ->
                         // Callback triggered when clicking a measurement
-                        // TODO: Open measurement details
+                        navController.navigate(MeasurementDetailsRoute(measurement.uuid))
                     }, {
                         // Callback triggered when clicking the open history button or card
-                        navController.navigate(HistoryRoute)
+                        navController.navigate(HistoryRoute())
                     })
                 }
                 appBarState.setCurrentScreenViewModel(screenViewModel)
@@ -148,7 +150,7 @@ fun RootCoordinator(
                 RequestPermissionScreen(
                     viewModel = screenViewModel,
                     onClickNextButton = {
-                        navController.navigate(HomeRoute)
+                        navController.navigate(HomeRoute())
                     }
                 )
             }
@@ -165,6 +167,17 @@ fun RootCoordinator(
                 appBarState.setCurrentScreenViewModel(screenViewModel)
 
                 HistoryScreen(screenViewModel)
+            }
+
+            composable<MeasurementDetailsRoute> { backstackEntry ->
+                val route: MeasurementDetailsRoute = backstackEntry.toRoute()
+
+                val screenViewModel: MeasurementDetailsScreenViewModel = koinInject {
+                    parametersOf(route.measurementId)
+                }
+                appBarState.setCurrentScreenViewModel(screenViewModel)
+
+                MeasurementDetailsScreen(screenViewModel)
             }
 
             composable<SettingsRoute> {
