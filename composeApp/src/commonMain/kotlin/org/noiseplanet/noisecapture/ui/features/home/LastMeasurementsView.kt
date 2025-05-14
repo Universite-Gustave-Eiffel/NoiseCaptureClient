@@ -41,10 +41,7 @@ fun LastMeasurementsView(
     // - Layout
 
     when (viewState) {
-        is LastMeasurementsViewModel.ViewState.Loading -> LastMeasurementsViewLoading(
-            viewState as LastMeasurementsViewModel.ViewState.Loading,
-            modifier
-        )
+        is LastMeasurementsViewModel.ViewState.Loading -> LastMeasurementsViewLoading()
 
         is LastMeasurementsViewModel.ViewState.ContentReady -> LastMeasurementsViewContentReady(
             viewState as LastMeasurementsViewModel.ViewState.ContentReady,
@@ -117,10 +114,7 @@ private fun LastMeasurementsViewContentReady(
 
 
 @Composable
-private fun LastMeasurementsViewLoading(
-    viewState: LastMeasurementsViewModel.ViewState.Loading,
-    modifier: Modifier,
-) {
+private fun LastMeasurementsViewLoading() {
     // Loading placeholder layout goes here
 }
 
