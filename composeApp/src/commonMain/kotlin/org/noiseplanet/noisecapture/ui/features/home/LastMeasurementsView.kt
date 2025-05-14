@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -65,52 +66,42 @@ fun LastMeasurementsView(
             modifier = Modifier.fillMaxHeight().width(IntrinsicSize.Min)
         ) {
             Column(
-                verticalArrangement = Arrangement.SpaceBetween,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxHeight()
             ) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "Statistics",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
-                    )
+                Text(
+                    text = "Statistics",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+                )
 
+                val durationString = HumanReadable.duration(totalDuration)
+                val (durationValue, durationUnit) = durationString.split(" ")
+                val statistics: Map<String, String> = mapOf(
+                    measurementsCount.toString() to "recordings",
+                    durationValue to "$durationUnit total",
+                )
+
+                statistics.forEach { entry ->
                     Row(
                         verticalAlignment = Alignment.Bottom,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
-                            text = measurementsCount.toString(),
+                            text = entry.key,
                             style = statisticsValueStyle,
                             modifier = Modifier.alignByBaseline()
                         )
                         Text(
-                            text = "recordings",
-                            style = statisticsLabelStyle,
-                            modifier = Modifier.alignByBaseline()
-                        )
-                    }
-
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        val durationString = HumanReadable.duration(totalDuration)
-                        val (durationValue, durationUnit) = durationString.split(" ")
-                        Text(
-                            text = durationValue,
-                            style = statisticsValueStyle,
-                            modifier = Modifier.alignByBaseline()
-                        )
-                        Text(
-                            text = "$durationUnit total",
+                            text = entry.value,
                             style = statisticsLabelStyle,
                             modifier = Modifier.alignByBaseline()
                         )
                     }
                 }
+
+                Spacer(modifier = Modifier.weight(1f))
 
                 NCButton(
                     viewModel = viewModel.openHistoryButtonViewModel,
