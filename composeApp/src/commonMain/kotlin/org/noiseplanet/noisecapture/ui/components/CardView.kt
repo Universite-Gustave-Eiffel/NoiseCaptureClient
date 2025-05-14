@@ -62,7 +62,7 @@ fun CardView(
             .dropShadow(shape = shape, isPressed = isPressed)
             .background(backgroundColor, shape)
             .clip(shape)
-            .padding(16.dp),
+            .padding(12.dp),
         contentAlignment = Alignment.TopStart,
         content = content
     )

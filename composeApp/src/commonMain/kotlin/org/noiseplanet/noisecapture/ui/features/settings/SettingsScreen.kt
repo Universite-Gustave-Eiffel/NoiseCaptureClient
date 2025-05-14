@@ -1,6 +1,7 @@
 package org.noiseplanet.noisecapture.ui.features.settings
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.PaddingValues
@@ -48,7 +49,10 @@ fun SettingsScreen(
         ) {
             viewModel.settingsItems.forEach { (sectionTitle, sectionItems) ->
                 stickyHeader {
-                    ListSectionHeader(sectionTitle)
+                    ListSectionHeader(
+                        sectionTitle,
+                        modifier = Modifier.background(MaterialTheme.colorScheme.background)
+                    )
                 }
 
                 items(sectionItems) { viewModel ->

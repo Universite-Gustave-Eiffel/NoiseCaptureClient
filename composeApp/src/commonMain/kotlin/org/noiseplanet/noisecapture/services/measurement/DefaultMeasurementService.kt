@@ -71,8 +71,16 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
         return measurementStorageService.getAll()
     }
 
+    override fun getAllMeasurementsFlow(): Flow<List<Measurement>> {
+        return measurementStorageService.subscribeAll()
+    }
+
     override suspend fun getMeasurement(uuid: String): Measurement? {
         return measurementStorageService.get(uuid)
+    }
+
+    override fun getMeasurementFlow(uuid: String): Flow<Measurement?> {
+        return measurementStorageService.subscribeOne(uuid)
     }
 
     override suspend fun getLeqSequenceForMeasurement(uuid: String): List<LeqSequenceFragment> {
@@ -99,6 +107,10 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
             startTimestamp = Clock.System.now().toEpochMilliseconds()
         )
         logger.info("Starting new measurement with id ${ongoingMeasurement?.uuid}")
+    }
+
+    override fun getOngoingMeasurementLaeqMetricsFlow(): Flow<LAeqMetrics?> {
+        return laeqMetricsFlow
     }
 
     override suspend fun pushToOngoingMeasurement(record: LeqRecord) {
@@ -169,8 +181,8 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
         onSequenceFragmentEnd()
     }
 
-    override fun getOngoingMeasurementLaeqMetricsFlow(): Flow<LAeqMetrics?> {
-        return laeqMetricsFlow
+    override suspend fun deleteMeasurement(uuid: String) {
+        measurementStorageService.delete(uuid)
     }
 
 

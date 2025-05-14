@@ -21,7 +21,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.back_button
 import org.jetbrains.compose.resources.stringResource
-import org.noiseplanet.noisecapture.ui.navigation.Route
 
 @Composable
 fun AppBar(
@@ -36,15 +35,15 @@ fun AppBar(
     val canNavigateUp = currentRoute != null && previousBackStackEntry != null
 
     val actions by appBarState.actions.collectAsState(emptyList())
+    val title = appBarState.viewModel?.title
 
 
     // - Layout
 
     CenterAlignedTopAppBar(
         title = {
-            if (currentRoute != null) {
-                val title = Route.valueOf(currentRoute).title
-                Text(stringResource(title))
+            title?.let {
+                Text(stringResource(it))
             }
         },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(

@@ -4,6 +4,9 @@ import Platform
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.request_permission_title
+import org.jetbrains.compose.resources.StringResource
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.component.inject
@@ -16,6 +19,8 @@ import org.noiseplanet.noisecapture.ui.features.permission.stateview.PermissionS
 class RequestPermissionScreenViewModel(
     private val permissionService: PermissionService,
 ) : ViewModel(), KoinComponent, ScreenViewModel {
+
+    // - Properties
 
     private val platform: Platform by inject()
 
@@ -37,4 +42,10 @@ class RequestPermissionScreenViewModel(
             }
         }
     )
+
+
+    // - ScreenViewModel
+
+    override val title: StringResource
+        get() = Res.string.request_permission_title
 }

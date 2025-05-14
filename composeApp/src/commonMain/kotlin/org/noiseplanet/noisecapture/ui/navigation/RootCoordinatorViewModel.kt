@@ -47,15 +47,11 @@ class RootCoordinatorViewModel : ViewModel(), KoinComponent {
      * If true, resume audio source if there is no ongoing measurement.
      * If false, pause audio source if there is no ongoing measurement.
      */
-    fun toggleAudioSourceForScreen(routeName: String) {
-        Route.entries.firstOrNull {
-            it.name == routeName
-        }?.let {
-            if (it.usesAudioSource) {
-                startAudioSourceIfNotRecording()
-            } else {
-                stopAudioSourceIfNotRecording()
-            }
+    fun toggleAudioSourceForScreen(route: Route) {
+        if (route.usesAudioSource) {
+            startAudioSourceIfNotRecording()
+        } else {
+            stopAudioSourceIfNotRecording()
         }
     }
 }

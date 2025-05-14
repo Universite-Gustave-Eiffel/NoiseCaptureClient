@@ -3,17 +3,18 @@ package org.noiseplanet.noisecapture.ui.components.spl
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
-import noisecapture.composeapp.generated.resources.sound_level_meter_avg_dba
 import noisecapture.composeapp.generated.resources.sound_level_meter_current_dba
-import noisecapture.composeapp.generated.resources.sound_level_meter_max_dba
-import noisecapture.composeapp.generated.resources.sound_level_meter_min_dba
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.audio.AudioSourceState
@@ -46,12 +47,19 @@ class SoundLevelMeterViewModel(
     private val liveAudioService: LiveAudioService by inject()
     private val measurementService: MeasurementService by inject()
 
+    private val playPauseButtonIconFlow: StateFlow<ImageVector> = liveAudioService.isRunningFlow
+        .map { isRunning ->
+            if (isRunning) Icons.Filled.Pause else Icons.Filled.PlayArrow
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.Lazily,
+            Icons.Filled.PlayArrow,
+        )
+
     val playPauseButtonViewModel = ButtonViewModel(
         onClick = this::toggleAudioSource,
-        icon = liveAudioService.isRunningFlow.map { isRunning ->
-            if (isRunning) Icons.Filled.Pause else Icons.Filled.PlayArrow
-        },
-        style = flowOf(ButtonStyle.SECONDARY)
+        icon = playPauseButtonIconFlow,
+        style = MutableStateFlow(ButtonStyle.SECONDARY)
     )
 
     val vuMeterTicks: IntArray = IntArray(size = VU_METER_TICKS_COUNT) { index ->
@@ -66,9 +74,6 @@ class SoundLevelMeterViewModel(
         get() = measurementService.getOngoingMeasurementLaeqMetricsFlow()
 
     val currentDbALabel = Res.string.sound_level_meter_current_dba
-    val minDbALabel = Res.string.sound_level_meter_min_dba
-    val avgDbALabel = Res.string.sound_level_meter_avg_dba
-    val maxDbALabel = Res.string.sound_level_meter_max_dba
 
 
     // - Lifecycle
