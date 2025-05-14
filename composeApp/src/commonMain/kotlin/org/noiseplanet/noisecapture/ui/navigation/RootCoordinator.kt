@@ -177,7 +177,12 @@ fun RootCoordinator(
                 }
                 appBarState.setCurrentScreenViewModel(screenViewModel)
 
-                MeasurementDetailsScreen(screenViewModel)
+                MeasurementDetailsScreen(
+                    viewModel = screenViewModel,
+                    onMeasurementDeleted = {
+                        navController.popBackStack()
+                    }
+                )
             }
 
             composable<SettingsRoute> {

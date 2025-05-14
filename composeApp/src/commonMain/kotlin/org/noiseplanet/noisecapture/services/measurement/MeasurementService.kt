@@ -13,6 +13,7 @@ import org.noiseplanet.noisecapture.model.dao.Measurement
  * Interact with measurements using various storage services for the different files
  * that constitute a measurement (measurement object, leq sequence, location sequence, etc)
  */
+@Suppress("TooManyFunctions")
 interface MeasurementService {
 
     // - Properties
@@ -94,6 +95,14 @@ interface MeasurementService {
     fun openOngoingMeasurement()
 
     /**
+     * Gets a flow of leq metrics (min/max/average) for the ongoing measurement, or
+     * null if no measurement is currently running.
+     *
+     * @return Ongoing measurement leq metrics updated in real time.
+     */
+    fun getOngoingMeasurementLaeqMetricsFlow(): Flow<LAeqMetrics?>
+
+    /**
      * Pushes a new [LeqRecord] to the current ongoing measurement.
      *
      * @param record Record to be pushed.
@@ -120,10 +129,9 @@ interface MeasurementService {
     suspend fun closeOngoingMeasurement()
 
     /**
-     * Gets a flow of leq metrics (min/max/average) for the ongoing measurement, or
-     * null if no measurement is currently running.
+     * Deletes the measurement with the given id.
      *
-     * @return Ongoing measurement leq metrics updated in real time.
+     * @param uuid Measurement unique identifier.
      */
-    fun getOngoingMeasurementLaeqMetricsFlow(): Flow<LAeqMetrics?>
+    suspend fun deleteMeasurement(uuid: String)
 }

@@ -19,13 +19,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import nl.jacobras.humanreadable.HumanReadable
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.home_last_measurements_section_header
+import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.ui.components.CardView
 import org.noiseplanet.noisecapture.ui.components.ListSectionHeader
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
-import kotlin.time.Duration
 
 
 @Composable
@@ -36,18 +35,32 @@ fun LastMeasurementsView(
 
     // - Properties
 
-    val lastTwoMeasurements by viewModel.lastTwoMeasurementsFlow.collectAsState(emptyList())
-    val measurementsCount by viewModel.measurementsCountFlow.collectAsState(0)
-    val totalDuration by viewModel.totalMeasurementsDurationFlow.collectAsState(Duration.ZERO)
+    val viewState by viewModel.viewStateFlow.collectAsState()
 
-    val statisticsValueStyle = MaterialTheme.typography.titleMedium.copy(
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        fontWeight = FontWeight.Bold,
-    )
-    val statisticsLabelStyle = MaterialTheme.typography.bodyMedium.copy(
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
 
+    // - Layout
+
+    when (viewState) {
+        is LastMeasurementsViewModel.ViewState.Loading -> LastMeasurementsViewLoading(
+            viewState as LastMeasurementsViewModel.ViewState.Loading,
+            modifier
+        )
+
+        is LastMeasurementsViewModel.ViewState.ContentReady -> LastMeasurementsViewContentReady(
+            viewState as LastMeasurementsViewModel.ViewState.ContentReady,
+            onClickMeasurement = viewModel.onClickMeasurement,
+            modifier,
+        )
+    }
+}
+
+
+@Composable
+private fun LastMeasurementsViewContentReady(
+    viewState: LastMeasurementsViewModel.ViewState.ContentReady,
+    onClickMeasurement: (Measurement) -> Unit,
+    modifier: Modifier,
+) {
 
     // - Layout
 
@@ -76,35 +89,13 @@ fun LastMeasurementsView(
                     ),
                 )
 
-                val durationString = HumanReadable.duration(totalDuration)
-                val (durationValue, durationUnit) = durationString.split(" ")
-                val statistics: Map<String, String> = mapOf(
-                    measurementsCount.toString() to "recordings",
-                    durationValue to "$durationUnit total",
-                )
-
-                statistics.forEach { entry ->
-                    Row(
-                        verticalAlignment = Alignment.Bottom,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Text(
-                            text = entry.key,
-                            style = statisticsValueStyle,
-                            modifier = Modifier.alignByBaseline()
-                        )
-                        Text(
-                            text = entry.value,
-                            style = statisticsLabelStyle,
-                            modifier = Modifier.alignByBaseline()
-                        )
-                    }
-                }
+                StatisticsElement(viewState.measurementsCount.toString(), "recordings")
+                StatisticsElement(viewState.totalDuration, "${viewState.durationUnit} total")
 
                 Spacer(modifier = Modifier.weight(1f))
 
                 NCButton(
-                    viewModel = viewModel.openHistoryButtonViewModel,
+                    viewModel = viewState.historyButtonViewModel,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -114,12 +105,59 @@ fun LastMeasurementsView(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.weight(1f).padding(vertical = 12.dp),
         ) {
-            lastTwoMeasurements.forEach { measurement ->
+            viewState.lastTwoMeasurements.forEach { measurement ->
                 HomeRecentMeasurementView(
                     measurement,
-                    onClick = viewModel.onClickMeasurement,
+                    onClick = onClickMeasurement,
                 )
             }
         }
+    }
+}
+
+
+@Composable
+private fun LastMeasurementsViewLoading(
+    viewState: LastMeasurementsViewModel.ViewState.Loading,
+    modifier: Modifier,
+) {
+    // Loading placeholder layout goes here
+}
+
+
+@Composable
+private fun StatisticsElement(
+    value: String,
+    label: String,
+    modifier: Modifier = Modifier,
+) {
+    // - Properties
+
+    val statisticsValueStyle = MaterialTheme.typography.titleMedium.copy(
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        fontWeight = FontWeight.Bold,
+    )
+    val statisticsLabelStyle = MaterialTheme.typography.bodyMedium.copy(
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+
+
+    // - Layout
+
+    Row(
+        verticalAlignment = Alignment.Bottom,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = modifier,
+    ) {
+        Text(
+            text = value,
+            style = statisticsValueStyle,
+            modifier = Modifier.alignByBaseline()
+        )
+        Text(
+            text = label,
+            style = statisticsLabelStyle,
+            modifier = Modifier.alignByBaseline()
+        )
     }
 }

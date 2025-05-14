@@ -109,6 +109,10 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
         logger.info("Starting new measurement with id ${ongoingMeasurement?.uuid}")
     }
 
+    override fun getOngoingMeasurementLaeqMetricsFlow(): Flow<LAeqMetrics?> {
+        return laeqMetricsFlow
+    }
+
     override suspend fun pushToOngoingMeasurement(record: LeqRecord) {
         val ongoingMeasurement = ongoingMeasurement ?: return
         // If we already have an ongoing sequence, simply push the new
@@ -177,8 +181,8 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
         onSequenceFragmentEnd()
     }
 
-    override fun getOngoingMeasurementLaeqMetricsFlow(): Flow<LAeqMetrics?> {
-        return laeqMetricsFlow
+    override suspend fun deleteMeasurement(uuid: String) {
+        measurementStorageService.delete(uuid)
     }
 
 

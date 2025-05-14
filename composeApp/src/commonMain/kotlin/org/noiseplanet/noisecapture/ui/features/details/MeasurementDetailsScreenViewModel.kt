@@ -1,7 +1,9 @@
 package org.noiseplanet.noisecapture.ui.features.details
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.measurement_details_title
 import org.jetbrains.compose.resources.StringResource
@@ -26,4 +28,13 @@ class MeasurementDetailsScreenViewModel(
 
     override val title: StringResource
         get() = Res.string.measurement_details_title
+
+
+    // - Public functions
+
+    fun deleteMeasurement() {
+        viewModelScope.launch {
+            measurementService.deleteMeasurement(measurementId)
+        }
+    }
 }

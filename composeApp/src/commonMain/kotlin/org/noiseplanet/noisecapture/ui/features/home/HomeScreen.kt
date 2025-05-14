@@ -47,7 +47,9 @@ fun HomeScreen(
         ) {
             SoundLevelMeterHeaderView(viewModel)
 
-            LastMeasurementsView(viewModel.lastMeasurementsViewModel)
+            if (measurements.isNotEmpty()) {
+                LastMeasurementsView(viewModel.lastMeasurementsViewModel)
+            }
 
             // TODO: Add device calibration section
 

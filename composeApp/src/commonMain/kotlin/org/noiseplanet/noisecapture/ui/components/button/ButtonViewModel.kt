@@ -1,8 +1,8 @@
 package org.noiseplanet.noisecapture.ui.components.button
 
 import androidx.compose.ui.graphics.vector.ImageVector
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import org.jetbrains.compose.resources.StringResource
 
 
@@ -11,9 +11,9 @@ import org.jetbrains.compose.resources.StringResource
  */
 data class ButtonViewModel(
     val onClick: () -> Unit,
-    val title: Flow<StringResource?> = flowOf(null),
-    val icon: Flow<ImageVector?> = flowOf(null),
-    val style: Flow<ButtonStyle> = flowOf(ButtonStyle.PRIMARY),
+    val title: StateFlow<StringResource?> = MutableStateFlow(null),
+    val icon: StateFlow<ImageVector?> = MutableStateFlow(null),
+    val style: StateFlow<ButtonStyle> = MutableStateFlow(ButtonStyle.PRIMARY),
     val hasDropShadow: Boolean = false,
 ) {
     // - Lifecycle
@@ -29,9 +29,9 @@ data class ButtonViewModel(
         hasDropShadow: Boolean = false,
     ) : this(
         onClick,
-        flowOf(title),
-        flowOf(icon),
-        flowOf(style),
+        MutableStateFlow(title),
+        MutableStateFlow(icon),
+        MutableStateFlow(style),
         hasDropShadow
     )
 }
