@@ -7,7 +7,8 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted.Companion.Lazily
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import noisecapture.composeapp.generated.resources.Res
@@ -29,42 +30,70 @@ class RecordingControlsViewModel : ViewModel(), KoinComponent {
 
     val showPlayPauseButton: Flow<Boolean> = measurementRecordingService.isRecordingFlow
 
-    val playPauseButtonViewModel = ButtonViewModel(
-        onClick = {
-            if (liveAudioService.isRunning) {
-                liveAudioService.stopListening()
-            } else {
-                liveAudioService.startListening()
-            }
-        },
-        icon = liveAudioService.isRunningFlow.map { isRunning ->
-            if (isRunning) Icons.Filled.Pause else Icons.Filled.PlayArrow
-        }.stateIn(viewModelScope, Lazily, Icons.Filled.Pause),
-        style = liveAudioService.isRunningFlow.map { isRunning ->
-            if (isRunning) ButtonStyle.OUTLINED else ButtonStyle.PRIMARY
-        }.stateIn(viewModelScope, Lazily, ButtonStyle.OUTLINED),
-    )
+    val playPauseButtonViewModelFlow: StateFlow<ButtonViewModel> = liveAudioService.isRunningFlow
+        .map { isRunning ->
+            getPlayPauseButtonViewModel(isRunning)
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(),
+            getPlayPauseButtonViewModel(liveAudioService.isRunning)
+        )
 
-    val startStopRecordingButtonViewModel: ButtonViewModel = ButtonViewModel(
-        onClick = {
-            if (measurementRecordingService.isRecording) {
-                measurementRecordingService.endAndSave()
-            } else {
-                measurementRecordingService.start()
-            }
-        },
-        title = measurementRecordingService.isRecordingFlow.map { isRecording ->
-            if (isRecording) {
-                Res.string.measurement_end_recording_button_title
-            } else {
-                Res.string.measurement_start_recording_button_title
-            }
-        }.stateIn(viewModelScope, Lazily, Res.string.measurement_start_recording_button_title),
-        icon = measurementRecordingService.isRecordingFlow.map { isRecording ->
-            if (isRecording) null else Icons.Filled.Mic
-        }.stateIn(viewModelScope, Lazily, Icons.Filled.Mic),
-        style = measurementRecordingService.isRecordingFlow.map { isRecording ->
-            if (isRecording) ButtonStyle.SECONDARY else ButtonStyle.PRIMARY
-        }.stateIn(viewModelScope, Lazily, ButtonStyle.PRIMARY)
-    )
+    val startStopButtonViewModelFlow: StateFlow<ButtonViewModel> =
+        measurementRecordingService.isRecordingFlow.map { isRecording ->
+            getStartStopButtonViewModel(isRecording)
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(),
+            getStartStopButtonViewModel(measurementRecordingService.isRecording)
+        )
+
+
+    // - Public functions
+
+    fun toggleAudioSource() {
+        if (liveAudioService.isRunning) {
+            liveAudioService.stopListening()
+        } else {
+            liveAudioService.startListening()
+        }
+    }
+
+    fun toggleRecording() {
+        if (measurementRecordingService.isRecording) {
+            measurementRecordingService.endAndSave()
+        } else {
+            measurementRecordingService.start()
+        }
+    }
+
+
+    // - Private functions
+
+    private fun getPlayPauseButtonViewModel(isAudioSourceRunning: Boolean): ButtonViewModel {
+        val icon = if (isAudioSourceRunning) Icons.Filled.Pause else Icons.Filled.PlayArrow
+        val style = if (isAudioSourceRunning) ButtonStyle.OUTLINED else ButtonStyle.PRIMARY
+
+        return ButtonViewModel(
+            title = null,
+            icon = icon,
+            style = style,
+        )
+    }
+
+    private fun getStartStopButtonViewModel(isRecording: Boolean): ButtonViewModel {
+        val title = if (isRecording) {
+            Res.string.measurement_end_recording_button_title
+        } else {
+            Res.string.measurement_start_recording_button_title
+        }
+        val icon = if (isRecording) null else Icons.Filled.Mic
+        val style = if (isRecording) ButtonStyle.SECONDARY else ButtonStyle.PRIMARY
+
+        return ButtonViewModel(
+            title = title,
+            icon = icon,
+            style = style,
+        )
+    }
 }

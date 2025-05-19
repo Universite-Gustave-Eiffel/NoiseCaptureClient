@@ -16,7 +16,7 @@ import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.ui.components.button.ButtonStyle
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
+import org.noiseplanet.noisecapture.ui.components.button.ButtonViewModel
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -33,7 +33,7 @@ class LastMeasurementsViewModel : ViewModel(), KoinComponent {
             val measurementsCount: Int,
             val totalDuration: String,
             val durationUnit: String,
-            val historyButtonViewModel: NCButtonViewModel,
+            val historyButtonViewModel: ButtonViewModel,
             val lastTwoMeasurements: List<Measurement>,
         ) : ViewState
     }
@@ -43,7 +43,7 @@ class LastMeasurementsViewModel : ViewModel(), KoinComponent {
 
     private val measurementService: MeasurementService by inject()
 
-    private val openHistoryButtonViewModel = NCButtonViewModel(
+    private val openHistoryButtonViewModel = ButtonViewModel(
         title = Res.string.home_open_history_button_title,
         style = ButtonStyle.OUTLINED,
         icon = Icons.Default.History,

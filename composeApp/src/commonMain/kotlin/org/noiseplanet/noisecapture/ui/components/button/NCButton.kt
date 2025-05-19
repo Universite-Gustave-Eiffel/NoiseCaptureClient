@@ -24,7 +24,6 @@ import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -35,34 +34,14 @@ import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.util.conditional
 import org.noiseplanet.noisecapture.util.shadow.dropShadow
 
+
 /**
  * A button component to be used throughout the app for unified styling
  */
+
 @Composable
 fun NCButton(
     viewModel: ButtonViewModel,
-    modifier: Modifier = Modifier,
-) {
-    val icon by viewModel.icon.collectAsState()
-    val title by viewModel.title.collectAsState()
-    val style by viewModel.style.collectAsState()
-
-    NCButton(
-        onClick = viewModel.onClick,
-        viewModel = NCButtonViewModel(
-            title = title,
-            icon = icon,
-            style = style,
-            hasDropShadow = viewModel.hasDropShadow
-        ),
-        modifier = modifier,
-    )
-}
-
-
-@Composable
-fun NCButton(
-    viewModel: NCButtonViewModel,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {

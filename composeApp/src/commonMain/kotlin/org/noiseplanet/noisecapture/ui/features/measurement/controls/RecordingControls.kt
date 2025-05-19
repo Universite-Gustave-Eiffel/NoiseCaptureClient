@@ -30,6 +30,8 @@ fun RecordingControls(
     // - Properties
 
     val showPlayPauseButton by viewModel.showPlayPauseButton.collectAsState(false)
+    val playPauseButtonViewModel by viewModel.playPauseButtonViewModelFlow.collectAsState()
+    val startStopButtonViewModel by viewModel.startStopButtonViewModelFlow.collectAsState()
 
 
     // - Layout
@@ -44,12 +46,14 @@ fun RecordingControls(
             exit = fadeOut() + slideOutHorizontally() + shrinkHorizontally(),
         ) {
             NCButton(
-                viewModel = viewModel.playPauseButtonViewModel,
+                onClick = viewModel::toggleAudioSource,
+                viewModel = playPauseButtonViewModel,
                 modifier = Modifier.padding(end = 16.dp).size(50.dp)
             )
         }
         NCButton(
-            viewModel = viewModel.startStopRecordingButtonViewModel,
+            onClick = viewModel::toggleRecording,
+            viewModel = startStopButtonViewModel,
             modifier = Modifier.height(50.dp)
         )
     }
