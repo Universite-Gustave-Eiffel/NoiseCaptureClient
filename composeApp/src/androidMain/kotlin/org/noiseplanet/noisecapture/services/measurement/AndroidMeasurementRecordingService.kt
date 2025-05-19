@@ -237,7 +237,7 @@ internal class ForegroundServiceWrapper : KoinComponent, Service() {
                 FOREGROUND_SERVICE_ID,
                 buildNotification(),
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST
                 } else {
                     0
                 }
