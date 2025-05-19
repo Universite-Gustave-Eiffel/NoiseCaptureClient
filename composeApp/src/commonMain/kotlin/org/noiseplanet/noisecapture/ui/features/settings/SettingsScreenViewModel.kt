@@ -51,8 +51,7 @@ import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.settings.item.SettingsEnumItemViewModel
 import org.noiseplanet.noisecapture.ui.features.settings.item.SettingsItemViewModel
 
-class SettingsScreenViewModel(
-) : ViewModel(), ScreenViewModel, KoinComponent {
+class SettingsScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
 
     // - Properties
 
