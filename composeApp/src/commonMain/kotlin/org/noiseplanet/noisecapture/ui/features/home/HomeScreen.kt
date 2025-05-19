@@ -15,19 +15,33 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewModelScope
+import org.koin.compose.module.rememberKoinModules
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.model.dao.Measurement
 
 /**
  * Home screen layout.
  */
-//@OptIn(FormatStringsInDatetimeFormats::class)
+@OptIn(KoinExperimentalAPI::class)
 @Composable
 fun HomeScreen(
     viewModel: HomeScreenViewModel,
+    onClickMeasurement: (Measurement) -> Unit,
+    onClickOpenHistoryButton: () -> Unit,
+    onClickOpenSoundLevelMeterButton: () -> Unit,
 ) {
+    // - DI
+
+    rememberKoinModules(unloadOnForgotten = true) {
+        listOf(homeModule)
+    }
+
+
     // - Properties
 
     val measurements = remember { mutableStateListOf<Measurement>() }
+    val lastMeasurementsViewModel: LastMeasurementsViewModel = koinViewModel()
 
     LaunchedEffect(viewModel.viewModelScope) {
         measurements.clear()
@@ -45,10 +59,17 @@ fun HomeScreen(
             modifier = Modifier.verticalScroll(rememberScrollState())
                 .windowInsetsPadding(WindowInsets.navigationBars)
         ) {
-            SoundLevelMeterHeaderView(viewModel)
+            SoundLevelMeterHeaderView(
+                viewModel = viewModel,
+                onClickOpenSoundLevelMeterButton = onClickOpenSoundLevelMeterButton
+            )
 
             if (measurements.isNotEmpty()) {
-                LastMeasurementsView(viewModel.lastMeasurementsViewModel)
+                LastMeasurementsView(
+                    viewModel = lastMeasurementsViewModel,
+                    onClickMeasurement = onClickMeasurement,
+                    onClickOpenHistoryButton = onClickOpenHistoryButton,
+                )
             }
 
             // TODO: Add device calibration section

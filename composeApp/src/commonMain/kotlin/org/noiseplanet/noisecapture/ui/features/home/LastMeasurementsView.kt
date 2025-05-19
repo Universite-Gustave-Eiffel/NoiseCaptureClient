@@ -30,6 +30,8 @@ import org.noiseplanet.noisecapture.ui.components.button.NCButton
 @Composable
 fun LastMeasurementsView(
     viewModel: LastMeasurementsViewModel,
+    onClickMeasurement: (Measurement) -> Unit,
+    onClickOpenHistoryButton: () -> Unit,
     modifier: Modifier = Modifier.fillMaxWidth(),
 ) {
 
@@ -45,7 +47,8 @@ fun LastMeasurementsView(
 
         is LastMeasurementsViewModel.ViewState.ContentReady -> LastMeasurementsViewContentReady(
             viewState as LastMeasurementsViewModel.ViewState.ContentReady,
-            onClickMeasurement = viewModel.onClickMeasurement,
+            onClickMeasurement = onClickMeasurement,
+            onClickOpenHistoryButton = onClickOpenHistoryButton,
             modifier,
         )
     }
@@ -56,6 +59,7 @@ fun LastMeasurementsView(
 private fun LastMeasurementsViewContentReady(
     viewState: LastMeasurementsViewModel.ViewState.ContentReady,
     onClickMeasurement: (Measurement) -> Unit,
+    onClickOpenHistoryButton: () -> Unit,
     modifier: Modifier,
 ) {
 
@@ -92,6 +96,7 @@ private fun LastMeasurementsViewContentReady(
                 Spacer(modifier = Modifier.weight(1f))
 
                 NCButton(
+                    onClick = onClickOpenHistoryButton,
                     viewModel = viewState.historyButtonViewModel,
                     modifier = Modifier.fillMaxWidth()
                 )

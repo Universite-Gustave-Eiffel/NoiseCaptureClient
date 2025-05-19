@@ -3,11 +3,9 @@ package org.noiseplanet.noisecapture.ui.components.spl
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -25,9 +23,10 @@ import org.noiseplanet.noisecapture.ui.components.button.ButtonStyle
 import org.noiseplanet.noisecapture.ui.components.button.ButtonViewModel
 import org.noiseplanet.noisecapture.util.VuMeterOptions
 
+
 class SoundLevelMeterViewModel(
-    val showMinMaxSPL: Boolean = true,
-    val showPlayPauseButton: Boolean = false,
+    val showMinMaxSPL: Boolean,
+    val showPlayPauseButton: Boolean,
 ) : ViewModel(), KoinComponent {
 
     // - Constants
@@ -47,20 +46,14 @@ class SoundLevelMeterViewModel(
     private val liveAudioService: LiveAudioService by inject()
     private val measurementService: MeasurementService by inject()
 
-    private val playPauseButtonIconFlow: StateFlow<ImageVector> = liveAudioService.isRunningFlow
+    val playPauseButtonViewModelFlow: StateFlow<ButtonViewModel> = liveAudioService.isRunningFlow
         .map { isRunning ->
-            if (isRunning) Icons.Filled.Pause else Icons.Filled.PlayArrow
+            getPlayPauseButtonViewModel(isRunning)
         }.stateIn(
             viewModelScope,
-            SharingStarted.Lazily,
-            Icons.Filled.PlayArrow,
+            SharingStarted.WhileSubscribed(),
+            getPlayPauseButtonViewModel(liveAudioService.isRunning)
         )
-
-    val playPauseButtonViewModel = ButtonViewModel(
-        onClick = this::toggleAudioSource,
-        icon = playPauseButtonIconFlow,
-        style = MutableStateFlow(ButtonStyle.SECONDARY)
-    )
 
     val vuMeterTicks: IntArray = IntArray(size = VU_METER_TICKS_COUNT) { index ->
         val offset = (VuMeterOptions.DB_MAX - VuMeterOptions.DB_MIN) / (VU_METER_TICKS_COUNT - 1)
@@ -91,13 +84,25 @@ class SoundLevelMeterViewModel(
     }
 
 
-    // - Private functions
+    // - Public functions
 
-    private fun toggleAudioSource() {
+    fun toggleAudioSource() {
         if (liveAudioService.isRunning) {
             liveAudioService.stopListening()
         } else {
             liveAudioService.startListening()
         }
+    }
+
+
+    // - Private functions
+
+    private fun getPlayPauseButtonViewModel(isAudioSourceRunning: Boolean): ButtonViewModel {
+        val icon = if (isAudioSourceRunning) Icons.Filled.Pause else Icons.Filled.PlayArrow
+        return ButtonViewModel(
+            title = null,
+            icon = icon,
+            style = ButtonStyle.SECONDARY,
+        )
     }
 }

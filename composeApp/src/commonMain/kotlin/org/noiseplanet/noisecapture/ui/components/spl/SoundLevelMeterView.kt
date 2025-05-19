@@ -34,6 +34,7 @@ fun SoundLevelMeterView(
     val currentSoundPressureLevel by viewModel.soundPressureLevelFlow.collectAsState(0.0)
     val roundedSpl = currentSoundPressureLevel.roundTo(1)
     val currentLeqMetrics by viewModel.laeqMetricsFlow.collectAsState(null)
+    val playPauseButtonViewModel by viewModel.playPauseButtonViewModelFlow.collectAsState()
 
 
     // - Layout
@@ -72,7 +73,8 @@ fun SoundLevelMeterView(
 
                 if (viewModel.showPlayPauseButton) {
                     NCButton(
-                        viewModel = viewModel.playPauseButtonViewModel,
+                        onClick = viewModel::toggleAudioSource,
+                        viewModel = playPauseButtonViewModel,
                         modifier = Modifier.size(40.dp)
                     )
                 }

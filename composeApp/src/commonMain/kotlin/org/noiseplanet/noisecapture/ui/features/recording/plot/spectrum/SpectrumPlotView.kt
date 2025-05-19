@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.ui.features.measurement.plot.spectrum
+package org.noiseplanet.noisecapture.ui.features.recording.plot.spectrum
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,10 +25,10 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
-import org.noiseplanet.noisecapture.ui.features.measurement.plot.PlotAxisBuilder
-import org.noiseplanet.noisecapture.ui.features.measurement.plot.PlotBitmapOverlay
-import org.noiseplanet.noisecapture.ui.features.measurement.plot.spectrum.SpectrumPlotViewModel.Companion.DBA_MAX
-import org.noiseplanet.noisecapture.ui.features.measurement.plot.spectrum.SpectrumPlotViewModel.Companion.DBA_MIN
+import org.noiseplanet.noisecapture.ui.features.recording.plot.PlotAxisBuilder
+import org.noiseplanet.noisecapture.ui.features.recording.plot.PlotBitmapOverlay
+import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrum.SpectrumPlotViewModel.Companion.DBA_MAX
+import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrum.SpectrumPlotViewModel.Companion.DBA_MIN
 import org.noiseplanet.noisecapture.util.toFrequencyString
 import kotlin.math.max
 import kotlin.math.min

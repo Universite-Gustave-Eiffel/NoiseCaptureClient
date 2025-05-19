@@ -13,18 +13,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
 import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterView
+import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel
 
 
 @Composable
 fun SoundLevelMeterHeaderView(
     viewModel: HomeScreenViewModel,
+    onClickOpenSoundLevelMeterButton: () -> Unit,
 ) {
+    // - Properties
+
+    val soundLevelMeterViewModel: SoundLevelMeterViewModel = koinViewModel()
+
+
+    // - Layout
+
     Column(
         modifier = Modifier.background(MaterialTheme.colorScheme.background)
     ) {
-        SoundLevelMeterView(viewModel.soundLevelMeterViewModel)
+        SoundLevelMeterView(soundLevelMeterViewModel)
 
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -42,6 +52,7 @@ fun SoundLevelMeterHeaderView(
             )
 
             NCButton(
+                onClick = onClickOpenSoundLevelMeterButton,
                 viewModel = viewModel.soundLevelMeterButtonViewModel,
                 modifier = Modifier.height(50.dp)
                     .fillMaxWidth()

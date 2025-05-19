@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.ui.features.measurement.plot.spectrogram
+package org.noiseplanet.noisecapture.ui.features.recording.plot.spectrogram
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,10 +24,10 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.toSize
 import org.noiseplanet.noisecapture.model.enums.SpectrogramScaleMode
 import org.noiseplanet.noisecapture.services.audio.DefaultLiveAudioService.Companion.FFT_HOP
-import org.noiseplanet.noisecapture.ui.features.measurement.plot.PlotAxisBuilder
-import org.noiseplanet.noisecapture.ui.features.measurement.plot.PlotBitmapOverlay
-import org.noiseplanet.noisecapture.ui.features.measurement.plot.spectrogram.SpectrogramPlotViewModel.Companion.REFERENCE_LEGEND_TEXT
-import org.noiseplanet.noisecapture.ui.features.measurement.plot.spectrogram.SpectrogramPlotViewModel.Companion.SPECTROGRAM_STRIP_WIDTH
+import org.noiseplanet.noisecapture.ui.features.recording.plot.PlotAxisBuilder
+import org.noiseplanet.noisecapture.ui.features.recording.plot.PlotBitmapOverlay
+import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrogram.SpectrogramPlotViewModel.Companion.REFERENCE_LEGEND_TEXT
+import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrogram.SpectrogramPlotViewModel.Companion.SPECTROGRAM_STRIP_WIDTH
 import org.noiseplanet.noisecapture.util.toFrequencyString
 import kotlin.math.log10
 import kotlin.math.max

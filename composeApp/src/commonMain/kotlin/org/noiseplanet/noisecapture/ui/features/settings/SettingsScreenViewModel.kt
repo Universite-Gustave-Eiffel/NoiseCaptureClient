@@ -43,17 +43,19 @@ import noisecapture.composeapp.generated.resources.settings_title
 import noisecapture.composeapp.generated.resources.settings_user_acoustics_knowledge_description
 import noisecapture.composeapp.generated.resources.settings_user_acoustics_knowledge_title
 import org.jetbrains.compose.resources.StringResource
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.services.settings.SettingsKey
 import org.noiseplanet.noisecapture.services.settings.UserSettingsService
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.settings.item.SettingsEnumItemViewModel
 import org.noiseplanet.noisecapture.ui.features.settings.item.SettingsItemViewModel
 
-class SettingsScreenViewModel(
-    private val settingsService: UserSettingsService,
-) : ViewModel(), ScreenViewModel {
+class SettingsScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
 
     // - Properties
+
+    private val settingsService: UserSettingsService by inject()
 
     val settingsItems: Map<StringResource, List<SettingsItemViewModel<out Any>>> = mapOf(
         Pair(

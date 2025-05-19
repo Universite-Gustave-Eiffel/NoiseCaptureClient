@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.ui.features.measurement.plot
+package org.noiseplanet.noisecapture.ui.features.recording.plot
 
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextMeasurer

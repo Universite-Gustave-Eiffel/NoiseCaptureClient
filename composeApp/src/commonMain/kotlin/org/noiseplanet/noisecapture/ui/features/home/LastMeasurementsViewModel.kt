@@ -21,10 +21,7 @@ import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-class LastMeasurementsViewModel(
-    val onClickOpenHistoryButton: () -> Unit,
-    val onClickMeasurement: (Measurement) -> Unit,
-) : ViewModel(), KoinComponent {
+class LastMeasurementsViewModel : ViewModel(), KoinComponent {
 
     // - States
 
@@ -47,7 +44,6 @@ class LastMeasurementsViewModel(
     private val measurementService: MeasurementService by inject()
 
     private val openHistoryButtonViewModel = ButtonViewModel(
-        onClick = onClickOpenHistoryButton,
         title = Res.string.home_open_history_button_title,
         style = ButtonStyle.OUTLINED,
         icon = Icons.Default.History,

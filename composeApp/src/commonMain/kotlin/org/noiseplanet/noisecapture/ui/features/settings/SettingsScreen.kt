@@ -17,17 +17,31 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
+import org.koin.compose.module.rememberKoinModules
+import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.ui.components.ListSectionHeader
 import org.noiseplanet.noisecapture.ui.features.settings.item.SettingsItem
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, KoinExperimentalAPI::class)
 @Composable
 fun SettingsScreen(
     viewModel: SettingsScreenViewModel,
 ) {
+    // - DI
+
+    rememberKoinModules(unloadOnForgotten = true) {
+        listOf(settingsModule)
+    }
+
+
+    // - Properties
+
     val focusManager = LocalFocusManager.current
     val listState = rememberLazyListState()
     val interactionSource = remember { MutableInteractionSource() }
+
+
+    // - Lifecycle
 
     LaunchedEffect(listState) {
         snapshotFlow { listState.isScrollInProgress }
@@ -35,6 +49,9 @@ fun SettingsScreen(
                 focusManager.clearFocus()
             }
     }
+
+
+    // - Layout
 
     Surface(color = MaterialTheme.colorScheme.background) {
         LazyColumn(

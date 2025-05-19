@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.ui.features.measurement.plot.spectrum
+package org.noiseplanet.noisecapture.ui.features.recording.plot.spectrum
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.Flow
