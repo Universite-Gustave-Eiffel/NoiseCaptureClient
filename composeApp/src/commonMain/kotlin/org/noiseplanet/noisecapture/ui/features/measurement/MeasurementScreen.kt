@@ -23,9 +23,8 @@ import org.noiseplanet.noisecapture.ui.features.measurement.controls.RecordingCo
 
 @OptIn(KoinExperimentalAPI::class)
 @Composable
-fun MeasurementScreen(
-    viewModel: MeasurementScreenViewModel,
-) {
+fun MeasurementScreen() {
+
     // - DI
 
     rememberKoinModules(unloadOnForgotten = true) {

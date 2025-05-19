@@ -161,7 +161,7 @@ fun RootCoordinator(
                 val screenViewModel: MeasurementScreenViewModel = koinViewModel()
                 appBarState.setCurrentScreenViewModel(screenViewModel)
 
-                MeasurementScreen(screenViewModel)
+                MeasurementScreen()
             }
 
             composable<HistoryRoute> {
