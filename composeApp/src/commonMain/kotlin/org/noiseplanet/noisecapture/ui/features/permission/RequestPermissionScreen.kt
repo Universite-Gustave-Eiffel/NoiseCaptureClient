@@ -23,24 +23,32 @@ import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.request_permission_button_next
 import noisecapture.composeapp.generated.resources.request_permission_explanation
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.module.rememberKoinModules
+import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.ui.features.permission.stateview.PermissionStateView
 
 /**
  * Presents required permissions to the user with controls to either request the
  * permission if it was not yet asked, or to open the corresponding settings page
  * if permission was already previously denied
- *
- * TODO: Instead of pushing this screen into the navigation stack, make it pop on top of
- *       the current screen when needed. Pressing the back button should also close the enclosing
- *       screen and pressing the next button should dismiss both screens. Maybe this can be done
- *       with a nested navigation controller?
  */
+@OptIn(KoinExperimentalAPI::class)
 @Composable
 fun RequestPermissionScreen(
     onClickNextButton: () -> Unit,
     viewModel: RequestPermissionScreenViewModel,
     modifier: Modifier = Modifier,
 ) {
+
+    // - DI
+
+    rememberKoinModules(unloadOnForgotten = true) {
+        listOf(requestPermissionModule)
+    }
+
+
+    // - Layout
+
     Surface(
         modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background

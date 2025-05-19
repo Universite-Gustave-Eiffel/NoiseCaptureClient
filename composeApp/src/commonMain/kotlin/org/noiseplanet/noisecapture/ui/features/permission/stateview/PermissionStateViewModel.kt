@@ -13,14 +13,19 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.services.permission.PermissionService
 
 class PermissionStateViewModel(
     private val permission: Permission,
-    private val permissionService: PermissionService,
-) : ViewModel() {
+) : ViewModel(), KoinComponent {
+
+    // - Properties
+
+    private val permissionService: PermissionService by inject()
 
     private val stateFlow: Flow<PermissionState> =
         permissionService.getPermissionStateFlow(permission)
@@ -46,6 +51,9 @@ class PermissionStateViewModel(
     val shouldShowRequestButton: Flow<Boolean> = stateFlow.map { state ->
         state == PermissionState.NOT_DETERMINED
     }
+
+
+    // - Public functions
 
     fun openSettings() {
         permissionService.openSettingsForPermission(permission)

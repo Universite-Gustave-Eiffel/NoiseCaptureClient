@@ -25,9 +25,10 @@ import org.noiseplanet.noisecapture.ui.components.button.ButtonStyle
 import org.noiseplanet.noisecapture.ui.components.button.ButtonViewModel
 import org.noiseplanet.noisecapture.util.VuMeterOptions
 
+
 class SoundLevelMeterViewModel(
-    val showMinMaxSPL: Boolean = true,
-    val showPlayPauseButton: Boolean = false,
+    val showMinMaxSPL: Boolean,
+    val showPlayPauseButton: Boolean,
 ) : ViewModel(), KoinComponent {
 
     // - Constants

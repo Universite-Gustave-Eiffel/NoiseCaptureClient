@@ -12,13 +12,23 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
+import org.koin.compose.module.rememberKoinModules
+import org.koin.core.annotation.KoinExperimentalAPI
 
 
+@OptIn(KoinExperimentalAPI::class)
 @Composable
 fun MeasurementDetailsScreen(
     viewModel: MeasurementDetailsScreenViewModel,
     onMeasurementDeleted: () -> Unit,
 ) {
+
+    // - DI
+
+    rememberKoinModules(unloadOnForgotten = true) {
+        listOf(measurementDetailsModule)
+    }
+
 
     // - Properties
 

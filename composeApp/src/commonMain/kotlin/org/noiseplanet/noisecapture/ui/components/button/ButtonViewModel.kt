@@ -35,3 +35,11 @@ data class ButtonViewModel(
         hasDropShadow
     )
 }
+
+
+data class NCButtonViewModel(
+    val title: StringResource?,
+    val icon: ImageVector? = null,
+    val style: ButtonStyle = ButtonStyle.PRIMARY,
+    val hasDropShadow: Boolean = false,
+)

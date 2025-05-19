@@ -16,12 +16,22 @@ import kotlinx.datetime.format
 import kotlinx.datetime.format.DateTimeComponents
 import kotlinx.datetime.format.FormatStringsInDatetimeFormats
 import kotlinx.datetime.format.byUnicodePattern
+import org.koin.compose.module.rememberKoinModules
+import org.koin.core.annotation.KoinExperimentalAPI
 
-@OptIn(FormatStringsInDatetimeFormats::class)
+@OptIn(FormatStringsInDatetimeFormats::class, KoinExperimentalAPI::class)
 @Composable
 fun HistoryScreen(
     viewModel: HistoryScreenViewModel,
 ) {
+
+    // - DI
+
+    rememberKoinModules(unloadOnForgotten = true) {
+        listOf(historyModule)
+    }
+
+
     // - Properties
 
     val measurements by viewModel.measurementsFlow.collectAsState(emptyList())

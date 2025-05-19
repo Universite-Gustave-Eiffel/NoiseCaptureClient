@@ -18,37 +18,22 @@ import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBarButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 import org.noiseplanet.noisecapture.ui.components.button.ButtonStyle
-import org.noiseplanet.noisecapture.ui.components.button.ButtonViewModel
-import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel
+import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
 
 class HomeScreenViewModel(
     private val onClickSettingsButton: () -> Unit,
-    private val onClickOpenSoundLevelMeterButton: () -> Unit,
-    private val onClickMeasurement: (Measurement) -> Unit,
-    private val onClickOpenHistoryButton: () -> Unit,
 ) : ViewModel(), KoinComponent, ScreenViewModel {
 
     // - Properties
 
     private val measurementService: MeasurementService by inject()
 
-    val soundLevelMeterViewModel = SoundLevelMeterViewModel(
-        showMinMaxSPL = false,
-        showPlayPauseButton = true
-    )
-
     val soundLevelMeterHintText = Res.string.home_slm_hint
-    val soundLevelMeterButtonViewModel = ButtonViewModel(
-        onClick = onClickOpenSoundLevelMeterButton,
+    val soundLevelMeterButtonViewModel = NCButtonViewModel(
         title = Res.string.home_slm_button_title,
         icon = Icons.Filled.Mic,
         style = ButtonStyle.SECONDARY,
         hasDropShadow = true
-    )
-
-    val lastMeasurementsViewModel = LastMeasurementsViewModel(
-        onClickMeasurement = onClickMeasurement,
-        onClickOpenHistoryButton = onClickOpenHistoryButton,
     )
 
 
