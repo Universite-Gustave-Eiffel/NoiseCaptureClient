@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.ui.features.measurement
+package org.noiseplanet.noisecapture.ui.features.recording
 
 import androidx.lifecycle.ViewModel
 import noisecapture.composeapp.generated.resources.Res
@@ -7,8 +7,8 @@ import org.jetbrains.compose.resources.StringResource
 import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 
-class MeasurementScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
-    
+class MeasurementRecordingScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
+
     // - ScreenViewModel
 
     override val title: StringResource

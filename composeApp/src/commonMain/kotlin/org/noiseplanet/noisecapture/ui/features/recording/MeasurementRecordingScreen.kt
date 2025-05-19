@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.ui.features.measurement
+package org.noiseplanet.noisecapture.ui.features.recording
 
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -17,18 +17,18 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterView
 import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel
-import org.noiseplanet.noisecapture.ui.features.measurement.controls.RecordingControls
-import org.noiseplanet.noisecapture.ui.features.measurement.controls.RecordingControlsViewModel
+import org.noiseplanet.noisecapture.ui.features.recording.controls.RecordingControls
+import org.noiseplanet.noisecapture.ui.features.recording.controls.RecordingControlsViewModel
 
 
 @OptIn(KoinExperimentalAPI::class)
 @Composable
-fun MeasurementScreen() {
+fun MeasurementRecordingScreen() {
 
     // - DI
 
     rememberKoinModules(unloadOnForgotten = true) {
-        listOf(measurementModule)
+        listOf(measurementRecordingModule)
     }
 
 
@@ -52,13 +52,13 @@ fun MeasurementScreen() {
                         RecordingControls(viewModel = recordingControlsViewModel)
                     }
                     Column(modifier = Modifier) {
-                        MeasurementPager()
+                        MeasurementRecordingPager()
                     }
                 }
             } else {
                 Column {
                     SoundLevelMeterView(viewModel = soundLevelMeterViewModel)
-                    MeasurementPager(modifier = Modifier.fillMaxWidth().weight(1f))
+                    MeasurementRecordingPager(modifier = Modifier.fillMaxWidth().weight(1f))
                     RecordingControls(
                         viewModel = recordingControlsViewModel,
                     )

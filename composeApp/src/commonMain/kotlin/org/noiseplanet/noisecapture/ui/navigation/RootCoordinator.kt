@@ -29,10 +29,10 @@ import org.noiseplanet.noisecapture.ui.features.history.HistoryScreen
 import org.noiseplanet.noisecapture.ui.features.history.HistoryScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.home.HomeScreen
 import org.noiseplanet.noisecapture.ui.features.home.HomeScreenViewModel
-import org.noiseplanet.noisecapture.ui.features.measurement.MeasurementScreen
-import org.noiseplanet.noisecapture.ui.features.measurement.MeasurementScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.permission.RequestPermissionScreen
 import org.noiseplanet.noisecapture.ui.features.permission.RequestPermissionScreenViewModel
+import org.noiseplanet.noisecapture.ui.features.recording.MeasurementRecordingScreen
+import org.noiseplanet.noisecapture.ui.features.recording.MeasurementRecordingScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.settings.SettingsScreen
 import org.noiseplanet.noisecapture.ui.features.settings.SettingsScreenViewModel
 
@@ -158,10 +158,10 @@ fun RootCoordinator(
             }
 
             composable<MeasurementRecordingRoute> {
-                val screenViewModel: MeasurementScreenViewModel = koinViewModel()
+                val screenViewModel: MeasurementRecordingScreenViewModel = koinViewModel()
                 appBarState.setCurrentScreenViewModel(screenViewModel)
 
-                MeasurementScreen()
+                MeasurementRecordingScreen()
             }
 
             composable<HistoryRoute> {

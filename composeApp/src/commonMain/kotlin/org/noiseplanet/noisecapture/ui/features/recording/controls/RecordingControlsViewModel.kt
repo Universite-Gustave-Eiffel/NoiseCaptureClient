@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.ui.features.measurement.controls
+package org.noiseplanet.noisecapture.ui.features.recording.controls
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
