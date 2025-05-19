@@ -13,6 +13,7 @@ import org.noiseplanet.noisecapture.model.dao.Measurement
  * Interact with measurements using various storage services for the different files
  * that constitute a measurement (measurement object, leq sequence, location sequence, etc)
  */
+@Suppress("TooManyFunctions")
 interface MeasurementService {
 
     // - Properties
@@ -36,6 +37,16 @@ interface MeasurementService {
     suspend fun getAllMeasurements(): List<Measurement>
 
     /**
+     * Gets a flow of all measurements, emitting a new value everytime a measurement is
+     * created or deleted.
+     *
+     * Note: A new value won't be emitted if an existing measurement is updated.
+     *
+     * @return A [Flow] of all measurements in storage.
+     */
+    fun getAllMeasurementsFlow(): Flow<List<Measurement>>
+
+    /**
      * Get a single measurement from its unique identifier.
      *
      * > Note: This only returns the base measurement objects but not the underlying leq
@@ -46,6 +57,16 @@ interface MeasurementService {
      * @return Measurement object if found in local storage, null otherwise
      */
     suspend fun getMeasurement(uuid: String): Measurement?
+
+    /**
+     * Subscribe to every updates made a particular measurement.
+     *
+     * @param uuid Measurement unique identifier
+     *
+     * @return A [Flow] of measurement values, null if there is no measurement for the
+     *         given identifier.
+     */
+    fun getMeasurementFlow(uuid: String): Flow<Measurement?>
 
     /**
      * Gets all Leq values for a measurement in the form of sequence fragments.
@@ -74,6 +95,14 @@ interface MeasurementService {
     fun openOngoingMeasurement()
 
     /**
+     * Gets a flow of leq metrics (min/max/average) for the ongoing measurement, or
+     * null if no measurement is currently running.
+     *
+     * @return Ongoing measurement leq metrics updated in real time.
+     */
+    fun getOngoingMeasurementLaeqMetricsFlow(): Flow<LAeqMetrics?>
+
+    /**
      * Pushes a new [LeqRecord] to the current ongoing measurement.
      *
      * @param record Record to be pushed.
@@ -100,10 +129,9 @@ interface MeasurementService {
     suspend fun closeOngoingMeasurement()
 
     /**
-     * Gets a flow of leq metrics (min/max/average) for the ongoing measurement, or
-     * null if no measurement is currently running.
+     * Deletes the measurement with the given id.
      *
-     * @return Ongoing measurement leq metrics updated in real time.
+     * @param uuid Measurement unique identifier.
      */
-    fun getOngoingMeasurementLaeqMetricsFlow(): Flow<LAeqMetrics?>
+    suspend fun deleteMeasurement(uuid: String)
 }

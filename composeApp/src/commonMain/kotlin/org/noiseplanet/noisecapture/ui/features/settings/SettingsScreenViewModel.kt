@@ -39,6 +39,7 @@ import noisecapture.composeapp.generated.resources.settings_section_general
 import noisecapture.composeapp.generated.resources.settings_section_map
 import noisecapture.composeapp.generated.resources.settings_section_measurements
 import noisecapture.composeapp.generated.resources.settings_section_user_profile
+import noisecapture.composeapp.generated.resources.settings_title
 import noisecapture.composeapp.generated.resources.settings_user_acoustics_knowledge_description
 import noisecapture.composeapp.generated.resources.settings_user_acoustics_knowledge_title
 import org.jetbrains.compose.resources.StringResource
@@ -51,6 +52,8 @@ import org.noiseplanet.noisecapture.ui.features.settings.item.SettingsItemViewMo
 class SettingsScreenViewModel(
     private val settingsService: UserSettingsService,
 ) : ViewModel(), ScreenViewModel {
+
+    // - Properties
 
     val settingsItems: Map<StringResource, List<SettingsItemViewModel<out Any>>> = mapOf(
         Pair(
@@ -172,4 +175,10 @@ class SettingsScreenViewModel(
             )
         )
     )
+
+
+    // - ScreenViewModel
+
+    override val title: StringResource
+        get() = Res.string.settings_title
 }

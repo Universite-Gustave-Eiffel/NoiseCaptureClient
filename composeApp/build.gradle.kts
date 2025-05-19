@@ -104,6 +104,7 @@ kotlin {
             implementation(libs.kotlinx.serialization)
 
             implementation(libs.kstore)
+            implementation(libs.humanreadable)
 
             implementation(libs.settings.multiplatform)
             implementation(libs.settings.multiplatform.serialization)

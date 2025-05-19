@@ -8,6 +8,8 @@ import org.koin.dsl.module
 import org.noiseplanet.noisecapture.permission.defaultPermissionModule
 import org.noiseplanet.noisecapture.permission.platformPermissionModule
 import org.noiseplanet.noisecapture.services.servicesModule
+import org.noiseplanet.noisecapture.ui.features.details.measurementDetailsModule
+import org.noiseplanet.noisecapture.ui.features.history.historyModule
 import org.noiseplanet.noisecapture.ui.features.home.homeModule
 import org.noiseplanet.noisecapture.ui.features.measurement.measurementModule
 import org.noiseplanet.noisecapture.ui.features.permission.requestPermissionModule
@@ -35,6 +37,8 @@ fun initKoin(
             requestPermissionModule,
             measurementModule,
             settingsModule,
+            historyModule,
+            measurementDetailsModule,
 
             module {
                 includes(additionalModules)

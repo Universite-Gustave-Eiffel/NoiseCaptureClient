@@ -49,10 +49,10 @@ fun NCButton(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
-    val icon by viewModel.icon.collectAsState(null)
-    val titleResource by viewModel.title.collectAsState(null)
+    val icon by viewModel.icon.collectAsState()
+    val titleResource by viewModel.title.collectAsState()
     val title: String? = titleResource?.let { stringResource(it) }
-    val style by viewModel.style.collectAsState(ButtonStyle.TEXT)
+    val style by viewModel.style.collectAsState()
 
     val finalModifier = modifier.conditional(
         predicate = viewModel.hasDropShadow,
