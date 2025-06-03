@@ -21,6 +21,7 @@ captures
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
 gradle.xml
+iosApp/Pods/
 
 # Store the old files in a temporary folder until refactor is complete
 backup/

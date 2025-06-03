@@ -39,3 +39,6 @@ class SettingsRoute : Route()
 class MeasurementDetailsRoute(
     val measurementId: String,
 ) : Route()
+
+@Serializable
+class DebugRoute : Route()

@@ -12,6 +12,7 @@ buildscript {
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.kotlinCocoapods)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
@@ -63,14 +64,25 @@ kotlin {
         }
     }
 
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
-            baseName = "ComposeApp"
+
+    iosX64()
+    iosArm64()
+    iosSimulatorArm64()
+
+    cocoapods {
+        version = app.versionName
+
+        summary = "NoiseCapture shared module"
+        homepage = "https://github.com/Universite-Gustave-Eiffel/NoiseCaptureClient"
+        ios.deploymentTarget = "15.4" // TODO: Make this a parameter
+        podfile = project.file("../iosApp/Podfile")
+
+        framework {
+            baseName = "composeApp"
             isStatic = true
+        }
+        pod("MapLibre") {
+            extraOpts += listOf("-compiler-option", "-fmodules")
         }
     }
 
@@ -118,6 +130,7 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.google.play.services.android.location)
             implementation(libs.kstore.file)
+            implementation(libs.maplibre.compose)
         }
 
         iosMain.dependencies {
