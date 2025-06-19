@@ -76,8 +76,8 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
             getAllMeasurements()
                 .filter { it.summary == null }
                 .forEach { measurement ->
-                    // If measurement has no summary value (meaning it was probably interrupted unexpectedly),
-                    // calculate it now and update stored definition, then return the new object.
+                    // If measurement has no summary value (meaning it was probably interrupted
+                    // unexpectedly), calculate it now and update stored definition.
                     measurementStorageService.set(
                         uuid = measurement.uuid,
                         newValue = measurement.copy(

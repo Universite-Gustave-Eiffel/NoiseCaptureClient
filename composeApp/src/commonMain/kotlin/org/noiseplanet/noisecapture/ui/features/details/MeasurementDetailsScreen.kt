@@ -62,6 +62,9 @@ fun MeasurementDetailsScreen(
 
     // - Layout
 
+    // TODO: For lager screens (tablets / browsers), this layout could be improved by splitting
+    //       the screen in two instead of using a bottom sheet.
+
     BottomSheetScaffold(
         scaffoldState = sheetState,
         sheetShape = BottomSheetDefaults.ExpandedShape,
