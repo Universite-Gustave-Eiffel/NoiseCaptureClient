@@ -13,6 +13,7 @@ import org.noiseplanet.noisecapture.model.dao.LeqSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.LocationRecord
 import org.noiseplanet.noisecapture.model.dao.LocationSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.Measurement
+import org.noiseplanet.noisecapture.model.dao.MeasurementSummary
 import org.noiseplanet.noisecapture.model.dao.MutableMeasurement
 import org.noiseplanet.noisecapture.services.storage.StorageService
 import org.noiseplanet.noisecapture.services.storage.injectStorageService
@@ -177,8 +178,23 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
     }
 
     override suspend fun closeOngoingMeasurement() {
-        // End currently ongoing sequence fragments and save measurement data
+        // End currently ongoing sequence fragments
         onSequenceFragmentEnd()
+
+        // Compute measurement summary metrics
+        val measurement = ongoingMeasurement ?: return
+        val allMeasurementLeqSorted: List<Double> = measurement.leqsSequenceIds
+            .fold(listOf<Double>()) { accumulator, sequenceId ->
+                accumulator + (leqSequenceStorageService.get(sequenceId)?.laeq ?: emptyList())
+            }
+            .filter { it.isInVuMeterRange() }
+            .sorted()
+        val summary = MeasurementSummary(
+            la10 = allMeasurementLeqSorted[(allMeasurementLeqSorted.size / 100.0 * 90.0).toInt()],
+            la50 = allMeasurementLeqSorted[(allMeasurementLeqSorted.size / 100.0 * 50.0).toInt()],
+            la90 = allMeasurementLeqSorted[(allMeasurementLeqSorted.size / 100.0 * 10.0).toInt()],
+        )
+        saveOngoingMeasurement(summary)
     }
 
     override suspend fun deleteMeasurement(uuid: String) {
@@ -212,7 +228,7 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
     /**
      * Saves ongoing measurement at a given point in time.
      */
-    private suspend fun saveOngoingMeasurement() {
+    private suspend fun saveOngoingMeasurement(summary: MeasurementSummary? = null) {
         val ongoingMeasurement = ongoingMeasurement ?: return
         val leqMetrics = ongoingMeasurement.laeqMetrics ?: return
         val now = Clock.System.now().toEpochMilliseconds()
@@ -230,6 +246,7 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
             leqsSequenceIds = ongoingMeasurement.leqsSequenceIds,
             recordedAudioUrl = ongoingMeasurement.recordedAudioUrl,
             laeqMetrics = leqMetrics,
+            summary = summary,
         )
         measurementStorageService.set(measurement.uuid, measurement)
         laeqMetricsFlow.emit(null)

@@ -1,6 +1,5 @@
 package org.noiseplanet.noisecapture.ui.features.details
 
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
@@ -14,8 +13,6 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
-import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
-import org.noiseplanet.noisecapture.util.roundTo
 
 
 class MeasurementDetailsChartsViewModel(
@@ -34,6 +31,7 @@ class MeasurementDetailsChartsViewModel(
                 chars(" ")
                 year()
             })
+            chars(", at ")
             time(LocalTime.Format {
                 hour(); chars(":"); minute()
             })
@@ -63,13 +61,5 @@ class MeasurementDetailsChartsViewModel(
         return duration.toComponents { hours, minutes, seconds, _ ->
             "${hours}h ${minutes}m ${seconds}s"
         }
-    }
-
-    fun getMeasurementAverageLevel(): String {
-        return measurement.laeqMetrics.average.roundTo(1).toString()
-    }
-
-    fun getMeasurementAverageLevelColor(): Color {
-        return NoiseLevelColorRamp.getColorForSPLValue(measurement.laeqMetrics.average)
     }
 }
