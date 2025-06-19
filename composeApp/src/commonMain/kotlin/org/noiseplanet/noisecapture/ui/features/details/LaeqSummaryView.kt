@@ -53,15 +53,15 @@ fun LaeqSummaryView(
                 withStyle(style = boldStyle) {
                     append(" • LA90: ")
                 }
-                append("90% of the time, sound level was above this value\n")
+                append("90% of recorded levels were above this value\n")
                 withStyle(style = boldStyle) {
                     append(" • LA50: ")
                 }
-                append("50% of the time, sound level was above this value\n")
+                append("50% of recorded levels were above this value\n")
                 withStyle(style = boldStyle) {
                     append(" • LA10: ")
                 }
-                append("10% of the time, sound level was above this value\n")
+                append("10% of recorded levels were above this value\n")
                 withStyle(style = boldStyle) {
                     append(" • Max: ")
                 }
