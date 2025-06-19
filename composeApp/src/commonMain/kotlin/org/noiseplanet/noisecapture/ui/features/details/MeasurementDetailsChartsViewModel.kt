@@ -54,8 +54,8 @@ class MeasurementDetailsChartsViewModel(
     }
 
     fun getMeasurementDurationString(): String {
-        val startInstant = Instant.fromEpochMilliseconds(measurement.endTimestamp)
-        val endInstant = Instant.fromEpochMilliseconds(measurement.startTimestamp)
+        val startInstant = Instant.fromEpochMilliseconds(measurement.startTimestamp)
+        val endInstant = Instant.fromEpochMilliseconds(measurement.endTimestamp)
         val duration = endInstant - startInstant
 
         return duration.toComponents { hours, minutes, seconds, _ ->
