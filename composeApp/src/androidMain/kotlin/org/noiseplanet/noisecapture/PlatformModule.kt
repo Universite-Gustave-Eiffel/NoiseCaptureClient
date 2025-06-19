@@ -10,6 +10,8 @@ import org.koin.core.module.Module
 import org.koin.dsl.module
 import org.noiseplanet.noisecapture.audio.AndroidAudioSource
 import org.noiseplanet.noisecapture.audio.AudioSource
+import org.noiseplanet.noisecapture.audio.player.AndroidAudioPlayer
+import org.noiseplanet.noisecapture.audio.player.AudioPlayer
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.services.audio.AndroidAudioRecordingService
 import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
@@ -57,5 +59,9 @@ val platformModule: Module = module {
         AndroidMeasurementRecordingService(
             context = get()
         )
+    }
+
+    factory<AudioPlayer> { (filePath: String) ->
+        AndroidAudioPlayer(filePath)
     }
 }
