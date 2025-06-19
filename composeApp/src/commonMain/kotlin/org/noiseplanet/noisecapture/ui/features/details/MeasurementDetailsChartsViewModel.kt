@@ -10,9 +10,7 @@ import kotlinx.datetime.format
 import kotlinx.datetime.format.MonthNames
 import kotlinx.datetime.toLocalDateTime
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.model.dao.Measurement
-import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 
 
 class MeasurementDetailsChartsViewModel(
@@ -37,11 +35,6 @@ class MeasurementDetailsChartsViewModel(
             })
         }
     }
-
-
-    // - Properties
-
-    private val measurementService: MeasurementService by inject()
 
 
     // - Public functions
