@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -92,7 +93,11 @@ private fun RowScope.LaeqSummaryItemView(
     // - Properties
 
     val barHeight = 8.dp
-    val barColor = NoiseLevelColorRamp.getColorForSPLValue(value)
+    val barColor = if (value.isInVuMeterRange()) {
+        NoiseLevelColorRamp.getColorForSPLValue(value)
+    } else {
+        Color.LightGray
+    }
     val barShape = RoundedCornerShape(
         topStart = if (isFirst) barHeight / 2 else 0.dp,
         topEnd = if (isLast) barHeight / 2 else 0.dp,
