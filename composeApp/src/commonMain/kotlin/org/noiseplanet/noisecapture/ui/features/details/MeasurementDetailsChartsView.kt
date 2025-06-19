@@ -2,8 +2,13 @@ package org.noiseplanet.noisecapture.ui.features.details
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -28,7 +33,9 @@ fun MeasurementDetailsChartsView(
 
     Column(
         verticalArrangement = Arrangement.spacedBy(32.dp),
-        modifier = modifier.fillMaxWidth().padding(bottom = 48.dp)
+        modifier = modifier.fillMaxWidth()
+            .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
+            .padding(bottom = 24.dp)
     ) {
         MeasurementDetailsChartsHeader(
             startTime = viewModel.getMeasurementStartTimeString(),
