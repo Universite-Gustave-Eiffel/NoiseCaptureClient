@@ -15,7 +15,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
@@ -41,13 +44,29 @@ fun LaeqSummaryView(
         )
 
         Text(
-            text = """
-                 • Min: lowest recorder sound level
-                 • LA90: 90% of the time, sound level was above this value
-                 • LA50: 50% of the time, sound level was above this value
-                 • LA10: 10% of the time, sound level was above this value
-                 • Max: highest recorder sound level
-            """.trimIndent(),
+            text = buildAnnotatedString {
+                val boldStyle = SpanStyle(fontWeight = FontWeight.Bold)
+                withStyle(style = boldStyle) {
+                    append(" • Min: ")
+                }
+                append("lowest recorder sound level\n")
+                withStyle(style = boldStyle) {
+                    append(" • LA90: ")
+                }
+                append("90% of the time, sound level was above this value\n")
+                withStyle(style = boldStyle) {
+                    append(" • LA50: ")
+                }
+                append("50% of the time, sound level was above this value\n")
+                withStyle(style = boldStyle) {
+                    append(" • LA10: ")
+                }
+                append("10% of the time, sound level was above this value\n")
+                withStyle(style = boldStyle) {
+                    append(" • Max: ")
+                }
+                append("highest recorder sound level")
+            },
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
         )
