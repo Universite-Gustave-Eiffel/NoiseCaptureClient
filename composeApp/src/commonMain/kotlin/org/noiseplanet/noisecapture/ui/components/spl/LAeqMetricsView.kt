@@ -70,7 +70,6 @@ fun LAeqMetricsView(
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Start,
-                        fontSize = 20.sp,
                         color = metric.value?.let {
                             NoiseLevelColorRamp.getColorForSPLValue(it)
                         } ?: MaterialTheme.colorScheme.onSurface,
