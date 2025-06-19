@@ -1,8 +1,11 @@
 package org.noiseplanet.noisecapture.services.measurement
 
 import Platform
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -47,6 +50,7 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
 
     private val laeqMetricsFlow: MutableStateFlow<LAeqMetrics?> = MutableStateFlow(null)
 
+    private val scope = CoroutineScope(Dispatchers.Default)
     private val logger: Logger by injectLogger()
     private val platform: Platform by inject()
 
@@ -61,6 +65,28 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
 
     @Volatile // <- Ensures thread safety
     private var currentLocationSequenceFragment: LocationSequenceFragment? = null
+
+
+    // - Lifecycle
+
+    init {
+        // Perform integrity checking of measurements in case some measurements have been
+        // stopped unexpectedly
+        scope.launch {
+            getAllMeasurements()
+                .filter { it.summary == null }
+                .forEach { measurement ->
+                    // If measurement has no summary value (meaning it was probably interrupted unexpectedly),
+                    // calculate it now and update stored definition, then return the new object.
+                    measurementStorageService.set(
+                        uuid = measurement.uuid,
+                        newValue = measurement.copy(
+                            summary = calculateMeasurementSummary(measurement.leqsSequenceIds)
+                        )
+                    )
+                }
+        }
+    }
 
 
     // - MeasurementService
@@ -179,22 +205,7 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
 
     override suspend fun closeOngoingMeasurement() {
         // End currently ongoing sequence fragments
-        onSequenceFragmentEnd()
-
-        // Compute measurement summary metrics
-        val measurement = ongoingMeasurement ?: return
-        val allMeasurementLeqSorted: List<Double> = measurement.leqsSequenceIds
-            .fold(listOf<Double>()) { accumulator, sequenceId ->
-                accumulator + (leqSequenceStorageService.get(sequenceId)?.laeq ?: emptyList())
-            }
-            .filter { it.isInVuMeterRange() }
-            .sorted()
-        val summary = MeasurementSummary(
-            la10 = allMeasurementLeqSorted[(allMeasurementLeqSorted.size / 100.0 * 90.0).toInt()],
-            la50 = allMeasurementLeqSorted[(allMeasurementLeqSorted.size / 100.0 * 50.0).toInt()],
-            la90 = allMeasurementLeqSorted[(allMeasurementLeqSorted.size / 100.0 * 10.0).toInt()],
-        )
-        saveOngoingMeasurement(summary)
+        onSequenceFragmentEnd(closeMeasurement = true)
     }
 
     override suspend fun deleteMeasurement(uuid: String) {
@@ -207,8 +218,10 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
     /**
      * Called every N seconds to end current sequence fragment,
      * store values and start a new fragment.
+     *
+     * @param closeMeasurement If true, that means ongoing measurement is over.
      */
-    private suspend fun onSequenceFragmentEnd() {
+    private suspend fun onSequenceFragmentEnd(closeMeasurement: Boolean = false) {
         // Store values to local storage and add id to measurement
         currentLocationSequenceFragment?.let {
             locationSequenceStorageService.set(it.uuid, it)
@@ -219,7 +232,7 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
             ongoingMeasurement?.leqsSequenceIds?.add(it.uuid)
         }
         // Save ongoing measurement up until now, in case it gets interrupted later on.
-        saveOngoingMeasurement()
+        saveOngoingMeasurement(closeMeasurement)
         // Clear current fragments so that next time a new record is pushed, new fragments are created
         currentLeqSequenceFragment = null
         currentLocationSequenceFragment = null
@@ -227,8 +240,10 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
 
     /**
      * Saves ongoing measurement at a given point in time.
+     *
+     * @param closeMeasurement If true, that means ongoing measurement is over.
      */
-    private suspend fun saveOngoingMeasurement(summary: MeasurementSummary? = null) {
+    private suspend fun saveOngoingMeasurement(closeMeasurement: Boolean) {
         val ongoingMeasurement = ongoingMeasurement ?: return
         val leqMetrics = ongoingMeasurement.laeqMetrics ?: return
         val now = Clock.System.now().toEpochMilliseconds()
@@ -246,9 +261,31 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
             leqsSequenceIds = ongoingMeasurement.leqsSequenceIds,
             recordedAudioUrl = ongoingMeasurement.recordedAudioUrl,
             laeqMetrics = leqMetrics,
-            summary = summary,
+            summary = if (closeMeasurement) {
+                // If ongoing measurement is over, calculate summary.
+                calculateMeasurementSummary(ongoingMeasurement.leqsSequenceIds)
+            } else {
+                null
+            }
         )
         measurementStorageService.set(measurement.uuid, measurement)
         laeqMetricsFlow.emit(null)
+    }
+
+    /**
+     * Calculates summary values from measurement Leq sequence fragments.
+     */
+    private suspend fun calculateMeasurementSummary(leqsSequenceIds: List<String>): MeasurementSummary {
+        val allMeasurementLeqSorted: List<Double> = leqsSequenceIds
+            .fold(listOf<Double>()) { accumulator, sequenceId ->
+                accumulator + (leqSequenceStorageService.get(sequenceId)?.laeq ?: emptyList())
+            }
+            .filter { it.isInVuMeterRange() }
+            .sorted()
+        return MeasurementSummary(
+            la10 = allMeasurementLeqSorted[(allMeasurementLeqSorted.size / 100.0 * 90.0).toInt()],
+            la50 = allMeasurementLeqSorted[(allMeasurementLeqSorted.size / 100.0 * 50.0).toInt()],
+            la90 = allMeasurementLeqSorted[(allMeasurementLeqSorted.size / 100.0 * 10.0).toInt()],
+        )
     }
 }
