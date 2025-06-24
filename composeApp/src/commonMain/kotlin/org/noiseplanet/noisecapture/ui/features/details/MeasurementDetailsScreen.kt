@@ -1,14 +1,18 @@
 package org.noiseplanet.noisecapture.ui.features.details
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
@@ -20,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -46,13 +51,14 @@ fun MeasurementDetailsScreen(
 
     // - Properties
 
-    val measurementState by viewModel.measurementFlow.collectAsState(null)
-    val measurement = measurementState ?: return
+    val viewState by viewModel.viewState.collectAsState()
+    val isLoading = viewState is MeasurementDetailsScreenViewState.Loading
 
     val sheetState = rememberBottomSheetScaffoldState(
         bottomSheetState = rememberStandardBottomSheetState(
-            initialValue = SheetValue.PartiallyExpanded
-        )
+            initialValue = if (isLoading) SheetValue.Hidden else SheetValue.PartiallyExpanded,
+            skipHiddenState = isLoading == false
+        ),
     )
     var containerHeight by remember {
         mutableStateOf(0.dp)
@@ -72,10 +78,17 @@ fun MeasurementDetailsScreen(
         containerColor = Color.White,
         sheetPeekHeight = containerHeight * 0.33f,
         sheetContent = {
-            MeasurementDetailsChartsView(
-                measurement,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
+            when (viewState) {
+                is MeasurementDetailsScreenViewState.ContentReady -> {
+                    val state = viewState as MeasurementDetailsScreenViewState.ContentReady
+                    MeasurementDetailsChartsView(
+                        state.measurement,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                }
+
+                else -> {}
+            }
         },
         modifier = Modifier.safeContentPadding()
             .onGloballyPositioned { coordinates ->
@@ -84,26 +97,57 @@ fun MeasurementDetailsScreen(
                 }
             },
     ) { contentPadding ->
-        Column(
-            modifier = Modifier.fillMaxSize()
-                .padding(contentPadding)
-        ) {
-            Text(
-                text = "Measurement id: ${measurement.uuid}",
-                textAlign = TextAlign.Center,
-            )
+        when (viewState) {
+            is MeasurementDetailsScreenViewState.Loading -> {
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxSize().padding(bottom = 64.dp)
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(64.dp),
+                        color = MaterialTheme.colorScheme.secondary,
+                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    )
 
-            Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-            Button(
-                onClick = {
-                    viewModel.deleteMeasurement()
-                    onMeasurementDeleted()
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Delete")
+                    Text(
+                        text = "Calculating measurement statistics... Depending on the duration of " +
+                            "your measurement, this can take a while.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
+
+            is MeasurementDetailsScreenViewState.ContentReady -> {
+                val state = viewState as MeasurementDetailsScreenViewState.ContentReady
+
+                Column(
+                    modifier = Modifier.fillMaxSize()
+                        .padding(contentPadding)
+                ) {
+                    Text(
+                        text = "Measurement id: ${state.measurement.uuid}",
+                        textAlign = TextAlign.Center,
+                    )
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    Button(
+                        onClick = {
+                            viewModel.deleteMeasurement()
+                            onMeasurementDeleted()
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Delete")
+                    }
+                }
+            }
+
+            else -> {}
         }
     }
 }

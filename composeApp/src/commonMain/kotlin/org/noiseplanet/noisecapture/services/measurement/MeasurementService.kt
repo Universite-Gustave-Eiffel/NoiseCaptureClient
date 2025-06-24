@@ -129,6 +129,17 @@ interface MeasurementService {
     suspend fun closeOngoingMeasurement()
 
     /**
+     * Calculates summary values for the given measurement and updates its locally
+     * stored definition.
+     * Since for long measurement this process can take a while,
+     * it is not performed automatically and needs to be triggered at the desired time.
+     *
+     * @param measurement Incoming measurement.
+     * @return Updated measurement with summary property.
+     */
+    suspend fun calculateSummary(measurement: Measurement): Measurement
+
+    /**
      * Deletes the measurement with the given id.
      *
      * @param uuid Measurement unique identifier.
