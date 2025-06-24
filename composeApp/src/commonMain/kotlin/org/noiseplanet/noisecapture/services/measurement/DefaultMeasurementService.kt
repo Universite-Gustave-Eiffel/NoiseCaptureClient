@@ -13,6 +13,7 @@ import org.noiseplanet.noisecapture.model.dao.LeqSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.LocationRecord
 import org.noiseplanet.noisecapture.model.dao.LocationSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.Measurement
+import org.noiseplanet.noisecapture.model.dao.MeasurementSummary
 import org.noiseplanet.noisecapture.model.dao.MutableMeasurement
 import org.noiseplanet.noisecapture.services.storage.StorageService
 import org.noiseplanet.noisecapture.services.storage.injectStorageService
@@ -177,8 +178,32 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
     }
 
     override suspend fun closeOngoingMeasurement() {
-        // End currently ongoing sequence fragments and save measurement data
+        // End currently ongoing sequence fragments
         onSequenceFragmentEnd()
+    }
+
+    /**
+     * TODO: Benchmark this implementation for very large measurements and optimize if needed.
+     */
+    override suspend fun calculateSummary(measurement: Measurement): Measurement {
+        // Get a sorted list of all leq values that are in valid dB range.
+        val allMeasurementLeqSorted: List<Double> = measurement.leqsSequenceIds
+            .fold(listOf<Double>()) { accumulator, sequenceId ->
+                accumulator + (leqSequenceStorageService.get(sequenceId)?.laeq ?: emptyList())
+            }
+            .filter { it.isInVuMeterRange() }
+            .sorted()
+        // Calculate LA10/50/90 based on indices in the sorted list.
+        val summary = MeasurementSummary(
+            la10 = allMeasurementLeqSorted[(allMeasurementLeqSorted.size / 100.0 * 90.0).toInt()],
+            la50 = allMeasurementLeqSorted[(allMeasurementLeqSorted.size / 100.0 * 50.0).toInt()],
+            la90 = allMeasurementLeqSorted[(allMeasurementLeqSorted.size / 100.0 * 10.0).toInt()],
+        )
+        // Build a new measurement object with the summary property.
+        val newValue = measurement.copy(summary = summary)
+        measurementStorageService.set(measurement.uuid, newValue)
+        // Return that new value.
+        return newValue
     }
 
     override suspend fun deleteMeasurement(uuid: String) {

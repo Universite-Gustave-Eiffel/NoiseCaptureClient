@@ -28,6 +28,7 @@ data class Measurement(
     val leqsSequenceIds: List<String> = emptyList(),
     val laeqMetrics: LAeqMetrics,
 
+    val summary: MeasurementSummary? = null,
     val recordedAudioUrl: String? = null,
 )
 
