@@ -11,12 +11,37 @@ import kotlin.time.Duration
 abstract class AudioPlayer(
     val filePath: String,
 ) {
+    // - Listeners
+
+    /**
+     * Will notify subscribers when this audio player is ready to play the audio clip.
+     */
+    interface OnPreparedListener {
+
+        /**
+         * Called when this audio player is ready to play the audio clip.
+         */
+        fun onPrepared()
+    }
+
+    /**
+     * Will notify subscribers when audio clip has played until the end.
+     */
+    interface OnCompleteListener {
+
+        /**
+         * Called when this audio player has reached the end of the audio clip.
+         */
+        fun onComplete()
+    }
+
+
     // - Properties
 
     /**
      * Duration of the audio clip.
      */
-    abstract val duration: Duration
+    abstract var duration: Duration
 
     /**
      * Current play head position.
@@ -27,6 +52,16 @@ abstract class AudioPlayer(
      * True if audio is currently playing.
      */
     abstract val isPlaying: Boolean
+
+    /**
+     * Called when this audio player is ready to play the audio clip.
+     */
+    var onPreparedListener: OnPreparedListener? = null
+
+    /**
+     * Called when this audio player has reached the end of the audio clip.
+     */
+    var onCompleteListener: OnCompleteListener? = null
 
 
     // - Public functions
@@ -45,4 +80,30 @@ abstract class AudioPlayer(
      * Moves play head to a new position in the clip.
      */
     abstract fun seek(position: Duration)
+
+    /**
+     * Sets [onPreparedListener] with a given lambda.
+     *
+     * @param onPrepared Called when this audio player is ready to play the audio clip.
+     */
+    fun setOnPreparedLister(onPrepared: () -> Unit) {
+        onPreparedListener = object : OnPreparedListener {
+            override fun onPrepared() {
+                onPrepared()
+            }
+        }
+    }
+
+    /**
+     * Sets [onCompleteListener] with a given lambda.
+     *
+     * @param onComplete Called when this audio player has reached the end of the audio clip.
+     */
+    fun setOnCompleteLister(onComplete: () -> Unit) {
+        onCompleteListener = object : OnCompleteListener {
+            override fun onComplete() {
+                onComplete()
+            }
+        }
+    }
 }

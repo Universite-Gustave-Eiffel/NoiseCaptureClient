@@ -7,10 +7,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.parameter.parametersOf
@@ -32,7 +30,7 @@ class AudioPlayerViewModel(
         /**
          * Tells how often the play head position is refreshed in our view.
          */
-        private val AUDIO_PLAYER_POSITION_REFRESH_RATE = 500L.toDuration(DurationUnit.MILLISECONDS)
+        private val AUDIO_PLAYER_POSITION_REFRESH_RATE = 50L.toDuration(DurationUnit.MILLISECONDS)
     }
 
 
@@ -48,16 +46,34 @@ class AudioPlayerViewModel(
     )
     val playPauseButtonViewModel: StateFlow<IconButtonViewModel> = playPauseButtonViewModelFlow
 
-    val currentPosition: StateFlow<Duration> = flow {
-        emit(audioPlayer.currentPosition)
-        delay(AUDIO_PLAYER_POSITION_REFRESH_RATE)
-    }.stateIn(
-        viewModelScope,
-        started = SharingStarted.Lazily,
-        initialValue = Duration.ZERO,
-    )
+    private val currentPositionFlow = MutableStateFlow(Duration.ZERO)
+    val currentPosition: StateFlow<Duration> = currentPositionFlow
 
-    val duration: Duration = audioPlayer.duration
+    private val isLoadingFlow = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = isLoadingFlow
+
+    val duration: Duration
+        get() = audioPlayer.duration
+
+
+    // - Lifecycle
+
+    init {
+        audioPlayer.setOnPreparedLister {
+            viewModelScope.launch {
+                while (true) {
+                    currentPositionFlow.emit(audioPlayer.currentPosition)
+                    delay(AUDIO_PLAYER_POSITION_REFRESH_RATE)
+                }
+            }
+            isLoadingFlow.tryEmit(false)
+        }
+        audioPlayer.setOnCompleteLister {
+            // When playback has reached the end of the clip, go back to the beginning.
+            audioPlayer.seek(Duration.ZERO)
+            updateButtonViewModel()
+        }
+    }
 
 
     // - Public functions
@@ -68,15 +84,23 @@ class AudioPlayerViewModel(
         } else {
             audioPlayer.play()
         }
-        playPauseButtonViewModelFlow.tryEmit(
-            IconButtonViewModel(
-                icon = if (audioPlayer.isPlaying) Icons.Default.PlayArrow else Icons.Default.Pause,
-                style = ButtonStyle.SECONDARY,
-            )
-        )
+        updateButtonViewModel()
     }
 
     fun seek(position: Duration) {
         audioPlayer.seek(position)
+        currentPositionFlow.tryEmit(position)
+    }
+
+
+    // - Private function
+
+    fun updateButtonViewModel() {
+        playPauseButtonViewModelFlow.tryEmit(
+            IconButtonViewModel(
+                icon = if (audioPlayer.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                style = ButtonStyle.SECONDARY,
+            )
+        )
     }
 }

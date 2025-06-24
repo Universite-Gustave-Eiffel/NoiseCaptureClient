@@ -6,6 +6,8 @@ import android.media.MediaPlayer
 import android.net.Uri
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.noiseplanet.noisecapture.log.Logger
+import org.noiseplanet.noisecapture.util.injectLogger
 import java.io.File
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
@@ -20,10 +22,13 @@ class AndroidAudioPlayer(
 
     // - Properties
 
-    private val mediaPlayer: MediaPlayer
+    private val logger: Logger by injectLogger()
     private val context: Context by inject()
 
-    override val duration: Duration
+    private val mediaPlayer: MediaPlayer
+    private var isLoading: Boolean = true
+
+    override var duration: Duration = Duration.ZERO
 
     override val currentPosition: Duration
         get() = mediaPlayer.currentPosition.toDuration(unit = DurationUnit.MILLISECONDS)
@@ -46,10 +51,20 @@ class AndroidAudioPlayer(
                     .setUsage(AudioAttributes.USAGE_MEDIA)
                     .build()
             )
+            setOnPreparedListener {
+                // When media player is ready, set clip duration.
+                isLoading = false
+                this@AndroidAudioPlayer.duration =
+                    duration.toDuration(unit = DurationUnit.MILLISECONDS)
+
+                onPreparedListener?.onPrepared()
+            }
+            setOnCompletionListener {
+                onCompleteListener?.onComplete()
+            }
             setDataSource(context, uri)
-            prepare()
+            prepareAsync()
         }
-        duration = mediaPlayer.duration.toDuration(unit = DurationUnit.MILLISECONDS)
     }
 
 
@@ -60,7 +75,7 @@ class AndroidAudioPlayer(
     }
 
     override fun pause() {
-        mediaPlayer.stop()
+        mediaPlayer.pause()
     }
 
     override fun seek(position: Duration) {

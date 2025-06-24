@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.model.dao.Measurement
@@ -45,10 +44,8 @@ fun MeasurementDetailsChartsView(
             averageLevel = viewModel.measurement.laeqMetrics.average,
         )
 
-        if (viewModel.measurement.recordedAudioUrl != null) {
-            AudioPlayerView(
-                viewModel = koinInject { parametersOf(viewModel.measurement.recordedAudioUrl) }
-            )
+        viewModel.measurement.recordedAudioUrl?.let { audioUrl ->
+            AudioPlayerView(audioUrl)
         }
 
         LaeqSummaryView(
