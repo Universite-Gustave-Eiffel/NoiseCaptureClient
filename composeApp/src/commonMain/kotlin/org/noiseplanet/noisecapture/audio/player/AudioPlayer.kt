@@ -86,7 +86,7 @@ abstract class AudioPlayer(
      *
      * @param onPrepared Called when this audio player is ready to play the audio clip.
      */
-    fun setOnPreparedLister(onPrepared: () -> Unit) {
+    internal open fun setOnPreparedLister(onPrepared: () -> Unit) {
         onPreparedListener = object : OnPreparedListener {
             override fun onPrepared() {
                 onPrepared()
@@ -99,7 +99,7 @@ abstract class AudioPlayer(
      *
      * @param onComplete Called when this audio player has reached the end of the audio clip.
      */
-    fun setOnCompleteLister(onComplete: () -> Unit) {
+    internal open fun setOnCompleteLister(onComplete: () -> Unit) {
         onCompleteListener = object : OnCompleteListener {
             override fun onComplete() {
                 onComplete()

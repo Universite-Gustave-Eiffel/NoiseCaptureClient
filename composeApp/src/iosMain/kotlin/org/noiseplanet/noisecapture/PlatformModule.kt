@@ -9,6 +9,8 @@ import org.koin.core.module.Module
 import org.koin.dsl.module
 import org.noiseplanet.noisecapture.audio.AudioSource
 import org.noiseplanet.noisecapture.audio.IOSAudioSource
+import org.noiseplanet.noisecapture.audio.player.AudioPlayer
+import org.noiseplanet.noisecapture.audio.player.IOSAudioPlayer
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
 import org.noiseplanet.noisecapture.services.audio.IOSAudioRecordingService
@@ -47,5 +49,9 @@ val platformModule: Module = module {
 
     single<AudioRecordingService> {
         IOSAudioRecordingService()
+    }
+
+    factory<AudioPlayer> { (filePath: String) ->
+        IOSAudioPlayer(filePath)
     }
 }

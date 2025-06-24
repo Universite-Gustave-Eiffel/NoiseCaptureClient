@@ -57,9 +57,11 @@ class AndroidAudioPlayer(
                 this@AndroidAudioPlayer.duration =
                     duration.toDuration(unit = DurationUnit.MILLISECONDS)
 
+                logger.debug("Audio player is ready.")
                 onPreparedListener?.onPrepared()
             }
             setOnCompletionListener {
+                logger.debug("Audio clip has reached the end")
                 onCompleteListener?.onComplete()
             }
             setDataSource(context, uri)
