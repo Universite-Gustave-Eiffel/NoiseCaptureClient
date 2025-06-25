@@ -1,9 +1,11 @@
 package org.noiseplanet.noisecapture.ui.components.audioplayer
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
@@ -54,36 +56,52 @@ fun AudioPlayerView(
 
     // - Layout
 
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
+    Column(
+        verticalArrangement = Arrangement.spacedBy(4.dp),
         modifier = Modifier.fillMaxWidth(),
     ) {
-        NCButton(
-            onClick = { viewModel.togglePlayPause() },
-            viewModel = buttonViewModel,
-            modifier = Modifier.size(32.dp)
+        Text(
+            text = "Recorded audio",
+            style = MaterialTheme.typography.titleMedium,
         )
-        AudioPlayerSlider(viewModel)
 
         Text(
-            // Display remaining time
-            text = "-" + (playerCurrentPosition - viewModel.duration)
-                .toComponents { hours, minutes, seconds, _ ->
-                    val minutesString = abs(minutes).toString().padStart(2, '0')
-                    val secondsString = abs(seconds).toString().padStart(2, '0')
-
-                    if (hours > 0) {
-                        // Only show hours count when recording is more than 1h long
-                        val hoursString = abs(hours).toString().padStart(2, '0')
-                        "$hoursString:$minutesString:$secondsString"
-                    } else {
-                        "$minutesString:$secondsString"
-                    }
-                },
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+            text = "Listen to the audio that was recorded during your measurement.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
         )
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(top = 4.dp),
+        ) {
+            NCButton(
+                onClick = { viewModel.togglePlayPause() },
+                viewModel = buttonViewModel,
+                modifier = Modifier.size(32.dp)
+            )
+            AudioPlayerSlider(viewModel)
+
+            Text(
+                // Display remaining time
+                text = "-" + (playerCurrentPosition - viewModel.duration)
+                    .toComponents { hours, minutes, seconds, _ ->
+                        val minutesString = abs(minutes).toString().padStart(2, '0')
+                        val secondsString = abs(seconds).toString().padStart(2, '0')
+
+                        if (hours > 0) {
+                            // Only show hours count when recording is more than 1h long
+                            val hoursString = abs(hours).toString().padStart(2, '0')
+                            "$hoursString:$minutesString:$secondsString"
+                        } else {
+                            "$minutesString:$secondsString"
+                        }
+                    },
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+            )
+        }
     }
 }
 
