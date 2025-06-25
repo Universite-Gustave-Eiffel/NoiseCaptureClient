@@ -3,7 +3,6 @@ package org.noiseplanet.noisecapture.ui.components.audioplayer
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
@@ -46,6 +45,13 @@ fun AudioPlayerView(
         .collectAsStateWithLifecycle(Duration.ZERO)
 
 
+    // - Lifecycle
+
+    if (!isReady) {
+        return
+    }
+
+
     // - Layout
 
     Row(
@@ -58,35 +64,26 @@ fun AudioPlayerView(
             viewModel = buttonViewModel,
             modifier = Modifier.size(32.dp)
         )
+        AudioPlayerSlider(viewModel)
 
-        if (isReady) {
-            AudioPlayerSlider(viewModel)
+        Text(
+            // Display remaining time
+            text = "-" + (playerCurrentPosition - viewModel.duration)
+                .toComponents { hours, minutes, seconds, _ ->
+                    val minutesString = abs(minutes).toString().padStart(2, '0')
+                    val secondsString = abs(seconds).toString().padStart(2, '0')
 
-            Text(
-                // Display remaining time
-                text = "-" + (playerCurrentPosition - viewModel.duration)
-                    .toComponents { hours, minutes, seconds, _ ->
-                        val minutesString = abs(minutes).toString().padStart(2, '0')
-                        val secondsString = abs(seconds).toString().padStart(2, '0')
-
-                        if (hours > 0) {
-                            // Only show hours count when recording is more than 1h long
-                            val hoursString = abs(hours).toString().padStart(2, '0')
-                            "$hoursString:$minutesString:$secondsString"
-                        } else {
-                            "$minutesString:$secondsString"
-                        }
-                    },
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-            )
-        } else {
-            Spacer(modifier = Modifier.weight(1f))
-        }
-    }
-
-    fun toZeroPaddedString(value: Int): String {
-        return value.toString().padStart(0)
+                    if (hours > 0) {
+                        // Only show hours count when recording is more than 1h long
+                        val hoursString = abs(hours).toString().padStart(2, '0')
+                        "$hoursString:$minutesString:$secondsString"
+                    } else {
+                        "$minutesString:$secondsString"
+                    }
+                },
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+        )
     }
 }
 
