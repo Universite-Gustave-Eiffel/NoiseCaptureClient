@@ -1,9 +1,6 @@
 package org.noiseplanet.noisecapture.audio.player
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.await
-import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.time.inMs
 import org.noiseplanet.noisecapture.log.Logger
@@ -22,7 +19,6 @@ class JSAudioPlayer(filePath: String) : AudioPlayer(filePath), KoinComponent {
     // - Properties
 
     private val logger: Logger by injectLogger()
-    private val scope = CoroutineScope(Dispatchers.Default)
 
     private var audioElement: Audio? = null
 
@@ -35,55 +31,62 @@ class JSAudioPlayer(filePath: String) : AudioPlayer(filePath), KoinComponent {
         get() = audioElement?.paused?.not() ?: false
 
 
-    // - Lifecycle
+    // - AudioPlayer
 
-    init {
-        scope.launch {
-            val (fileHandle, _) = OPFSHelper.getFileHandle(filePath) ?: return@launch
-            val file: File = fileHandle.getFile().await()
+    override suspend fun prepare() {
+        // Get audio file from path and create a blob url from it.
+        val (fileHandle, _) = checkNotNull(OPFSHelper.getFileHandle(filePath)) {
+            "Audio player could not find file $filePath"
+        }
+        val file: File = fileHandle.getFile().await()
+        val blobURL = URL.createObjectURL(file)
 
-            val blobURL = URL.createObjectURL(file)
-            logger.debug("Created blob from OPFS file: $blobURL")
+        logger.debug("Created blob from OPFS file: $blobURL")
 
-            audioElement = Audio(blobURL).apply {
-                addEventListener("ended") {
-                    logger.debug("Audio clip ended.")
-                    this@JSAudioPlayer.onCompleteListener?.onComplete()
-                }
-                addEventListener("loadedmetadata") {
-                    logger.debug("Loaded audio clip. Duration: $duration seconds")
-                    this@JSAudioPlayer.duration = duration.toDuration(unit = DurationUnit.SECONDS)
-                    this@JSAudioPlayer.onPreparedListener?.onPrepared()
-                }
-                load()
+        // Initialize audio element
+        audioElement = Audio(blobURL).apply {
+            // Subscribe to listeners
+            addEventListener("ended") {
+                logger.debug("Audio clip ended.")
+                onCompleteListener?.onComplete()
             }
+            addEventListener("loadedmetadata") {
+                logger.debug("Loaded audio clip. Duration: $duration seconds")
+
+                this@JSAudioPlayer.duration = duration.toDuration(unit = DurationUnit.SECONDS)
+                onPreparedListener?.onPrepared()
+            }
+            // Load audio file into memory
+            load()
         }
     }
 
-
-    // - AudioPlayer
-
     override fun play() {
-        if (audioElement == null) {
-            logger.error("Trying to play an uninitialized audio element.")
-            return
-        }
+        logErrorIfUninitialized("Trying to play an uninitialized audio player.")
         audioElement?.play()
     }
 
     override fun pause() {
-        if (audioElement == null) {
-            logger.error("Trying to pause an uninitialized audio element.")
-            return
-        }
+        logErrorIfUninitialized("Trying to pause an uninitialized audio player.")
         audioElement?.pause()
     }
 
     override fun seek(position: Duration) {
-        if (audioElement == null) {
-            logger.error("Trying to seek an uninitialized audio element.")
-            return
-        }
+        logErrorIfUninitialized("Trying to seek on a uninitialized audio player.")
         audioElement?.currentTime = position.inMs / 1_000
+    }
+
+    override fun release() {
+        audioElement?.src?.let { URL.revokeObjectURL(it) }
+        audioElement = null
+    }
+
+
+    // - Private functions
+
+    private fun logErrorIfUninitialized(message: String) {
+        if (audioElement == null) {
+            logger.error(message)
+        }
     }
 }

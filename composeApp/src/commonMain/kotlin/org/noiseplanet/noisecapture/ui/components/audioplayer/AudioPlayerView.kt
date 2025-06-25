@@ -3,12 +3,14 @@ package org.noiseplanet.noisecapture.ui.components.audioplayer
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -16,10 +18,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
+import org.noiseplanet.noisecapture.util.throttleLatest
+import kotlin.math.abs
+import kotlin.time.Duration
 
 
 @Composable
@@ -34,7 +40,10 @@ fun AudioPlayerView(
     }
 
     val buttonViewModel by viewModel.playPauseButtonViewModel.collectAsStateWithLifecycle()
-    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val isReady by viewModel.isReady.collectAsStateWithLifecycle()
+
+    val playerCurrentPosition by viewModel.currentPosition.throttleLatest(1_000)
+        .collectAsStateWithLifecycle(Duration.ZERO)
 
 
     // - Layout
@@ -50,15 +59,34 @@ fun AudioPlayerView(
             modifier = Modifier.size(32.dp)
         )
 
-        if (isLoading == false) {
+        if (isReady) {
             AudioPlayerSlider(viewModel)
-        }
 
-        Text(
-            text = "00:00",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-        )
+            Text(
+                // Display remaining time
+                text = "-" + (playerCurrentPosition - viewModel.duration)
+                    .toComponents { hours, minutes, seconds, _ ->
+                        val minutesString = abs(minutes).toString().padStart(2, '0')
+                        val secondsString = abs(seconds).toString().padStart(2, '0')
+
+                        if (hours > 0) {
+                            // Only show hours count when recording is more than 1h long
+                            val hoursString = abs(hours).toString().padStart(2, '0')
+                            "$hoursString:$minutesString:$secondsString"
+                        } else {
+                            "$minutesString:$secondsString"
+                        }
+                    },
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+            )
+        } else {
+            Spacer(modifier = Modifier.weight(1f))
+        }
+    }
+
+    fun toZeroPaddedString(value: Int): String {
+        return value.toString().padStart(0)
     }
 }
 
@@ -69,8 +97,19 @@ private fun RowScope.AudioPlayerSlider(
 ) {
     // - Properties
 
+    val lifecycleOwner = LocalLifecycleOwner.current
     val playerCurrentPosition by viewModel.currentPosition.collectAsStateWithLifecycle()
     var seekPosition: Float? by remember { mutableStateOf(null) }
+
+
+    // - Lifecycle
+
+    DisposableEffect(lifecycleOwner) {
+        // When view is destroyed, free up loaded audio
+        onDispose {
+            viewModel.release()
+        }
+    }
 
 
     // - Layout

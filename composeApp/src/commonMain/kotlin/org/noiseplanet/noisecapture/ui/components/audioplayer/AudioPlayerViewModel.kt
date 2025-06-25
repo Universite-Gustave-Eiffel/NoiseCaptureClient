@@ -13,8 +13,10 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.audio.player.AudioPlayer
+import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.ui.components.button.ButtonStyle
 import org.noiseplanet.noisecapture.ui.components.button.IconButtonViewModel
+import org.noiseplanet.noisecapture.util.injectLogger
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -36,9 +38,7 @@ class AudioPlayerViewModel(
 
     // - Properties
 
-    /**
-     * TODO: Handle initialisation errors.
-     */
+    private val logger: Logger by injectLogger()
     private val audioPlayer: AudioPlayer by inject { parametersOf(filePath) }
 
     private val playPauseButtonViewModelFlow = MutableStateFlow(
@@ -52,8 +52,8 @@ class AudioPlayerViewModel(
     private val currentPositionFlow = MutableStateFlow(Duration.ZERO)
     val currentPosition: StateFlow<Duration> = currentPositionFlow
 
-    private val isLoadingFlow = MutableStateFlow(true)
-    val isLoading: StateFlow<Boolean> = isLoadingFlow
+    private val isReadyFlow = MutableStateFlow(false)
+    val isReady: StateFlow<Boolean> = isReadyFlow
 
     val duration: Duration
         get() = audioPlayer.duration
@@ -69,12 +69,19 @@ class AudioPlayerViewModel(
                     delay(AUDIO_PLAYER_POSITION_REFRESH_RATE)
                 }
             }
-            isLoadingFlow.tryEmit(false)
+            isReadyFlow.tryEmit(true)
         }
         audioPlayer.setOnCompleteLister {
             // When playback has reached the end of the clip, go back to the beginning.
             audioPlayer.seek(Duration.ZERO)
             updateButtonViewModel()
+        }
+        viewModelScope.launch {
+            try {
+                audioPlayer.prepare()
+            } catch (err: IllegalStateException) {
+                logger.error("Error while setting up audio player", err)
+            }
         }
     }
 
@@ -93,6 +100,10 @@ class AudioPlayerViewModel(
     fun seek(position: Duration) {
         audioPlayer.seek(position)
         currentPositionFlow.tryEmit(position)
+    }
+
+    fun release() {
+        audioPlayer.release()
     }
 
 

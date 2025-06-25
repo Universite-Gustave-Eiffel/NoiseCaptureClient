@@ -25,21 +25,20 @@ class AndroidAudioPlayer(
     private val logger: Logger by injectLogger()
     private val context: Context by inject()
 
-    private val mediaPlayer: MediaPlayer
-    private var isLoading: Boolean = true
+    private var mediaPlayer: MediaPlayer? = null
 
     override var duration: Duration = Duration.ZERO
 
     override val currentPosition: Duration
-        get() = mediaPlayer.currentPosition.toDuration(unit = DurationUnit.MILLISECONDS)
+        get() = (mediaPlayer?.currentPosition ?: 0).toDuration(unit = DurationUnit.MILLISECONDS)
 
     override val isPlaying: Boolean
-        get() = mediaPlayer.isPlaying
+        get() = mediaPlayer?.isPlaying ?: false
 
 
-    // - Lifecycle
+    // - AudioPlayer
 
-    init {
+    override suspend fun prepare() {
         // Initialise media player and get clip duration.
         val file = File(filePath)
         val uri = Uri.fromFile(file)
@@ -53,7 +52,6 @@ class AndroidAudioPlayer(
             )
             setOnPreparedListener {
                 // When media player is ready, set clip duration.
-                isLoading = false
                 this@AndroidAudioPlayer.duration =
                     duration.toDuration(unit = DurationUnit.MILLISECONDS)
 
@@ -69,18 +67,33 @@ class AndroidAudioPlayer(
         }
     }
 
-
-    // - AudioPlayer
-
     override fun play() {
-        mediaPlayer.start()
+        logErrorIfUninitialized("Trying to play an uninitialized audio player.")
+        mediaPlayer?.start()
     }
 
     override fun pause() {
-        mediaPlayer.pause()
+        logErrorIfUninitialized("Trying to pause an uninitialized audio player.")
+        mediaPlayer?.pause()
     }
 
     override fun seek(position: Duration) {
-        mediaPlayer.seekTo(position.inWholeMilliseconds.toInt())
+        logErrorIfUninitialized("Trying to seek on a uninitialized audio player.")
+        mediaPlayer?.seekTo(position.inWholeMilliseconds.toInt())
+    }
+
+    override fun release() {
+        mediaPlayer?.stop()
+        mediaPlayer?.release()
+        mediaPlayer = null
+    }
+
+
+    // - Private functions
+
+    private fun logErrorIfUninitialized(message: String) {
+        if (mediaPlayer == null) {
+            logger.error(message)
+        }
     }
 }

@@ -9,7 +9,9 @@ import kotlinx.cinterop.ptr
 import kotlinx.cinterop.value
 import org.koin.core.component.KoinComponent
 import org.koin.core.time.inMs
+import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.util.checkNoError
+import org.noiseplanet.noisecapture.util.injectLogger
 import platform.AVFAudio.AVAudioPlayer
 import platform.AVFAudio.AVAudioPlayerDelegateProtocol
 import platform.Foundation.NSError
@@ -29,23 +31,25 @@ class IOSAudioPlayer(filePath: String) : AudioPlayer(filePath), KoinComponent {
 
     // - Properties
 
-    private val audioPlayer: AVAudioPlayer
+    private val logger: Logger by injectLogger()
+
+    private var audioPlayer: AVAudioPlayer? = null
     private val delegate = AVAudioPlayerDelegate(
         onComplete = { onCompleteListener?.onComplete() }
     )
 
-    override var duration: Duration
+    override var duration: Duration = Duration.ZERO
 
     override val currentPosition: Duration
-        get() = audioPlayer.currentTime.toDuration(unit = DurationUnit.SECONDS)
+        get() = (audioPlayer?.currentTime ?: 0.0).toDuration(unit = DurationUnit.SECONDS)
 
     override val isPlaying: Boolean
-        get() = audioPlayer.isPlaying()
+        get() = audioPlayer?.isPlaying() ?: false
 
 
-    // - Lifecycle
+    // - AudioPlayer
 
-    init {
+    override suspend fun prepare() {
         val url = requireNotNull(NSURL.URLWithString(filePath))
 
         memScoped {
@@ -56,37 +60,45 @@ class IOSAudioPlayer(filePath: String) : AudioPlayer(filePath), KoinComponent {
                 contentsOfURL = url,
                 error = error.ptr,
             )
-            audioPlayer.prepareToPlay()
+            audioPlayer?.prepareToPlay()
 
             checkNoError(error.value) { "Error while setting up AVAudioPlayer" }
         }
+        val audioPlayer = checkNotNull(audioPlayer)
         audioPlayer.delegate = delegate
         duration = audioPlayer.duration.toDuration(unit = DurationUnit.SECONDS)
 
         onPreparedListener?.onPrepared()
     }
 
-
-    // - AudioPlayer
-
     override fun play() {
-        audioPlayer.play()
+        logErrorIfUninitialized("Trying to play an uninitialized audio player.")
+        audioPlayer?.play()
     }
 
     override fun pause() {
-        audioPlayer.pause()
+        logErrorIfUninitialized("Trying to pause an uninitialized audio player.")
+        audioPlayer?.pause()
     }
 
     override fun seek(position: Duration) {
+        logErrorIfUninitialized("Trying to seek on a uninitialized audio player.")
         val timeInterval: NSTimeInterval = position.inMs / 1_000.0
-        audioPlayer.currentTime = timeInterval
+        audioPlayer?.currentTime = timeInterval
     }
 
-    override fun setOnPreparedLister(onPrepared: () -> Unit) {
-        super.setOnPreparedLister(onPrepared)
+    override fun release() {
+        audioPlayer?.stop()
+        audioPlayer = null
+    }
 
-        // iOS Audio player is prepared synchronously as soon as it is initialized.
-        onPrepared()
+
+    // - Private functions
+
+    private fun logErrorIfUninitialized(message: String) {
+        if (audioPlayer == null) {
+            logger.error(message)
+        }
     }
 }
 

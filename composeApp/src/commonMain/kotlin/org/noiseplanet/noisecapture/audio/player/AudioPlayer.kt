@@ -67,6 +67,14 @@ abstract class AudioPlayer(
     // - Public functions
 
     /**
+     * Initialises internal audio player asynchronously and loads in audio file.
+     *
+     * @throws FileNotFoundException Thrown if an error occurs during setup.
+     * @throws IllegalStateException Thrown if an error occurs during setup.
+     */
+    abstract suspend fun prepare()
+
+    /**
      * Starts audio playback from current play head position.
      */
     abstract fun play()
@@ -75,6 +83,11 @@ abstract class AudioPlayer(
      * Pauses audio playback.
      */
     abstract fun pause()
+
+    /**
+     * Stops any currently playing audio and unloads audio file from memory.
+     */
+    abstract fun release()
 
     /**
      * Moves play head to a new position in the clip.
