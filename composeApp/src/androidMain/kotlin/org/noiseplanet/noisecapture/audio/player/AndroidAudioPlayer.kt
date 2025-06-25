@@ -62,8 +62,14 @@ class AndroidAudioPlayer(
                 logger.debug("Audio clip has reached the end")
                 onCompleteListener?.onComplete()
             }
-            setDataSource(context, uri)
-            prepareAsync()
+            try {
+                setDataSource(context, uri)
+                prepareAsync()
+            } catch (err: java.io.FileNotFoundException) {
+                throw IllegalStateException(err)
+            } catch (err: IllegalArgumentException) {
+                throw IllegalStateException(err)
+            }
         }
     }
 
