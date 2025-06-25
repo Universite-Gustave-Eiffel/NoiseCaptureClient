@@ -41,6 +41,19 @@
 
     <!-- MeasurementDetailsScreen -->
     <string name="measurement_details_title">Measurement details</string>
+    <string name="measurement_details_loading_hint">Calculating measurement statistics... Depending on the duration of your measurement, this can take a while.</string>
+
+    <string name="measurement_details_average_level">Average dB(A)</string>
+
+    <string name="measurement_details_audio_player_title">Recorded audio</string>
+    <string name="measurement_details_audio_player_description">Listen to the audio that was recorded during your measurement.</string>
+
+    <string name="measurement_details_laeq_summary_title">Sound level summary</string>
+    <string name="measurement_details_laeq_summary_min">lowest recorded sound level.</string>
+    <string name="measurement_details_laeq_summary_la90">90% of recorded levels were above this value.</string>
+    <string name="measurement_details_laeq_summary_la50">50% of recorded levels were above this value.</string>
+    <string name="measurement_details_laeq_summary_la10">10% of recorded levels were above this value.</string>
+    <string name="measurement_details_laeq_summary_max">highest recorded sound level.</string>
 
 
     <!-- Settings -->

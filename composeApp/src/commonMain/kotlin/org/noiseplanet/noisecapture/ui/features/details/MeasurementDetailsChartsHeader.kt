@@ -20,6 +20,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.measurement_details_average_level
+import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.roundTo
 
@@ -87,8 +90,7 @@ fun MeasurementDetailsChartsHeader(
                 lineHeight = 40.sp,
             )
             Text(
-                // TODO: Localize
-                text = "Average dB(A)",
+                text = stringResource(Res.string.measurement_details_average_level),
                 style = MaterialTheme.typography.labelSmall,
                 color = averageLevelColor,
             )

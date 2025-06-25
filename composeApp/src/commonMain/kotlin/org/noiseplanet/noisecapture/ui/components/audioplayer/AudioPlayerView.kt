@@ -21,6 +21,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.measurement_details_audio_player_description
+import noisecapture.composeapp.generated.resources.measurement_details_audio_player_title
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
@@ -61,12 +65,12 @@ fun AudioPlayerView(
         modifier = Modifier.fillMaxWidth(),
     ) {
         Text(
-            text = "Recorded audio",
+            text = stringResource(Res.string.measurement_details_audio_player_title),
             style = MaterialTheme.typography.titleMedium,
         )
 
         Text(
-            text = "Listen to the audio that was recorded during your measurement.",
+            text = stringResource(Res.string.measurement_details_audio_player_description),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
         )
