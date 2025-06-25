@@ -56,23 +56,23 @@ fun LaeqSummaryView(
             text = buildAnnotatedString {
                 val boldStyle = SpanStyle(fontWeight = FontWeight.Bold)
                 withStyle(style = boldStyle) {
-                    append(" • Min: ")
+                    append("Min: ")
                 }
                 append(stringResource(Res.string.measurement_details_laeq_summary_min) + "\n")
                 withStyle(style = boldStyle) {
-                    append(" • LA90: ")
+                    append("LA90: ")
                 }
                 append(stringResource(Res.string.measurement_details_laeq_summary_la90) + "\n")
                 withStyle(style = boldStyle) {
-                    append(" • LA50: ")
+                    append("LA50: ")
                 }
                 append(stringResource(Res.string.measurement_details_laeq_summary_la50) + "\n")
                 withStyle(style = boldStyle) {
-                    append(" • LA10: ")
+                    append("LA10: ")
                 }
                 append(stringResource(Res.string.measurement_details_laeq_summary_la10) + "\n")
                 withStyle(style = boldStyle) {
-                    append(" • Max: ")
+                    append("Max: ")
                 }
                 append(stringResource(Res.string.measurement_details_laeq_summary_max) + "\n")
             },
