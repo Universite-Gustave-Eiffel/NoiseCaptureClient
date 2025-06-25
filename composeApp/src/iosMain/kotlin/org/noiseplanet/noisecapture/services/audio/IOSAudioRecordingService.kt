@@ -95,7 +95,7 @@ class IOSAudioRecordingService : AudioRecordingService, KoinComponent {
         logger.debug("Stopping recording...")
         audioRecorder?.stop()
         logger.debug("Recording stopped")
-        audioRecorder?.url?.absoluteString?.let {
+        audioRecorder?.url?.lastPathComponent?.let {
             recordingStopListener?.onRecordingStop(it)
         }
 
