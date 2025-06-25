@@ -36,6 +36,9 @@ class AudioPlayerViewModel(
 
     // - Properties
 
+    /**
+     * TODO: Handle initialisation errors.
+     */
     private val audioPlayer: AudioPlayer by inject { parametersOf(filePath) }
 
     private val playPauseButtonViewModelFlow = MutableStateFlow(

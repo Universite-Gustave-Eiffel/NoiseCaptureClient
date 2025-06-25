@@ -1,7 +1,6 @@
 package org.noiseplanet.noisecapture.ui.features.details
 
 import androidx.lifecycle.ViewModel
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
@@ -11,8 +10,11 @@ import kotlinx.datetime.format.MonthNames
 import kotlinx.datetime.toLocalDateTime
 import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.model.dao.Measurement
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 
+@OptIn(ExperimentalTime::class)
 class MeasurementDetailsChartsViewModel(
     val measurement: Measurement,
 ) : ViewModel(), KoinComponent {
@@ -25,7 +27,7 @@ class MeasurementDetailsChartsViewModel(
             date(LocalDate.Format {
                 monthName(MonthNames.ENGLISH_ABBREVIATED)
                 chars(". ")
-                dayOfMonth()
+                day()
                 chars(" ")
                 year()
             })

@@ -3,7 +3,6 @@ package org.noiseplanet.noisecapture.services.measurement
 import Platform
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.datetime.Clock
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.log.Logger
@@ -23,12 +22,15 @@ import org.noiseplanet.noisecapture.util.roundTo
 import kotlin.concurrent.Volatile
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
  * Default implementation for [MeasurementService].
  */
+@OptIn(ExperimentalTime::class)
 @Suppress("TooManyFunctions")
 class DefaultMeasurementService : MeasurementService, KoinComponent {
 
