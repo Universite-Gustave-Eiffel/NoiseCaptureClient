@@ -15,6 +15,7 @@ import org.noiseplanet.noisecapture.util.injectLogger
 import platform.AVFAudio.AVAudioPlayer
 import platform.AVFAudio.AVAudioPlayerDelegateProtocol
 import platform.Foundation.NSError
+import platform.Foundation.NSFileManager
 import platform.Foundation.NSTimeInterval
 import platform.Foundation.NSURL
 import platform.darwin.NSObject
@@ -50,7 +51,10 @@ class IOSAudioPlayer(filePath: String) : AudioPlayer(filePath), KoinComponent {
     // - AudioPlayer
 
     override suspend fun prepare() {
-        val url = requireNotNull(NSURL.URLWithString(filePath))
+        check(NSFileManager.defaultManager.fileExistsAtPath(filePath)) {
+            "File not found at path $filePath"
+        }
+        val url = checkNotNull(NSURL.URLWithString(filePath))
 
         memScoped {
             val error: ObjCObjectVar<NSError?> = alloc()
