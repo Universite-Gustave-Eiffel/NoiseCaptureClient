@@ -14,4 +14,8 @@ val measurementDetailsModule = module {
     viewModel { (filePath: String) ->
         AudioPlayerViewModel(filePath)
     }
+
+    viewModel { (measurement: Measurement) ->
+        ManageMeasurementViewModel(measurement)
+    }
 }

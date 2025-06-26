@@ -59,11 +59,6 @@ fun MeasurementDetailsChartsView(
             max = viewModel.measurement.laeqMetrics.max
         )
 
-        Column(
-            modifier = Modifier.fillMaxWidth()
-                .padding(horizontal = 32.dp)
-        ) {
-
-        }
+        ManageMeasurementView(measurement)
     }
 }

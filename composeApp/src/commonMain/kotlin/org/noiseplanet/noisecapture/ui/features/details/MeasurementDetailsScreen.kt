@@ -4,14 +4,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
@@ -19,7 +17,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,6 +28,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.measurement_details_loading_hint
 import org.jetbrains.compose.resources.stringResource
@@ -54,13 +52,13 @@ fun MeasurementDetailsScreen(
 
     // - Properties
 
-    val viewState by viewModel.viewState.collectAsState()
-    val isLoading = viewState is MeasurementDetailsScreenViewState.Loading
+    val viewState by viewModel.viewState.collectAsStateWithLifecycle()
+    val isLoading: Boolean = viewState is MeasurementDetailsScreenViewState.Loading
 
     val sheetState = rememberBottomSheetScaffoldState(
         bottomSheetState = rememberStandardBottomSheetState(
             initialValue = if (isLoading) SheetValue.Hidden else SheetValue.PartiallyExpanded,
-            skipHiddenState = isLoading == false
+            skipHiddenState = !isLoading
         ),
     )
     var containerHeight by remember {
@@ -126,30 +124,17 @@ fun MeasurementDetailsScreen(
             is MeasurementDetailsScreenViewState.ContentReady -> {
                 val state = viewState as MeasurementDetailsScreenViewState.ContentReady
 
-                Column(
-                    modifier = Modifier.fillMaxSize()
-                        .padding(contentPadding)
-                ) {
-                    Text(
-                        text = "Measurement id: ${state.measurement.uuid}",
-                        textAlign = TextAlign.Center,
-                    )
-
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    Button(
-                        onClick = {
-                            viewModel.deleteMeasurement()
-                            onMeasurementDeleted()
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Delete")
-                    }
-                }
+                Text(
+                    text = "Measurement id: ${state.measurement.uuid}",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxSize(),
+                )
             }
 
-            else -> {}
+            is MeasurementDetailsScreenViewState.NoMeasurement -> {
+                // If measurement becomes null, it means it was deleted
+                onMeasurementDeleted()
+            }
         }
     }
 }

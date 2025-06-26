@@ -38,4 +38,5 @@ class SettingsRoute : Route()
 @Serializable
 class MeasurementDetailsRoute(
     val measurementId: String,
+    val parentRouteId: String,
 ) : Route()
