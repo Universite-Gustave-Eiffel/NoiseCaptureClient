@@ -19,8 +19,9 @@ import org.noiseplanet.noisecapture.audio.AudioSourceState
 import org.noiseplanet.noisecapture.model.dao.LAeqMetrics
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
-import org.noiseplanet.noisecapture.ui.components.button.ButtonStyle
-import org.noiseplanet.noisecapture.ui.components.button.ButtonViewModel
+import org.noiseplanet.noisecapture.ui.components.button.IconNCButtonViewModel
+import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
+import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
 import org.noiseplanet.noisecapture.util.VuMeterOptions
 
 
@@ -46,7 +47,7 @@ class SoundLevelMeterViewModel(
     private val liveAudioService: LiveAudioService by inject()
     private val measurementService: MeasurementService by inject()
 
-    val playPauseButtonViewModelFlow: StateFlow<ButtonViewModel> = liveAudioService.isRunningFlow
+    val playPauseButtonViewModelFlow: StateFlow<NCButtonViewModel> = liveAudioService.isRunningFlow
         .map { isRunning ->
             getPlayPauseButtonViewModel(isRunning)
         }.stateIn(
@@ -97,12 +98,12 @@ class SoundLevelMeterViewModel(
 
     // - Private functions
 
-    private fun getPlayPauseButtonViewModel(isAudioSourceRunning: Boolean): ButtonViewModel {
+    private fun getPlayPauseButtonViewModel(isAudioSourceRunning: Boolean): NCButtonViewModel {
         val icon = if (isAudioSourceRunning) Icons.Filled.Pause else Icons.Filled.PlayArrow
-        return ButtonViewModel(
-            title = null,
+
+        return IconNCButtonViewModel(
             icon = icon,
-            style = ButtonStyle.SECONDARY,
+            colors = { NCButtonColors.Defaults.secondary() },
         )
     }
 }

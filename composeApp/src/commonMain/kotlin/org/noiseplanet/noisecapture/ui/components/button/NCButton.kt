@@ -13,12 +13,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Text
@@ -27,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
@@ -41,7 +38,7 @@ import org.noiseplanet.noisecapture.util.shadow.dropShadow
 
 @Composable
 fun NCButton(
-    viewModel: ButtonViewModel,
+    viewModel: NCButtonViewModel,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -50,6 +47,7 @@ fun NCButton(
     val shape: Shape = ButtonDefaults.shape
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
+    val colors = viewModel.colors()
 
     val title: String? = viewModel.title?.let { stringResource(it) }
 
@@ -70,55 +68,62 @@ fun NCButton(
         if (viewModel.icon != null && title == null) {
             // If only icon is provided, use IconButton as a base
             when (viewModel.style) {
-                ButtonStyle.PRIMARY -> FilledIconButton(
+                NCButtonStyle.FILLED -> FilledIconButton(
                     onClick,
+                    colors = colors.toIconButtonColors(),
                     modifier = finalModifier
-                ) { NCButtonContents(viewModel.icon, null) }
+                ) { NCButtonContents(viewModel.icon, null, colors.contentColor) }
 
-                ButtonStyle.SECONDARY -> FilledTonalIconButton(
+                NCButtonStyle.OUTLINED -> OutlinedIconButton(
                     onClick,
+                    colors = colors.toIconButtonColors()
+                        .copy(
+                            containerColor = Color.Transparent,
+                            disabledContainerColor = Color.Transparent
+                        ),
+                    border = BorderStroke(width = 2.dp, color = colors.containerColor),
                     modifier = finalModifier
-                ) { NCButtonContents(viewModel.icon, null) }
+                ) { NCButtonContents(viewModel.icon, null, colors.contentColor) }
 
-                ButtonStyle.OUTLINED -> OutlinedIconButton(
+                NCButtonStyle.TEXT -> IconButton(
                     onClick,
-                    colors = IconButtonDefaults.outlinedIconButtonColors(
-                        contentColor = MaterialTheme.colorScheme.primary
-                    ),
-                    border = BorderStroke(width = 2.dp, color = MaterialTheme.colorScheme.primary),
+                    colors = colors.toIconButtonColors()
+                        .copy(
+                            containerColor = Color.Transparent,
+                            disabledContainerColor = Color.Transparent
+                        ),
                     modifier = finalModifier
-                ) { NCButtonContents(viewModel.icon, null) }
-
-                ButtonStyle.TEXT -> IconButton(
-                    onClick,
-                    colors = IconButtonDefaults.outlinedIconButtonColors(),
-                    modifier = finalModifier
-                ) { NCButtonContents(viewModel.icon, null) }
+                ) { NCButtonContents(viewModel.icon, null, colors.contentColor) }
             }
         } else {
             // Otherwise use a regular button
             when (viewModel.style) {
-                ButtonStyle.PRIMARY -> Button(
+                NCButtonStyle.FILLED -> Button(
                     onClick,
-                    modifier = finalModifier
-                ) { NCButtonContents(viewModel.icon, title) }
+                    colors = colors.toButtonColors(),
+                    modifier = finalModifier,
+                ) { NCButtonContents(viewModel.icon, title, colors.contentColor) }
 
-                ButtonStyle.SECONDARY -> FilledTonalButton(
+                NCButtonStyle.OUTLINED -> OutlinedButton(
                     onClick,
-                    modifier = finalModifier
-                ) { NCButtonContents(viewModel.icon, title) }
+                    colors = colors.toButtonColors()
+                        .copy(
+                            containerColor = Color.Transparent,
+                            disabledContainerColor = Color.Transparent
+                        ),
+                    border = BorderStroke(width = 2.dp, color = colors.containerColor),
+                    modifier = finalModifier,
+                ) { NCButtonContents(viewModel.icon, title, colors.contentColor) }
 
-                ButtonStyle.OUTLINED -> OutlinedButton(
+                NCButtonStyle.TEXT -> TextButton(
                     onClick,
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary),
-                    border = BorderStroke(width = 2.dp, color = MaterialTheme.colorScheme.primary),
+                    colors = colors.toButtonColors()
+                        .copy(
+                            containerColor = Color.Transparent,
+                            disabledContainerColor = Color.Transparent
+                        ),
                     modifier = finalModifier
-                ) { NCButtonContents(viewModel.icon, title) }
-
-                ButtonStyle.TEXT -> TextButton(
-                    onClick,
-                    modifier = finalModifier
-                ) { NCButtonContents(viewModel.icon, title) }
+                ) { NCButtonContents(viewModel.icon, title, colors.contentColor) }
             }
         }
     }
@@ -129,12 +134,14 @@ fun NCButton(
 private fun NCButtonContents(
     icon: ImageVector?,
     title: String?,
+    contentColor: Color,
 ) {
     icon?.let {
         Icon(
             imageVector = it,
             contentDescription = title,
-            modifier = Modifier.size(18.dp)
+            tint = contentColor,
+            modifier = Modifier.size(18.dp),
         )
     }
 
@@ -143,5 +150,7 @@ private fun NCButtonContents(
         Spacer(modifier = Modifier.width(8.dp))
     }
 
-    title?.let { Text(it) }
+    title?.let {
+        Text(it, color = contentColor)
+    }
 }

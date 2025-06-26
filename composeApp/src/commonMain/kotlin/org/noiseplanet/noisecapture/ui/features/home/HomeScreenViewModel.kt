@@ -17,8 +17,8 @@ import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBarButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
-import org.noiseplanet.noisecapture.ui.components.button.ButtonStyle
-import org.noiseplanet.noisecapture.ui.components.button.ButtonViewModel
+import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
+import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
 
 class HomeScreenViewModel(
     private val onClickSettingsButton: () -> Unit,
@@ -29,11 +29,11 @@ class HomeScreenViewModel(
     private val measurementService: MeasurementService by inject()
 
     val soundLevelMeterHintText = Res.string.home_slm_hint
-    val soundLevelMeterButtonViewModel = ButtonViewModel(
+    val soundLevelMeterButtonViewModel = NCButtonViewModel(
         title = Res.string.home_slm_button_title,
         icon = Icons.Filled.Mic,
-        style = ButtonStyle.SECONDARY,
-        hasDropShadow = true
+        colors = { NCButtonColors.Defaults.secondary() },
+        hasDropShadow = true,
     )
 
 
