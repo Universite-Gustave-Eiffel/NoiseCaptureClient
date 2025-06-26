@@ -23,6 +23,8 @@ import platform.CoreAudioTypes.AudioFormatID
 import platform.CoreAudioTypes.kAudioFormatMPEG4AAC
 import platform.Foundation.NSError
 import platform.Foundation.NSFileManager
+import platform.Foundation.NSFileSize
+import platform.Foundation.NSURL
 
 
 /**
@@ -58,8 +60,7 @@ class IOSAudioRecordingService : AudioRecordingService, KoinComponent {
         logger.debug("Start recording to $outputFileName")
 
         // Get an URL pointing to the output file
-        val documentsUrl = NSFileManagerUtils.getDocumentsDirectory()
-        val fileUrl = documentsUrl?.URLByAppendingPathComponent("$outputFileName.m4a")
+        val fileUrl = getFileUrl("$outputFileName.m4a")
         checkNotNull(fileUrl) { "Could not create URL for file with name $outputFileName" }
 
         logger.debug("Output file URL: ${fileUrl.absoluteString}")
@@ -104,10 +105,24 @@ class IOSAudioRecordingService : AudioRecordingService, KoinComponent {
         audioRecorder = null
     }
 
+    override fun getFileSize(audioUrl: String): Long? {
+        // On iOS, audio URL is just the file name to avoid emulator sandboxing restrictions.
+        val fileUrl = getFileUrl(audioUrl) ?: return null
+        val filePath = fileUrl.path ?: return null
+
+        memScoped {
+            val error: ObjCObjectVar<NSError?> = alloc()
+            val attributes =
+                NSFileManager.defaultManager.attributesOfItemAtPath(filePath, error.ptr)
+            checkNoError(error.value) { "Could not get size of file at URL $fileUrl" }
+
+            return attributes?.get(NSFileSize) as? Long
+        }
+    }
+
     override fun deleteFileAtUrl(audioUrl: String) {
         // On iOS, audio URL is just the file name to avoid emulator sandboxing restrictions.
-        val documentsUrl = NSFileManagerUtils.getDocumentsDirectory() ?: return
-        val fileUrl = documentsUrl.URLByAppendingPathComponent(audioUrl) ?: return
+        val fileUrl = getFileUrl(audioUrl) ?: return
 
         memScoped {
             val error: ObjCObjectVar<NSError?> = alloc()
@@ -115,5 +130,14 @@ class IOSAudioRecordingService : AudioRecordingService, KoinComponent {
 
             checkNoError(error.value) { "Error while deleting file at URL $fileUrl" }
         }
+    }
+
+
+    // - Private functions
+
+    private fun getFileUrl(fileName: String): NSURL? {
+        val documentsUrl = NSFileManagerUtils.getDocumentsDirectory() ?: return null
+
+        return documentsUrl.URLByAppendingPathComponent(fileName)
     }
 }

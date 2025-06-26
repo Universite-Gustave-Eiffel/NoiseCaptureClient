@@ -15,6 +15,7 @@ import noisecapture.composeapp.generated.resources.measurement_details_delete_me
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.model.dao.Measurement
+import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonStyle
@@ -42,6 +43,8 @@ class ManageMeasurementViewModel(
     // - Properties
 
     private val measurementService: MeasurementService by inject()
+    private val audioRecordingService: AudioRecordingService by inject()
+
     private val measurementFlow = measurementService.getMeasurementFlow(measurementId)
     private val measurement: Measurement?
         get() = (viewStateFlow.value as? ViewState.ContentReady)?.measurement
@@ -83,6 +86,12 @@ class ManageMeasurementViewModel(
 
 
     // - Public functions
+
+    fun getAudioFileSize(): Long? {
+        return measurement?.recordedAudioUrl?.let { audioUrl ->
+            audioRecordingService.getFileSize(audioUrl)
+        }
+    }
 
     fun deleteMeasurementAudio() {
         measurement?.let {
