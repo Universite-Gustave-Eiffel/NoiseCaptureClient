@@ -17,9 +17,14 @@ internal expect class KStoreProvider() {
      * Returns a [KStore] instance for the given unique key.
      *
      * @param key Unique record key
+     * @param enableCache If true, store value will be kept in memory until a new value is passed.
+     *                    Note that this can have some memory impacts for large objects.
      * @param T Type of stored entity
      *
      * @return [KStore] object, created if necessary.
      */
-    inline fun <reified T : @Serializable Any> storeOf(key: String): KStore<T>
+    inline fun <reified T : @Serializable Any> storeOf(
+        key: String,
+        enableCache: Boolean = true,
+    ): KStore<T>
 }

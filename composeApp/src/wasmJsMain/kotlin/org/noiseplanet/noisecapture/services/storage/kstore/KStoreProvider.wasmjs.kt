@@ -23,18 +23,24 @@ internal actual class KStoreProvider : KoinComponent {
      * Returns a [KStore] instance for the given unique key.
      *
      * @param key Unique record key
+     * @param enableCache If true, store value will be kept in memory until a new value is passed.
+     *                    Note that this can have some memory impacts for large objects.
      * @param T Type of stored entity
      *
      * @return [KStore] object, created if necessary.
      */
-    actual inline fun <reified T : @Serializable Any> storeOf(key: String): KStore<T> {
+    actual inline fun <reified T : @Serializable Any> storeOf(
+        key: String,
+        enableCache: Boolean,
+    ): KStore<T> {
         // For WasmJS, KStore doesn't support file storage out of the box so we use a custom codec
         // that will store the serialised values in JSON files using OPFS interop.
         return io.github.xxfast.kstore.storeOf(
             codec = KStoreOpfsCodec(
                 filePath = "$key.json",
                 logger = logger,
-            )
+            ),
+            enableCache = enableCache,
         )
     }
 }

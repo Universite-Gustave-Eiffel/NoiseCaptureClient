@@ -27,11 +27,16 @@ internal actual class KStoreProvider : KoinComponent {
      * Returns a [KStore] instance for the given unique key.
      *
      * @param key Unique record key
+     * @param enableCache If true, store value will be kept in memory until a new value is passed.
+     *                    Note that this can have some memory impacts for large objects.
      * @param T Type of stored entity
      *
      * @return [KStore] object, created if necessary.
      */
-    actual inline fun <reified T : @Serializable Any> storeOf(key: String): KStore<T> {
+    actual inline fun <reified T : @Serializable Any> storeOf(
+        key: String,
+        enableCache: Boolean,
+    ): KStore<T> {
         // Build complete file path
         val filePath = Path("${context.filesDir}/$key.json")
 
@@ -39,6 +44,6 @@ internal actual class KStoreProvider : KoinComponent {
         File(filePath.parent.toString()).mkdirs()
 
         // Return KStore handle
-        return storeOf(file = filePath)
+        return storeOf(file = filePath, enableCache = enableCache)
     }
 }
