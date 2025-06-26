@@ -22,6 +22,7 @@ import platform.AVFAudio.AVSampleRateKey
 import platform.CoreAudioTypes.AudioFormatID
 import platform.CoreAudioTypes.kAudioFormatMPEG4AAC
 import platform.Foundation.NSError
+import platform.Foundation.NSFileManager
 
 
 /**
@@ -101,5 +102,18 @@ class IOSAudioRecordingService : AudioRecordingService, KoinComponent {
 
         // Drop recorder reference
         audioRecorder = null
+    }
+
+    override fun deleteFileAtUrl(audioUrl: String) {
+        // On iOS, audio URL is just the file name to avoid emulator sandboxing restrictions.
+        val documentsUrl = NSFileManagerUtils.getDocumentsDirectory() ?: return
+        val fileUrl = documentsUrl.URLByAppendingPathComponent(audioUrl) ?: return
+
+        memScoped {
+            val error: ObjCObjectVar<NSError?> = alloc()
+            NSFileManager.defaultManager.removeItemAtURL(fileUrl, error.ptr)
+
+            checkNoError(error.value) { "Error while deleting file at URL $fileUrl" }
+        }
     }
 }

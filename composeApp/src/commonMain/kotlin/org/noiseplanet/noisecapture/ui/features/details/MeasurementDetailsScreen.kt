@@ -83,7 +83,7 @@ fun MeasurementDetailsScreen(
                 is MeasurementDetailsScreenViewState.ContentReady -> {
                     val state = viewState as MeasurementDetailsScreenViewState.ContentReady
                     MeasurementDetailsChartsView(
-                        state.measurement,
+                        state.measurement.uuid,
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
                 }

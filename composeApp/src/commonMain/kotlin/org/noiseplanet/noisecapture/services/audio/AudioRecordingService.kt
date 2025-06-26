@@ -30,6 +30,13 @@ interface AudioRecordingService {
      */
     fun stopRecordingToFile()
 
+    /**
+     * Deletes the audio file at the given URL.
+     *
+     * @param audioUrl Audio file URL.
+     */
+    fun deleteFileAtUrl(audioUrl: String)
+
 
     // - Listeners
 

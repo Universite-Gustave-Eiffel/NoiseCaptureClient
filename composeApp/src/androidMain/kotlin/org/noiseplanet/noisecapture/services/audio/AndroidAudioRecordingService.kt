@@ -8,6 +8,7 @@ import org.koin.core.component.get
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.util.injectLogger
+import java.io.File
 import java.io.IOException
 
 
@@ -74,5 +75,12 @@ class AndroidAudioRecordingService : AudioRecordingService, KoinComponent {
         // Drop reference
         mediaRecorder = null
         logger.debug("Stopped recording")
+    }
+
+    override fun deleteFileAtUrl(audioUrl: String) {
+        val file = File(audioUrl)
+        if (file.exists()) {
+            file.delete()
+        }
     }
 }

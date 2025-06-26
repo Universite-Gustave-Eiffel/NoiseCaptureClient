@@ -3,11 +3,13 @@ package org.noiseplanet.noisecapture.services.audio
 import kotlinx.browser.window
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.await
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.interop.MediaRecorder
 import org.noiseplanet.noisecapture.log.Logger
+import org.noiseplanet.noisecapture.util.OPFSHelper
 import org.noiseplanet.noisecapture.util.injectLogger
 import org.w3c.dom.mediacapture.MediaStream
 import org.w3c.dom.mediacapture.MediaStreamConstraints
@@ -53,6 +55,14 @@ class JSAudioRecordingService : AudioRecordingService, KoinComponent {
     override fun stopRecordingToFile() {
         mediaRecorder?.stop()
     }
+
+    override fun deleteFileAtUrl(audioUrl: String) {
+        scope.launch {
+            val (fileHandle, directoryHandle) = OPFSHelper.getFileHandle(audioUrl) ?: return@launch
+            directoryHandle.removeEntry(fileHandle.name).await()
+        }
+    }
+
 
     // - Private functions
 

@@ -140,6 +140,13 @@ interface MeasurementService {
     suspend fun calculateSummary(measurement: Measurement): Measurement
 
     /**
+     * Deletes the measurement's associated audio record (if any).
+     *
+     * @param uuid Measurement unique identifier.
+     */
+    suspend fun deleteMeasurementAssociatedAudio(uuid: String)
+
+    /**
      * Deletes the measurement with the given id.
      *
      * @param uuid Measurement unique identifier.

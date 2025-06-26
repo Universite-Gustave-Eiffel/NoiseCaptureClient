@@ -14,7 +14,7 @@ import androidx.compose.ui.graphics.Color
  * For [NCButtonStyle.TEXT], will be ignored.
  * @param contentColor Text and icon color.
  */
-class NCButtonColors(
+data class NCButtonColors(
     val containerColor: Color,
     val contentColor: Color,
 ) {

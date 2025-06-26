@@ -55,6 +55,9 @@
     <string name="measurement_details_laeq_summary_la10">10% of recorded levels were above this value.</string>
     <string name="measurement_details_laeq_summary_max">highest recorded sound level.</string>
 
+    <string name="measurement_details_delete_measurement_button">Delete measurement</string>
+    <string name="measurement_details_delete_measurement_audio_button">Delete recorded audio</string>
+
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>
