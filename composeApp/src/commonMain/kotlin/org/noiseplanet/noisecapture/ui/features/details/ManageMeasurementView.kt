@@ -52,6 +52,12 @@ fun ManageMeasurementView(
                     )
                 }
 
+                state.measurementSize?.let {
+                    Text(
+                        text = "Total measurement size: " + HumanReadable.fileSize(it)
+                    )
+                }
+
                 state.deleteAudioButtonViewModel?.let { buttonViewModel ->
                     NCButton(
                         viewModel = buttonViewModel,

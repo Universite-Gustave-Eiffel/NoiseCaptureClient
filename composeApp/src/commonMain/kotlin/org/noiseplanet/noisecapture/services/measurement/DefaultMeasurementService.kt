@@ -84,6 +84,25 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
         return measurementStorageService.get(uuid)
     }
 
+    override suspend fun getMeasurementSize(uuid: String): Long? {
+        val measurement = measurementStorageService.get(uuid) ?: return null
+
+        val measurementSize = measurementStorageService.getSize(uuid) ?: 0L
+        val leqSequenceSize = measurement.leqsSequenceIds
+            .fold(0L) { accumulator, sequenceId ->
+                accumulator + (leqSequenceStorageService.getSize(sequenceId) ?: 0L)
+            }
+        val locationSequenceSize = measurement.locationSequenceIds
+            .fold(0L) { accumulator, sequenceId ->
+                accumulator + (locationSequenceStorageService.getSize(sequenceId) ?: 0L)
+            }
+        val audioSize = measurement.recordedAudioUrl?.let {
+            audioRecordingService.getFileSize(it)
+        } ?: 0L
+
+        return measurementSize + leqSequenceSize + locationSequenceSize + audioSize
+    }
+
     override fun getMeasurementFlow(uuid: String): Flow<Measurement?> {
         return measurementStorageService.subscribeOne(uuid)
     }

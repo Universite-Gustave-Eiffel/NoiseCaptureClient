@@ -34,6 +34,7 @@ class ManageMeasurementViewModel(
 
         data class ContentReady(
             val measurement: Measurement,
+            val measurementSize: Long?,
             val audioFileSize: Long?,
             val deleteMeasurementButtonViewModel: NCButtonViewModel,
             val deleteAudioButtonViewModel: NCButtonViewModel?,
@@ -75,6 +76,7 @@ class ManageMeasurementViewModel(
         .map { measurement ->
             ViewState.ContentReady(
                 measurement,
+                measurementSize = measurementService.getMeasurementSize(measurement.uuid),
                 audioFileSize = measurement.recordedAudioUrl?.let { audioUrl ->
                     audioRecordingService.getFileSize(audioUrl)
                 },

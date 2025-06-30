@@ -24,9 +24,9 @@ internal actual class KStoreProvider : KoinComponent {
     // - KStoreProvider
 
     /**
-     * Returns a [KStore] instance for the given unique key.
+     * Returns a [KStore] instance for the given file name.
      *
-     * @param key Unique record key
+     * @param fileName Unique file name
      * @param enableCache If true, store value will be kept in memory until a new value is passed.
      *                    Note that this can have some memory impacts for large objects.
      * @param T Type of stored entity
@@ -34,16 +34,40 @@ internal actual class KStoreProvider : KoinComponent {
      * @return [KStore] object, created if necessary.
      */
     actual inline fun <reified T : @Serializable Any> storeOf(
-        key: String,
+        fileName: String,
         enableCache: Boolean,
     ): KStore<T> {
-        // Build complete file path
-        val filePath = Path("${context.filesDir}/$key.json")
-
+        val file = getFileHandle(fileName)
         // Create enclosing directory if it doesn't exist
-        File(filePath.parent.toString()).mkdirs()
+        file.parent?.let { File(it).mkdirs() }
 
         // Return KStore handle
-        return storeOf(file = filePath, enableCache = enableCache)
+        return storeOf(file = Path(file.path), enableCache = enableCache)
+    }
+
+    /**
+     * Gets the size of the given file.
+     *
+     * @param fileName Unique file name.
+     *
+     * @return File size in bytes, null if not found.
+     */
+    actual suspend fun sizeOf(fileName: String): Long? {
+        val file = getFileHandle(fileName)
+
+        return if (!file.exists()) {
+            null
+        } else {
+            file.length()
+        }
+    }
+
+
+    // - Private functions
+
+    private fun getFileHandle(fileName: String): File {
+        // Build complete file path
+        val filePath = Path("${context.filesDir}/$fileName")
+        return File(filePath.toString())
     }
 }

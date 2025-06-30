@@ -41,6 +41,15 @@ interface StorageService<T : @Serializable Any> {
     suspend fun get(uuid: String): T?
 
     /**
+     * Gets the size of an entity in bytes from its unique identifier
+     *
+     * @param uuid Unique entity identifier
+     *
+     * @return Entity size in bytes or null if not found in storage
+     */
+    suspend fun getSize(uuid: String): Long?
+
+    /**
      * Gets a [Flow] that is updated everytime a new entity is pushed or removed.
      *
      * Note: a new value won't be emitted if an existing entity is updated because that won't

@@ -59,6 +59,17 @@ interface MeasurementService {
     suspend fun getMeasurement(uuid: String): Measurement?
 
     /**
+     * Gets the total size of the given measurement in bytes. This includes the measurement file,
+     * all attached leq and location sequence fragment files, and the size of the the optional
+     * recorded audio clip.
+     *
+     * @param uuid Measurement unique identifier
+     *
+     * @return Size of measurement on disk, in bytes.
+     */
+    suspend fun getMeasurementSize(uuid: String): Long?
+
+    /**
      * Subscribe to every updates made a particular measurement.
      *
      * @param uuid Measurement unique identifier

@@ -13,7 +13,6 @@ import org.noiseplanet.noisecapture.model.dao.LeqSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.LocationSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.services.storage.StorageService
-import org.noiseplanet.noisecapture.util.injectLogger
 import kotlin.reflect.KClass
 
 
@@ -34,11 +33,9 @@ class KStoreStorageService<RecordType : @Serializable Any>(
 
     // - Properties
 
-    private val logger by injectLogger()
-
     private val storeProvider = KStoreProvider()
     private val indexStore: KStore<List<String>> = storeProvider.storeOf(
-        key = "$prefix/index",
+        fileName = "$prefix/index.json",
         enableCache = true,
     )
 
@@ -61,6 +58,11 @@ class KStoreStorageService<RecordType : @Serializable Any>(
     override suspend fun get(uuid: String): RecordType? {
         val store = storeCache[uuid] ?: getStoreForRecord(uuid)
         return store.get()
+    }
+
+    override suspend fun getSize(uuid: String): Long? {
+        val fileName = getFileNameForRecord(uuid)
+        return storeProvider.sizeOf(fileName)
     }
 
     override fun subscribeAll(): Flow<List<RecordType>> {
@@ -117,7 +119,7 @@ class KStoreStorageService<RecordType : @Serializable Any>(
      */
     @Suppress("UNCHECKED_CAST")
     private fun getStoreForRecord(uuid: String): KStore<RecordType> {
-        val key = "$prefix/$uuid"
+        val key = getFileNameForRecord(uuid)
 
         // Check at runtime for record type
         return when (type) {
@@ -129,5 +131,9 @@ class KStoreStorageService<RecordType : @Serializable Any>(
 
             else -> throw UnsupportedOperationException("Trying to access unsupported storage type")
         } as KStore<RecordType>
+    }
+
+    private fun getFileNameForRecord(uuid: String): String {
+        return "$prefix/$uuid.json"
     }
 }
