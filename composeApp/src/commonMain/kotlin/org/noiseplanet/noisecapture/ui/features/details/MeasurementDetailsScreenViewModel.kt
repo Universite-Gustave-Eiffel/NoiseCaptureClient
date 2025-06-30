@@ -42,7 +42,7 @@ class MeasurementDetailsScreenViewModel(
             } ?: MeasurementDetailsScreenViewState.Error
         }.stateIn(
             viewModelScope,
-            started = SharingStarted.WhileSubscribed(),
+            started = SharingStarted.WhileSubscribed(5_000),
             initialValue = MeasurementDetailsScreenViewState.Loading
         )
 

@@ -182,6 +182,7 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
     override suspend fun closeOngoingMeasurement() {
         // End currently ongoing sequence fragments
         onSequenceFragmentEnd()
+        ongoingMeasurement = null
     }
 
     /**

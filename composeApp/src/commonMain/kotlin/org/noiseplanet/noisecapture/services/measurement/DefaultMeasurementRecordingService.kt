@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.format
 import kotlinx.datetime.format.DateTimeComponents
 import kotlinx.datetime.format.FormatStringsInDatetimeFormats
@@ -75,6 +76,9 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
     override val isRecordingFlow: StateFlow<Boolean>
         get() = _isRecording.asStateFlow()
 
+    override var onMeasurementDone: MeasurementRecordingService.OnMeasurementDoneListener? = null
+
+
     override fun start() {
         logger.debug("Start recording")
         _isRecording.tryEmit(true)
@@ -127,9 +131,14 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
         // End audio recording
         audioRecordingService.stopRecordingToFile()
 
-        // Store any uncompleted sequence fragment and store measurement
-        scope.launch {
-            measurementService.closeOngoingMeasurement()
+        measurementService.ongoingMeasurementUuid?.let { uuid ->
+            // Store any uncompleted sequence fragment and store measurement
+            scope.launch {
+                measurementService.closeOngoingMeasurement()
+                withContext(Dispatchers.Main) {
+                    onMeasurementDone?.onDone(uuid)
+                }
+            }
         }
     }
 
