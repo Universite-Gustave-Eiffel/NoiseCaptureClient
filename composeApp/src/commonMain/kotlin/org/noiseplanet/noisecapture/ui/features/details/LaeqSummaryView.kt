@@ -22,6 +22,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.measurement_details_laeq_summary_la10
+import noisecapture.composeapp.generated.resources.measurement_details_laeq_summary_la50
+import noisecapture.composeapp.generated.resources.measurement_details_laeq_summary_la90
+import noisecapture.composeapp.generated.resources.measurement_details_laeq_summary_max
+import noisecapture.composeapp.generated.resources.measurement_details_laeq_summary_min
+import noisecapture.composeapp.generated.resources.measurement_details_laeq_summary_title
+import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.isInVuMeterRange
 import org.noiseplanet.noisecapture.util.roundTo
@@ -40,7 +48,7 @@ fun LaeqSummaryView(
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            text = "Sound level summary",
+            text = stringResource(Res.string.measurement_details_laeq_summary_title),
             style = MaterialTheme.typography.titleMedium,
         )
 
@@ -48,25 +56,25 @@ fun LaeqSummaryView(
             text = buildAnnotatedString {
                 val boldStyle = SpanStyle(fontWeight = FontWeight.Bold)
                 withStyle(style = boldStyle) {
-                    append(" • Min: ")
+                    append("Min: ")
                 }
-                append("lowest recorder sound level\n")
+                append(stringResource(Res.string.measurement_details_laeq_summary_min) + "\n")
                 withStyle(style = boldStyle) {
-                    append(" • LA90: ")
+                    append("LA90: ")
                 }
-                append("90% of recorded levels were above this value\n")
+                append(stringResource(Res.string.measurement_details_laeq_summary_la90) + "\n")
                 withStyle(style = boldStyle) {
-                    append(" • LA50: ")
+                    append("LA50: ")
                 }
-                append("50% of recorded levels were above this value\n")
+                append(stringResource(Res.string.measurement_details_laeq_summary_la50) + "\n")
                 withStyle(style = boldStyle) {
-                    append(" • LA10: ")
+                    append("LA10: ")
                 }
-                append("10% of recorded levels were above this value\n")
+                append(stringResource(Res.string.measurement_details_laeq_summary_la10) + "\n")
                 withStyle(style = boldStyle) {
-                    append(" • Max: ")
+                    append("Max: ")
                 }
-                append("highest recorder sound level")
+                append(stringResource(Res.string.measurement_details_laeq_summary_max) + "\n")
             },
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)

@@ -18,12 +18,13 @@ import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterView
 import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel
 import org.noiseplanet.noisecapture.ui.features.recording.controls.RecordingControls
-import org.noiseplanet.noisecapture.ui.features.recording.controls.RecordingControlsViewModel
 
 
 @OptIn(KoinExperimentalAPI::class)
 @Composable
-fun MeasurementRecordingScreen() {
+fun MeasurementRecordingScreen(
+    onMeasurementDone: (String) -> Unit,
+) {
 
     // - DI
 
@@ -35,7 +36,6 @@ fun MeasurementRecordingScreen() {
     // - Properties
 
     val soundLevelMeterViewModel: SoundLevelMeterViewModel = koinViewModel()
-    val recordingControlsViewModel: RecordingControlsViewModel = koinViewModel()
 
 
     // - Layout
@@ -49,7 +49,7 @@ fun MeasurementRecordingScreen() {
                 Row(modifier = Modifier.fillMaxSize()) {
                     Column(modifier = Modifier.fillMaxWidth(.5F)) {
                         SoundLevelMeterView(viewModel = soundLevelMeterViewModel)
-                        RecordingControls(viewModel = recordingControlsViewModel)
+                        RecordingControls(onMeasurementDone)
                     }
                     Column(modifier = Modifier) {
                         MeasurementRecordingPager()
@@ -59,9 +59,7 @@ fun MeasurementRecordingScreen() {
                 Column {
                     SoundLevelMeterView(viewModel = soundLevelMeterViewModel)
                     MeasurementRecordingPager(modifier = Modifier.fillMaxWidth().weight(1f))
-                    RecordingControls(
-                        viewModel = recordingControlsViewModel,
-                    )
+                    RecordingControls(onMeasurementDone)
                 }
             }
         }

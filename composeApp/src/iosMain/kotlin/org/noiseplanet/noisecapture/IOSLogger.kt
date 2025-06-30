@@ -26,7 +26,6 @@ class IOSLogger(
             LogLevel.INFO -> iosInfo(message)
             LogLevel.WARNING -> iosWarn(message)
             LogLevel.ERROR -> iosError(message)
-            else -> iosError(message)
         }
     }
 

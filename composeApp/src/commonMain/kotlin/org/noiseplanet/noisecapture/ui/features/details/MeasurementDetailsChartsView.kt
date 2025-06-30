@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.model.dao.Measurement
+import org.noiseplanet.noisecapture.ui.components.audioplayer.AudioPlayerView
 
 
 @Composable
@@ -42,6 +43,10 @@ fun MeasurementDetailsChartsView(
             duration = viewModel.getMeasurementDurationString(),
             averageLevel = viewModel.measurement.laeqMetrics.average,
         )
+
+        viewModel.measurement.recordedAudioUrl?.let { audioUrl ->
+            AudioPlayerView(audioUrl)
+        }
 
         LaeqSummaryView(
             min = viewModel.measurement.laeqMetrics.min,

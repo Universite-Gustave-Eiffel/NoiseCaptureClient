@@ -14,24 +14,59 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.koin.compose.viewmodel.koinViewModel
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
 
 /**
  * Start/Stop and Play/Pause buttons to manage current recording
+ *
+ * @param onMeasurementDone Called when measurement recording ends, with UUID as parameter.
  */
 @Composable
 fun RecordingControls(
-    viewModel: RecordingControlsViewModel,
+    onMeasurementDone: (String) -> Unit,
 ) {
     // - Properties
 
-    val showPlayPauseButton by viewModel.showPlayPauseButton.collectAsState(false)
-    val playPauseButtonViewModel by viewModel.playPauseButtonViewModelFlow.collectAsState()
-    val startStopButtonViewModel by viewModel.startStopButtonViewModelFlow.collectAsState()
+    val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
+    val viewModel: RecordingControlsViewModel = koinViewModel()
+
+    val showPlayPauseButton by viewModel.showPlayPauseButton.collectAsStateWithLifecycle(false)
+    val playPauseButtonViewModel by viewModel.playPauseButtonViewModelFlow.collectAsStateWithLifecycle()
+    val startStopButtonViewModel by viewModel.startStopButtonViewModelFlow.collectAsStateWithLifecycle()
+
+
+    // - Lifecycle
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_RESUME -> {
+                    viewModel.registerListener(onMeasurementDone)
+                }
+
+                Lifecycle.Event.ON_PAUSE -> {
+                    viewModel.deregisterListener()
+                }
+
+                else -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
 
     // - Layout

@@ -72,6 +72,7 @@ class AndroidMeasurementRecordingService(
             wrapper = localBinder.getService()
 
             wrapper?.innerService?.start()
+            wrapper?.innerService?.onMeasurementDone = onMeasurementDone
 
             isRecordingRedirectionJob = scope.launch {
                 // Redirect the
@@ -99,6 +100,8 @@ class AndroidMeasurementRecordingService(
 
     override val isRecordingFlow: StateFlow<Boolean>
         get() = mergedIsRecordingFlow
+
+    override var onMeasurementDone: MeasurementRecordingService.OnMeasurementDoneListener? = null
 
 
     override fun start() {

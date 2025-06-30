@@ -70,10 +70,12 @@ fun LAeqMetricsView(
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Start,
+                        lineHeight = 24.sp,
                         color = metric.value?.let {
                             NoiseLevelColorRamp.getColorForSPLValue(it)
                         } ?: MaterialTheme.colorScheme.onSurface,
                     ),
+                    maxLines = 1,
                     autoSize = TextAutoSize.StepBased(
                         minFontSize = 16.sp,
                         maxFontSize = 20.sp,

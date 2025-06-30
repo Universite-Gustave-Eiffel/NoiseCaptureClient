@@ -18,6 +18,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.services.measurement.MeasurementRecordingService
+import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.ui.components.button.ButtonStyle
 import org.noiseplanet.noisecapture.ui.components.button.ButtonViewModel
 
@@ -25,6 +26,7 @@ class RecordingControlsViewModel : ViewModel(), KoinComponent {
 
     // - Properties
 
+    private val measurementService: MeasurementService by inject()
     private val measurementRecordingService: MeasurementRecordingService by inject()
     private val liveAudioService: LiveAudioService by inject()
 
@@ -35,7 +37,7 @@ class RecordingControlsViewModel : ViewModel(), KoinComponent {
             getPlayPauseButtonViewModel(isRunning)
         }.stateIn(
             viewModelScope,
-            SharingStarted.WhileSubscribed(),
+            SharingStarted.WhileSubscribed(5_000),
             getPlayPauseButtonViewModel(liveAudioService.isRunning)
         )
 
@@ -44,9 +46,15 @@ class RecordingControlsViewModel : ViewModel(), KoinComponent {
             getStartStopButtonViewModel(isRecording)
         }.stateIn(
             viewModelScope,
-            SharingStarted.WhileSubscribed(),
-            getStartStopButtonViewModel(measurementRecordingService.isRecording)
+            SharingStarted.WhileSubscribed(5_000),
+            getStartStopButtonViewModel(isRecording)
         )
+
+    val isRecording: Boolean
+        get() = measurementRecordingService.isRecording
+
+    val ongoingMeasurementUuid: String?
+        get() = measurementService.ongoingMeasurementUuid
 
 
     // - Public functions
@@ -65,6 +73,19 @@ class RecordingControlsViewModel : ViewModel(), KoinComponent {
         } else {
             measurementRecordingService.start()
         }
+    }
+
+    fun registerListener(onMeasurementDone: (String) -> Unit) {
+        measurementRecordingService.onMeasurementDone =
+            object : MeasurementRecordingService.OnMeasurementDoneListener {
+                override fun onDone(measurementUuid: String) {
+                    onMeasurementDone(measurementUuid)
+                }
+            }
+    }
+
+    fun deregisterListener() {
+        measurementRecordingService.onMeasurementDone = null
     }
 
 
