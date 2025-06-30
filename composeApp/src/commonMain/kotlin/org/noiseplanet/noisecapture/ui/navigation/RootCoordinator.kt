@@ -162,13 +162,18 @@ fun RootCoordinator(
                 )
             }
 
-            composable<MeasurementRecordingRoute> {
+            composable<MeasurementRecordingRoute> { backstackEntry ->
                 val screenViewModel: MeasurementRecordingScreenViewModel = koinViewModel()
                 appBarState.setCurrentScreenViewModel(screenViewModel)
 
                 MeasurementRecordingScreen(
                     onMeasurementDone = { uuid ->
-                        navController.navigate(MeasurementDetailsRoute(uuid))
+                        navController.navigate(
+                            MeasurementDetailsRoute(
+                                measurementId = uuid,
+                                parentRouteId = backstackEntry.id
+                            )
+                        )
                     }
                 )
             }
