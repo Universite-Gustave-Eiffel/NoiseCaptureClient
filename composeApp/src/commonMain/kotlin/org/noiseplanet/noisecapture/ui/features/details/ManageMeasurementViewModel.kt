@@ -18,7 +18,6 @@ import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonStyle
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
 
 
@@ -63,10 +62,10 @@ class ManageMeasurementViewModel(
 
     private val deleteAudioButtonViewModel = NCButtonViewModel(
         title = Res.string.measurement_details_delete_measurement_audio_button,
-        style = NCButtonStyle.TEXT,
         colors = {
-            NCButtonColors.Defaults.text().copy(
-                contentColor = MaterialTheme.colorScheme.error
+            NCButtonColors(
+                containerColor = MaterialTheme.colorScheme.errorContainer,
+                contentColor = MaterialTheme.colorScheme.error,
             )
         }
     )

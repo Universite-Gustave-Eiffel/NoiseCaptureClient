@@ -12,6 +12,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import nl.jacobras.humanreadable.HumanReadable
+import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.measurement_details_audio_size
+import noisecapture.composeapp.generated.resources.measurement_details_manage_description
+import noisecapture.composeapp.generated.resources.measurement_details_manage_title
+import noisecapture.composeapp.generated.resources.measurement_details_total_size
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
@@ -42,19 +48,31 @@ fun ManageMeasurementView(
                 modifier = modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "Manage measurement",
+                    text = stringResource(Res.string.measurement_details_manage_title),
                     style = MaterialTheme.typography.titleMedium,
+                )
+
+                Text(
+                    text = stringResource(Res.string.measurement_details_manage_description),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                 )
 
                 state.audioFileSize?.let {
                     Text(
-                        text = "Audio file size: " + HumanReadable.fileSize(it)
+                        text = stringResource(Res.string.measurement_details_audio_size) +
+                            HumanReadable.fileSize(it),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                     )
                 }
 
                 state.measurementSize?.let {
                     Text(
-                        text = "Total measurement size: " + HumanReadable.fileSize(it)
+                        text = stringResource(Res.string.measurement_details_total_size) +
+                            HumanReadable.fileSize(it),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                     )
                 }
 
@@ -62,14 +80,17 @@ fun ManageMeasurementView(
                     NCButton(
                         viewModel = buttonViewModel,
                         onClick = viewModel::deleteMeasurementAudio,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth()
+                            .padding(horizontal = 48.dp)
+                            .padding(top = 8.dp),
                     )
                 }
 
                 NCButton(
                     viewModel = state.deleteMeasurementButtonViewModel,
                     onClick = viewModel::deleteMeasurement,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 48.dp)
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(horizontal = 48.dp)
                 )
             }
         }
