@@ -34,6 +34,7 @@ class ManageMeasurementViewModel(
 
         data class ContentReady(
             val measurement: Measurement,
+            val audioFileSize: Long?,
             val deleteMeasurementButtonViewModel: NCButtonViewModel,
             val deleteAudioButtonViewModel: NCButtonViewModel?,
         ) : ViewState
@@ -74,8 +75,13 @@ class ManageMeasurementViewModel(
         .map { measurement ->
             ViewState.ContentReady(
                 measurement,
-                deleteMeasurementButtonViewModel,
-                measurement.recordedAudioUrl?.let { deleteAudioButtonViewModel },
+                audioFileSize = measurement.recordedAudioUrl?.let { audioUrl ->
+                    audioRecordingService.getFileSize(audioUrl)
+                },
+                deleteMeasurementButtonViewModel = deleteMeasurementButtonViewModel,
+                deleteAudioButtonViewModel = measurement.recordedAudioUrl?.let {
+                    deleteAudioButtonViewModel
+                },
             )
         }
         .stateIn(
@@ -86,12 +92,6 @@ class ManageMeasurementViewModel(
 
 
     // - Public functions
-
-    fun getAudioFileSize(): Long? {
-        return measurement?.recordedAudioUrl?.let { audioUrl ->
-            audioRecordingService.getFileSize(audioUrl)
-        }
-    }
 
     fun deleteMeasurementAudio() {
         measurement?.let {

@@ -105,7 +105,7 @@ class IOSAudioRecordingService : AudioRecordingService, KoinComponent {
         audioRecorder = null
     }
 
-    override fun getFileSize(audioUrl: String): Long? {
+    override suspend fun getFileSize(audioUrl: String): Long? {
         // On iOS, audio URL is just the file name to avoid emulator sandboxing restrictions.
         val fileUrl = getFileUrl(audioUrl) ?: return null
         val filePath = fileUrl.path ?: return null

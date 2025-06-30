@@ -46,7 +46,7 @@ fun ManageMeasurementView(
                     style = MaterialTheme.typography.titleMedium,
                 )
 
-                viewModel.getAudioFileSize()?.let {
+                state.audioFileSize?.let {
                     Text(
                         text = "Audio file size: " + HumanReadable.fileSize(it)
                     )

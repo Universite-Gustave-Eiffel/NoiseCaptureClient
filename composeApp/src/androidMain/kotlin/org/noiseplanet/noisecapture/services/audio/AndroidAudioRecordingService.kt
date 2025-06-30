@@ -77,7 +77,7 @@ class AndroidAudioRecordingService : AudioRecordingService, KoinComponent {
         logger.debug("Stopped recording")
     }
 
-    override fun getFileSize(audioUrl: String): Long? {
+    override suspend fun getFileSize(audioUrl: String): Long? {
         val file = File(audioUrl)
         if (file.exists()) {
             return file.length()
