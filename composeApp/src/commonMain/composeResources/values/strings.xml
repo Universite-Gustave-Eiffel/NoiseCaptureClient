@@ -87,7 +87,7 @@
     <string name="settings_measurements_max_duration_description">Measurements will automatically stop after this amount of time has elapsed</string>
     <string name="settings_measurements_spectrogram_mode_title">Spectrogram mode</string>
     <string name="settings_measurements_spectrogram_mode_description">Set the spectrogram scale mode (logarithmic or linear)</string>
-    <string name="settings_measurements_save_audio_title">Save recorded audio</string>
+    <string name="settings_measurements_save_audio_title">Record audio</string>
     <string name="settings_measurements_save_audio_description">When making a measurement, store the recorded audio locally so it can be played back and downloaded (takes about 1Mb of storage per minute).</string>
     <string name="settings_measurements_limit_audio_duration_title">Max recorded audio length (minutes)</string>
     <string name="settings_measurements_limit_audio_duration_description">Limits the duration of recorded audio clips after this amount of time has elapsed to limit impact on storage. The measurement can still continue afterwards, but audio won't be saved anymore.</string>

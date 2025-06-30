@@ -5,6 +5,19 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface MeasurementRecordingService {
 
+    // - Listeners
+
+    /**
+     * Called when ending a measurement, after it has been stored locally.
+     */
+    interface OnMeasurementDoneListener {
+
+        fun onDone(measurementUuid: String)
+    }
+
+
+    // - Properties
+
     /**
      * True if the service is currently recording incoming data, false otherwise
      */
@@ -14,6 +27,14 @@ interface MeasurementRecordingService {
      * A flow of [isRecording] values
      */
     val isRecordingFlow: StateFlow<Boolean>
+
+    /**
+     * Called when ending a measurement, after it has been stored locally.
+     */
+    var onMeasurementDone: OnMeasurementDoneListener?
+
+
+    // - Public functions
 
     /**
      * Starts a new recording of acoustic parameters and location updates
