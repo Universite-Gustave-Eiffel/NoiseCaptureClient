@@ -222,6 +222,7 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
     }
 
     override suspend fun deleteMeasurement(uuid: String) {
+        deleteMeasurementAssociatedAudio(uuid)
         measurementStorageService.delete(uuid)
     }
 
