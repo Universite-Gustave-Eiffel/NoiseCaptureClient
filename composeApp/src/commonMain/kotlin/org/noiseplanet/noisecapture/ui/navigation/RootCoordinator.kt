@@ -120,7 +120,7 @@ fun RootCoordinator(
                 .padding(top = innerPadding.calculateTopPadding())
                 .background(Color.White)
         ) {
-            composable<HomeRoute> {
+            composable<HomeRoute> { backstackEntry ->
                 val screenViewModel: HomeScreenViewModel = koinViewModel {
                     parametersOf({
                         // Callback triggered when pressing the settings app bar button
@@ -132,7 +132,12 @@ fun RootCoordinator(
                 HomeScreen(
                     viewModel = screenViewModel,
                     onClickMeasurement = { measurement: Measurement ->
-                        navController.navigate(MeasurementDetailsRoute(measurement.uuid))
+                        navController.navigate(
+                            MeasurementDetailsRoute(
+                                measurement.uuid,
+                                backstackEntry.id,
+                            )
+                        )
                     },
                     onClickOpenSoundLevelMeterButton = {
                         navController.navigate(MeasurementRecordingRoute())
@@ -157,13 +162,18 @@ fun RootCoordinator(
                 )
             }
 
-            composable<MeasurementRecordingRoute> {
+            composable<MeasurementRecordingRoute> { backstackEntry ->
                 val screenViewModel: MeasurementRecordingScreenViewModel = koinViewModel()
                 appBarState.setCurrentScreenViewModel(screenViewModel)
 
                 MeasurementRecordingScreen(
                     onMeasurementDone = { uuid ->
-                        navController.navigate(MeasurementDetailsRoute(uuid))
+                        navController.navigate(
+                            MeasurementDetailsRoute(
+                                measurementId = uuid,
+                                parentRouteId = backstackEntry.id
+                            )
+                        )
                     }
                 )
             }
@@ -186,7 +196,9 @@ fun RootCoordinator(
                 MeasurementDetailsScreen(
                     viewModel = screenViewModel,
                     onMeasurementDeleted = {
-                        navController.popBackStack()
+                        if (navController.previousBackStackEntry?.id == route.parentRouteId) {
+                            navController.popBackStack()
+                        }
                     }
                 )
             }

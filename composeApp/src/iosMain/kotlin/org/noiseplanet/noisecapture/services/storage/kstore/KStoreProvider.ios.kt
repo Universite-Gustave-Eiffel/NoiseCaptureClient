@@ -15,6 +15,8 @@ import org.noiseplanet.noisecapture.util.NSFileManagerUtils
 import org.noiseplanet.noisecapture.util.checkNoError
 import platform.Foundation.NSError
 import platform.Foundation.NSFileManager
+import platform.Foundation.NSFileSize
+import platform.Foundation.NSURL
 
 /**
  * iOS KStoreProvider using local file storage and JSON encoding/decoding
@@ -24,19 +26,20 @@ import platform.Foundation.NSFileManager
 internal actual class KStoreProvider {
 
     /**
-     * Returns a [KStore] instance for the given unique key.
+     * Returns a [KStore] instance for the given file name.
      *
-     * @param key Unique record key
+     * @param fileName Unique file name
+     * @param enableCache If true, store value will be kept in memory until a new value is passed.
+     *                    Note that this can have some memory impacts for large objects.
      * @param T Type of stored entity
      *
      * @return [KStore] object, created if necessary.
      */
-    actual inline fun <reified T : @Serializable Any> storeOf(key: String): KStore<T> {
-        val documentsUrl = NSFileManagerUtils.getDocumentsDirectory()?.path
-        checkNotNull(documentsUrl) { "Could not get documents directory URL" }
-
-        // Get the path to the storage file for the given key
-        val filePath = Path("$documentsUrl/$key.json")
+    actual inline fun <reified T : @Serializable Any> storeOf(
+        fileName: String,
+        enableCache: Boolean,
+    ): KStore<T> {
+        val filePath = getFilePath(fileName)
 
         // Create enclosing directories if they doesn't exist
         memScoped {
@@ -54,6 +57,40 @@ internal actual class KStoreProvider {
         }
 
         // Return KStore handle
-        return storeOf(file = filePath)
+        return storeOf(file = filePath, enableCache = enableCache)
+    }
+
+    /**
+     * Gets the size of the given file.
+     *
+     * @param fileName Unique file name.
+     *
+     * @return File size in bytes, null if not found.
+     */
+    actual suspend fun sizeOf(fileName: String): Long? {
+        // On iOS, audio URL is just the file name to avoid emulator sandboxing restrictions.
+        val pathString = getFilePath(fileName).toString()
+        val fileUrl = NSURL.URLWithString(pathString) ?: return null
+        val filePath = fileUrl.path ?: return null
+
+        memScoped {
+            val error: ObjCObjectVar<NSError?> = alloc()
+            val attributes =
+                NSFileManager.defaultManager.attributesOfItemAtPath(filePath, error.ptr)
+            checkNoError(error.value) { "Could not get size of file at URL $fileUrl" }
+
+            return attributes?.get(NSFileSize) as? Long
+        }
+    }
+
+
+    // - Private functions
+
+    private fun getFilePath(fileName: String): Path {
+        val documentsUrl = NSFileManagerUtils.getDocumentsDirectory()?.path
+        checkNotNull(documentsUrl) { "Could not get documents directory URL" }
+
+        // Get the path to the storage file for the given key
+        return Path("$documentsUrl/$fileName")
     }
 }

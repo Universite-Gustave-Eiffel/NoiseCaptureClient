@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.Flow
@@ -19,8 +20,10 @@ import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.services.measurement.MeasurementRecordingService
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
-import org.noiseplanet.noisecapture.ui.components.button.ButtonStyle
-import org.noiseplanet.noisecapture.ui.components.button.ButtonViewModel
+import org.noiseplanet.noisecapture.ui.components.button.IconNCButtonViewModel
+import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
+import org.noiseplanet.noisecapture.ui.components.button.NCButtonStyle
+import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
 
 class RecordingControlsViewModel : ViewModel(), KoinComponent {
 
@@ -32,7 +35,7 @@ class RecordingControlsViewModel : ViewModel(), KoinComponent {
 
     val showPlayPauseButton: Flow<Boolean> = measurementRecordingService.isRecordingFlow
 
-    val playPauseButtonViewModelFlow: StateFlow<ButtonViewModel> = liveAudioService.isRunningFlow
+    val playPauseButtonViewModelFlow: StateFlow<NCButtonViewModel> = liveAudioService.isRunningFlow
         .map { isRunning ->
             getPlayPauseButtonViewModel(isRunning)
         }.stateIn(
@@ -41,7 +44,7 @@ class RecordingControlsViewModel : ViewModel(), KoinComponent {
             getPlayPauseButtonViewModel(liveAudioService.isRunning)
         )
 
-    val startStopButtonViewModelFlow: StateFlow<ButtonViewModel> =
+    val startStopButtonViewModelFlow: StateFlow<NCButtonViewModel> =
         measurementRecordingService.isRecordingFlow.map { isRecording ->
             getStartStopButtonViewModel(isRecording)
         }.stateIn(
@@ -91,30 +94,35 @@ class RecordingControlsViewModel : ViewModel(), KoinComponent {
 
     // - Private functions
 
-    private fun getPlayPauseButtonViewModel(isAudioSourceRunning: Boolean): ButtonViewModel {
+    private fun getPlayPauseButtonViewModel(isAudioSourceRunning: Boolean): NCButtonViewModel {
         val icon = if (isAudioSourceRunning) Icons.Filled.Pause else Icons.Filled.PlayArrow
-        val style = if (isAudioSourceRunning) ButtonStyle.OUTLINED else ButtonStyle.PRIMARY
+        val style = if (isAudioSourceRunning) NCButtonStyle.OUTLINED else NCButtonStyle.FILLED
+        val colors = @Composable {
+            if (isAudioSourceRunning) {
+                NCButtonColors.Defaults.outlined()
+            } else {
+                NCButtonColors.Defaults.primary()
+            }
+        }
 
-        return ButtonViewModel(
-            title = null,
+        return IconNCButtonViewModel(
             icon = icon,
             style = style,
+            colors = colors,
         )
     }
 
-    private fun getStartStopButtonViewModel(isRecording: Boolean): ButtonViewModel {
+    private fun getStartStopButtonViewModel(isRecording: Boolean): NCButtonViewModel {
         val title = if (isRecording) {
             Res.string.measurement_end_recording_button_title
         } else {
             Res.string.measurement_start_recording_button_title
         }
         val icon = if (isRecording) null else Icons.Filled.Mic
-        val style = if (isRecording) ButtonStyle.SECONDARY else ButtonStyle.PRIMARY
 
-        return ButtonViewModel(
+        return NCButtonViewModel(
             title = title,
             icon = icon,
-            style = style,
         )
     }
 }

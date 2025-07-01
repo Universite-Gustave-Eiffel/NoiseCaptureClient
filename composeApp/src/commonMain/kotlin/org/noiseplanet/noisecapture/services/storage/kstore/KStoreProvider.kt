@@ -14,12 +14,26 @@ import kotlinx.serialization.Serializable
 internal expect class KStoreProvider() {
 
     /**
-     * Returns a [KStore] instance for the given unique key.
+     * Returns a [KStore] instance for the given file name.
      *
-     * @param key Unique record key
+     * @param fileName Unique file name
+     * @param enableCache If true, store value will be kept in memory until a new value is passed.
+     *                    Note that this can have some memory impacts for large objects.
      * @param T Type of stored entity
      *
      * @return [KStore] object, created if necessary.
      */
-    inline fun <reified T : @Serializable Any> storeOf(key: String): KStore<T>
+    inline fun <reified T : @Serializable Any> storeOf(
+        fileName: String,
+        enableCache: Boolean = true,
+    ): KStore<T>
+
+    /**
+     * Gets the size of the given file.
+     *
+     * @param fileName Unique file name.
+     *
+     * @return File size in bytes, null if not found.
+     */
+    suspend fun sizeOf(fileName: String): Long?
 }

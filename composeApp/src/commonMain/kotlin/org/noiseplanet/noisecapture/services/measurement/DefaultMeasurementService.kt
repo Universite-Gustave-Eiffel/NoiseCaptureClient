@@ -14,6 +14,7 @@ import org.noiseplanet.noisecapture.model.dao.LocationSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.model.dao.MeasurementSummary
 import org.noiseplanet.noisecapture.model.dao.MutableMeasurement
+import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
 import org.noiseplanet.noisecapture.services.storage.StorageService
 import org.noiseplanet.noisecapture.services.storage.injectStorageService
 import org.noiseplanet.noisecapture.util.injectLogger
@@ -55,6 +56,7 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
     private val measurementStorageService: StorageService<Measurement> by injectStorageService()
     private val leqSequenceStorageService: StorageService<LeqSequenceFragment> by injectStorageService()
     private val locationSequenceStorageService: StorageService<LocationSequenceFragment> by injectStorageService()
+    private val audioRecordingService: AudioRecordingService by inject()
 
     private var ongoingMeasurement: MutableMeasurement? = null
 
@@ -80,6 +82,25 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
 
     override suspend fun getMeasurement(uuid: String): Measurement? {
         return measurementStorageService.get(uuid)
+    }
+
+    override suspend fun getMeasurementSize(uuid: String): Long? {
+        val measurement = measurementStorageService.get(uuid) ?: return null
+
+        val measurementSize = measurementStorageService.getSize(uuid) ?: 0L
+        val leqSequenceSize = measurement.leqsSequenceIds
+            .fold(0L) { accumulator, sequenceId ->
+                accumulator + (leqSequenceStorageService.getSize(sequenceId) ?: 0L)
+            }
+        val locationSequenceSize = measurement.locationSequenceIds
+            .fold(0L) { accumulator, sequenceId ->
+                accumulator + (locationSequenceStorageService.getSize(sequenceId) ?: 0L)
+            }
+        val audioSize = measurement.recordedAudioUrl?.let {
+            audioRecordingService.getFileSize(it)
+        } ?: 0L
+
+        return measurementSize + leqSequenceSize + locationSequenceSize + audioSize
     }
 
     override fun getMeasurementFlow(uuid: String): Flow<Measurement?> {
@@ -209,7 +230,18 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
         return newValue
     }
 
+    override suspend fun deleteMeasurementAssociatedAudio(uuid: String) {
+        val measurement = measurementStorageService.get(uuid) ?: return
+        measurement.recordedAudioUrl?.let { audioUrl ->
+            // Delete audio file
+            audioRecordingService.deleteFileAtUrl(audioUrl)
+            // And update measurement with null url
+            measurementStorageService.set(uuid, measurement.copy(recordedAudioUrl = null))
+        }
+    }
+
     override suspend fun deleteMeasurement(uuid: String) {
+        deleteMeasurementAssociatedAudio(uuid)
         measurementStorageService.delete(uuid)
     }
 
