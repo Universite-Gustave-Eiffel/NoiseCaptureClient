@@ -5,11 +5,8 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.sound_level_meter_current_dba
@@ -23,6 +20,7 @@ import org.noiseplanet.noisecapture.ui.components.button.IconNCButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
 import org.noiseplanet.noisecapture.util.VuMeterOptions
+import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 
 
 class SoundLevelMeterViewModel(
@@ -50,10 +48,9 @@ class SoundLevelMeterViewModel(
     val playPauseButtonViewModelFlow: StateFlow<NCButtonViewModel> = liveAudioService.isRunningFlow
         .map { isRunning ->
             getPlayPauseButtonViewModel(isRunning)
-        }.stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(),
-            getPlayPauseButtonViewModel(liveAudioService.isRunning)
+        }.stateInWhileSubscribed(
+            scope = viewModelScope,
+            initialValue = getPlayPauseButtonViewModel(liveAudioService.isRunning),
         )
 
     val vuMeterTicks: IntArray = IntArray(size = VU_METER_TICKS_COUNT) { index ->
@@ -61,11 +58,19 @@ class SoundLevelMeterViewModel(
         (VuMeterOptions.DB_MIN + (offset * index)).toInt()
     }
 
-    val soundPressureLevelFlow: Flow<Double>
+    val soundPressureLevelFlow: StateFlow<Double>
         get() = liveAudioService.getWeightedLeqFlow()
+            .stateInWhileSubscribed(
+                scope = viewModelScope,
+                initialValue = 0.0,
+            )
 
-    val laeqMetricsFlow: Flow<LAeqMetrics?>
+    val laeqMetricsFlow: StateFlow<LAeqMetrics?>
         get() = measurementService.getOngoingMeasurementLaeqMetricsFlow()
+            .stateInWhileSubscribed(
+                scope = viewModelScope,
+                initialValue = null,
+            )
 
     val currentDbALabel = Res.string.sound_level_meter_current_dba
 

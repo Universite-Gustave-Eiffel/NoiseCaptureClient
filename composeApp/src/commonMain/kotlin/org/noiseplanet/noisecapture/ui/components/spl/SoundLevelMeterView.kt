@@ -11,13 +11,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
@@ -31,10 +31,11 @@ fun SoundLevelMeterView(
 ) {
     // - Properties
 
-    val currentSoundPressureLevel by viewModel.soundPressureLevelFlow.collectAsState(0.0)
+    val currentSoundPressureLevel by viewModel.soundPressureLevelFlow.collectAsStateWithLifecycle()
     val roundedSpl = currentSoundPressureLevel.roundTo(1)
-    val currentLeqMetrics by viewModel.laeqMetricsFlow.collectAsState(null)
-    val playPauseButtonViewModel by viewModel.playPauseButtonViewModelFlow.collectAsState()
+
+    val currentLeqMetrics by viewModel.laeqMetricsFlow.collectAsStateWithLifecycle()
+    val playPauseButtonViewModel by viewModel.playPauseButtonViewModelFlow.collectAsStateWithLifecycle()
 
 
     // - Layout

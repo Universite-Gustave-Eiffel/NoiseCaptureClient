@@ -1,8 +1,11 @@
 package org.noiseplanet.noisecapture.util
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transform
 
 
@@ -20,3 +23,18 @@ fun <T> Flow<T>.throttleLatest(delayMillis: Long) = this
         emit(it)
         delay(delayMillis)
     }
+
+
+/**
+ * Utility function to use [Flow.stateIn] with [SharingStarted.WhileSubscribed] without
+ * specifying it everytime.
+ */
+fun <T> Flow<T>.stateInWhileSubscribed(
+    scope: CoroutineScope,
+    initialValue: T,
+    stopTimeoutMillis: Long = 5_000,
+) = stateIn(
+    scope = scope,
+    started = SharingStarted.WhileSubscribed(stopTimeoutMillis),
+    initialValue = initialValue,
+)
