@@ -2,11 +2,9 @@ package org.noiseplanet.noisecapture.ui.features.details
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
@@ -18,6 +16,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
+import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
@@ -73,9 +72,8 @@ class MeasurementDetailsChartsViewModel(
                 startTimeString = getMeasurementStartTimeString(measurement),
                 durationString = getMeasurementDurationString(measurement),
             )
-        }.stateIn(
+        }.stateInWhileSubscribed(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
             initialValue = ViewState.Loading,
         )
 

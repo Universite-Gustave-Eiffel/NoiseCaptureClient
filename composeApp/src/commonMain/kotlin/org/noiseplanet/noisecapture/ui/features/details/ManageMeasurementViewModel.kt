@@ -3,11 +3,9 @@ package org.noiseplanet.noisecapture.ui.features.details
 import androidx.compose.material3.MaterialTheme
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.measurement_details_delete_measurement_audio_button
@@ -19,6 +17,7 @@ import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
+import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 
 
 class ManageMeasurementViewModel(
@@ -85,9 +84,8 @@ class ManageMeasurementViewModel(
                 },
             )
         }
-        .stateIn(
+        .stateInWhileSubscribed(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
             initialValue = ViewState.Loading
         )
 

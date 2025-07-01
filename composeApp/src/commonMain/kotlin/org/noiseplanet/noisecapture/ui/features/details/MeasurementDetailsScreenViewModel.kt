@@ -2,10 +2,8 @@ package org.noiseplanet.noisecapture.ui.features.details
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.measurement_details_title
 import org.jetbrains.compose.resources.StringResource
@@ -15,6 +13,7 @@ import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 import org.noiseplanet.noisecapture.util.injectLogger
+import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 
 
 class MeasurementDetailsScreenViewModel(
@@ -43,9 +42,8 @@ class MeasurementDetailsScreenViewModel(
                 MeasurementDetailsScreenViewState.ContentReady(it)
             } ?: MeasurementDetailsScreenViewState.NoMeasurement
         }
-        .stateIn(
+        .stateInWhileSubscribed(
             viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
             initialValue = MeasurementDetailsScreenViewState.Loading
         )
 

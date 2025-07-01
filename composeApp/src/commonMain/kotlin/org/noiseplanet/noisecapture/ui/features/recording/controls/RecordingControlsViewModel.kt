@@ -8,10 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.measurement_end_recording_button_title
 import noisecapture.composeapp.generated.resources.measurement_start_recording_button_title
@@ -24,6 +22,7 @@ import org.noiseplanet.noisecapture.ui.components.button.IconNCButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonStyle
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
+import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 
 class RecordingControlsViewModel : ViewModel(), KoinComponent {
 
@@ -38,18 +37,16 @@ class RecordingControlsViewModel : ViewModel(), KoinComponent {
     val playPauseButtonViewModelFlow: StateFlow<NCButtonViewModel> = liveAudioService.isRunningFlow
         .map { isRunning ->
             getPlayPauseButtonViewModel(isRunning)
-        }.stateIn(
+        }.stateInWhileSubscribed(
             viewModelScope,
-            SharingStarted.WhileSubscribed(5_000),
             getPlayPauseButtonViewModel(liveAudioService.isRunning)
         )
 
     val startStopButtonViewModelFlow: StateFlow<NCButtonViewModel> =
         measurementRecordingService.isRecordingFlow.map { isRecording ->
             getStartStopButtonViewModel(isRecording)
-        }.stateIn(
+        }.stateInWhileSubscribed(
             viewModelScope,
-            SharingStarted.WhileSubscribed(5_000),
             getStartStopButtonViewModel(isRecording)
         )
 
