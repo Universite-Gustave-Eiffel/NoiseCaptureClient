@@ -4,7 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.SharingStarted.Companion.Lazily
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -21,6 +21,7 @@ import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
+
 
 class LastMeasurementsViewModel : ViewModel(), KoinComponent {
 
@@ -65,7 +66,11 @@ class LastMeasurementsViewModel : ViewModel(), KoinComponent {
                 historyButtonViewModel = openHistoryButtonViewModel,
                 lastTwoMeasurements = measurements.sortedByDescending { it.startTimestamp }.take(2)
             )
-        }.stateIn(viewModelScope, Lazily, ViewState.Loading)
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = ViewState.Loading,
+        )
 
 
     // - Private functions
