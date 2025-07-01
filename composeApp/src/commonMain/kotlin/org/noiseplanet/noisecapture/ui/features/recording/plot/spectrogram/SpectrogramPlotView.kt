@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -22,6 +21,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.toSize
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.noiseplanet.noisecapture.model.enums.SpectrogramScaleMode
 import org.noiseplanet.noisecapture.services.audio.DefaultLiveAudioService.Companion.FFT_HOP
 import org.noiseplanet.noisecapture.ui.features.recording.plot.PlotAxisBuilder
@@ -34,14 +34,14 @@ import kotlin.math.max
 import kotlin.math.min
 
 
-private const val DEFAULT_SAMPLE_RATE = 48000.0
-
-
 @Composable
 fun SpectrogramPlotView(
     viewModel: SpectrogramPlotViewModel,
     modifier: Modifier = Modifier,
 ) {
+
+    // - Properties
+
     val colors = MaterialTheme.colorScheme
     val textMeasurer = rememberTextMeasurer()
 
@@ -55,9 +55,12 @@ fun SpectrogramPlotView(
         )
 
     val sampleRate: Double by viewModel.sampleRateFlow
-        .collectAsState(DEFAULT_SAMPLE_RATE)
+        .collectAsStateWithLifecycle()
     val spectrogramBitmaps: List<SpectrogramBitmap> by viewModel.spectrogramBitmapFlow
-        .collectAsState(emptyList())
+        .collectAsStateWithLifecycle()
+
+
+    // - Layout
 
     Canvas(modifier = Modifier.fillMaxSize()) {
         val spectrogramCanvasSize = IntSize(

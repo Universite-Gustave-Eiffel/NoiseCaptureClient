@@ -5,7 +5,6 @@ import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -18,6 +17,7 @@ import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.enums.SpectrogramScaleMode
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.util.injectLogger
+import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 
 class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
 
@@ -28,6 +28,7 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
         private const val RANGE_DB = 40.0
         private const val MIN_DB = 0.0
         private const val DB_GAIN = ANDROID_GAIN // TODO: Platform dependant gain?
+        private const val DEFAULT_SAMPLE_RATE = 48000.0
 
         const val REFERENCE_LEGEND_TEXT = " +99s "
         const val SPECTROGRAM_STRIP_WIDTH = 32
@@ -44,9 +45,13 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
 
     val scaleMode = SpectrogramScaleMode.SCALE_LOG
 
-    val sampleRateFlow: Flow<Double> = liveAudioService
+    val sampleRateFlow: StateFlow<Double> = liveAudioService
         .getSpectrumDataFlow()
         .map { it.sampleRate.toDouble() }
+        .stateInWhileSubscribed(
+            scope = viewModelScope,
+            initialValue = DEFAULT_SAMPLE_RATE
+        )
 
     val currentStripData: SpectrogramBitmap?
         get() = spectrogramBitmaps.lastOrNull()

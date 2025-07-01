@@ -15,10 +15,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.request_permission_button_next
 import noisecapture.composeapp.generated.resources.request_permission_explanation
@@ -77,7 +77,7 @@ fun RequestPermissionScreen(
             item {
                 // True if all required permissions have been granted
                 val allPermissionsGranted by viewModel.allPermissionsGranted
-                    .collectAsState(false)
+                    .collectAsStateWithLifecycle(false)
 
                 AnimatedVisibility(allPermissionsGranted) {
                     // Show Next button only if all required permissions have been granted
