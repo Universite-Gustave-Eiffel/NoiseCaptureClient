@@ -2,7 +2,9 @@ package org.noiseplanet.noisecapture.ui.features.details
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -76,13 +78,14 @@ fun ManageMeasurementView(
                     )
                 }
 
+                Spacer(modifier = Modifier.height(4.dp))
+
                 state.deleteAudioButtonViewModel?.let { buttonViewModel ->
                     NCButton(
                         viewModel = buttonViewModel,
                         onClick = viewModel::deleteMeasurementAudio,
                         modifier = Modifier.fillMaxWidth()
                             .padding(horizontal = 48.dp)
-                            .padding(top = 8.dp),
                     )
                 }
 
