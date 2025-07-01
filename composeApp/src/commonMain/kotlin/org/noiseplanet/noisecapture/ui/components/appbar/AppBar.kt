@@ -12,11 +12,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.currentBackStackEntryAsState
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.back_button
@@ -34,7 +34,7 @@ fun AppBar(
     val currentRoute = currentBackStackEntry?.destination?.route
     val canNavigateUp = currentRoute != null && previousBackStackEntry != null
 
-    val actions by appBarState.actions.collectAsState(emptyList())
+    val actions by appBarState.actions.collectAsStateWithLifecycle()
     val title = appBarState.viewModel?.title
 
 
