@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -25,6 +24,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.noiseplanet.noisecapture.ui.features.recording.plot.PlotAxisBuilder
 import org.noiseplanet.noisecapture.ui.features.recording.plot.PlotBitmapOverlay
 import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrum.SpectrumPlotViewModel.Companion.DBA_MAX
@@ -54,13 +54,11 @@ fun SpectrumPlotView(
     )
 
     val rawSplPerThirdOctave: Map<Int, Double> by viewModel.rawSplFlow
-        .collectAsState(emptyMap())
+        .collectAsStateWithLifecycle()
     val weightedSplPerThirdOctave: Map<Int, Double> by viewModel.weightedSplFlow
-        .collectAsState(emptyMap())
+        .collectAsStateWithLifecycle()
     val axisSettings: SpectrumPlotViewModel.AxisSettings by viewModel.axisSettingsFlow
-        .collectAsState(
-            SpectrumPlotViewModel.AxisSettings(0.0, 0.0, emptyList())
-        )
+        .collectAsStateWithLifecycle()
 
 
     Canvas(modifier = modifier.fillMaxSize()) {
