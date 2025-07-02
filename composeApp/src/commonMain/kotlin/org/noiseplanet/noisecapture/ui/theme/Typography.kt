@@ -6,12 +6,14 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.noto_sans_mono_variable
 import noisecapture.composeapp.generated.resources.noto_sans_variable
 import org.jetbrains.compose.resources.Font
+import org.jetbrains.compose.resources.FontResource
 
 
 @Composable
-fun notoSansFamily() = FontFamily(
+private fun variableFontFamily(fontResource: FontResource) = FontFamily(
     listOf(
         FontWeight.W100,
         FontWeight.W200,
@@ -24,7 +26,7 @@ fun notoSansFamily() = FontFamily(
         FontWeight.W900,
     ).map { fontWeight ->
         Font(
-            Res.font.noto_sans_variable,
+            fontResource,
             variationSettings = FontVariation.Settings(
                 FontVariation.weight(fontWeight.weight)
             ),
@@ -34,9 +36,19 @@ fun notoSansFamily() = FontFamily(
 )
 
 
+val FontFamily.Companion.NotoSans: FontFamily
+    @Composable
+    get() = variableFontFamily(Res.font.noto_sans_variable)
+
+
+val FontFamily.Companion.NotoSansMono: FontFamily
+    @Composable
+    get() = variableFontFamily(Res.font.noto_sans_mono_variable)
+
+
 @Composable
 fun notoSansTypography() = Typography().run {
-    val fontFamily = notoSansFamily()
+    val fontFamily: FontFamily = FontFamily.NotoSans
 
     copy(
         displayLarge = displayLarge.copy(fontFamily = fontFamily),
