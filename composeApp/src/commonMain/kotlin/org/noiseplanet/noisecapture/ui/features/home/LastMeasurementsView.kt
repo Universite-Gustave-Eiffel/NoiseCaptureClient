@@ -13,12 +13,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.home_last_measurements_section_header
 import org.noiseplanet.noisecapture.model.dao.Measurement
@@ -37,7 +37,7 @@ fun LastMeasurementsView(
 
     // - Properties
 
-    val viewState by viewModel.viewStateFlow.collectAsState()
+    val viewState by viewModel.viewStateFlow.collectAsStateWithLifecycle()
 
 
     // - Layout
