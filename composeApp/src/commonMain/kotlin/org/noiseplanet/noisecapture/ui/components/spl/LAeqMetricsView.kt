@@ -79,7 +79,7 @@ fun LAeqMetricsView(
                     autoSize = TextAutoSize.StepBased(
                         minFontSize = 16.sp,
                         maxFontSize = 20.sp,
-                        stepSize = 1.sp,
+                        stepSize = 0.25.sp,
                     )
                 )
             }
