@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.ui.components.spl
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,7 +42,7 @@ fun SoundLevelMeterView() {
     val playPauseButtonViewModel by viewModel.playPauseButtonViewModelFlow
         .collectAsStateWithLifecycle()
 
-    val currentSplColor = NoiseLevelColorRamp.getColorForSPLValue(currentSpl)
+    val currentSplColor by animateColorAsState(NoiseLevelColorRamp.getColorForSPLValue(currentSpl))
 
 
     // - Layout

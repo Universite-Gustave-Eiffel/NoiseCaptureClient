@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.ui.components.spl
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.EaseOut
 import androidx.compose.animation.core.tween
@@ -40,7 +41,7 @@ fun VuMeter(
     val value: Double by valueFlow.collectAsStateWithLifecycle()
     val valueRatio = (value - minimum) / (maximum - minimum)
 
-    val color = NoiseLevelColorRamp.getColorForSPLValue(value)
+    val color by animateColorAsState(NoiseLevelColorRamp.getColorForSPLValue(value))
     val shape = RoundedCornerShape(
         topStartPercent = 0,
         bottomStartPercent = 0,
