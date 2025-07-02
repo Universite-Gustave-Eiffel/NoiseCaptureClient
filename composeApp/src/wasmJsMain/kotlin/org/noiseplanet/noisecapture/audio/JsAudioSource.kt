@@ -5,7 +5,6 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.datetime.Clock
 import org.khronos.webgl.get
 import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.interop.AudioContext
@@ -16,6 +15,8 @@ import org.noiseplanet.noisecapture.model.enums.MicrophoneLocation
 import org.noiseplanet.noisecapture.util.injectLogger
 import org.w3c.dom.mediacapture.MediaStreamConstraints
 import org.w3c.dom.mediacapture.MediaTrackConstraints
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 
 /**
@@ -24,6 +25,7 @@ import org.w3c.dom.mediacapture.MediaTrackConstraints
  * For implementation details, see
  * [MDN web docs](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API/Using_Web_Audio_API)
  */
+@OptIn(ExperimentalTime::class)
 internal class JsAudioSource : AudioSource, KoinComponent {
 
     // - Constants
