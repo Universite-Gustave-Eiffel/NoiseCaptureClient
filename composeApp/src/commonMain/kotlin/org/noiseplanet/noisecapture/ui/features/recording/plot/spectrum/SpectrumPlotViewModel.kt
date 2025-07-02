@@ -51,7 +51,7 @@ class SpectrumPlotViewModel : ViewModel(), KoinComponent {
         )
 
     val weightedSplFlow: StateFlow<Map<Int, Double>> = liveAudioService
-        .getWeightedSoundPressureLevelFlow()
+        .getWeightedLeqPerFrequencyBandFlow()
         .stateInWhileSubscribed(
             scope = viewModelScope,
             initialValue = emptyMap()

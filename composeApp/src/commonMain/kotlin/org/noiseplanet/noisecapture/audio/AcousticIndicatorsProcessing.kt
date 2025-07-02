@@ -10,23 +10,31 @@ import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-const val WINDOW_TIME = 0.125
-
-// https://source.android.com/docs/compatibility/12/android-12-cdd.pdf
-// Android 12
-// Last updated: October 4, 2021
-// SHOULD set audio input sensitivity such that a 1000 Hz sinusoidal tone source played at
-// 90 dB Sound Pressure Level (SPL) yields a response with RMS of 2500 for 16 bit-samples
-// (or -22.35 dB Full Scale for floating point/double precision samples) for each and every
-// microphone used to record the voice recognition audio source.
-const val ANDROID_GAIN = -(-22.35 - 90)
-
 /**
  * TODO: Document this class!
  */
 class AcousticIndicatorsProcessing(val sampleRate: Int, val dbGain: Double = ANDROID_GAIN) {
 
-    private var windowLength = (sampleRate * WINDOW_TIME).toInt()
+    // - Constants
+
+    companion object {
+
+        const val WINDOW_TIME_SECONDS = 0.125
+
+        // https://source.android.com/docs/compatibility/12/android-12-cdd.pdf
+        // Android 12
+        // Last updated: October 4, 2021
+        // SHOULD set audio input sensitivity such that a 1000 Hz sinusoidal tone source played at
+        // 90 dB Sound Pressure Level (SPL) yields a response with RMS of 2500 for 16 bit-samples
+        // (or -22.35 dB Full Scale for floating point/double precision samples) for each and every
+        // microphone used to record the voice recognition audio source.
+        const val ANDROID_GAIN = -(-22.35 - 90)
+    }
+
+
+    // - Properties
+
+    private var windowLength = (sampleRate * WINDOW_TIME_SECONDS).toInt()
     private var windowData = FloatArray(windowLength)
     private var windowDataCursor = 0
     private val nominalFrequencies: List<Int>
@@ -40,6 +48,9 @@ class AcousticIndicatorsProcessing(val sampleRate: Int, val dbGain: Double = AND
         )
         nominalFrequencies = this.getNominalFrequency()
     }
+
+
+    // - Public functions
 
     suspend fun processSamples(samples: AudioSamples): List<AcousticIndicatorsData> {
         val acousticIndicatorsDataList = ArrayList<AcousticIndicatorsData>()

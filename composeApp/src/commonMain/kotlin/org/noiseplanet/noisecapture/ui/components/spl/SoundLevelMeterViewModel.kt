@@ -20,6 +20,7 @@ import org.noiseplanet.noisecapture.ui.components.button.IconNCButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
 import org.noiseplanet.noisecapture.util.VuMeterOptions
+import org.noiseplanet.noisecapture.util.roundTo
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 
 
@@ -58,19 +59,20 @@ class SoundLevelMeterViewModel(
         (VuMeterOptions.DB_MIN + (offset * index)).toInt()
     }
 
-    val soundPressureLevelFlow: StateFlow<Double>
-        get() = liveAudioService.getWeightedLeqFlow()
-            .stateInWhileSubscribed(
-                scope = viewModelScope,
-                initialValue = 0.0,
-            )
+    val soundPressureLevelFlow: StateFlow<Double> = liveAudioService
+        .getWeightedLeqFlow()
+        .map { it.roundTo(1) }
+        .stateInWhileSubscribed(
+            scope = viewModelScope,
+            initialValue = 0.0,
+        )
 
-    val laeqMetricsFlow: StateFlow<LAeqMetrics?>
-        get() = measurementService.getOngoingMeasurementLaeqMetricsFlow()
-            .stateInWhileSubscribed(
-                scope = viewModelScope,
-                initialValue = null,
-            )
+    val laeqMetricsFlow: StateFlow<LAeqMetrics?> = measurementService
+        .getOngoingMeasurementLaeqMetricsFlow()
+        .stateInWhileSubscribed(
+            scope = viewModelScope,
+            initialValue = null,
+        )
 
     val currentDbALabel = Res.string.sound_level_meter_current_dba
 

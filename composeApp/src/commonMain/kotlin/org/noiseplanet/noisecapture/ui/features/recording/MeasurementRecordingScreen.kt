@@ -13,10 +13,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import org.koin.compose.module.rememberKoinModules
-import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterView
-import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel
 import org.noiseplanet.noisecapture.ui.features.recording.controls.RecordingControls
 
 
@@ -33,11 +31,6 @@ fun MeasurementRecordingScreen(
     }
 
 
-    // - Properties
-
-    val soundLevelMeterViewModel: SoundLevelMeterViewModel = koinViewModel()
-
-
     // - Layout
 
     Surface(
@@ -48,7 +41,7 @@ fun MeasurementRecordingScreen(
             if (maxWidth > maxHeight) {
                 Row(modifier = Modifier.fillMaxSize()) {
                     Column(modifier = Modifier.fillMaxWidth(.5F)) {
-                        SoundLevelMeterView(viewModel = soundLevelMeterViewModel)
+                        SoundLevelMeterView()
                         RecordingControls(onMeasurementDone)
                     }
                     Column(modifier = Modifier) {
@@ -57,7 +50,7 @@ fun MeasurementRecordingScreen(
                 }
             } else {
                 Column {
-                    SoundLevelMeterView(viewModel = soundLevelMeterViewModel)
+                    SoundLevelMeterView()
                     MeasurementRecordingPager(modifier = Modifier.fillMaxWidth().weight(1f))
                     RecordingControls(onMeasurementDone)
                 }

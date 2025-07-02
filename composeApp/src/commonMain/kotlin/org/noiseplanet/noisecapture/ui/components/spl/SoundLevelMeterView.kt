@@ -14,28 +14,34 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
+import org.noiseplanet.noisecapture.ui.theme.NotoSansMono
 import org.noiseplanet.noisecapture.util.isInVuMeterRange
-import org.noiseplanet.noisecapture.util.roundTo
 
 
 @Composable
-fun SoundLevelMeterView(
-    viewModel: SoundLevelMeterViewModel,
-) {
+fun SoundLevelMeterView() {
+
     // - Properties
 
-    val currentSoundPressureLevel by viewModel.soundPressureLevelFlow.collectAsStateWithLifecycle()
-    val roundedSpl = currentSoundPressureLevel.roundTo(1)
+    val viewModel: SoundLevelMeterViewModel = koinViewModel()
 
-    val currentLeqMetrics by viewModel.laeqMetricsFlow.collectAsStateWithLifecycle()
-    val playPauseButtonViewModel by viewModel.playPauseButtonViewModelFlow.collectAsStateWithLifecycle()
+    val currentSpl by viewModel.soundPressureLevelFlow
+        .collectAsStateWithLifecycle()
+    val currentLeqMetrics by viewModel.laeqMetricsFlow
+        .collectAsStateWithLifecycle()
+    val playPauseButtonViewModel by viewModel.playPauseButtonViewModelFlow
+        .collectAsStateWithLifecycle()
+
+    val currentSplColor = NoiseLevelColorRamp.getColorForSPLValue(currentSpl)
 
 
     // - Layout
@@ -59,11 +65,12 @@ fun SoundLevelMeterView(
                     )
 
                     Text(
-                        text = if (roundedSpl.isInVuMeterRange()) roundedSpl.toString() else "-",
+                        text = if (currentSpl.isInVuMeterRange()) currentSpl.toString() else "-",
                         style = MaterialTheme.typography.headlineLarge.copy(
                             fontWeight = FontWeight.Black,
+                            fontFamily = FontFamily.NotoSansMono,
                             fontSize = 36.sp,
-                            color = NoiseLevelColorRamp.getColorForSPLValue(roundedSpl)
+                            color = currentSplColor
                         )
                     )
                 }
@@ -83,7 +90,7 @@ fun SoundLevelMeterView(
 
             VuMeter(
                 ticks = viewModel.vuMeterTicks,
-                value = currentSoundPressureLevel,
+                valueFlow = viewModel.soundPressureLevelFlow,
             )
         }
     }
