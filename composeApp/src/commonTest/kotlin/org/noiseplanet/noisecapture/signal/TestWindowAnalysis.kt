@@ -3,8 +3,6 @@ package org.noiseplanet.noisecapture.signal
 import kotlinx.coroutines.test.runTest
 import org.noiseplanet.noisecapture.audio.AcousticIndicatorsProcessing
 import org.noiseplanet.noisecapture.audio.AudioSamples
-import org.noiseplanet.noisecapture.audio.WINDOW_TIME
-import org.noiseplanet.noisecapture.audio.signal.FAST_DECAY_RATE
 import org.noiseplanet.noisecapture.audio.signal.FrequencyBand
 import org.noiseplanet.noisecapture.audio.signal.FrequencyBand.Companion.emptyFrequencyBands
 import org.noiseplanet.noisecapture.audio.signal.LevelDisplayWeightedDecay
@@ -22,6 +20,8 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 class TestWindowAnalysis {
 
@@ -214,12 +214,20 @@ class TestWindowAnalysis {
             DoubleArray((8 / timeInterval).toInt()) { t -> if (t * timeInterval < cutoffTime) 94.0 else -99.0 }
         // fast level should reach input noise in 0.6 seconds
         // fast level decay should be at the rate of 34.7 dB/s
-        val levelDisplayWeightedDecay = LevelDisplayWeightedDecay(FAST_DECAY_RATE, timeInterval)
+        val levelDisplayWeightedDecay =
+            LevelDisplayWeightedDecay(
+                LevelDisplayWeightedDecay.FAST_DECAY_RATE,
+                timeInterval.toDuration(unit = DurationUnit.SECONDS)
+            )
         var previousValue = 0.0
         levels.forEachIndexed { index, level ->
             val dbValue = levelDisplayWeightedDecay.getWeightedValue(level)
             if (index * timeInterval >= cutoffTime) {
-                assertEquals(FAST_DECAY_RATE, (dbValue - previousValue) / timeInterval, 0.01)
+                assertEquals(
+                    LevelDisplayWeightedDecay.FAST_DECAY_RATE,
+                    (dbValue - previousValue) / timeInterval,
+                    0.01
+                )
             }
             previousValue = dbValue
         }
@@ -232,7 +240,9 @@ class TestWindowAnalysis {
         val peak = (2500 * sqrt(2.0)).toInt().toShort()
 
         val angularFrequency = 2.0 * PI * 1000 / sampleRate
-        val signal = FloatArray((sampleRate * WINDOW_TIME).toInt()) {
+        val signal = FloatArray(
+            (sampleRate * AcousticIndicatorsProcessing.WINDOW_TIME_SECONDS).toInt()
+        ) {
             (sin(it * angularFrequency).toFloat() * peak) / 32768F
         }
 
