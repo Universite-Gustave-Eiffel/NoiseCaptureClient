@@ -13,21 +13,17 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
@@ -35,12 +31,15 @@ import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.util.conditional
 import org.noiseplanet.noisecapture.util.shadow.dropShadow
 
+
 /**
  * A button component to be used throughout the app for unified styling
  */
+
 @Composable
 fun NCButton(
-    viewModel: ButtonViewModel,
+    viewModel: NCButtonViewModel,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // - Properties
@@ -48,11 +47,9 @@ fun NCButton(
     val shape: Shape = ButtonDefaults.shape
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
+    val colors = viewModel.colors()
 
-    val icon by viewModel.icon.collectAsState(null)
-    val titleResource by viewModel.title.collectAsState(null)
-    val title: String? = titleResource?.let { stringResource(it) }
-    val style by viewModel.style.collectAsState(ButtonStyle.TEXT)
+    val title: String? = viewModel.title?.let { stringResource(it) }
 
     val finalModifier = modifier.conditional(
         predicate = viewModel.hasDropShadow,
@@ -63,63 +60,70 @@ fun NCButton(
     // - Layout
 
     AnimatedContent(
-        targetState = style,
+        targetState = viewModel,
         transitionSpec = {
             fadeIn() togetherWith fadeOut()
         }
-    ) { targetStyle ->
-        if (icon != null && title == null) {
+    ) { viewModel ->
+        if (viewModel.icon != null && title == null) {
             // If only icon is provided, use IconButton as a base
-            when (targetStyle) {
-                ButtonStyle.PRIMARY -> FilledIconButton(
-                    viewModel.onClick,
+            when (viewModel.style) {
+                NCButtonStyle.FILLED -> FilledIconButton(
+                    onClick,
+                    colors = colors.toIconButtonColors(),
                     modifier = finalModifier
-                ) { NCButtonContents(icon, null) }
+                ) { NCButtonContents(viewModel.icon, null, colors.contentColor) }
 
-                ButtonStyle.SECONDARY -> FilledTonalIconButton(
-                    viewModel.onClick,
+                NCButtonStyle.OUTLINED -> OutlinedIconButton(
+                    onClick,
+                    colors = colors.toIconButtonColors()
+                        .copy(
+                            containerColor = Color.Transparent,
+                            disabledContainerColor = Color.Transparent
+                        ),
+                    border = BorderStroke(width = 2.dp, color = colors.containerColor),
                     modifier = finalModifier
-                ) { NCButtonContents(icon, null) }
+                ) { NCButtonContents(viewModel.icon, null, colors.contentColor) }
 
-                ButtonStyle.OUTLINED -> OutlinedIconButton(
-                    viewModel.onClick,
-                    colors = IconButtonDefaults.outlinedIconButtonColors(
-                        contentColor = MaterialTheme.colorScheme.primary
-                    ),
-                    border = BorderStroke(width = 2.dp, color = MaterialTheme.colorScheme.primary),
+                NCButtonStyle.TEXT -> IconButton(
+                    onClick,
+                    colors = colors.toIconButtonColors()
+                        .copy(
+                            containerColor = Color.Transparent,
+                            disabledContainerColor = Color.Transparent
+                        ),
                     modifier = finalModifier
-                ) { NCButtonContents(icon, null) }
-
-                ButtonStyle.TEXT -> IconButton(
-                    viewModel.onClick,
-                    colors = IconButtonDefaults.outlinedIconButtonColors(),
-                    modifier = finalModifier
-                ) { NCButtonContents(icon, null) }
+                ) { NCButtonContents(viewModel.icon, null, colors.contentColor) }
             }
         } else {
             // Otherwise use a regular button
-            when (targetStyle) {
-                ButtonStyle.PRIMARY -> Button(
-                    viewModel.onClick,
-                    modifier = finalModifier
-                ) { NCButtonContents(icon, title) }
+            when (viewModel.style) {
+                NCButtonStyle.FILLED -> Button(
+                    onClick,
+                    colors = colors.toButtonColors(),
+                    modifier = finalModifier,
+                ) { NCButtonContents(viewModel.icon, title, colors.contentColor) }
 
-                ButtonStyle.SECONDARY -> FilledTonalButton(
-                    viewModel.onClick,
-                    modifier = finalModifier
-                ) { NCButtonContents(icon, title) }
+                NCButtonStyle.OUTLINED -> OutlinedButton(
+                    onClick,
+                    colors = colors.toButtonColors()
+                        .copy(
+                            containerColor = Color.Transparent,
+                            disabledContainerColor = Color.Transparent
+                        ),
+                    border = BorderStroke(width = 2.dp, color = colors.containerColor),
+                    modifier = finalModifier,
+                ) { NCButtonContents(viewModel.icon, title, colors.contentColor) }
 
-                ButtonStyle.OUTLINED -> OutlinedButton(
-                    viewModel.onClick,
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary),
-                    border = BorderStroke(width = 2.dp, color = MaterialTheme.colorScheme.primary),
+                NCButtonStyle.TEXT -> TextButton(
+                    onClick,
+                    colors = colors.toButtonColors()
+                        .copy(
+                            containerColor = Color.Transparent,
+                            disabledContainerColor = Color.Transparent
+                        ),
                     modifier = finalModifier
-                ) { NCButtonContents(icon, title) }
-
-                ButtonStyle.TEXT -> TextButton(
-                    viewModel.onClick,
-                    modifier = finalModifier
-                ) { NCButtonContents(icon, title) }
+                ) { NCButtonContents(viewModel.icon, title, colors.contentColor) }
             }
         }
     }
@@ -130,12 +134,14 @@ fun NCButton(
 private fun NCButtonContents(
     icon: ImageVector?,
     title: String?,
+    contentColor: Color,
 ) {
     icon?.let {
         Icon(
             imageVector = it,
             contentDescription = title,
-            modifier = Modifier.size(18.dp)
+            tint = contentColor,
+            modifier = Modifier.size(18.dp),
         )
     }
 
@@ -144,5 +150,7 @@ private fun NCButtonContents(
         Spacer(modifier = Modifier.width(8.dp))
     }
 
-    title?.let { Text(it) }
+    title?.let {
+        Text(it, color = contentColor)
+    }
 }

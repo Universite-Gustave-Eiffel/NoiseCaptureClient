@@ -8,9 +8,13 @@ import org.koin.core.module.Module
 import org.koin.dsl.module
 import org.noiseplanet.noisecapture.audio.AudioSource
 import org.noiseplanet.noisecapture.audio.JsAudioSource
+import org.noiseplanet.noisecapture.audio.player.AudioPlayer
+import org.noiseplanet.noisecapture.audio.player.JSAudioPlayer
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
+import org.noiseplanet.noisecapture.services.audio.AudioStorageService
 import org.noiseplanet.noisecapture.services.audio.JSAudioRecordingService
+import org.noiseplanet.noisecapture.services.audio.OPFSAudioStorageService
 import org.noiseplanet.noisecapture.services.location.UserLocationProvider
 import org.noiseplanet.noisecapture.services.location.WasmJSUserLocationProvider
 
@@ -39,5 +43,13 @@ val platformModule: Module = module {
 
     single<AudioRecordingService> {
         JSAudioRecordingService()
+    }
+
+    single<AudioStorageService> {
+        OPFSAudioStorageService()
+    }
+
+    factory<AudioPlayer> { (filePath: String) ->
+        JSAudioPlayer(filePath)
     }
 }

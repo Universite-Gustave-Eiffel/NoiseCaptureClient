@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.ui.components.spl
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -8,33 +9,40 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
-import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel.Companion.VU_METER_DB_MAX
-import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel.Companion.VU_METER_DB_MIN
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
-import kotlin.math.round
+import org.noiseplanet.noisecapture.ui.theme.NotoSansMono
+import org.noiseplanet.noisecapture.util.isInVuMeterRange
 
 
 @Composable
-fun SoundLevelMeterView(
-    viewModel: SoundLevelMeterViewModel,
-) {
+fun SoundLevelMeterView() {
+
     // - Properties
 
-    val currentSoundPressureLevel by viewModel.soundPressureLevelFlow.collectAsState(0.0)
+    val viewModel: SoundLevelMeterViewModel = koinViewModel()
+
+    val currentSpl by viewModel.soundPressureLevelFlow
+        .collectAsStateWithLifecycle()
+    val currentLeqMetrics by viewModel.laeqMetricsFlow
+        .collectAsStateWithLifecycle()
+    val playPauseButtonViewModel by viewModel.playPauseButtonViewModelFlow
+        .collectAsStateWithLifecycle()
+
+    val currentSplColor by animateColorAsState(NoiseLevelColorRamp.getColorForSPLValue(currentSpl))
 
 
     // - Layout
@@ -46,7 +54,7 @@ fun SoundLevelMeterView(
         ) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.Top,
                 modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth()
             ) {
                 Column(horizontalAlignment = Alignment.Start) {
@@ -57,61 +65,25 @@ fun SoundLevelMeterView(
                         ),
                     )
 
-                    val isSplInRange = currentSoundPressureLevel in VU_METER_DB_MIN..VU_METER_DB_MAX
-                    val roundedSpl = round(currentSoundPressureLevel * 10.0) / 10.0
-
                     Text(
-                        text = if (isSplInRange) roundedSpl.toString() else "-",
+                        text = if (currentSpl.isInVuMeterRange()) currentSpl.toString() else "-",
                         style = MaterialTheme.typography.headlineLarge.copy(
                             fontWeight = FontWeight.Black,
+                            fontFamily = FontFamily.NotoSansMono,
                             fontSize = 36.sp,
-                            color = NoiseLevelColorRamp.getColorForSPLValue(roundedSpl)
+                            color = currentSplColor
                         )
                     )
                 }
 
                 if (viewModel.showMinMaxSPL) {
-                    Row(
-                        Modifier.align(Alignment.Top),
-                    ) {
-                        listOf(
-                            MeasurementStatistics(
-                                label = stringResource(viewModel.minDbALabel),
-                                value = "-",
-                            ),
-                            MeasurementStatistics(
-                                label = stringResource(viewModel.avgDbALabel),
-                                value = "-",
-                            ),
-                            MeasurementStatistics(
-                                label = stringResource(viewModel.maxDbALabel),
-                                value = "-",
-                            ),
-                        ).forEach {
-                            Column(
-                                horizontalAlignment = Alignment.Start,
-                                modifier = Modifier.width(50.dp),
-                            ) {
-                                Text(
-                                    text = it.label,
-                                    style = MaterialTheme.typography.labelLarge
-                                )
-                                Text(
-                                    text = it.value,
-                                    style = MaterialTheme.typography.headlineLarge.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 20.sp,
-                                        textAlign = TextAlign.Start
-                                    )
-                                )
-                            }
-                        }
-                    }
+                    LAeqMetricsView(metrics = currentLeqMetrics)
                 }
 
                 if (viewModel.showPlayPauseButton) {
                     NCButton(
-                        viewModel = viewModel.playPauseButtonViewModel,
+                        onClick = viewModel::toggleAudioSource,
+                        viewModel = playPauseButtonViewModel,
                         modifier = Modifier.size(40.dp)
                     )
                 }
@@ -119,16 +91,8 @@ fun SoundLevelMeterView(
 
             VuMeter(
                 ticks = viewModel.vuMeterTicks,
-                minimum = VU_METER_DB_MIN,
-                maximum = VU_METER_DB_MAX,
-                value = currentSoundPressureLevel,
+                valueFlow = viewModel.soundPressureLevelFlow,
             )
         }
     }
 }
-
-
-private data class MeasurementStatistics(
-    val label: String,
-    val value: String,
-)

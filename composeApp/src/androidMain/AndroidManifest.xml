@@ -7,11 +7,10 @@
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32" />
+        android:maxSdkVersion="28" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
@@ -40,8 +39,8 @@
         </activity>
 
         <service
-            android:name="org.noiseplanet.noisecapture.services.measurement.ForegroundServiceWrapper"
-            android:foregroundServiceType="microphone"
+            android:name=".services.measurement.ForegroundServiceWrapper"
+            android:foregroundServiceType="location|microphone"
             android:exported="false" />
     </application>
 

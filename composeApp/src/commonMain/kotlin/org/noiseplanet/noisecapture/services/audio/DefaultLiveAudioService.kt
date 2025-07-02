@@ -15,25 +15,23 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.audio.AcousticIndicatorsData
 import org.noiseplanet.noisecapture.audio.AcousticIndicatorsProcessing
 import org.noiseplanet.noisecapture.audio.AudioSource
 import org.noiseplanet.noisecapture.audio.AudioSourceState
-import org.noiseplanet.noisecapture.audio.WINDOW_TIME
-import org.noiseplanet.noisecapture.audio.signal.FAST_DECAY_RATE
 import org.noiseplanet.noisecapture.audio.signal.LevelDisplayWeightedDecay
 import org.noiseplanet.noisecapture.audio.signal.window.SpectrumData
 import org.noiseplanet.noisecapture.audio.signal.window.SpectrumDataProcessing
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.util.injectLogger
+import kotlin.time.Duration
 
 /**
  * Default [LiveAudioService] implementation.
  * Can be overridden in platforms to add specific behaviour.
  */
-class DefaultLiveAudioService(
-    private val audioSource: AudioSource,
-) : LiveAudioService, KoinComponent {
+class DefaultLiveAudioService : LiveAudioService, KoinComponent {
 
     // - Constants
 
@@ -41,15 +39,13 @@ class DefaultLiveAudioService(
 
         const val FFT_SIZE = 4096
         const val FFT_HOP = 2048
-
-        private const val SPL_DECAY_RATE = FAST_DECAY_RATE
-        private const val SPL_WINDOW_TIME = WINDOW_TIME
     }
 
 
     // - Properties
 
     private val logger: Logger by injectLogger()
+    private val audioSource: AudioSource by inject()
 
     private var indicatorsProcessing: AcousticIndicatorsProcessing? = null
     private var spectrumDataProcessing: SpectrumDataProcessing? = null
@@ -145,8 +141,11 @@ class DefaultLiveAudioService(
         return spectrumDataFlow.asSharedFlow()
     }
 
-    override fun getWeightedLeqFlow(): Flow<Double> {
-        val levelDisplay = LevelDisplayWeightedDecay(SPL_DECAY_RATE, SPL_WINDOW_TIME)
+    override fun getWeightedLeqFlow(
+        splDecayRate: Double,
+        windowTime: Duration,
+    ): Flow<Double> {
+        val levelDisplay = LevelDisplayWeightedDecay(splDecayRate, windowTime)
 
         return getAcousticIndicatorsFlow()
             .map {
@@ -154,18 +153,21 @@ class DefaultLiveAudioService(
             }
     }
 
-    override fun getWeightedSoundPressureLevelFlow(): Flow<Map<Int, Double>> {
+    override fun getWeightedLeqPerFrequencyBandFlow(
+        splDecayRate: Double,
+        windowTime: Duration,
+    ): Flow<Map<Int, Double>> {
         var levelDisplayBands: Map<Int, LevelDisplayWeightedDecay>? = null
 
         return getAcousticIndicatorsFlow()
             .map { indicators ->
                 if (levelDisplayBands == null) {
                     levelDisplayBands = indicators.leqsPerThirdOctave.mapValues {
-                        LevelDisplayWeightedDecay(SPL_DECAY_RATE, SPL_WINDOW_TIME)
+                        LevelDisplayWeightedDecay(splDecayRate, windowTime)
                     }
                 }
                 indicators.leqsPerThirdOctave.mapValues { entry ->
-                    levelDisplayBands?.get(entry.key)
+                    levelDisplayBands[entry.key]
                         ?.getWeightedValue(entry.value)
                         ?: 0.0
                 }

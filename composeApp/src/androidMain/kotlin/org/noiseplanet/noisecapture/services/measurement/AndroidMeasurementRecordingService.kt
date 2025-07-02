@@ -72,6 +72,7 @@ class AndroidMeasurementRecordingService(
             wrapper = localBinder.getService()
 
             wrapper?.innerService?.start()
+            wrapper?.innerService?.onMeasurementDone = onMeasurementDone
 
             isRecordingRedirectionJob = scope.launch {
                 // Redirect the
@@ -99,6 +100,8 @@ class AndroidMeasurementRecordingService(
 
     override val isRecordingFlow: StateFlow<Boolean>
         get() = mergedIsRecordingFlow
+
+    override var onMeasurementDone: MeasurementRecordingService.OnMeasurementDoneListener? = null
 
 
     override fun start() {
@@ -237,7 +240,7 @@ internal class ForegroundServiceWrapper : KoinComponent, Service() {
                 FOREGROUND_SERVICE_ID,
                 buildNotification(),
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST
                 } else {
                     0
                 }

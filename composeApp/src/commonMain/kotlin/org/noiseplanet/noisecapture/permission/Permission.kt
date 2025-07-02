@@ -40,4 +40,10 @@ enum class Permission {
      * Permission to send notifications.
      */
     POST_NOTIFICATIONS,
+
+    /**
+     * Permission to persistently store data in local storage.
+     * Required to store files persistently using Origin Private FileSystem (OPFS) on web.
+     */
+    PERSISTENT_LOCAL_STORAGE,
 }

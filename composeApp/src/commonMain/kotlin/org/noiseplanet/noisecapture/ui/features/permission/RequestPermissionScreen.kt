@@ -15,32 +15,40 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.request_permission_button_next
 import noisecapture.composeapp.generated.resources.request_permission_explanation
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.module.rememberKoinModules
+import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.ui.features.permission.stateview.PermissionStateView
 
 /**
  * Presents required permissions to the user with controls to either request the
  * permission if it was not yet asked, or to open the corresponding settings page
  * if permission was already previously denied
- *
- * TODO: Instead of pushing this screen into the navigation stack, make it pop on top of
- *       the current screen when needed. Pressing the back button should also close the enclosing
- *       screen and pressing the next button should dismiss both screens. Maybe this can be done
- *       with a nested navigation controller?
  */
+@OptIn(KoinExperimentalAPI::class)
 @Composable
 fun RequestPermissionScreen(
     onClickNextButton: () -> Unit,
     viewModel: RequestPermissionScreenViewModel,
     modifier: Modifier = Modifier,
 ) {
+
+    // - DI
+
+    rememberKoinModules(unloadOnForgotten = true) {
+        listOf(requestPermissionModule)
+    }
+
+
+    // - Layout
+
     Surface(
         modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -69,7 +77,7 @@ fun RequestPermissionScreen(
             item {
                 // True if all required permissions have been granted
                 val allPermissionsGranted by viewModel.allPermissionsGranted
-                    .collectAsState(false)
+                    .collectAsStateWithLifecycle(false)
 
                 AnimatedVisibility(allPermissionsGranted) {
                     // Show Next button only if all required permissions have been granted

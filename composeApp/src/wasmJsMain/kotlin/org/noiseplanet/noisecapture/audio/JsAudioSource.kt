@@ -5,7 +5,6 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.datetime.Clock
 import org.khronos.webgl.get
 import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.interop.AudioContext
@@ -15,6 +14,9 @@ import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.enums.MicrophoneLocation
 import org.noiseplanet.noisecapture.util.injectLogger
 import org.w3c.dom.mediacapture.MediaStreamConstraints
+import org.w3c.dom.mediacapture.MediaTrackConstraints
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 
 /**
@@ -23,6 +25,7 @@ import org.w3c.dom.mediacapture.MediaStreamConstraints
  * For implementation details, see
  * [MDN web docs](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API/Using_Web_Audio_API)
  */
+@OptIn(ExperimentalTime::class)
 internal class JsAudioSource : AudioSource, KoinComponent {
 
     // - Constants
@@ -70,12 +73,12 @@ internal class JsAudioSource : AudioSource, KoinComponent {
 
         window.navigator.mediaDevices.getUserMedia(
             MediaStreamConstraints(
-                // TODO: Not sure this has any effect...
-                audio = object {
-                    val echoCancellation = false
-                    val autoGainControl = false
-                    val noiseSuppression = false
-                }.toJsReference()
+                audio = MediaTrackConstraints(
+                    advanced = JsArray(),
+                    autoGainControl = false.toJsBoolean(),
+                    noiseSuppression = false.toJsBoolean(),
+                    echoCancellation = false.toJsBoolean(),
+                )
             )
         ).then(onFulfilled = { mediaStream ->
             audioContext = AudioContext()
@@ -110,7 +113,10 @@ internal class JsAudioSource : AudioSource, KoinComponent {
         }, onRejected = { error ->
             logger.error("Error while setting up audio source: $error")
             error
-        })
+        }).catch { error ->
+            logger.error("Error while setting up audio source: $error")
+            error
+        }
     }
 
     override fun start() {

@@ -30,6 +30,21 @@ interface AudioRecordingService {
      */
     fun stopRecordingToFile()
 
+    /**
+     * Gets the size of the file at the given URL, in bytes.
+     *
+     * @param audioUrl Audio file URL.
+     * @return File size in bytes, null if not found.
+     */
+    suspend fun getFileSize(audioUrl: String): Long?
+
+    /**
+     * Deletes the audio file at the given URL.
+     *
+     * @param audioUrl Audio file URL.
+     */
+    fun deleteFileAtUrl(audioUrl: String)
+
 
     // - Listeners
 

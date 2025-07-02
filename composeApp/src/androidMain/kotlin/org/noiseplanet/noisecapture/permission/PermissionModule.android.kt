@@ -9,7 +9,6 @@ import org.koin.dsl.module
 import org.noiseplanet.noisecapture.permission.delegate.AudioRecordPermissionDelegate
 import org.noiseplanet.noisecapture.permission.delegate.BluetoothPermissionDelegate
 import org.noiseplanet.noisecapture.permission.delegate.BluetoothServicePermissionDelegate
-import org.noiseplanet.noisecapture.permission.delegate.LocationBackgroundPermissionDelegate
 import org.noiseplanet.noisecapture.permission.delegate.LocationForegroundPermissionDelegate
 import org.noiseplanet.noisecapture.permission.delegate.LocationServicePermissionDelegate
 import org.noiseplanet.noisecapture.permission.delegate.PermissionDelegate
@@ -47,13 +46,6 @@ internal actual fun platformPermissionModule(): Module = module {
         LocationForegroundPermissionDelegate(
             context = get(),
             activity = inject(),
-        )
-    }
-    single<PermissionDelegate>(named(Permission.LOCATION_BACKGROUND.name)) {
-        LocationBackgroundPermissionDelegate(
-            context = get(),
-            activity = inject(),
-            locationForegroundPermissionDelegate = get(named(Permission.LOCATION_FOREGROUND.name)),
         )
     }
     single<PermissionDelegate>(named(Permission.RECORD_AUDIO.name)) {

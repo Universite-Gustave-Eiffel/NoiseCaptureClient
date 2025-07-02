@@ -3,5 +3,43 @@ html, body {
     height: 100%;
     margin: 0;
     padding: 0;
+    background-color: #FEF7FF;
     overflow: hidden;
+}
+
+#warning {
+    position: absolute;
+    top: 100px;
+    left: 100px;
+    max-width: 830px;
+    z-index: 100;
+    font-size: initial;
+    display: none;
+}
+#warning li {
+    padding-bottom: 15px;
+}
+
+#warning span.code {
+    font-family: monospace;
+}
+
+ul {
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+#footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    z-index: 1000;
+    font-size: initial;
+}
+
+#close {
+    position: absolute;
+    top: 0;
+    right: 10px;
+    cursor: pointer;
 }

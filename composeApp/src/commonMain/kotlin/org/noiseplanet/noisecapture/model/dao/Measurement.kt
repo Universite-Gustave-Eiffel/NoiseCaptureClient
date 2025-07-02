@@ -26,7 +26,9 @@ data class Measurement(
 
     val locationSequenceIds: List<String> = emptyList(),
     val leqsSequenceIds: List<String> = emptyList(),
+    val laeqMetrics: LAeqMetrics,
 
+    val summary: MeasurementSummary? = null,
     val recordedAudioUrl: String? = null,
 )
 
@@ -50,6 +52,7 @@ data class MutableMeasurement(
 
     val locationSequenceIds: MutableList<String> = mutableListOf(),
     val leqsSequenceIds: MutableList<String> = mutableListOf(),
+    var laeqMetrics: LAeqMetrics? = null,
 
     var recordedAudioUrl: String? = null,
 )

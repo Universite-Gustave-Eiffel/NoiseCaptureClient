@@ -1,10 +1,10 @@
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.koin.compose.KoinContext
 import org.koin.compose.koinInject
 import org.noiseplanet.noisecapture.ui.navigation.RootCoordinator
 import org.noiseplanet.noisecapture.ui.navigation.RootCoordinatorViewModel
+import org.noiseplanet.noisecapture.ui.theme.AppTheme
 
 /**
  * Entry point of the Compose app.
@@ -12,11 +12,9 @@ import org.noiseplanet.noisecapture.ui.navigation.RootCoordinatorViewModel
 @Composable
 @Preview
 fun App() {
-    KoinContext {
-        MaterialTheme {
-            val coordinatorViewModel: RootCoordinatorViewModel = koinInject()
-            
-            RootCoordinator(viewModel = coordinatorViewModel)
-        }
+    AppTheme {
+        val coordinatorViewModel: RootCoordinatorViewModel = koinInject()
+
+        RootCoordinator(viewModel = coordinatorViewModel)
     }
 }

@@ -3,13 +3,34 @@ package org.noiseplanet.noisecapture.services.audio
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import org.noiseplanet.noisecapture.audio.AcousticIndicatorsData
+import org.noiseplanet.noisecapture.audio.AcousticIndicatorsProcessing
 import org.noiseplanet.noisecapture.audio.AudioSourceState
+import org.noiseplanet.noisecapture.audio.signal.LevelDisplayWeightedDecay
 import org.noiseplanet.noisecapture.audio.signal.window.SpectrumData
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 /**
  * Listen to incoming audio and process samples to extract some acoustic indicators.
  */
 interface LiveAudioService {
+
+    // - Constants
+
+    companion object {
+
+        protected const val DEFAULT_WEIGHTED_SPL_DECAY_RATE: Double =
+            LevelDisplayWeightedDecay.FAST_DECAY_RATE
+
+        protected val DEFAULT_WEIGHTED_SPL_WINDOW_TIME: Duration =
+            AcousticIndicatorsProcessing.WINDOW_TIME_SECONDS.toDuration(
+                unit = DurationUnit.SECONDS
+            )
+    }
+
+
+    // - Properties
 
     /**
      * True if service is currently monitoring incoming audio,
@@ -32,6 +53,9 @@ interface LiveAudioService {
      * A flow of [audioSourceState] values.
      */
     val audioSourceStateFlow: Flow<AudioSourceState>
+
+
+    // - Public functions
 
     /**
      * Setup audio source for listening to incoming audio.
@@ -62,13 +86,25 @@ interface LiveAudioService {
 
     /**
      * Get a [Flow] of sound pressure level values.
+     *
+     * @param splDecayRate Decibels decay per second.
+     * @param windowTime Time interval between samples.
      */
-    fun getWeightedLeqFlow(): Flow<Double>
+    fun getWeightedLeqFlow(
+        splDecayRate: Double = DEFAULT_WEIGHTED_SPL_DECAY_RATE,
+        windowTime: Duration = DEFAULT_WEIGHTED_SPL_WINDOW_TIME,
+    ): Flow<Double>
 
     /**
      * Get a [Flow] of sound pressure levels weighted by frequency band.
+     *
+     * @param splDecayRate Decibels decay per second.
+     * @param windowTime Time interval between samples.
      */
-    fun getWeightedSoundPressureLevelFlow(): Flow<Map<Int, Double>>
+    fun getWeightedLeqPerFrequencyBandFlow(
+        splDecayRate: Double = DEFAULT_WEIGHTED_SPL_DECAY_RATE,
+        windowTime: Duration = DEFAULT_WEIGHTED_SPL_WINDOW_TIME,
+    ): Flow<Map<Int, Double>>
 
     /**
      * Get a [Flow] of [SpectrumData] from the currently running recording.

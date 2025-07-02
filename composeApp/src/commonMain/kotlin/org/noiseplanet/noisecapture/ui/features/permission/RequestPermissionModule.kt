@@ -6,15 +6,10 @@ import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.ui.features.permission.stateview.PermissionStateViewModel
 
 val requestPermissionModule = module {
+
     viewModel { (permission: Permission) ->
         PermissionStateViewModel(
-            permission = permission,
-            permissionService = get()
-        )
-    }
-    viewModel {
-        RequestPermissionScreenViewModel(
-            permissionService = get()
+            permission = permission
         )
     }
 }

@@ -5,25 +5,28 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
-import noisecapture.composeapp.generated.resources.sound_level_meter_avg_dba
 import noisecapture.composeapp.generated.resources.sound_level_meter_current_dba
-import noisecapture.composeapp.generated.resources.sound_level_meter_max_dba
-import noisecapture.composeapp.generated.resources.sound_level_meter_min_dba
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.audio.AudioSourceState
+import org.noiseplanet.noisecapture.model.dao.LAeqMetrics
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
-import org.noiseplanet.noisecapture.ui.components.button.ButtonStyle
-import org.noiseplanet.noisecapture.ui.components.button.ButtonViewModel
+import org.noiseplanet.noisecapture.services.measurement.MeasurementService
+import org.noiseplanet.noisecapture.ui.components.button.IconNCButtonViewModel
+import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
+import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
+import org.noiseplanet.noisecapture.util.VuMeterOptions
+import org.noiseplanet.noisecapture.util.roundTo
+import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
+
 
 class SoundLevelMeterViewModel(
-    val showMinMaxSPL: Boolean = true,
-    val showPlayPauseButton: Boolean = false,
+    val showMinMaxSPL: Boolean,
+    val showPlayPauseButton: Boolean,
 ) : ViewModel(), KoinComponent {
 
     // - Constants
@@ -35,35 +38,43 @@ class SoundLevelMeterViewModel(
          * Tick values will be determined from provided min and max values
          */
         const val VU_METER_TICKS_COUNT: Int = 6
-
-        const val VU_METER_DB_MIN = 20.0
-        const val VU_METER_DB_MAX = 120.0
     }
 
 
     // - Properties
 
     private val liveAudioService: LiveAudioService by inject()
+    private val measurementService: MeasurementService by inject()
 
-    val playPauseButtonViewModel = ButtonViewModel(
-        onClick = this::toggleAudioSource,
-        icon = liveAudioService.isRunningFlow.map { isRunning ->
-            if (isRunning) Icons.Filled.Pause else Icons.Filled.PlayArrow
-        },
-        style = flowOf(ButtonStyle.SECONDARY)
-    )
+    val playPauseButtonViewModelFlow: StateFlow<NCButtonViewModel> = liveAudioService.isRunningFlow
+        .map { isRunning ->
+            getPlayPauseButtonViewModel(isRunning)
+        }.stateInWhileSubscribed(
+            scope = viewModelScope,
+            initialValue = getPlayPauseButtonViewModel(liveAudioService.isRunning),
+        )
 
     val vuMeterTicks: IntArray = IntArray(size = VU_METER_TICKS_COUNT) { index ->
-        (VU_METER_DB_MIN + ((VU_METER_DB_MAX - VU_METER_DB_MIN) / (VU_METER_TICKS_COUNT - 1) * index)).toInt()
+        val offset = (VuMeterOptions.DB_MAX - VuMeterOptions.DB_MIN) / (VU_METER_TICKS_COUNT - 1)
+        (VuMeterOptions.DB_MIN + (offset * index)).toInt()
     }
 
-    val soundPressureLevelFlow: Flow<Double>
-        get() = liveAudioService.getWeightedLeqFlow()
+    val soundPressureLevelFlow: StateFlow<Double> = liveAudioService
+        .getWeightedLeqFlow()
+        .map { it.roundTo(1) }
+        .stateInWhileSubscribed(
+            scope = viewModelScope,
+            initialValue = 0.0,
+        )
+
+    val laeqMetricsFlow: StateFlow<LAeqMetrics?> = measurementService
+        .getOngoingMeasurementLaeqMetricsFlow()
+        .stateInWhileSubscribed(
+            scope = viewModelScope,
+            initialValue = null,
+        )
 
     val currentDbALabel = Res.string.sound_level_meter_current_dba
-    val minDbALabel = Res.string.sound_level_meter_min_dba
-    val avgDbALabel = Res.string.sound_level_meter_avg_dba
-    val maxDbALabel = Res.string.sound_level_meter_max_dba
 
 
     // - Lifecycle
@@ -81,13 +92,25 @@ class SoundLevelMeterViewModel(
     }
 
 
-    // - Private functions
+    // - Public functions
 
-    private fun toggleAudioSource() {
+    fun toggleAudioSource() {
         if (liveAudioService.isRunning) {
             liveAudioService.stopListening()
         } else {
             liveAudioService.startListening()
         }
+    }
+
+
+    // - Private functions
+
+    private fun getPlayPauseButtonViewModel(isAudioSourceRunning: Boolean): NCButtonViewModel {
+        val icon = if (isAudioSourceRunning) Icons.Filled.Pause else Icons.Filled.PlayArrow
+
+        return IconNCButtonViewModel(
+            icon = icon,
+            colors = { NCButtonColors.Defaults.secondary() },
+        )
     }
 }

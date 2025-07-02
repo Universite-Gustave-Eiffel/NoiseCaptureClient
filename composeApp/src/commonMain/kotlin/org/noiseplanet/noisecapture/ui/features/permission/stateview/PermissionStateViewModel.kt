@@ -10,42 +10,63 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.services.permission.PermissionService
+import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 
 class PermissionStateViewModel(
     private val permission: Permission,
-    private val permissionService: PermissionService,
-) : ViewModel() {
+) : ViewModel(), KoinComponent {
+
+    // - Properties
+
+    private val permissionService: PermissionService by inject()
 
     private val stateFlow: Flow<PermissionState> =
         permissionService.getPermissionStateFlow(permission)
 
     val permissionName: String = permission.name
 
-    val stateIcon: Flow<ImageVector> = stateFlow.map { state ->
-        when (state) {
-            PermissionState.GRANTED -> Icons.Default.Check
-            PermissionState.DENIED -> Icons.Default.Close
-            else -> Icons.Default.QuestionMark
-        }
-    }
+    val stateIcon: StateFlow<ImageVector> = stateFlow
+        .map { state ->
+            when (state) {
+                PermissionState.GRANTED -> Icons.Default.Check
+                PermissionState.DENIED -> Icons.Default.Close
+                else -> Icons.Default.QuestionMark
+            }
+        }.stateInWhileSubscribed(
+            scope = viewModelScope,
+            initialValue = Icons.Default.QuestionMark
+        )
 
-    val stateColor: Flow<Color> = stateFlow.map { state ->
-        when (state) {
-            PermissionState.GRANTED -> Color.Green
-            PermissionState.DENIED -> Color.Red
-            else -> Color.Gray
-        }
-    }
+    val stateColor: StateFlow<Color> = stateFlow
+        .map { state ->
+            when (state) {
+                PermissionState.GRANTED -> Color.Green
+                PermissionState.DENIED -> Color.Red
+                else -> Color.Gray
+            }
+        }.stateInWhileSubscribed(
+            scope = viewModelScope,
+            initialValue = Color.Gray
+        )
 
-    val shouldShowRequestButton: Flow<Boolean> = stateFlow.map { state ->
-        state == PermissionState.NOT_DETERMINED
-    }
+    val shouldShowRequestButton: StateFlow<Boolean> = stateFlow
+        .map { it == PermissionState.NOT_DETERMINED }
+        .stateInWhileSubscribed(
+            scope = viewModelScope,
+            initialValue = false,
+        )
+
+
+    // - Public functions
 
     fun openSettings() {
         permissionService.openSettingsForPermission(permission)
