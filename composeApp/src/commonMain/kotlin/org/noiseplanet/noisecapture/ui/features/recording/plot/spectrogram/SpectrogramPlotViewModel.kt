@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.noiseplanet.noisecapture.audio.ANDROID_GAIN
+import org.noiseplanet.noisecapture.audio.AcousticIndicatorsProcessing
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.enums.SpectrogramScaleMode
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
@@ -27,8 +27,10 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
 
         private const val RANGE_DB = 40.0
         private const val MIN_DB = 0.0
-        private const val DB_GAIN = ANDROID_GAIN // TODO: Platform dependant gain?
         private const val DEFAULT_SAMPLE_RATE = 48000.0
+
+        // TODO: Platform dependant gain?
+        private const val DB_GAIN = AcousticIndicatorsProcessing.ANDROID_GAIN
 
         const val REFERENCE_LEGEND_TEXT = " +99s "
         const val SPECTROGRAM_STRIP_WIDTH = 32

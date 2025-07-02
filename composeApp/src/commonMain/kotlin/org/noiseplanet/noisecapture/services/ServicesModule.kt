@@ -26,9 +26,7 @@ val servicesModule = module {
     }
 
     single<LiveAudioService> {
-        DefaultLiveAudioService(
-            audioSource = get(),
-        )
+        DefaultLiveAudioService()
     }
 
     single<UserSettingsService> {
