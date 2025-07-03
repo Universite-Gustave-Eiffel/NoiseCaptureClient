@@ -1,6 +1,5 @@
 package org.noiseplanet.noisecapture.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -87,7 +86,7 @@ private val darkColorScheme = darkColorScheme(
 
 @Composable
 fun AppTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = false, // TODO: Enable dark theme when color scheme will be consistent
     content: @Composable() () -> Unit,
 ) {
     val colorScheme = when {

@@ -53,7 +53,7 @@ fun SettingsScreen(
 
     // - Layout
 
-    Surface(color = MaterialTheme.colorScheme.background) {
+    Surface(color = MaterialTheme.colorScheme.surfaceContainer) {
         LazyColumn(
             state = listState,
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 32.dp),
@@ -68,7 +68,7 @@ fun SettingsScreen(
                 stickyHeader {
                     ListSectionHeader(
                         sectionTitle,
-                        modifier = Modifier.background(MaterialTheme.colorScheme.background)
+                        modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer)
                     )
                 }
 

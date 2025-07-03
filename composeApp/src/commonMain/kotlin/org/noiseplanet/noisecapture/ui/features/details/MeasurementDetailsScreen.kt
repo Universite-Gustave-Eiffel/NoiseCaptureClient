@@ -75,7 +75,7 @@ fun MeasurementDetailsScreen(
     BottomSheetScaffold(
         scaffoldState = sheetState,
         sheetShape = BottomSheetDefaults.ExpandedShape,
-        sheetContainerColor = MaterialTheme.colorScheme.surface,
+        sheetContainerColor = MaterialTheme.colorScheme.surfaceContainer,
         containerColor = Color.White,
         sheetPeekHeight = containerHeight * 0.33f,
         sheetContent = {

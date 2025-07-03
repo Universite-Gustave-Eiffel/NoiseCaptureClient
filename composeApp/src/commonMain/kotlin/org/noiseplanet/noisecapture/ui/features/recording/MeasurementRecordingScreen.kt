@@ -8,10 +8,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterView
@@ -35,7 +35,7 @@ fun MeasurementRecordingScreen(
 
     Surface(
         modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars),
-        color = Color.White
+        color = MaterialTheme.colorScheme.surface
     ) {
         BoxWithConstraints {
             if (maxWidth > maxHeight) {
