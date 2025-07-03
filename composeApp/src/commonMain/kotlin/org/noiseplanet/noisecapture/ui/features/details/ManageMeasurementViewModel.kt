@@ -64,7 +64,7 @@ class ManageMeasurementViewModel(
         colors = {
             NCButtonColors(
                 containerColor = MaterialTheme.colorScheme.errorContainer,
-                contentColor = MaterialTheme.colorScheme.error,
+                contentColor = MaterialTheme.colorScheme.onErrorContainer,
             )
         }
     )
