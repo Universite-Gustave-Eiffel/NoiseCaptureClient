@@ -39,7 +39,10 @@ fun MeasurementRecordingPager(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier,
     ) {
-        TabRow(selectedTabIndex = pagerState.currentPage) {
+        TabRow(
+            selectedTabIndex = pagerState.currentPage,
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        ) {
             MeasurementTabState.entries.forEach { entry ->
                 Tab(
                     text = { Text(MEASUREMENT_TAB_LABEL[entry.ordinal]) },
@@ -63,7 +66,7 @@ fun MeasurementRecordingPager(
                 }
 
                 else -> Surface(
-                    color = MaterialTheme.colorScheme.background
+                    color = MaterialTheme.colorScheme.surfaceContainer
                 ) {
                     Text(
                         text = "Text tab ${MEASUREMENT_TAB_LABEL[page]} selected",

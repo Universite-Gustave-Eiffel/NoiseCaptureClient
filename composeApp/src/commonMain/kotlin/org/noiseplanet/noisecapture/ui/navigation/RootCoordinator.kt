@@ -3,11 +3,11 @@ package org.noiseplanet.noisecapture.ui.navigation
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
@@ -118,7 +118,7 @@ fun RootCoordinator(
             popExitTransition = Transitions.popExitTransition,
             modifier = Modifier.fillMaxSize()
                 .padding(top = innerPadding.calculateTopPadding())
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.surface)
         ) {
             composable<HomeRoute> { backstackEntry ->
                 val screenViewModel: HomeScreenViewModel = koinViewModel {

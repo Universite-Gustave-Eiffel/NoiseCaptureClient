@@ -7,7 +7,7 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -19,8 +19,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import org.noiseplanet.noisecapture.util.shadow.dropShadow
 
-
-private const val CORNER_RADIUS: Float = 10f
 
 /**
  * Wraps the given content into a rounded cornered card.
@@ -39,7 +37,9 @@ fun CardView(
     onClick: (() -> Unit)? = null,
     content: @Composable BoxScope.() -> Unit,
 ) {
-    val shape = RoundedCornerShape(CORNER_RADIUS.dp)
+    // - Properties
+
+    val shape = MaterialTheme.shapes.medium
 
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by if (onClick != null) {
@@ -56,6 +56,9 @@ fun CardView(
             onClick = onClick
         )
     }
+
+
+    // - Layout
 
     Box(
         modifier = cardModifier

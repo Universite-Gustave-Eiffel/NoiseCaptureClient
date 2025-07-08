@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -41,9 +39,8 @@ fun MeasurementDetailsChartsView(
             Column(
                 verticalArrangement = Arrangement.spacedBy(32.dp),
                 modifier = modifier.fillMaxWidth()
-                    .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
-                    .verticalScroll(state = rememberScrollState())
                     .padding(bottom = 24.dp)
+                    .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
             ) {
                 val state = viewState as MeasurementDetailsChartsViewModel.ViewState.ContentReady
 

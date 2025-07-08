@@ -56,20 +56,20 @@ fun HomeRecentMeasurementView(
             Text(
                 text = HumanReadable.timeAgo(startTime),
                 style = MaterialTheme.typography.titleMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurface
                 ),
             )
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = "Open",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                 modifier = Modifier.size(24.dp),
             )
         }
         Text(
             text = "${durationPrefix}: ${HumanReadable.duration(duration)}",
             style = MaterialTheme.typography.titleSmall.copy(
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
             )
         )
 

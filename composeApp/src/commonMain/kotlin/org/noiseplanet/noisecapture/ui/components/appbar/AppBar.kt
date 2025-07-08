@@ -46,11 +46,12 @@ fun AppBar(
                 Text(stringResource(it))
             }
         },
-        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            titleContentColor = MaterialTheme.colorScheme.onSecondary,
-            containerColor = MaterialTheme.colorScheme.secondary,
-            navigationIconContentColor = MaterialTheme.colorScheme.onSecondary,
-            actionIconContentColor = MaterialTheme.colorScheme.onSecondary
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+            actionIconContentColor = MaterialTheme.colorScheme.onSurface,
         ),
         navigationIcon = {
             if (canNavigateUp) {

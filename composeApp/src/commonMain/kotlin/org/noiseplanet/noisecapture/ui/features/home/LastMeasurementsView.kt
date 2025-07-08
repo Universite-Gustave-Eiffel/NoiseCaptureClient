@@ -76,7 +76,7 @@ private fun LastMeasurementsViewContentReady(
             .height(IntrinsicSize.Min)
     ) {
         CardView(
-            backgroundColor = MaterialTheme.colorScheme.surface,
+            backgroundColor = MaterialTheme.colorScheme.surfaceContainer,
             modifier = Modifier.fillMaxHeight().width(IntrinsicSize.Min)
         ) {
             Column(
@@ -86,7 +86,7 @@ private fun LastMeasurementsViewContentReady(
                 Text(
                     text = "Statistics",
                     style = MaterialTheme.typography.titleMedium.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
                     ),
                 )
 
