@@ -30,9 +30,12 @@ object OPFSHelper : KoinComponent {
         val storage = navigator?.storage ?: return null
 
         // Specify that we want to store data persistently
-        storage.persist().catch {
-            throw OPFSUnavailableException("Cannot access persistent storage")
-        }.await<JsBoolean>()
+        // For now there is no universal way of requiring persistent storage on all browsers,
+        // so we just rely on best effort storage, meaning the browser might clear stored files
+        // if storage space is running low.
+        // storage.persist().catch {
+        //     throw OPFSUnavailableException("Cannot access persistent storage")
+        // }.await<JsBoolean>()
 
         // Get root directory handle
         return storage.getDirectory()
