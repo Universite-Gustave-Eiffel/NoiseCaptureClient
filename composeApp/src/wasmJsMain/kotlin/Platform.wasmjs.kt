@@ -1,4 +1,3 @@
-import kotlinx.browser.window
 import org.noiseplanet.noisecapture.interop.navigator
 import org.noiseplanet.noisecapture.model.dao.UserAgent
 import org.noiseplanet.noisecapture.permission.Permission
@@ -33,11 +32,6 @@ class WasmJSPlatform : Platform {
                 Permission.RECORD_AUDIO,
                 Permission.LOCATION_BACKGROUND,
             )
-            if (window.location.protocol == "https:") {
-                // Required for persistent storage using OPFS but only available in a
-                // secure connection https://developer.mozilla.org/en-US/docs/Web/API/StorageManager/persist
-                return permissions.plus(Permission.PERSISTENT_LOCAL_STORAGE)
-            }
             return permissions
         }
 }
