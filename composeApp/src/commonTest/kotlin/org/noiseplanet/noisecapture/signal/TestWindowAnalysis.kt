@@ -250,7 +250,7 @@ class TestWindowAnalysis {
         val processed = acousticIndicatorProcessing.processSamples(
             AudioSamples(0, signal, sampleRate)
         )
-        val averageLeq = processed.map { indicators -> indicators.leq }.average()
+        val averageLeq = processed.map { indicators -> indicators.lzeq }.average()
         assertEquals(expectedLevel, averageLeq, 0.01)
     }
 }

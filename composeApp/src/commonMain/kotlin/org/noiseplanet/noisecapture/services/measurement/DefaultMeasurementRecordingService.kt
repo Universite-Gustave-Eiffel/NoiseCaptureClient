@@ -17,7 +17,6 @@ import kotlinx.datetime.format.byUnicodePattern
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.log.Logger
-import org.noiseplanet.noisecapture.model.dao.LeqRecord
 import org.noiseplanet.noisecapture.model.dao.LeqSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.LocationSequenceFragment
 import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
@@ -172,18 +171,8 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
 
                 // Subscribe to
                 launch {
-                    liveAudioService.getAcousticIndicatorsFlow().collect { indicators ->
-                        // TODO: This could be done already in LiveAudioService?
-                        // Map acoustic indicators to LeqRecord
-                        val leqRecord = LeqRecord(
-                            // TODO: Properly fill LZeq and LCeq
-                            timestamp = Clock.System.now().toEpochMilliseconds(),
-                            lzeq = indicators.leq,
-                            laeq = indicators.laeq,
-                            lceq = indicators.laeq,
-                            leqsPerThirdOctave = indicators.leqsPerThirdOctave
-                        )
-                        measurementService.pushToOngoingMeasurement(leqRecord)
+                    liveAudioService.getLeqRecordsFlow().collect {
+                        measurementService.pushToOngoingMeasurement(it)
                     }
                 }
             }

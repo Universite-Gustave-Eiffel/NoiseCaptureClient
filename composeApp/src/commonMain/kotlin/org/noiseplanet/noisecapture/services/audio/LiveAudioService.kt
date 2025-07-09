@@ -2,11 +2,11 @@ package org.noiseplanet.noisecapture.services.audio
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
-import org.noiseplanet.noisecapture.audio.AcousticIndicatorsData
 import org.noiseplanet.noisecapture.audio.AcousticIndicatorsProcessing
 import org.noiseplanet.noisecapture.audio.AudioSourceState
 import org.noiseplanet.noisecapture.audio.signal.LevelDisplayWeightedDecay
 import org.noiseplanet.noisecapture.audio.signal.window.SpectrumData
+import org.noiseplanet.noisecapture.model.dao.LeqRecord
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -80,9 +80,9 @@ interface LiveAudioService {
     fun stopListening()
 
     /**
-     * Get a [Flow] of [AcousticIndicatorsData] from the currently running recording.
+     * Get a [Flow] of [LeqRecord] from the currently running recording.
      */
-    fun getAcousticIndicatorsFlow(): Flow<AcousticIndicatorsData>
+    fun getLeqRecordsFlow(): Flow<LeqRecord>
 
     /**
      * Get a [Flow] of sound pressure level values.

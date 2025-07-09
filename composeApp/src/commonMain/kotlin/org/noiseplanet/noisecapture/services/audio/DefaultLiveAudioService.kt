@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.noiseplanet.noisecapture.audio.AcousticIndicatorsData
 import org.noiseplanet.noisecapture.audio.AcousticIndicatorsProcessing
 import org.noiseplanet.noisecapture.audio.AudioSource
 import org.noiseplanet.noisecapture.audio.AudioSourceState
@@ -24,6 +23,7 @@ import org.noiseplanet.noisecapture.audio.signal.LevelDisplayWeightedDecay
 import org.noiseplanet.noisecapture.audio.signal.window.SpectrumData
 import org.noiseplanet.noisecapture.audio.signal.window.SpectrumDataProcessing
 import org.noiseplanet.noisecapture.log.Logger
+import org.noiseplanet.noisecapture.model.dao.LeqRecord
 import org.noiseplanet.noisecapture.util.injectLogger
 import kotlin.time.Duration
 
@@ -51,7 +51,7 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
     private var spectrumDataProcessing: SpectrumDataProcessing? = null
 
     private var audioJob: Job? = null
-    private val acousticIndicatorsFlow = MutableSharedFlow<AcousticIndicatorsData>(
+    private val leqRecordsFlow = MutableSharedFlow<LeqRecord>(
         replay = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
@@ -88,7 +88,7 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
                     }
                     indicatorsProcessing?.processSamples(audioSamples)
                         ?.forEach {
-                            acousticIndicatorsFlow.tryEmit(it)
+                            leqRecordsFlow.tryEmit(it)
                         }
 
                     // Process spectrum data
@@ -133,8 +133,8 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
         _isRunningFlow.tryEmit(false)
     }
 
-    override fun getAcousticIndicatorsFlow(): Flow<AcousticIndicatorsData> {
-        return acousticIndicatorsFlow.asSharedFlow()
+    override fun getLeqRecordsFlow(): Flow<LeqRecord> {
+        return leqRecordsFlow.asSharedFlow()
     }
 
     override fun getSpectrumDataFlow(): Flow<SpectrumData> {
@@ -147,7 +147,7 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
     ): Flow<Double> {
         val levelDisplay = LevelDisplayWeightedDecay(splDecayRate, windowTime)
 
-        return getAcousticIndicatorsFlow()
+        return getLeqRecordsFlow()
             .map {
                 levelDisplay.getWeightedValue(it.laeq)
             }
@@ -159,7 +159,7 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
     ): Flow<Map<Int, Double>> {
         var levelDisplayBands: Map<Int, LevelDisplayWeightedDecay>? = null
 
-        return getAcousticIndicatorsFlow()
+        return getLeqRecordsFlow()
             .map { indicators ->
                 if (levelDisplayBands == null) {
                     levelDisplayBands = indicators.leqsPerThirdOctave.mapValues {
