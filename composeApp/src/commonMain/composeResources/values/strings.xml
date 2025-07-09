@@ -61,6 +61,9 @@
     <string name="measurement_details_total_size">Total measurement size: </string>
     <string name="measurement_details_delete_measurement_button">Delete measurement</string>
     <string name="measurement_details_delete_measurement_audio_button">Delete recorded audio</string>
+    <string name="measurement_details_delete_measurement_dialog_title">Are you sure?</string>
+    <string name="measurement_details_delete_measurement_dialog_text">This action cannot be undone. Note that this will only the local copy of your measurement, if you've already synced it before, the distant copy will be kept but you won't be able to download it again.</string>
+    <string name="measurement_details_delete_measurement_audio_dialog_text">This action cannot be undone. This will not delete the measurement itself but only the audio clip that is attached to it. You won't be able to listen to the measurement audio afterwards but will still be able to see the measurement details.</string>
 
 
     <!-- Settings -->
@@ -157,4 +160,6 @@
 
     <!-- Misc -->
     <string name="na">N/A</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
 </resources>
