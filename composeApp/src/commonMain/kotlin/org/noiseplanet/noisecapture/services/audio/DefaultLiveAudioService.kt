@@ -149,7 +149,7 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
 
         return getAcousticIndicatorsFlow()
             .map {
-                levelDisplay.getWeightedValue(it.leq)
+                levelDisplay.getWeightedValue(it.laeq)
             }
     }
 
