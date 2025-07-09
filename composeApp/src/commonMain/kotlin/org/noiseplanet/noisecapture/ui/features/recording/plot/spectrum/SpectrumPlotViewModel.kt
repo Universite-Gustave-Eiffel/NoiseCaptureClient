@@ -43,7 +43,7 @@ class SpectrumPlotViewModel : ViewModel(), KoinComponent {
     }
 
     val rawSplFlow: StateFlow<Map<Int, Double>> = liveAudioService
-        .getAcousticIndicatorsFlow()
+        .getLeqRecordsFlow()
         .map { it.leqsPerThirdOctave }
         .stateInWhileSubscribed(
             scope = viewModelScope,
@@ -58,7 +58,7 @@ class SpectrumPlotViewModel : ViewModel(), KoinComponent {
         )
 
     val axisSettingsFlow: StateFlow<AxisSettings> = liveAudioService
-        .getAcousticIndicatorsFlow()
+        .getLeqRecordsFlow()
         .map { it.leqsPerThirdOctave.keys.toList() }
         .distinctUntilChanged()
         .map {
