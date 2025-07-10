@@ -28,11 +28,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.compose.viewmodel.koinViewModel
 import org.noiseplanet.noisecapture.util.toFrequencyString
 import kotlin.math.max
+
+private const val ANIMATION_DURATION_MS = 400
+private val ANIMATION_CURVE = EaseOutBack
+private val WEIGHTED_SPL_BOX_WIDTH = 10.dp
 
 
 @Composable
@@ -83,22 +88,25 @@ fun SpectrumPlotView(
                 Box(
                     modifier = Modifier.weight(1f)
                         .background(backgroundColor)
-                        .animateContentSize(tween(easing = EaseOutBack, durationMillis = 400))
+                        .animateContentSize(
+                            tween(
+                                easing = ANIMATION_CURVE,
+                                durationMillis = ANIMATION_DURATION_MS
+                            )
+                        )
                         .fillMaxWidth(fraction = 1f - widthFraction)
                 )
             }
         }
 
-        // 3. Add a grid on top of the bars to add vertical stripes and horizontal spacers
-        SpectrumPlotAxisGrid(
+        // 3. Add a grid on top of the bars to add vertical stripes
+        SpectrumPlotXAxisGrid(
             xAxisTicks = axisSettings.xTicksCount * 5,
-            yAxisTicks = axisSettings.nominalFrequencies.size,
             lineColor = backgroundColor,
         )
 
         // 4. Draw dark rectangles to show weighted spl values
         Column(
-            verticalArrangement = Arrangement.spacedBy(0.dp),
             modifier = Modifier.fillMaxSize()
         ) {
             val boxColor = MaterialTheme.colorScheme.onSurface
@@ -106,55 +114,76 @@ fun SpectrumPlotView(
             weightedSplBoxBiases.forEach { bias ->
                 val animatedBias by animateFloatAsState(
                     targetValue = bias,
-                    animationSpec = tween(easing = EaseOutBack, durationMillis = 400)
+                    animationSpec = tween(
+                        easing = ANIMATION_CURVE,
+                        durationMillis = ANIMATION_DURATION_MS
+                    )
                 )
 
                 Box(
-                    modifier = Modifier.width(10.dp)
-                        .padding(bottom = 2.dp)
-                        .weight(1f)
+                    modifier = Modifier.weight(1f)
+                        .width(WEIGHTED_SPL_BOX_WIDTH)
                         .background(boxColor)
                         .align(BiasAlignment.Horizontal(animatedBias))
                 )
             }
         }
+
+        // 5. Add horizontal grid on top of everything to separate bars
+        SpectrumPlotYAxisGrid(
+            yAxisTicks = axisSettings.nominalFrequencies.size,
+            lineColor = backgroundColor
+        )
     }
 }
 
 
 /**
- * Lays out a grid of given X and Y lines with given line color.
+ * Lays out a grid of given X vertical lines with given line color.
  */
 @Composable
-private fun SpectrumPlotAxisGrid(
+private fun SpectrumPlotXAxisGrid(
     xAxisTicks: Int,
+    lineColor: Color,
+    strokeWidth: Dp = 2.dp,
+) = Canvas(modifier = Modifier.fillMaxSize()) {
+    val strokeWidthPx = strokeWidth.toPx()
+    val xOffsetStep = size.height / xAxisTicks
+    var xOffset = xOffsetStep - strokeWidthPx / 2f
+
+    repeat(xAxisTicks - 1) {
+        drawLine(
+            color = lineColor,
+            start = Offset(xOffset, 0f),
+            end = Offset(xOffset, size.height),
+            strokeWidth = strokeWidthPx
+        )
+        xOffset += xOffsetStep
+    }
+}
+
+
+/**
+ * Lays out a grid of given Y horizontal lines with given line color.
+ */
+@Composable
+private fun SpectrumPlotYAxisGrid(
     yAxisTicks: Int,
     lineColor: Color,
+    strokeWidth: Dp = 2.dp,
 ) = Canvas(modifier = Modifier.fillMaxSize()) {
-    val strokeWidth = 2.dp.toPx()
+    val strokeWidthPx = strokeWidth.toPx()
     val yOffsetStep = size.height / yAxisTicks
-    var yOffset = yOffsetStep - strokeWidth / 2f
+    var yOffset = yOffsetStep - strokeWidthPx / 2f
+
     repeat(yAxisTicks) {
         drawLine(
             color = lineColor,
             start = Offset(0f, yOffset),
             end = Offset(size.width, yOffset),
-            strokeWidth = strokeWidth
+            strokeWidth = strokeWidthPx
         )
         yOffset += yOffsetStep
-    }
-
-    val xAxisGridLines = xAxisTicks
-    val xOffsetStep = size.height / xAxisGridLines
-    var xOffset = xOffsetStep - strokeWidth / 2f
-    repeat(xAxisGridLines - 1) {
-        drawLine(
-            color = lineColor,
-            start = Offset(xOffset, 0f),
-            end = Offset(xOffset, size.height),
-            strokeWidth = 2.dp.toPx()
-        )
-        xOffset += xOffsetStep
     }
 }
 
