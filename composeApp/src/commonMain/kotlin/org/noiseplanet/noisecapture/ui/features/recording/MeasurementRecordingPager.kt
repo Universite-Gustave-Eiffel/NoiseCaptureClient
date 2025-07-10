@@ -2,6 +2,7 @@ package org.noiseplanet.noisecapture.ui.features.recording
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
@@ -13,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrogram.SpectrogramPlotView
@@ -60,7 +62,7 @@ fun MeasurementRecordingPager(
                 }
 
                 MeasurementTabState.SPECTRUM -> Box {
-                    SpectrumPlotView()
+                    SpectrumPlotView(modifier = Modifier.padding(horizontal = 16.dp))
                 }
 
                 else -> Surface(
