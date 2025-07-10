@@ -20,8 +20,8 @@ import org.noiseplanet.noisecapture.audio.AcousticIndicatorsProcessing
 import org.noiseplanet.noisecapture.audio.AudioSource
 import org.noiseplanet.noisecapture.audio.AudioSourceState
 import org.noiseplanet.noisecapture.audio.signal.LevelDisplayWeightedDecay
-import org.noiseplanet.noisecapture.audio.signal.window.SpectrumData
-import org.noiseplanet.noisecapture.audio.signal.window.SpectrumDataProcessing
+import org.noiseplanet.noisecapture.audio.signal.window.SpectrogramData
+import org.noiseplanet.noisecapture.audio.signal.window.SpectrogramDataProcessing
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.dao.LeqRecord
 import org.noiseplanet.noisecapture.util.injectLogger
@@ -48,14 +48,14 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
     private val audioSource: AudioSource by inject()
 
     private var indicatorsProcessing: AcousticIndicatorsProcessing? = null
-    private var spectrumDataProcessing: SpectrumDataProcessing? = null
+    private var spectrogramDataProcessing: SpectrogramDataProcessing? = null
 
     private var audioJob: Job? = null
     private val leqRecordsFlow = MutableSharedFlow<LeqRecord>(
         replay = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
-    private val spectrumDataFlow = MutableSharedFlow<SpectrumData>(
+    private val spectrumDataFlow = MutableSharedFlow<SpectrogramData>(
         replay = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
@@ -92,15 +92,15 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
                         }
 
                     // Process spectrum data
-                    if (spectrumDataProcessing?.sampleRate != audioSamples.sampleRate) {
+                    if (spectrogramDataProcessing?.sampleRate != audioSamples.sampleRate) {
                         logger.debug("Processing spectrum data with sample rate of ${audioSamples.sampleRate}")
-                        spectrumDataProcessing = SpectrumDataProcessing(
+                        spectrogramDataProcessing = SpectrogramDataProcessing(
                             sampleRate = audioSamples.sampleRate,
                             windowSize = FFT_SIZE,
                             windowHop = FFT_HOP
                         )
                     }
-                    spectrumDataProcessing?.pushSamples(audioSamples.epoch, audioSamples.samples)
+                    spectrogramDataProcessing?.pushSamples(audioSamples.epoch, audioSamples.samples)
                         ?.forEach {
                             spectrumDataFlow.tryEmit(it)
                         }
@@ -137,7 +137,7 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
         return leqRecordsFlow.asSharedFlow()
     }
 
-    override fun getSpectrumDataFlow(): Flow<SpectrumData> {
+    override fun getSpectrogramDataFlow(): Flow<SpectrogramData> {
         return spectrumDataFlow.asSharedFlow()
     }
 
