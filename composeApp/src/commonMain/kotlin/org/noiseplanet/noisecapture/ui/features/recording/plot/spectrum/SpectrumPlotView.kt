@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -173,10 +174,10 @@ private fun SpectrumPlotYAxisGrid(
     strokeWidth: Dp = 2.dp,
 ) = Canvas(modifier = Modifier.fillMaxSize()) {
     val strokeWidthPx = strokeWidth.toPx()
-    val yOffsetStep = size.height / yAxisTicks
+    val yOffsetStep = (size.height + strokeWidthPx) / yAxisTicks
     var yOffset = yOffsetStep - strokeWidthPx / 2f
 
-    repeat(yAxisTicks) {
+    repeat(yAxisTicks - 1) {
         drawLine(
             color = lineColor,
             start = Offset(0f, yOffset),
@@ -197,6 +198,11 @@ private fun SpectrumPlotContainer(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
+    // - Properties
+
+    val xAxisTicksHeight = 12.dp
+
+
     // - Layout
 
     Row(
@@ -205,16 +211,13 @@ private fun SpectrumPlotContainer(
     ) {
         // Y axis
         Column(
-            verticalArrangement = Arrangement.SpaceEvenly,
+            verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.End,
-            modifier = Modifier.fillMaxHeight().padding(bottom = 36.dp)
+            modifier = Modifier.fillMaxHeight()
+                .padding(bottom = xAxisTicksHeight + 4.dp)
         ) {
             for (freq in axisSettings.nominalFrequencies.reversed()) {
-                Text(
-                    text = freq.toFrequencyString(),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                AxisTickLabel(text = freq.toFrequencyString())
             }
         }
 
@@ -232,18 +235,23 @@ private fun SpectrumPlotContainer(
             Row(
                 verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.height(32.dp).fillMaxWidth()
+                modifier = Modifier.height(xAxisTicksHeight).fillMaxWidth()
             ) {
                 val tickStep = (axisSettings.maximumX / axisSettings.xTicksCount).toInt()
                 val tickRange = axisSettings.minimumX.toInt()..axisSettings.maximumX.toInt()
                 for (tick in tickRange step tickStep) {
-                    Text(
-                        text = "$tick dB",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    AxisTickLabel(text = "$tick dB")
                 }
             }
         }
     }
 }
+
+
+@Composable
+private fun AxisTickLabel(text: String) = Text(
+    text = text,
+    style = MaterialTheme.typography.labelSmall,
+    fontWeight = FontWeight.SemiBold,
+    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+)

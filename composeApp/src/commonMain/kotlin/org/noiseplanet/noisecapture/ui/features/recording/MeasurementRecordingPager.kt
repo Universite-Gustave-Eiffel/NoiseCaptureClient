@@ -62,7 +62,7 @@ fun MeasurementRecordingPager(
                 }
 
                 MeasurementTabState.SPECTRUM -> Box {
-                    SpectrumPlotView(modifier = Modifier.padding(horizontal = 16.dp))
+                    SpectrumPlotView(modifier = Modifier.padding(start = 8.dp, end = 16.dp))
                 }
 
                 else -> Surface(
