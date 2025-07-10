@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrogram.SpectrogramPlotView
-import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrum.SpectrumPlotViewCompose
+import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrum.SpectrumPlotView
 
 /**
  * A horizontal pager on the measurement recording screens that allows user to switch between
@@ -60,7 +60,7 @@ fun MeasurementRecordingPager(
                 }
 
                 MeasurementTabState.SPECTRUM -> Box {
-                    SpectrumPlotViewCompose()
+                    SpectrumPlotView()
                 }
 
                 else -> Surface(
