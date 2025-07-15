@@ -25,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -227,6 +228,7 @@ private fun SpectrumPlotContainer(
         ) {
             Box(
                 modifier = Modifier.weight(1f)
+                    .clipToBounds()
             ) {
                 content()
             }
