@@ -55,7 +55,7 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
         replay = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
-    private val spectrumDataFlow = MutableSharedFlow<SpectrogramData>(
+    private val spectrogramDataFlow = MutableSharedFlow<SpectrogramData>(
         replay = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
@@ -75,6 +75,7 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
     override val audioSourceStateFlow: Flow<AudioSourceState>
         get() = audioSource.stateFlow
 
+
     override fun setupAudioSource() {
         // Create a job that will process incoming audio samples in a background thread
         audioJob = coroutineScope.launch(Dispatchers.Default) {
@@ -91,7 +92,9 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
                             leqRecordsFlow.tryEmit(it)
                         }
 
-                    // Process spectrum data
+                    // Process spectrogram data
+                    // TODO: Consider moving this to SpectrogramPlotViewModel so that FFT doesn't
+                    //       always run in background when we don't need it.
                     if (spectrogramDataProcessing?.sampleRate != audioSamples.sampleRate) {
                         logger.debug("Processing spectrum data with sample rate of ${audioSamples.sampleRate}")
                         spectrogramDataProcessing = SpectrogramDataProcessing(
@@ -102,7 +105,7 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
                     }
                     spectrogramDataProcessing?.pushSamples(audioSamples.epoch, audioSamples.samples)
                         ?.forEach {
-                            spectrumDataFlow.tryEmit(it)
+                            spectrogramDataFlow.tryEmit(it)
                         }
                 }
         }
@@ -138,7 +141,7 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
     }
 
     override fun getSpectrogramDataFlow(): Flow<SpectrogramData> {
-        return spectrumDataFlow.asSharedFlow()
+        return spectrogramDataFlow.asSharedFlow()
     }
 
     override fun getWeightedLeqFlow(

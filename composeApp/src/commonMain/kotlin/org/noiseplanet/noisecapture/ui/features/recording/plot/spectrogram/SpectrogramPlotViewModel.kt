@@ -11,11 +11,17 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.toSize
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -35,8 +41,15 @@ import kotlin.math.log10
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
+import kotlin.math.round
+import kotlin.time.Clock
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
+import kotlin.time.ExperimentalTime
+import kotlin.time.toDuration
 
 
+@OptIn(ExperimentalTime::class)
 class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
 
     // - Constants
@@ -49,13 +62,20 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
         // TODO: Platform dependant gain?
         private const val DB_GAIN = AcousticIndicatorsProcessing.ANDROID_GAIN
 
-        val X_AXIS_TICKS: List<String> = listOf<Int>(20, 15, 10, 5, 0).map { "${it}s" }
+        private val FRAME_RATE: Duration = (1.0 / 30.0).toDuration(unit = DurationUnit.MILLISECONDS)
 
-        // TODO: Clean this up
-        val frequencyLegendPositionLog = intArrayOf(
+        // TODO: Make this a user settings property?
+        val DISPLAYED_TIME_RANGE: Duration = 20.toDuration(unit = DurationUnit.SECONDS)
+
+        val X_AXIS_TICKS: List<String> = (0..<5).map { index ->
+            val tick = DISPLAYED_TIME_RANGE - (DISPLAYED_TIME_RANGE / 4) * index
+            "${tick.toInt(unit = DurationUnit.SECONDS)} s"
+        }
+
+        val Y_AXIS_TICKS_LOG = intArrayOf(
             63, 125, 250, 500, 1000, 2000, 4000, 8000, 16000, 24000
         )
-        val frequencyLegendPositionLinear = IntArray(24) { it * 1000 + 1000 }
+        val Y_AXIS_TICKS_LINEAR = IntArray(24) { it * 1000 + 1000 }
     }
 
 
@@ -65,8 +85,12 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
     private val settingsService: UserSettingsService by inject()
     private val logger: Logger by injectLogger()
 
+    private val bitmapProcessingScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
     private var canvasSize: IntSize = IntSize.Zero
     private var canvasDensity: Density = Density(1f)
+
+    private var lastSpectrogramDataTimeStamp: Long? = null
 
     private var currentBitmap: ImageBitmap? = null
     private val _bitmapFlow: MutableStateFlow<ImageBitmap?> = MutableStateFlow(null)
@@ -76,20 +100,38 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
         settingsService.get(SettingsKey.SettingSpectrogramScaleMode)
 
     val yAxisTicks: List<String> = when (scaleMode) {
-        SpectrogramScaleMode.SCALE_LOG -> frequencyLegendPositionLog
-        SpectrogramScaleMode.SCALE_LINEAR -> frequencyLegendPositionLinear
+        SpectrogramScaleMode.SCALE_LOG -> Y_AXIS_TICKS_LOG
+        SpectrogramScaleMode.SCALE_LINEAR -> Y_AXIS_TICKS_LINEAR
     }.map { it.toFrequencyString() }
 
 
     // - Lifecycle
 
     init {
-        viewModelScope.launch {
+        val fpsFlow = flow {
+            while (currentCoroutineContext().isActive) {
+                emit(Clock.System.now().toEpochMilliseconds())
+                delay(FRAME_RATE)
+            }
+        }
+
+        bitmapProcessingScope.launch {
             // Listen to spectrum data updates and build spectrogram along the way
             liveAudioService.getSpectrogramDataFlow()
-                .flowOn(Dispatchers.Default)
-                .collect { spectrumData ->
-                    pushToBitmap(getSpectrogramLine(spectrumData))
+                .map {
+                    // For each new spectrogram data, build a pixels strip
+                    getSpectrogramStrip(it)
+                }
+                .combine(fpsFlow) { stripPixels, timestamp ->
+                    // Combine fixed FPS timer with new spectrogram strips updates
+                    Pair(stripPixels, timestamp)
+                }
+                .collect { (stripPixels, timestamp) ->
+                    // On every update, draw a new strip
+                    pushToBitmap(
+                        timestamp = timestamp,
+                        stripPixels = stripPixels,
+                    )
                 }
         }
     }
@@ -118,7 +160,14 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
 
     // - Private functions
 
-    private fun getSpectrogramLine(
+    /**
+     * Gets a spectrogram strip data consisting of colors to draw and where to draw them.
+     *
+     * @param spectrogramData Input data with noise level per frequency band.
+     *
+     * @return A map of colors associated to Y offsets of where to draw them along the vertical line.
+     */
+    private fun getSpectrogramStrip(
         spectrogramData: SpectrogramData,
     ): List<Color> {
         if (canvasSize == IntSize.Zero) {
@@ -129,29 +178,25 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
         // merge power of each frequencies following the destination bitmap resolution
         val sampleRate = spectrogramData.sampleRate.toDouble()
         val hertzBySpectrumCell = sampleRate / FFT_SIZE.toDouble()
-        val frequencyLegendPosition = when (scaleMode) {
-            SpectrogramScaleMode.SCALE_LOG -> frequencyLegendPositionLog
-            else -> frequencyLegendPositionLinear
-        }
         var lastProcessFrequencyIndex = 0
         val freqByPixel = spectrogramData.spectrum.size / canvasSize.height.toDouble()
+
+        val fMax = sampleRate / 2
+        val fMin = Y_AXIS_TICKS_LOG[0]
+        val r = fMax / fMin.toDouble()
 
         return (0..<canvasSize.height).map { pixel ->
             var freqStart: Int
             var freqEnd: Int
             if (scaleMode == SpectrogramScaleMode.SCALE_LOG) {
                 freqStart = lastProcessFrequencyIndex
-                val fMax = sampleRate / 2
-                val fMin = frequencyLegendPosition[0]
-                val r = fMax / fMin.toDouble()
                 val f = fMin * 10.0.pow(pixel * log10(r) / canvasSize.height)
-                val nextFrequencyIndex =
-                    min(spectrogramData.spectrum.size, (f / hertzBySpectrumCell).toInt())
-                freqEnd =
-                    min(spectrogramData.spectrum.size, (f / hertzBySpectrumCell).toInt() + 1)
-                lastProcessFrequencyIndex = min(spectrogramData.spectrum.size, nextFrequencyIndex)
+                val index = (f / hertzBySpectrumCell).toInt()
+                val nextFrequencyIndex = min(spectrogramData.spectrum.size, index)
+                freqEnd = min(spectrogramData.spectrum.size, index + 1)
+                lastProcessFrequencyIndex = nextFrequencyIndex
             } else {
-                freqStart = floor(pixel * freqByPixel).toInt()
+                freqStart = (pixel * freqByPixel).toInt()
                 freqEnd = min(
                     (pixel + 1) * freqByPixel,
                     spectrogramData.spectrum.size.toDouble()
@@ -171,16 +216,40 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
         }
     }
 
+    /**
+     * Draws the new spectrogram strip to the spectrogram canvas.
+     */
     private fun pushToBitmap(
-        spectrogramLine: List<Color>,
+        timestamp: Long,
+        stripPixels: List<Color>,
     ) {
         if (canvasSize == IntSize.Zero) {
             return
         }
 
+        // Initialise our canvas
         val drawScope = CanvasDrawScope()
         val output = ImageBitmap(canvasSize.width, canvasSize.height)
         val canvas = Canvas(output)
+
+        // Calculate the width of the next spectrogram strip
+        val pixelsPerMs = canvasSize.width.toFloat() /
+            DISPLAYED_TIME_RANGE.inWholeMilliseconds.toFloat()
+        val lastSpectrogramTimestamp =
+            lastSpectrogramDataTimeStamp ?: (timestamp - DISPLAYED_TIME_RANGE.inWholeMilliseconds)
+        val stripWidthFloat = (timestamp - lastSpectrogramTimestamp) * pixelsPerMs
+
+        // If the new strip is less than one pixel large, drop it
+        if (stripWidthFloat < 1) {
+            return
+        }
+
+        // Round the strip width to an integer (drawing bitmap with floating point offset leads to
+        // unexpected results), and save the skipped milliseconds for the next drawn strip
+        val stripWidth = floor(stripWidthFloat)
+        val pixelsReminder = stripWidthFloat - stripWidth
+        val skippedMilliseconds = round(pixelsReminder / pixelsPerMs)
+        lastSpectrogramDataTimeStamp = timestamp - skippedMilliseconds.toLong()
 
         drawScope.draw(
             layoutDirection = LayoutDirection.Ltr,
@@ -188,24 +257,26 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
             canvas = canvas,
             size = canvasSize.toSize(),
         ) {
-
-            // TODO: Calculate offset and scaling to match real time scale to plot x axis
-
-            // Draw current spectrogram state offset by 1 pixel to the left.
-            // Else, fill background with black.
-            currentBitmap?.let {
-                drawImage(it, topLeft = Offset(-1f, 0f))
-            } ?: drawRect(
+            // Fill background with darkest color from palette
+            drawRect(
                 color = SpectrogramColorRamp.palette.first(),
                 size = size
             )
 
+            // Draw current spectrogram state offset to the left by the width of the next band
+            currentBitmap?.let {
+                drawImage(
+                    image = it,
+                    topLeft = Offset(-stripWidth, 0f),
+                )
+            }
+
             // Draw new line at the right of the canvas
-            spectrogramLine.reversed().forEachIndexed { index, color ->
+            stripPixels.reversed().forEachIndexed { index, color ->
                 drawRect(
                     color,
-                    topLeft = Offset(size.width - 1f, index.toFloat()),
-                    size = Size(1f, 1f)
+                    topLeft = Offset(size.width - stripWidth, index.toFloat()),
+                    size = Size(stripWidth, 1f),
                 )
             }
         }

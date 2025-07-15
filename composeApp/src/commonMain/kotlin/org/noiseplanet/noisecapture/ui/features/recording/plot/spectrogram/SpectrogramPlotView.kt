@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.platform.LocalDensity
@@ -49,6 +50,7 @@ fun SpectrogramPlotView(
                 .onPlaced { coordinates ->
                     viewModel.updateCanvasSize(coordinates.size, newDensity = density)
                 }
+                .blur(radius = 1.dp) // Apply a 1dp blur to the image to antialias to current density
         ) {
             spectrogramBitmap?.let {
                 drawImage(it)
