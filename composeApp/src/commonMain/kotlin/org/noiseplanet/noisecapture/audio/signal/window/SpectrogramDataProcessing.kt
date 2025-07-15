@@ -16,7 +16,7 @@ import kotlin.math.min
  * @param windowSize Size of the window
  * @param windowHop Run a new analysis each windowHop samples
  */
-class SpectrumDataProcessing(
+class SpectrogramDataProcessing(
     val sampleRate: Int,
     val windowSize: Int,
     private val windowHop: Int,
@@ -66,7 +66,7 @@ class SpectrumDataProcessing(
         epoch: Long,
         samples: FloatArray,
         processedWindows: MutableList<Window>? = null,
-    ): Sequence<SpectrumData> = sequence {
+    ): Sequence<SpectrogramData> = sequence {
         var processed = 0
         while (processed < samples.size) {
             var toFetch = min(samples.size - processed, samplesUntilWindow)
@@ -138,8 +138,8 @@ class SpectrumDataProcessing(
     /**
      * @see <a href="https://www.dsprelated.com/freebooks/sasp/Filling_FFT_Input_Buffer.html">Filling the FFT Input Buffer</a>
      */
-    private fun processWindow(window: Window): SpectrumData {
-        return SpectrumData(window.epoch, processWindowFloat(window), sampleRate)
+    private fun processWindow(window: Window): SpectrogramData {
+        return SpectrogramData(window.epoch, processWindowFloat(window), sampleRate)
     }
 
     private fun processWindowFloat(window: Window): FloatArray {
@@ -167,13 +167,13 @@ class SpectrumDataProcessing(
     }
 }
 
-data class SpectrumData(val epoch: Long, val spectrum: FloatArray, val sampleRate: Int) {
+data class SpectrogramData(val epoch: Long, val spectrum: FloatArray, val sampleRate: Int) {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
 
-        other as SpectrumData
+        other as SpectrogramData
 
         if (epoch != other.epoch) return false
         if (!spectrum.contentEquals(other.spectrum)) return false
