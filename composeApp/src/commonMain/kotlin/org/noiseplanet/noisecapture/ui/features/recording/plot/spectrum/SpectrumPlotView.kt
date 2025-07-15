@@ -30,6 +30,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -234,6 +235,7 @@ private fun SpectrumPlotContainer(
             ) {
                 val tickStep = (axisSettings.maximumX / axisSettings.xTicksCount).toInt()
                 val tickRange = axisSettings.minimumX.toInt()..axisSettings.maximumX.toInt()
+                val tickCount = tickRange.last / tickStep
 
                 // Ticks
                 Row(
@@ -252,11 +254,23 @@ private fun SpectrumPlotContainer(
                 // Tick labels
                 Row(
                     verticalAlignment = Alignment.Top,
-                    horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.weight(1f).fillMaxWidth()
                 ) {
-                    for (tick in tickRange step tickStep) {
-                        AxisTickLabel(text = "$tick dB")
+                    (tickRange step tickStep).forEachIndexed { index, tick ->
+                        AxisTickLabel(
+                            text = "$tick dB",
+                            textAlign = when (index) {
+                                0 -> TextAlign.Start
+                                tickCount -> TextAlign.End
+                                else -> TextAlign.Center
+                            },
+                            modifier = Modifier.weight(
+                                when (index) {
+                                    0, tickCount -> 0.5f
+                                    else -> 1.0f
+                                }
+                            ),
+                        )
                     }
                 }
             }
@@ -266,9 +280,15 @@ private fun SpectrumPlotContainer(
 
 
 @Composable
-private fun AxisTickLabel(text: String) = Text(
+private fun AxisTickLabel(
+    text: String,
+    textAlign: TextAlign = TextAlign.Unspecified,
+    modifier: Modifier = Modifier,
+) = Text(
     text = text,
     style = MaterialTheme.typography.labelSmall,
     fontWeight = FontWeight.SemiBold,
     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+    textAlign = textAlign,
+    modifier = modifier
 )
