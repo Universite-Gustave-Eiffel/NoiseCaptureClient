@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,7 +22,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -59,9 +59,9 @@ fun SpectrumPlotView(
     }
 
     // Offset of each weighted spl value per frequency band (-1 is left aligned, 1 is right aligned)
-    val weightedSplBoxBiases by derivedStateOf {
+    val weightedSplBoxOffsets by derivedStateOf {
         splData.mapValues { (_, spl) ->
-            ((max(spl.weighted, spl.raw) / xAxisMax) * 2.0 - 1.0).toFloat()
+            ((max(spl.weighted, spl.raw) / xAxisMax)).toFloat()
         }.values.reversed()
     }
 
@@ -71,6 +71,7 @@ fun SpectrumPlotView(
             *viewModel.spectrumColorRamp.toTypedArray()
         )
     }
+    val weightedSplBoxColor = MaterialTheme.colorScheme.onSurface
 
 
     // - Layout
@@ -79,64 +80,65 @@ fun SpectrumPlotView(
         axisSettings = axisSettings,
         modifier = modifier,
     ) {
-        // 1. Paint the entire background using the gradient brush
         Column(
             horizontalAlignment = Alignment.End,
             modifier = Modifier.fillMaxSize()
-                .background(gradientBrush)
         ) {
-            // 2. Adjust bars size by clipping from the end of the screen (i.e. drawing the negative)
-            rawSplBarWidths.forEach { widthFraction ->
+            rawSplBarWidths.forEachIndexed { index, widthFraction ->
+
+                // 1. Pain the whole line using gradient brush
                 Box(
                     modifier = Modifier.weight(1f)
-                        .background(Color.Red)
-                        .animateContentSize(
-                            tween(
-                                easing = ANIMATION_CURVE,
-                                durationMillis = ANIMATION_DURATION_MS
+                        .background(gradientBrush)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.CenterEnd
+                ) {
+                    // 2. Fill the right end of the bar with background color based on current value
+                    Box(
+                        modifier = Modifier.fillMaxHeight()
+                            .background(backgroundColor)
+                            .animateContentSize(
+                                tween(
+                                    easing = ANIMATION_CURVE,
+                                    durationMillis = ANIMATION_DURATION_MS
+                                )
                             )
-                        )
-                        .fillMaxWidth(fraction = 1f - widthFraction)
-                )
-            }
-        }
-
-        // 3. Add a grid on top of the bars to add vertical stripes
-        SpectrumPlotXAxisGrid(
-            xAxisTicks = (axisSettings.xTicks.size - 1) * 5,
-            lineColor = backgroundColor,
-        )
-
-        // 4. Draw dark rectangles to show weighted spl values
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            val boxColor = MaterialTheme.colorScheme.onSurface
-
-            weightedSplBoxBiases.forEachIndexed { index, bias ->
-                val animatedBias by animateFloatAsState(
-                    targetValue = bias,
-                    animationSpec = tween(
-                        easing = ANIMATION_CURVE,
-                        durationMillis = ANIMATION_DURATION_MS
+                            .fillMaxWidth(fraction = 1f - widthFraction)
                     )
-                )
 
-                Box(
-                    modifier = Modifier.weight(1f)
-                        .width(WEIGHTED_SPL_BOX_WIDTH)
-                        //.padding(bottom = if (index == weightedSplBoxBiases.size - 1) 0.dp else 2.dp)
-                        .background(boxColor)
-                        .align(BiasAlignment.Horizontal(animatedBias))
-                )
+                    // 3. Add a grid on top of the bars to add vertical stripes
+                    SpectrumPlotXAxisGrid(
+                        xAxisTicks = (axisSettings.xTicks.size - 1) * 5,
+                        lineColor = backgroundColor,
+                    )
+
+                    // 4. Add a grey box to represent weighted spl value.
+                    val animatedBias by animateFloatAsState(
+                        targetValue = weightedSplBoxOffsets[index],
+                        animationSpec = tween(
+                            easing = ANIMATION_CURVE,
+                            durationMillis = ANIMATION_DURATION_MS
+                        )
+                    )
+
+                    Box(
+                        modifier = Modifier.fillMaxHeight()
+                            .fillMaxWidth(fraction = 1f - animatedBias),
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxHeight()
+                                .width(WEIGHTED_SPL_BOX_WIDTH)
+                                .background(weightedSplBoxColor)
+                        )
+                    }
+                }
+
+                // 5. For every bar except for the last, add a horizontal spacer
+                if (index < rawSplBarWidths.size - 1) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                }
             }
         }
-
-        // 5. Add horizontal grid on top of everything to separate bars
-        SpectrumPlotYAxisGrid(
-            yAxisTicks = axisSettings.yTicks.size,
-            lineColor = backgroundColor
-        )
     }
 }
 
@@ -158,28 +160,6 @@ private fun SpectrumPlotXAxisGrid(
             thickness = strokeWidth,
             modifier = Modifier.fillMaxHeight(),
             color = lineColor
-        )
-    }
-}
-
-
-/**
- * Lays out a grid of given Y horizontal lines with given line color.
- */
-@Composable
-private fun SpectrumPlotYAxisGrid(
-    yAxisTicks: Int,
-    lineColor: Color,
-    strokeWidth: Dp = 2.dp,
-) = Column(
-    verticalArrangement = Arrangement.SpaceEvenly,
-    modifier = Modifier.fillMaxSize()
-) {
-    repeat(yAxisTicks - 1) {
-        Box(
-            modifier = Modifier.fillMaxWidth()
-                .background(lineColor)
-                .height(strokeWidth),
         )
     }
 }
