@@ -35,7 +35,7 @@ class SpectrumPlotViewModel : ViewModel(), KoinComponent {
 
         const val DBA_MIN = 0.0
         const val DBA_MAX = 100.0
-        const val DBA_TICKS_COUNT = 5
+        const val DBA_TICKS_COUNT = 4
     }
 
 
