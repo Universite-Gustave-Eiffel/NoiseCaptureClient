@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.zip
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
@@ -16,9 +17,15 @@ class SpectrumPlotViewModel : ViewModel(), KoinComponent {
     // - Associated types
 
     data class AxisSettings(
-        val minimumX: Double,
-        val maximumX: Double,
         val nominalFrequencies: List<Int>,
+        val minimumX: Double = DBA_MIN,
+        val maximumX: Double = DBA_MAX,
+        val xTicksCount: Int = DBA_TICKS_COUNT,
+    )
+
+    data class SplData(
+        val raw: Double,
+        val weighted: Double,
     )
 
 
@@ -28,6 +35,7 @@ class SpectrumPlotViewModel : ViewModel(), KoinComponent {
 
         const val DBA_MIN = 0.0
         const val DBA_MAX = 100.0
+        const val DBA_TICKS_COUNT = 4
     }
 
 
@@ -42,34 +50,24 @@ class SpectrumPlotViewModel : ViewModel(), KoinComponent {
         Pair(rampIndex.toFloat(), color)
     }
 
-    val rawSplFlow: StateFlow<Map<Int, Double>> = liveAudioService
+    val splDataFlow: StateFlow<Map<Int, SplData>> = liveAudioService
         .getLeqRecordsFlow()
-        .map { it.leqsPerThirdOctave }
-        .stateInWhileSubscribed(
+        .zip(liveAudioService.getWeightedLeqPerFrequencyBandFlow()) { raw, weighted ->
+            raw.leqsPerThirdOctave.mapValues { entry ->
+                SplData(entry.value, weighted[entry.key] ?: 0.0)
+            }
+        }.stateInWhileSubscribed(
             scope = viewModelScope,
             initialValue = emptyMap(),
-        )
-
-    val weightedSplFlow: StateFlow<Map<Int, Double>> = liveAudioService
-        .getWeightedLeqPerFrequencyBandFlow()
-        .stateInWhileSubscribed(
-            scope = viewModelScope,
-            initialValue = emptyMap()
         )
 
     val axisSettingsFlow: StateFlow<AxisSettings> = liveAudioService
         .getLeqRecordsFlow()
         .map { it.leqsPerThirdOctave.keys.toList() }
         .distinctUntilChanged()
-        .map {
-            AxisSettings(
-                minimumX = DBA_MIN,
-                maximumX = DBA_MAX,
-                nominalFrequencies = it
-            )
-        }
+        .map { AxisSettings(nominalFrequencies = it) }
         .stateInWhileSubscribed(
             scope = viewModelScope,
-            initialValue = AxisSettings(0.0, 0.0, emptyList())
+            initialValue = AxisSettings(nominalFrequencies = emptyList())
         )
 }
