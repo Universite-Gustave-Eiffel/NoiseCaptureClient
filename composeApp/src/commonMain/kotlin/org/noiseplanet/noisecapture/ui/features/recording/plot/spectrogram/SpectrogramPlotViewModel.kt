@@ -67,8 +67,8 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
         private val FRAME_RATE: Duration = (1.0 / 30.0).milliseconds
 
         // TODO: Make this a user settings property?
-        val DISPLAYED_TIME_RANGE: Duration = 10.seconds
-        val TICK_SPACING_TIME_RANGE: Duration = 2.seconds
+        val DISPLAYED_TIME_RANGE: Duration = 20.seconds
+        val TICK_SPACING_TIME_RANGE: Duration = 5.seconds
         val X_TICKS_COUNT: Int = (DISPLAYED_TIME_RANGE / TICK_SPACING_TIME_RANGE).toInt()
 
         val Y_AXIS_TICKS_LOG = intArrayOf(

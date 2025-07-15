@@ -61,6 +61,7 @@ fun MeasurementRecordingPager(
                 MeasurementTabState.SPECTROGRAM -> Box {
                     SpectrogramPlotView(
                         viewModel = spectrogramViewModel,
+                        modifier = Modifier.padding(end = 16.dp)
                     )
                 }
 

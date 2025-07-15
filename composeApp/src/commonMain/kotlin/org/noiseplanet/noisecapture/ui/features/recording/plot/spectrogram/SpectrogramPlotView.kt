@@ -38,7 +38,7 @@ fun SpectrogramPlotView(
                 .onPlaced { coordinates ->
                     viewModel.updateCanvasSize(coordinates.size, newDensity = density)
                 }
-                .blur(radius = 1.dp) // Apply a 1dp blur to the image to antialias to current density
+                .blur(radius = 2.dp) // Apply a 1dp blur to the image to antialias to current density
         ) {
             spectrogramBitmap?.let {
                 drawImage(it)

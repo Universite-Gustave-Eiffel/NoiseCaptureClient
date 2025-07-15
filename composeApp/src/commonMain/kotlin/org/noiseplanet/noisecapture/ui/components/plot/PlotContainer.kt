@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
@@ -43,7 +45,6 @@ fun PlotContainer(
     // TODO: Make this dynamic without triggering too much successive recompositions
     //       due to remeasuring content
     val xAxisTicksHeight = 20.dp
-    val xAxisTicksCount = axisSettings.xTicks.size
 
 
     // - Layout
@@ -69,46 +70,7 @@ fun PlotContainer(
             }
 
             // X axis
-            Column(
-                modifier = Modifier.height(xAxisTicksHeight).fillMaxWidth()
-            ) {
-                // Ticks
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    axisSettings.xTicks.forEach { _ ->
-                        VerticalDivider(
-                            modifier = Modifier.height(4.dp),
-                            thickness = 2.dp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                        )
-                    }
-                }
-
-                // Tick labels
-                Row(
-                    verticalAlignment = Alignment.Top,
-                    modifier = Modifier.weight(1f).fillMaxWidth()
-                ) {
-                    axisSettings.xTicks.forEachIndexed { index, tick ->
-                        AxisTickLabel(
-                            text = tick.label,
-                            textAlign = when (index) {
-                                0 -> TextAlign.Start
-                                xAxisTicksCount - 1 -> TextAlign.End
-                                else -> TextAlign.Center
-                            },
-                            modifier = Modifier.weight(
-                                when (index) {
-                                    0, xAxisTicksCount - 1 -> 0.5f
-                                    else -> 1.0f
-                                }
-                            ),
-                        )
-                    }
-                }
-            }
+            XAxisTicks(axisSettings, xAxisTicksHeight)
         }
 
         // Y axis if layout is right to left
@@ -127,18 +89,120 @@ private fun YAxisTicks(
     axisSettings: PlotAxisSettings,
     xAxisTicksHeight: Dp,
 ) {
-    // Y axis
-    Column(
-        verticalArrangement = Arrangement.SpaceBetween,
-        horizontalAlignment = when (axisSettings.yAxisLayoutDirection) {
-            LayoutDirection.Ltr -> Alignment.End
-            LayoutDirection.Rtl -> Alignment.Start
-        },
+    // - Properties
+
+    val yAxisTicksCount = axisSettings.yTicks.size
+
+
+    // - Layout
+
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
         modifier = Modifier.fillMaxHeight()
             .padding(bottom = xAxisTicksHeight + 4.dp)
     ) {
-        axisSettings.yTicks.reversed().forEach { tick ->
-            AxisTickLabel(text = tick.label)
+        if (axisSettings.yAxisLayoutDirection == LayoutDirection.Rtl) {
+            Column(
+                verticalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxHeight()
+            ) {
+                axisSettings.yTicks.forEach { _ ->
+                    HorizontalDivider(
+                        modifier = Modifier.width(4.dp),
+                        thickness = 2.dp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                    )
+                }
+            }
+        }
+
+        Column(
+            horizontalAlignment = when (axisSettings.yAxisLayoutDirection) {
+                LayoutDirection.Ltr -> Alignment.End
+                LayoutDirection.Rtl -> Alignment.Start
+            },
+            modifier = Modifier.fillMaxHeight()
+        ) {
+            axisSettings.yTicks.reversed().forEachIndexed { index, tick ->
+                Box(
+                    contentAlignment = when (index) {
+                        0 -> Alignment.TopCenter
+                        yAxisTicksCount - 1 -> Alignment.BottomCenter
+                        else -> Alignment.Center
+                    },
+                    modifier = Modifier.weight(
+                        if (axisSettings.yAxisLayoutDirection == LayoutDirection.Rtl) {
+                            when (index) {
+                                0, yAxisTicksCount - 1 -> 0.5f
+                                else -> 1.0f
+                            }
+                        } else {
+                            1f
+                        }
+                    )
+                ) {
+                    AxisTickLabel(
+                        text = tick.label,
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun XAxisTicks(
+    axisSettings: PlotAxisSettings,
+    xAxisTicksHeight: Dp,
+) {
+    // - Properties
+
+    val xAxisTicksCount = axisSettings.xTicks.size
+
+
+    // - Layout
+
+    Column(
+        modifier = Modifier.height(xAxisTicksHeight).fillMaxWidth()
+    ) {
+        if (axisSettings.showXTickMarks) {
+            // Ticks
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                axisSettings.xTicks.forEach { _ ->
+                    VerticalDivider(
+                        modifier = Modifier.height(4.dp),
+                        thickness = 2.dp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                    )
+                }
+            }
+        }
+
+        // Tick labels
+        Row(
+            verticalAlignment = Alignment.Top,
+            modifier = Modifier.weight(1f).fillMaxWidth()
+        ) {
+            axisSettings.xTicks.forEachIndexed { index, tick ->
+                AxisTickLabel(
+                    text = tick.label,
+                    textAlign = when (index) {
+                        0 -> TextAlign.Start
+                        xAxisTicksCount - 1 -> TextAlign.End
+                        else -> TextAlign.Center
+                    },
+                    modifier = Modifier.weight(
+                        when (index) {
+                            0, xAxisTicksCount - 1 -> 0.5f
+                            else -> 1.0f
+                        }
+                    ),
+                )
+            }
         }
     }
 }
