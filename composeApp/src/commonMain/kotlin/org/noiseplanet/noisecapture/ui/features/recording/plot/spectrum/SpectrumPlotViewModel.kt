@@ -9,19 +9,15 @@ import kotlinx.coroutines.flow.zip
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
+import org.noiseplanet.noisecapture.ui.components.plot.AxisTick
+import org.noiseplanet.noisecapture.ui.components.plot.PlotAxisSettings
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
+import org.noiseplanet.noisecapture.util.toFrequencyString
 
 class SpectrumPlotViewModel : ViewModel(), KoinComponent {
 
     // - Associated types
-
-    data class AxisSettings(
-        val nominalFrequencies: List<Int>,
-        val minimumX: Double = DBA_MIN,
-        val maximumX: Double = DBA_MAX,
-        val xTicksCount: Int = DBA_TICKS_COUNT,
-    )
 
     data class SplData(
         val raw: Double,
@@ -61,13 +57,29 @@ class SpectrumPlotViewModel : ViewModel(), KoinComponent {
             initialValue = emptyMap(),
         )
 
-    val axisSettingsFlow: StateFlow<AxisSettings> = liveAudioService
+    val axisSettingsFlow: StateFlow<PlotAxisSettings> = liveAudioService
         .getLeqRecordsFlow()
         .map { it.leqsPerThirdOctave.keys.toList() }
         .distinctUntilChanged()
-        .map { AxisSettings(nominalFrequencies = it) }
+        .map { frequencies ->
+            PlotAxisSettings(
+                xTicks = (0..DBA_TICKS_COUNT).map { tick ->
+                    val tickValue = (DBA_MAX - DBA_MIN) / DBA_TICKS_COUNT * tick
+                    AxisTick(
+                        value = tickValue,
+                        label = "${tickValue.toInt()} dB"
+                    )
+                },
+                yTicks = frequencies.map { freq ->
+                    AxisTick(
+                        value = freq.toDouble(),
+                        label = freq.toFrequencyString(),
+                    )
+                }
+            )
+        }
         .stateInWhileSubscribed(
             scope = viewModelScope,
-            initialValue = AxisSettings(nominalFrequencies = emptyList())
+            initialValue = PlotAxisSettings()
         )
 }

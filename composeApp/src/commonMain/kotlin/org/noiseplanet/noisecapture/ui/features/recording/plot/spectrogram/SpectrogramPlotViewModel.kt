@@ -33,6 +33,8 @@ import org.noiseplanet.noisecapture.services.audio.DefaultLiveAudioService.Compa
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.services.settings.SettingsKey
 import org.noiseplanet.noisecapture.services.settings.UserSettingsService
+import org.noiseplanet.noisecapture.ui.components.plot.AxisTick
+import org.noiseplanet.noisecapture.ui.components.plot.PlotAxisSettings
 import org.noiseplanet.noisecapture.ui.theme.SpectrogramColorRamp
 import org.noiseplanet.noisecapture.util.injectLogger
 import org.noiseplanet.noisecapture.util.toFrequencyString
@@ -44,9 +46,9 @@ import kotlin.math.pow
 import kotlin.math.round
 import kotlin.time.Clock
 import kotlin.time.Duration
-import kotlin.time.DurationUnit
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
-import kotlin.time.toDuration
 
 
 @OptIn(ExperimentalTime::class)
@@ -62,15 +64,12 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
         // TODO: Platform dependant gain?
         private const val DB_GAIN = AcousticIndicatorsProcessing.ANDROID_GAIN
 
-        private val FRAME_RATE: Duration = (1.0 / 30.0).toDuration(unit = DurationUnit.MILLISECONDS)
+        private val FRAME_RATE: Duration = (1.0 / 30.0).milliseconds
 
         // TODO: Make this a user settings property?
-        val DISPLAYED_TIME_RANGE: Duration = 20.toDuration(unit = DurationUnit.SECONDS)
-
-        val X_AXIS_TICKS: List<String> = (0..<5).map { index ->
-            val tick = DISPLAYED_TIME_RANGE - (DISPLAYED_TIME_RANGE / 4) * index
-            "${tick.toInt(unit = DurationUnit.SECONDS)} s"
-        }
+        val DISPLAYED_TIME_RANGE: Duration = 10.seconds
+        val TICK_SPACING_TIME_RANGE: Duration = 2.seconds
+        val X_TICKS_COUNT: Int = (DISPLAYED_TIME_RANGE / TICK_SPACING_TIME_RANGE).toInt()
 
         val Y_AXIS_TICKS_LOG = intArrayOf(
             63, 125, 250, 500, 1000, 2000, 4000, 8000, 16000, 24000
@@ -99,10 +98,26 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
     val scaleMode: SpectrogramScaleMode =
         settingsService.get(SettingsKey.SettingSpectrogramScaleMode)
 
-    val yAxisTicks: List<String> = when (scaleMode) {
-        SpectrogramScaleMode.SCALE_LOG -> Y_AXIS_TICKS_LOG
-        SpectrogramScaleMode.SCALE_LINEAR -> Y_AXIS_TICKS_LINEAR
-    }.map { it.toFrequencyString() }
+    val axisSettings = PlotAxisSettings(
+        xTicks = (0..X_TICKS_COUNT)
+            .map { index ->
+                val tick = index * TICK_SPACING_TIME_RANGE.inWholeSeconds
+                AxisTick(
+                    value = tick.toDouble(),
+                    label = "$tick s"
+                )
+            }.reversed(),
+        yTicks = when (scaleMode) {
+            SpectrogramScaleMode.SCALE_LOG -> Y_AXIS_TICKS_LOG
+            SpectrogramScaleMode.SCALE_LINEAR -> Y_AXIS_TICKS_LINEAR
+        }.map {
+            AxisTick(
+                value = it.toDouble(),
+                label = it.toFrequencyString()
+            )
+        },
+        yAxisLayoutDirection = LayoutDirection.Rtl
+    )
 
 
     // - Lifecycle

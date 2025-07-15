@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
@@ -78,9 +77,8 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
 
     override fun setupAudioSource() {
         // Create a job that will process incoming audio samples in a background thread
-        audioJob = coroutineScope.launch(Dispatchers.Default) {
+        audioJob = coroutineScope.launch {
             audioSource.audioSamples
-                .flowOn(Dispatchers.Default)
                 .collect { audioSamples ->
                     // Process acoustic indicators
                     if (indicatorsProcessing?.sampleRate != audioSamples.sampleRate) {
