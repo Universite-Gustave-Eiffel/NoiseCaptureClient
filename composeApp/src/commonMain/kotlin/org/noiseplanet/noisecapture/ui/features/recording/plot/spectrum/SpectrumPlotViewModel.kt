@@ -75,7 +75,8 @@ class SpectrumPlotViewModel : ViewModel(), KoinComponent {
                         value = freq.toDouble(),
                         label = freq.toFrequencyString(),
                     )
-                }
+                },
+                showYTickMarks = false,
             )
         }
         .stateInWhileSubscribed(

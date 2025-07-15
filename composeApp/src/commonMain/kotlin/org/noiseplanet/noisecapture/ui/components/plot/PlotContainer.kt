@@ -82,7 +82,7 @@ fun PlotContainer(
 
 
 /**
- * Lays out Y axis ticks and labels
+ * Lays out Y axis tick marks and labels
  */
 @Composable
 private fun YAxisTicks(
@@ -101,19 +101,8 @@ private fun YAxisTicks(
         modifier = Modifier.fillMaxHeight()
             .padding(bottom = xAxisTicksHeight + 4.dp)
     ) {
-        if (axisSettings.yAxisLayoutDirection == LayoutDirection.Rtl) {
-            Column(
-                verticalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxHeight()
-            ) {
-                axisSettings.yTicks.forEach { _ ->
-                    HorizontalDivider(
-                        modifier = Modifier.width(4.dp),
-                        thickness = 2.dp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                    )
-                }
-            }
+        if (axisSettings.yAxisLayoutDirection == LayoutDirection.Rtl && axisSettings.showYTickMarks) {
+            YAxisTickMarks(axisSettings)
         }
 
         Column(
@@ -131,7 +120,7 @@ private fun YAxisTicks(
                         else -> Alignment.Center
                     },
                     modifier = Modifier.weight(
-                        if (axisSettings.yAxisLayoutDirection == LayoutDirection.Rtl) {
+                        if (axisSettings.showYTickMarks) {
                             when (index) {
                                 0, yAxisTicksCount - 1 -> 0.5f
                                 else -> 1.0f
@@ -147,10 +136,37 @@ private fun YAxisTicks(
                 }
             }
         }
+
+        if (axisSettings.yAxisLayoutDirection == LayoutDirection.Ltr && axisSettings.showYTickMarks) {
+            YAxisTickMarks(axisSettings)
+        }
     }
 }
 
 
+/**
+ * Lays out Y axis tick marks
+ */
+@Composable
+private fun YAxisTickMarks(axisSettings: PlotAxisSettings) {
+    Column(
+        verticalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier.fillMaxHeight()
+    ) {
+        axisSettings.yTicks.forEach { _ ->
+            HorizontalDivider(
+                modifier = Modifier.width(4.dp),
+                thickness = 2.dp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+            )
+        }
+    }
+}
+
+
+/**
+ * Lays out X axis tick marks and labels
+ */
 @Composable
 private fun XAxisTicks(
     axisSettings: PlotAxisSettings,
