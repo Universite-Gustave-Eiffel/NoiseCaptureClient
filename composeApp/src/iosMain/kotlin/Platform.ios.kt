@@ -1,5 +1,6 @@
 import org.noiseplanet.noisecapture.model.dao.UserAgent
 import org.noiseplanet.noisecapture.permission.Permission
+import org.noiseplanet.noisecapture.ui.navigation.Route
 import platform.UIKit.UIDevice
 
 @Suppress("MatchingDeclarationName")
@@ -14,7 +15,7 @@ class IOSPlatform : Platform {
             osVersion = UIDevice.currentDevice.systemVersion,
         )
 
-    override val requiredPermissions: List<Permission>
+    override val requiredPermissions: Map<Route, List<Permission>>
         get() = listOf(
             Permission.RECORD_AUDIO,
             Permission.LOCATION_FOREGROUND,

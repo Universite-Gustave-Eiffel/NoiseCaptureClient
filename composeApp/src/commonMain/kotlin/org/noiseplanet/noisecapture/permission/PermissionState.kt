@@ -26,6 +26,14 @@ enum class PermissionState {
      * Indicates that the permission has been requested but the user denied the permission
      */
     DENIED;
+}
 
-    companion object
+
+fun List<PermissionState>.reduce(): PermissionState {
+    return when {
+        all { it == PermissionState.GRANTED } -> PermissionState.GRANTED
+        any { it == PermissionState.DENIED } -> PermissionState.DENIED
+        all { it == PermissionState.NOT_IMPLEMENTED } -> PermissionState.NOT_IMPLEMENTED
+        else -> PermissionState.NOT_DETERMINED
+    }
 }

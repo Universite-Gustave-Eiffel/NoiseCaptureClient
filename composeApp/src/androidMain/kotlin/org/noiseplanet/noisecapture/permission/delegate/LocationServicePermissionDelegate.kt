@@ -3,27 +3,49 @@ package org.noiseplanet.noisecapture.permission.delegate
 import android.content.Context
 import android.location.LocationManager
 import android.provider.Settings
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.permission.util.CannotOpenSettingsException
 import org.noiseplanet.noisecapture.permission.util.openPage
+
 
 internal class LocationServicePermissionDelegate(
     private val context: Context,
     private val locationManager: LocationManager,
 ) : PermissionDelegate {
 
-    override suspend fun getPermissionState(): PermissionState {
+    // - Properties
+
+    private val _permissionSateFlow = MutableStateFlow(PermissionState.NOT_DETERMINED)
+    override val permissionStateFlow: StateFlow<PermissionState> = _permissionSateFlow
+
+
+    // - Lifecycle
+
+    init {
+        checkPermissionState()
+    }
+
+
+    // - Public functions
+
+    override fun checkPermissionState() {
         val granted = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
             locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-        return if (granted) {
+        val state = if (granted) {
             PermissionState.GRANTED
         } else {
             PermissionState.DENIED
         }
+        _permissionSateFlow.tryEmit(state)
     }
 
-    override suspend fun providePermission() {
+
+    // - Public functions
+
+    override fun providePermission() {
         openSettingPage()
     }
 

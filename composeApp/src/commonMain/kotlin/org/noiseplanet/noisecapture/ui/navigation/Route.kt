@@ -11,6 +11,7 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 open class Route(
+    val id: String,
     val usesAudioSource: Boolean = false,
 )
 
@@ -18,25 +19,19 @@ open class Route(
 // - Routes
 
 @Serializable
-class HomeRoute : Route(usesAudioSource = true)
+class HomeRoute : Route(id = "home", usesAudioSource = true)
 
 @Serializable
-class PlatformInfoRoute : Route()
+class MeasurementRecordingRoute : Route(id = "measurement_recording", usesAudioSource = true)
 
 @Serializable
-class RequestPermissionRoute : Route()
+class HistoryRoute : Route(id = "history")
 
 @Serializable
-class MeasurementRecordingRoute : Route(usesAudioSource = true)
-
-@Serializable
-class HistoryRoute : Route()
-
-@Serializable
-class SettingsRoute : Route()
+class SettingsRoute : Route(id = "settings")
 
 @Serializable
 class MeasurementDetailsRoute(
     val measurementId: String,
     val parentRouteId: String,
-) : Route()
+) : Route(id = "measurement/$measurementId")

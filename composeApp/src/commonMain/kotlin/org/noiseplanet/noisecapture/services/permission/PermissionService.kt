@@ -24,7 +24,7 @@ interface PermissionService : KoinComponent {
      * @param permission Target permission
      * @return Current permission state
      */
-    suspend fun checkPermission(permission: Permission): PermissionState
+    fun checkPermission(permission: Permission): PermissionState
 
     /**
      * Opens the settings page corresponding to the given permission.
@@ -40,5 +40,5 @@ interface PermissionService : KoinComponent {
      *
      * @param permission Target permission
      */
-    suspend fun requestPermission(permission: Permission)
+    fun requestPermission(permission: Permission)
 }
