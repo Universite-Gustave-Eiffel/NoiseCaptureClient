@@ -61,9 +61,9 @@ internal fun Activity.checkPermissionState(
 
         PackageManager.PERMISSION_DENIED -> {
             if (this.shouldShowRequestPermissionRationale(permission)) {
-                PermissionState.NOT_DETERMINED
-            } else {
                 PermissionState.DENIED
+            } else {
+                PermissionState.NOT_DETERMINED
             }
         }
 

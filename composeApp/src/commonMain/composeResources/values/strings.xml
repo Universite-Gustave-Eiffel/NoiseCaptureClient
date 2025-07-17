@@ -27,6 +27,7 @@
     <string name="request_permission_button_settings">Settings</string>
     <string name="request_permission_button_next">Next</string>
     <string name="request_permission_button_request">Request</string>
+    <string name="request_permission_button_skip">Skip for now</string>
 
 
     <!--  MeasurementScreen  -->

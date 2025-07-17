@@ -9,14 +9,15 @@ import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.request_permission_button_request
 import noisecapture.composeapp.generated.resources.request_permission_button_settings
+import noisecapture.composeapp.generated.resources.request_permission_button_skip
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.services.permission.PermissionService
+import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
+import org.noiseplanet.noisecapture.ui.components.button.NCButtonStyle
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
-import org.noiseplanet.noisecapture.util.injectLogger
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 
 
@@ -34,7 +35,6 @@ class RequestPermissionModalViewModel(
 
     // - Properties
 
-    private val logger: Logger by injectLogger()
     private val permissionService: PermissionService by inject()
 
     private val permissionStateFlow: Flow<PermissionState> = permissionService
@@ -48,6 +48,12 @@ class RequestPermissionModalViewModel(
     private val openSettingsButtonViewModel = NCButtonViewModel(
         title = Res.string.request_permission_button_settings,
         hasDropShadow = true,
+    )
+
+    val skipButtonViewModel = NCButtonViewModel(
+        title = Res.string.request_permission_button_skip,
+        style = NCButtonStyle.TEXT,
+        colors = { NCButtonColors.Defaults.text() }
     )
 
     val viewStateFlow: StateFlow<ViewSate> = permissionStateFlow

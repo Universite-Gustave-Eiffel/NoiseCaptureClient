@@ -19,12 +19,11 @@ interface PermissionService : KoinComponent {
     fun getPermissionStateFlow(permission: Permission): Flow<PermissionState>
 
     /**
-     * Checks the current state of the given permission, once
+     * Checks the current state of the given permission and emits new value through state flow.
      *
      * @param permission Target permission
-     * @return Current permission state
      */
-    fun checkPermission(permission: Permission): PermissionState
+    fun refreshPermissionState(permission: Permission)
 
     /**
      * Opens the settings page corresponding to the given permission.

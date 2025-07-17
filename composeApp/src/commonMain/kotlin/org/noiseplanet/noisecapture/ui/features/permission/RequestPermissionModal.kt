@@ -13,26 +13,25 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContent
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.permission_location_illustration
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
-import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
 
@@ -40,33 +39,34 @@ import org.noiseplanet.noisecapture.ui.components.button.NCButton
 @Composable
 fun RequestPermissionModal(
     permission: Permission,
-    onDismissRequest: () -> Unit,
+    isRequired: Boolean,
 ) {
     // - Properties
 
     val viewModel: RequestPermissionModalViewModel = koinViewModel { parametersOf(permission) }
     val viewState: RequestPermissionModalViewModel.ViewSate by viewModel.viewStateFlow.collectAsStateWithLifecycle()
 
-    val logger: Logger = koinInject()
-
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true,
-        confirmValueChange = { sheetValue ->
-            if (sheetValue == SheetValue.Hidden) {
-                false
-            } else {
-                true
-            }
+        confirmValueChange = { _ ->
+            // Only optional permission prompts can be dismissed
+            !isRequired
         }
     )
-    var containerHeight by remember { mutableStateOf(0.dp) }
+    var showBottomSheet by remember { mutableStateOf(true) }
+
+    val scope = rememberCoroutineScope()
 
 
     // - Layout
 
+    if (!showBottomSheet) return
+
     ModalBottomSheet(
         sheetState = sheetState,
-        onDismissRequest = onDismissRequest,
+        onDismissRequest = {
+            showBottomSheet = false
+        },
         contentWindowInsets = {
             WindowInsets.safeContent.only(WindowInsetsSides.Bottom)
         },
@@ -88,7 +88,7 @@ fun RequestPermissionModal(
             Spacer(modifier = Modifier.height(32.dp))
 
             Text(
-                text = "Location services",
+                text = permission.name,
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
             )
@@ -115,6 +115,19 @@ fun RequestPermissionModal(
                 NCButton(viewModel = it, onClick = {
                     viewModel.openSettings()
                 })
+            }
+
+            if (!isRequired) {
+                NCButton(
+                    viewModel = viewModel.skipButtonViewModel,
+                    onClick = {
+                        scope.launch { sheetState.hide() }.invokeOnCompletion {
+                            if (!sheetState.isVisible) {
+                                showBottomSheet = false
+                            }
+                        }
+                    }
+                )
             }
         }
     }

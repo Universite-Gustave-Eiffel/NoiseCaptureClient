@@ -13,13 +13,30 @@ internal interface PermissionDelegate {
 
     // - Properties
 
+    /**
+     * A flow of permission state values.
+     */
     val permissionStateFlow: StateFlow<PermissionState>
+
+    // TODO: Include a property to see if one can open settings for this permission
+    //       (would be always false for web targets)
 
 
     // - Public functions
 
+    /**
+     * Checks the current permission state, and emits it through the state flow.
+     */
     fun checkPermissionState()
+
+    /**
+     * Opens permission request dialog if possible.
+     */
     fun providePermission()
+
+    /**
+     * Opens the associated settings page, if possible.
+     */
     fun openSettingPage()
 }
 
