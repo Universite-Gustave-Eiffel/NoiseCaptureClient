@@ -29,6 +29,13 @@
     <string name="request_permission_button_request">Request</string>
     <string name="request_permission_button_skip">Skip for now</string>
 
+    <string name="request_permission_location_title">Location services</string>
+    <string name="request_permission_location_description">To be able to match recorded audio levels with map coordinates, we need access to your live location during the time you’re making a measurement.</string>
+    <string name="request_permission_microphone_title">Microphone</string>
+    <string name="request_permission_microphone_description">Listening to incoming audio requires you to grant permission for NoiseCapture to use your device’s microphone.</string>
+    <string name="request_permission_notifications_title">Push notifications</string>
+    <string name="request_permission_notifications_description">To keep the NoiseCapture app running in the background while you’re making a measurement, we need permission to display a persistent notification for the duration of the recording.</string>
+
 
     <!--  MeasurementScreen  -->
     <string name="measurement_title">New measurement</string>

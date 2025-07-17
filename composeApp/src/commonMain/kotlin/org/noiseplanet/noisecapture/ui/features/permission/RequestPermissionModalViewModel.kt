@@ -7,9 +7,22 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.compose_multiplatform
+import noisecapture.composeapp.generated.resources.permission_location_illustration
+import noisecapture.composeapp.generated.resources.permission_microphone_illustration
+import noisecapture.composeapp.generated.resources.permission_notifications_illustration
 import noisecapture.composeapp.generated.resources.request_permission_button_request
 import noisecapture.composeapp.generated.resources.request_permission_button_settings
 import noisecapture.composeapp.generated.resources.request_permission_button_skip
+import noisecapture.composeapp.generated.resources.request_permission_location_description
+import noisecapture.composeapp.generated.resources.request_permission_location_title
+import noisecapture.composeapp.generated.resources.request_permission_microphone_description
+import noisecapture.composeapp.generated.resources.request_permission_microphone_title
+import noisecapture.composeapp.generated.resources.request_permission_notifications_description
+import noisecapture.composeapp.generated.resources.request_permission_notifications_title
+import noisecapture.composeapp.generated.resources.request_permission_title
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.StringResource
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.permission.Permission
@@ -55,6 +68,34 @@ class RequestPermissionModalViewModel(
         style = NCButtonStyle.TEXT,
         colors = { NCButtonColors.Defaults.text() }
     )
+
+    val illustration: DrawableResource = when (permission) {
+        Permission.RECORD_AUDIO -> Res.drawable.permission_microphone_illustration
+        Permission.POST_NOTIFICATIONS -> Res.drawable.permission_notifications_illustration
+        Permission.LOCATION_FOREGROUND, Permission.LOCATION_BACKGROUND, Permission.LOCATION_SERVICE_ON -> {
+            Res.drawable.permission_location_illustration
+        }
+
+        else -> Res.drawable.compose_multiplatform
+    }
+    val title: StringResource = when (permission) {
+        Permission.RECORD_AUDIO -> Res.string.request_permission_microphone_title
+        Permission.POST_NOTIFICATIONS -> Res.string.request_permission_notifications_title
+        Permission.LOCATION_FOREGROUND, Permission.LOCATION_BACKGROUND, Permission.LOCATION_SERVICE_ON -> {
+            Res.string.request_permission_location_title
+        }
+
+        else -> Res.string.request_permission_title
+    }
+    val description: StringResource = when (permission) {
+        Permission.RECORD_AUDIO -> Res.string.request_permission_microphone_description
+        Permission.POST_NOTIFICATIONS -> Res.string.request_permission_notifications_description
+        Permission.LOCATION_FOREGROUND, Permission.LOCATION_BACKGROUND, Permission.LOCATION_SERVICE_ON -> {
+            Res.string.request_permission_location_description
+        }
+
+        else -> Res.string.request_permission_title
+    }
 
     val viewStateFlow: StateFlow<ViewSate> = permissionStateFlow
         .map { permissionState ->

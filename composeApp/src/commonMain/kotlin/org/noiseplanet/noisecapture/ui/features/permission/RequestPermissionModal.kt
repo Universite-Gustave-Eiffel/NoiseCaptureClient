@@ -23,13 +23,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
-import noisecapture.composeapp.generated.resources.Res
-import noisecapture.composeapp.generated.resources.permission_location_illustration
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.permission.Permission
@@ -81,20 +81,21 @@ fun RequestPermissionModal(
                 ),
         ) {
             Image(
-                painterResource(Res.drawable.permission_location_illustration),
+                painterResource(viewModel.illustration),
                 contentDescription = "Permission illustration",
             )
 
             Spacer(modifier = Modifier.height(32.dp))
 
             Text(
-                text = permission.name,
-                style = MaterialTheme.typography.titleMedium,
+                text = stringResource(viewModel.title),
+                style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center,
             )
             Text(
-                text = "To be able to match recorded audio levels with map coordinates, we need" +
-                    " access to your live position during the time you’re making a measurement.",
+                text = stringResource(viewModel.description),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
