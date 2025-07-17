@@ -4,6 +4,20 @@ import kotlinx.serialization.Serializable
 
 
 /**
+ * A unique route identifier, regardless of eventual route constructor parameters
+ */
+@Serializable
+enum class RouteId {
+
+    HOME,
+    MEASUREMENT_RECORDING,
+    HISTORY,
+    SETTINGS,
+    MEASUREMENT_DETAILS,
+}
+
+
+/**
  * Base interface shared by all routes.
  *
  * @param usesAudioSource If set to true, audio source will be started automatically when
@@ -11,7 +25,7 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 open class Route(
-    val id: String,
+    val id: RouteId,
     val usesAudioSource: Boolean = false,
 )
 
@@ -19,19 +33,19 @@ open class Route(
 // - Routes
 
 @Serializable
-class HomeRoute : Route(id = "home", usesAudioSource = true)
+class HomeRoute : Route(id = RouteId.HOME, usesAudioSource = true)
 
 @Serializable
-class MeasurementRecordingRoute : Route(id = "measurement_recording", usesAudioSource = true)
+class MeasurementRecordingRoute : Route(id = RouteId.MEASUREMENT_RECORDING, usesAudioSource = true)
 
 @Serializable
-class HistoryRoute : Route(id = "history")
+class HistoryRoute : Route(id = RouteId.HISTORY)
 
 @Serializable
-class SettingsRoute : Route(id = "settings")
+class SettingsRoute : Route(id = RouteId.SETTINGS)
 
 @Serializable
 class MeasurementDetailsRoute(
     val measurementId: String,
     val parentRouteId: String,
-) : Route(id = "measurement/$measurementId")
+) : Route(id = RouteId.MEASUREMENT_DETAILS)
