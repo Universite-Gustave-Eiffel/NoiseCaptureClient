@@ -18,6 +18,10 @@ internal class DefaultPermissionService : PermissionService {
         return getPermissionDelegate(permission).permissionStateFlow
     }
 
+    override fun getPermissionState(permission: Permission): PermissionState {
+        return getPermissionDelegate(permission).permissionStateFlow.value
+    }
+
     override fun refreshPermissionState(permission: Permission) {
         getPermissionDelegate(permission).checkPermissionState()
     }

@@ -97,6 +97,9 @@ fun RootCoordinator(
             navController = navController,
             appBarState = appBarState,
             innerPadding = innerPadding,
+            showPermissionPrompt = { permission ->
+                viewModel.promptPermissionIfNeeded(permission)
+            }
         )
 
         // If needed, prompt permission request to the user

@@ -1,6 +1,6 @@
 package org.noiseplanet.noisecapture.services.permission
 
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionState
@@ -16,7 +16,16 @@ interface PermissionService : KoinComponent {
      * @param permission Target permission
      * @return Flow of permission states
      */
-    fun getPermissionStateFlow(permission: Permission): Flow<PermissionState>
+    fun getPermissionStateFlow(permission: Permission): StateFlow<PermissionState>
+
+
+    /**
+     * Returns the current state of the given permission
+     *
+     * @param permission Target permission
+     * @return Current permission state
+     */
+    fun getPermissionState(permission: Permission): PermissionState
 
     /**
      * Checks the current state of the given permission and emits new value through state flow.

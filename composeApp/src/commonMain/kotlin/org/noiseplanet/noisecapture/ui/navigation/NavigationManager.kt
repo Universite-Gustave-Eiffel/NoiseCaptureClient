@@ -14,6 +14,7 @@ import androidx.navigation.toRoute
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.model.dao.Measurement
+import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBarState
 import org.noiseplanet.noisecapture.ui.features.details.MeasurementDetailsScreen
 import org.noiseplanet.noisecapture.ui.features.details.MeasurementDetailsScreenViewModel
@@ -32,6 +33,7 @@ fun NavigationManager(
     navController: NavHostController,
     appBarState: AppBarState,
     innerPadding: PaddingValues,
+    showPermissionPrompt: (Permission) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // TODO: Handle swipe back gestures on iOS -> encapsulate UINavigationController?
@@ -71,6 +73,7 @@ fun NavigationManager(
                 onClickOpenHistoryButton = {
                     navController.navigate(HistoryRoute())
                 },
+                showPermissionPrompt = showPermissionPrompt,
             )
         }
 

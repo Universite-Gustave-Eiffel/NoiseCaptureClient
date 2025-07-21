@@ -147,6 +147,17 @@ class RootCoordinatorViewModel : ViewModel(), KoinComponent {
         refreshPermissionPromptFlow.tryEmit(Unit)
     }
 
+    /**
+     * Trigger permission prompt for the given permission, given that this permission is at least
+     * optional for the current route.
+     */
+    fun promptPermissionIfNeeded(permission: Permission) {
+        // If permission was already prompted to the user, forget it.
+        alreadyPromptedPermissionsForCurrentSession.remove(permission)
+        // Trigger permission prompts refresh to re-ask for permission (if needed).
+        refreshPermissionPromptFlow.tryEmit(Unit)
+    }
+
 
     // - Private functions
 

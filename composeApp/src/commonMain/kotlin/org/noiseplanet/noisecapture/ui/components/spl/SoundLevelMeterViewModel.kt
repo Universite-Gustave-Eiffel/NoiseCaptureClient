@@ -7,15 +7,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.sound_level_meter_current_dba
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.noiseplanet.noisecapture.audio.AudioSourceState
 import org.noiseplanet.noisecapture.model.dao.LAeqMetrics
+import org.noiseplanet.noisecapture.permission.Permission
+import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
+import org.noiseplanet.noisecapture.services.permission.PermissionService
 import org.noiseplanet.noisecapture.ui.components.button.IconNCButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
@@ -45,6 +46,7 @@ class SoundLevelMeterViewModel(
 
     private val liveAudioService: LiveAudioService by inject()
     private val measurementService: MeasurementService by inject()
+    private val permissionService: PermissionService by inject()
 
     val playPauseButtonViewModelFlow: StateFlow<NCButtonViewModel> = liveAudioService.isRunningFlow
         .map { isRunning ->
@@ -77,28 +79,19 @@ class SoundLevelMeterViewModel(
     val currentDbALabel = Res.string.sound_level_meter_current_dba
 
 
-    // - Lifecycle
-
-    init {
-        viewModelScope.launch {
-            liveAudioService.audioSourceStateFlow.collect { state ->
-                if (state == AudioSourceState.READY) {
-                    // Start listening to incoming audio whenever audio source is done initializing
-                    // On web audio source setup is asynchronous so starting it right away won't work
-                    liveAudioService.startListening()
-                }
-            }
-        }
-    }
-
-
     // - Public functions
 
-    fun toggleAudioSource() {
+    fun toggleAudioSource(showPermissionPrompt: (Permission) -> Unit) {
         if (liveAudioService.isRunning) {
             liveAudioService.stopListening()
         } else {
-            liveAudioService.startListening()
+            val audioPermissionState = permissionService.getPermissionState(Permission.RECORD_AUDIO)
+            if (audioPermissionState == PermissionState.GRANTED) {
+                liveAudioService.startListening()
+            } else {
+                // If record audio permission was not already granted, prompt it to the user.
+                showPermissionPrompt(Permission.RECORD_AUDIO)
+            }
         }
     }
 

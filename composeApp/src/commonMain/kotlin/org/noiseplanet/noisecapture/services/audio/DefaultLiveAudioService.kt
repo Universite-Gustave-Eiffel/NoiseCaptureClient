@@ -134,6 +134,7 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
             audioSourceStateFlow.collect { state ->
                 if (state == AudioSourceState.READY && startOnReady) {
                     audioSource.start()
+                    _isRunningFlow.tryEmit(audioSourceState == AudioSourceState.RUNNING)
                 }
             }
         }
