@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.StateFlow
 import org.noiseplanet.noisecapture.audio.AcousticIndicatorsProcessing
 import org.noiseplanet.noisecapture.audio.AudioSourceState
 import org.noiseplanet.noisecapture.audio.signal.LevelDisplayWeightedDecay
-import org.noiseplanet.noisecapture.audio.signal.window.SpectrumData
+import org.noiseplanet.noisecapture.audio.signal.window.SpectrogramData
 import org.noiseplanet.noisecapture.model.dao.LeqRecord
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
@@ -107,7 +107,7 @@ interface LiveAudioService {
     ): Flow<Map<Int, Double>>
 
     /**
-     * Get a [Flow] of [SpectrumData] from the currently running recording.
+     * Get a [Flow] of [SpectrogramData] from the currently running recording.
      */
-    fun getSpectrumDataFlow(): Flow<SpectrumData>
+    fun getSpectrogramDataFlow(): Flow<SpectrogramData>
 }

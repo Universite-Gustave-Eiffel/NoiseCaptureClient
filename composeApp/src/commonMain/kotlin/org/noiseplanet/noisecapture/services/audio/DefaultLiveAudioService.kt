@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
@@ -20,8 +19,8 @@ import org.noiseplanet.noisecapture.audio.AcousticIndicatorsProcessing
 import org.noiseplanet.noisecapture.audio.AudioSource
 import org.noiseplanet.noisecapture.audio.AudioSourceState
 import org.noiseplanet.noisecapture.audio.signal.LevelDisplayWeightedDecay
-import org.noiseplanet.noisecapture.audio.signal.window.SpectrumData
-import org.noiseplanet.noisecapture.audio.signal.window.SpectrumDataProcessing
+import org.noiseplanet.noisecapture.audio.signal.window.SpectrogramData
+import org.noiseplanet.noisecapture.audio.signal.window.SpectrogramDataProcessing
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.dao.LeqRecord
 import org.noiseplanet.noisecapture.util.injectLogger
@@ -48,14 +47,14 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
     private val audioSource: AudioSource by inject()
 
     private var indicatorsProcessing: AcousticIndicatorsProcessing? = null
-    private var spectrumDataProcessing: SpectrumDataProcessing? = null
+    private var spectrogramDataProcessing: SpectrogramDataProcessing? = null
 
     private var audioJob: Job? = null
     private val leqRecordsFlow = MutableSharedFlow<LeqRecord>(
         replay = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
-    private val spectrumDataFlow = MutableSharedFlow<SpectrumData>(
+    private val spectrogramDataFlow = MutableSharedFlow<SpectrogramData>(
         replay = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
@@ -75,11 +74,11 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
     override val audioSourceStateFlow: Flow<AudioSourceState>
         get() = audioSource.stateFlow
 
+
     override fun setupAudioSource() {
         // Create a job that will process incoming audio samples in a background thread
-        audioJob = coroutineScope.launch(Dispatchers.Default) {
+        audioJob = coroutineScope.launch {
             audioSource.audioSamples
-                .flowOn(Dispatchers.Default)
                 .collect { audioSamples ->
                     // Process acoustic indicators
                     if (indicatorsProcessing?.sampleRate != audioSamples.sampleRate) {
@@ -91,18 +90,20 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
                             leqRecordsFlow.tryEmit(it)
                         }
 
-                    // Process spectrum data
-                    if (spectrumDataProcessing?.sampleRate != audioSamples.sampleRate) {
+                    // Process spectrogram data
+                    // TODO: Consider moving this to SpectrogramPlotViewModel so that FFT doesn't
+                    //       always run in background when we don't need it.
+                    if (spectrogramDataProcessing?.sampleRate != audioSamples.sampleRate) {
                         logger.debug("Processing spectrum data with sample rate of ${audioSamples.sampleRate}")
-                        spectrumDataProcessing = SpectrumDataProcessing(
+                        spectrogramDataProcessing = SpectrogramDataProcessing(
                             sampleRate = audioSamples.sampleRate,
                             windowSize = FFT_SIZE,
                             windowHop = FFT_HOP
                         )
                     }
-                    spectrumDataProcessing?.pushSamples(audioSamples.epoch, audioSamples.samples)
+                    spectrogramDataProcessing?.pushSamples(audioSamples.epoch, audioSamples.samples)
                         ?.forEach {
-                            spectrumDataFlow.tryEmit(it)
+                            spectrogramDataFlow.tryEmit(it)
                         }
                 }
         }
@@ -137,8 +138,8 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
         return leqRecordsFlow.asSharedFlow()
     }
 
-    override fun getSpectrumDataFlow(): Flow<SpectrumData> {
-        return spectrumDataFlow.asSharedFlow()
+    override fun getSpectrogramDataFlow(): Flow<SpectrogramData> {
+        return spectrogramDataFlow.asSharedFlow()
     }
 
     override fun getWeightedLeqFlow(
