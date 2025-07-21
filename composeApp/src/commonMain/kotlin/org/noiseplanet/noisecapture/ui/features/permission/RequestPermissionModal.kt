@@ -13,24 +13,27 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContent
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ModalBottomSheetProperties
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
-import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.permission.Permission
+import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
 
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun RequestPermissionModal(
     viewModel: RequestPermissionModalViewModel,
@@ -39,8 +42,10 @@ fun RequestPermissionModal(
 ) {
     // - Properties
 
-    val viewState: RequestPermissionModalViewModel.ViewSate? by viewModel.viewStateFlow
+    val optionalState: RequestPermissionModalViewModel.ViewSate? by viewModel.viewStateFlow
         .collectAsStateWithLifecycle(null)
+
+    val viewState = optionalState ?: return
 
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true,
@@ -50,23 +55,31 @@ fun RequestPermissionModal(
         }
     )
 
-    val logger: Logger = koinInject()
+    val actionButtonModifier = Modifier.fillMaxWidth(fraction = 0.5f).height(42.dp)
 
 
     // - Layout
 
-    logger.warning("STATE: $viewState")
-    val state = viewState ?: return
-
     ModalBottomSheet(
         sheetState = sheetState,
         onDismissRequest = {
-//            onSkipButtonPress()
+            // Not dismissable
         },
+        properties = ModalBottomSheetProperties(shouldDismissOnBackPress = false), // Not dismissable
         contentWindowInsets = {
             WindowInsets.safeContent.only(WindowInsetsSides.Bottom)
         },
     ) {
+
+        // Handle back press or back gesture.
+        BackHandler {
+            if (viewState.isRequired) {
+                onGoBackButtonPress()
+            } else {
+                onSkipButtonPress(viewState.permission)
+            }
+        }
+
         Column(
             verticalArrangement = Arrangement.spacedBy(4.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -77,21 +90,21 @@ fun RequestPermissionModal(
                 ),
         ) {
             Image(
-                painterResource(state.illustration),
+                painterResource(viewState.illustration),
                 contentDescription = "Permission illustration",
             )
 
             Spacer(modifier = Modifier.height(32.dp))
 
             Text(
-                text = stringResource(state.title),
+                text = stringResource(viewState.title),
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.SemiBold,
                 textAlign = TextAlign.Center,
             )
             Text(
-                text = stringResource(state.description),
+                text = stringResource(viewState.description),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -99,26 +112,38 @@ fun RequestPermissionModal(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            state.requestPermissionButtonViewModel?.let {
+            if (viewState.permissionState == PermissionState.NOT_DETERMINED) {
                 NCButton(
-                    viewModel = it,
-                    modifier = Modifier.fillMaxWidth(fraction = 0.5f).height(42.dp),
+                    viewModel = viewModel.requestPermissionButtonViewModel,
+                    modifier = actionButtonModifier,
                     onClick = {
-                        viewModel.requestPermission(state.prompt.permission)
+                        viewModel.requestPermission(viewState.permission)
+                    },
+                )
+            } else if (viewState.permissionState == PermissionState.DENIED) {
+                NCButton(
+                    viewModel = viewModel.openSettingsButtonViewModel,
+                    modifier = actionButtonModifier,
+                    onClick = {
+                        viewModel.openSettings(viewState.permission)
                     },
                 )
             }
-            state.openSettingsButtonViewModel?.let {
-                NCButton(viewModel = it, onClick = {
-                    viewModel.openSettings(state.prompt.permission)
-                })
-            }
 
-            if (!state.prompt.isRequired) {
+            if (viewState.isRequired) {
+                NCButton(
+                    viewModel = viewModel.goBackButtonViewModel,
+                    modifier = actionButtonModifier,
+                    onClick = {
+                        onGoBackButtonPress()
+                    }
+                )
+            } else {
                 NCButton(
                     viewModel = viewModel.skipButtonViewModel,
+                    modifier = actionButtonModifier,
                     onClick = {
-                        onSkipButtonPress(state.prompt.permission)
+                        onSkipButtonPress(viewState.permission)
                     }
                 )
             }

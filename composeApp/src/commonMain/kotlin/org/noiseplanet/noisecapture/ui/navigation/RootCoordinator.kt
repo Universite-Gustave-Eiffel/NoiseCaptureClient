@@ -105,7 +105,9 @@ fun RootCoordinator(
             onSkipButtonPress = { permission ->
                 viewModel.skipPermission(permission)
             },
-            onGoBackButtonPress = {},
+            onGoBackButtonPress = {
+                navController.popBackStack()
+            },
         )
     }
 }

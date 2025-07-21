@@ -14,6 +14,7 @@ import noisecapture.composeapp.generated.resources.compose_multiplatform
 import noisecapture.composeapp.generated.resources.permission_location_illustration
 import noisecapture.composeapp.generated.resources.permission_microphone_illustration
 import noisecapture.composeapp.generated.resources.permission_notifications_illustration
+import noisecapture.composeapp.generated.resources.request_permission_button_go_back
 import noisecapture.composeapp.generated.resources.request_permission_button_request
 import noisecapture.composeapp.generated.resources.request_permission_button_settings
 import noisecapture.composeapp.generated.resources.request_permission_button_skip
@@ -34,23 +35,22 @@ import org.noiseplanet.noisecapture.services.permission.PermissionService
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonStyle
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
-import org.noiseplanet.noisecapture.util.injectLogger
 
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class RequestPermissionModalViewModel(
-    private val permissionPromptFlow: SharedFlow<PermissionPrompt?>,
+    permissionPromptFlow: SharedFlow<PermissionPrompt?>,
 ) : ViewModel(), KoinComponent {
 
     // - Associated types
 
     data class ViewSate(
-        val prompt: PermissionPrompt,
+        val permission: Permission,
+        val isRequired: Boolean,
+        val permissionState: PermissionState,
         val title: StringResource,
         val description: StringResource,
         val illustration: DrawableResource,
-        val requestPermissionButtonViewModel: NCButtonViewModel? = null,
-        val openSettingsButtonViewModel: NCButtonViewModel? = null,
     )
 
 
@@ -58,14 +58,12 @@ class RequestPermissionModalViewModel(
 
     private val permissionService: PermissionService by inject()
 
-    private val requestPermissionButtonViewModel = NCButtonViewModel(
+    val requestPermissionButtonViewModel = NCButtonViewModel(
         title = Res.string.request_permission_button_request,
         hasDropShadow = true,
     )
 
-    private val logger by injectLogger()
-
-    private val openSettingsButtonViewModel = NCButtonViewModel(
+    val openSettingsButtonViewModel = NCButtonViewModel(
         title = Res.string.request_permission_button_settings,
         hasDropShadow = true,
     )
@@ -76,39 +74,29 @@ class RequestPermissionModalViewModel(
         colors = { NCButtonColors.Defaults.text() }
     )
 
+    val goBackButtonViewModel = NCButtonViewModel(
+        title = Res.string.request_permission_button_go_back,
+        style = NCButtonStyle.TEXT,
+        colors = { NCButtonColors.Defaults.text() }
+    )
+
     val viewStateFlow: Flow<ViewSate?> = permissionPromptFlow
         .flatMapLatest { prompt ->
-            if (prompt == null) return@flatMapLatest flowOf(null)
-
-            logger.warning("PROMPTTTT: $prompt")
-
-            permissionService.getPermissionStateFlow(prompt.permission)
-                .map { Pair(prompt, it) }
+            prompt?.let {
+                permissionService.getPermissionStateFlow(prompt.permission)
+                    .map { Pair(prompt, it) }
+            } ?: flowOf(null)
         }
         .map { promptAndState ->
             val (prompt, state) = promptAndState ?: return@map null
-
-            logger.warning("STATTTTE: $state")
-
-            when (state) {
-                PermissionState.NOT_DETERMINED -> ViewSate(
-                    prompt = prompt,
-                    title = getTitleForPermission(prompt.permission),
-                    description = getDescriptionForPermission(prompt.permission),
-                    illustration = getIllustrationForPermission(prompt.permission),
-                    requestPermissionButtonViewModel = requestPermissionButtonViewModel
-                )
-
-                PermissionState.DENIED -> ViewSate(
-                    prompt = prompt,
-                    title = getTitleForPermission(prompt.permission),
-                    description = getDescriptionForPermission(prompt.permission),
-                    illustration = getIllustrationForPermission(prompt.permission),
-                    openSettingsButtonViewModel = openSettingsButtonViewModel
-                )
-
-                else -> null
-            }
+            ViewSate(
+                permission = prompt.permission,
+                isRequired = prompt.isRequired,
+                permissionState = state,
+                title = getTitleForPermission(prompt.permission),
+                description = getDescriptionForPermission(prompt.permission),
+                illustration = getIllustrationForPermission(prompt.permission),
+            )
         }
 
 

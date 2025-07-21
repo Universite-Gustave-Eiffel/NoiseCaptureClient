@@ -20,7 +20,6 @@ import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.services.measurement.MeasurementRecordingService
 import org.noiseplanet.noisecapture.services.permission.PermissionService
 import org.noiseplanet.noisecapture.ui.features.permission.PermissionPrompt
-import org.noiseplanet.noisecapture.util.injectLogger
 
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -38,8 +37,6 @@ class RootCoordinatorViewModel : ViewModel(), KoinComponent {
         replay = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST,
     )
-
-    private val logger by injectLogger()
 
     /**
      * Keep track of optional permissions that were already prompted to the user during this
