@@ -17,55 +17,51 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.parameter.parametersOf
+import org.koin.compose.koinInject
+import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
 
 
 @Composable
 fun RequestPermissionModal(
-    permission: Permission,
-    isRequired: Boolean,
+    viewModel: RequestPermissionModalViewModel,
+    onSkipButtonPress: (Permission) -> Unit,
+    onGoBackButtonPress: () -> Unit,
 ) {
     // - Properties
 
-    val viewModel: RequestPermissionModalViewModel = koinViewModel { parametersOf(permission) }
-    val viewState: RequestPermissionModalViewModel.ViewSate by viewModel.viewStateFlow.collectAsStateWithLifecycle()
+    val viewState: RequestPermissionModalViewModel.ViewSate? by viewModel.viewStateFlow
+        .collectAsStateWithLifecycle(null)
 
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true,
         confirmValueChange = { _ ->
-            // Only optional permission prompts can be dismissed
-            !isRequired
+            // Only allow to close modal by pressing skip or go back button.
+            false
         }
     )
-    var showBottomSheet by remember { mutableStateOf(true) }
 
-    val scope = rememberCoroutineScope()
+    val logger: Logger = koinInject()
 
 
     // - Layout
 
-    if (!showBottomSheet) return
+    logger.warning("STATE: $viewState")
+    val state = viewState ?: return
 
     ModalBottomSheet(
         sheetState = sheetState,
         onDismissRequest = {
-            showBottomSheet = false
+//            onSkipButtonPress()
         },
         contentWindowInsets = {
             WindowInsets.safeContent.only(WindowInsetsSides.Bottom)
@@ -81,21 +77,21 @@ fun RequestPermissionModal(
                 ),
         ) {
             Image(
-                painterResource(viewModel.illustration),
+                painterResource(state.illustration),
                 contentDescription = "Permission illustration",
             )
 
             Spacer(modifier = Modifier.height(32.dp))
 
             Text(
-                text = stringResource(viewModel.title),
+                text = stringResource(state.title),
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.SemiBold,
                 textAlign = TextAlign.Center,
             )
             Text(
-                text = stringResource(viewModel.description),
+                text = stringResource(state.description),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -103,30 +99,26 @@ fun RequestPermissionModal(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            viewState.requestPermissionButtonViewModel?.let {
+            state.requestPermissionButtonViewModel?.let {
                 NCButton(
                     viewModel = it,
                     modifier = Modifier.fillMaxWidth(fraction = 0.5f).height(42.dp),
                     onClick = {
-                        viewModel.requestPermission()
+                        viewModel.requestPermission(state.prompt.permission)
                     },
                 )
             }
-            viewState.openSettingsButtonViewModel?.let {
+            state.openSettingsButtonViewModel?.let {
                 NCButton(viewModel = it, onClick = {
-                    viewModel.openSettings()
+                    viewModel.openSettings(state.prompt.permission)
                 })
             }
 
-            if (!isRequired) {
+            if (!state.prompt.isRequired) {
                 NCButton(
                     viewModel = viewModel.skipButtonViewModel,
                     onClick = {
-                        scope.launch { sheetState.hide() }.invokeOnCompletion {
-                            if (!sheetState.isVisible) {
-                                showBottomSheet = false
-                            }
-                        }
+                        onSkipButtonPress(state.prompt.permission)
                     }
                 )
             }

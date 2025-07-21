@@ -3,15 +3,15 @@ package org.noiseplanet.noisecapture.ui.navigation
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBar
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBarState
 import org.noiseplanet.noisecapture.ui.components.appbar.rememberAppBarState
@@ -33,9 +33,6 @@ fun RootCoordinator(
     val appBarState: AppBarState = rememberAppBarState(navController)
 
     val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
-
-    val permissionPrompt: RootCoordinatorViewModel.PermissionPrompt? by viewModel
-        .permissionPrompt.collectAsStateWithLifecycle()
 
 
     // - Lifecycle
@@ -103,11 +100,12 @@ fun RootCoordinator(
         )
 
         // If needed, prompt permission request to the user
-        permissionPrompt?.let {
-            RequestPermissionModal(
-                permission = it.permission,
-                isRequired = it.isRequired,
-            )
-        }
+        RequestPermissionModal(
+            viewModel = koinViewModel { parametersOf(viewModel.permissionPrompt) },
+            onSkipButtonPress = { permission ->
+                viewModel.skipPermission(permission)
+            },
+            onGoBackButtonPress = {},
+        )
     }
 }

@@ -2,8 +2,11 @@ package org.noiseplanet.noisecapture.ui.features.permission
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
@@ -31,16 +34,21 @@ import org.noiseplanet.noisecapture.services.permission.PermissionService
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonStyle
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
-import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
+import org.noiseplanet.noisecapture.util.injectLogger
 
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class RequestPermissionModalViewModel(
-    private val permission: Permission,
+    private val permissionPromptFlow: SharedFlow<PermissionPrompt?>,
 ) : ViewModel(), KoinComponent {
 
     // - Associated types
 
     data class ViewSate(
+        val prompt: PermissionPrompt,
+        val title: StringResource,
+        val description: StringResource,
+        val illustration: DrawableResource,
         val requestPermissionButtonViewModel: NCButtonViewModel? = null,
         val openSettingsButtonViewModel: NCButtonViewModel? = null,
     )
@@ -50,13 +58,12 @@ class RequestPermissionModalViewModel(
 
     private val permissionService: PermissionService by inject()
 
-    private val permissionStateFlow: Flow<PermissionState> = permissionService
-        .getPermissionStateFlow(permission)
-
     private val requestPermissionButtonViewModel = NCButtonViewModel(
         title = Res.string.request_permission_button_request,
         hasDropShadow = true,
     )
+
+    private val logger by injectLogger()
 
     private val openSettingsButtonViewModel = NCButtonViewModel(
         title = Res.string.request_permission_button_settings,
@@ -69,16 +76,58 @@ class RequestPermissionModalViewModel(
         colors = { NCButtonColors.Defaults.text() }
     )
 
-    val illustration: DrawableResource = when (permission) {
-        Permission.RECORD_AUDIO -> Res.drawable.permission_microphone_illustration
-        Permission.POST_NOTIFICATIONS -> Res.drawable.permission_notifications_illustration
-        Permission.LOCATION_FOREGROUND, Permission.LOCATION_BACKGROUND, Permission.LOCATION_SERVICE_ON -> {
-            Res.drawable.permission_location_illustration
+    val viewStateFlow: Flow<ViewSate?> = permissionPromptFlow
+        .flatMapLatest { prompt ->
+            if (prompt == null) return@flatMapLatest flowOf(null)
+
+            logger.warning("PROMPTTTT: $prompt")
+
+            permissionService.getPermissionStateFlow(prompt.permission)
+                .map { Pair(prompt, it) }
+        }
+        .map { promptAndState ->
+            val (prompt, state) = promptAndState ?: return@map null
+
+            logger.warning("STATTTTE: $state")
+
+            when (state) {
+                PermissionState.NOT_DETERMINED -> ViewSate(
+                    prompt = prompt,
+                    title = getTitleForPermission(prompt.permission),
+                    description = getDescriptionForPermission(prompt.permission),
+                    illustration = getIllustrationForPermission(prompt.permission),
+                    requestPermissionButtonViewModel = requestPermissionButtonViewModel
+                )
+
+                PermissionState.DENIED -> ViewSate(
+                    prompt = prompt,
+                    title = getTitleForPermission(prompt.permission),
+                    description = getDescriptionForPermission(prompt.permission),
+                    illustration = getIllustrationForPermission(prompt.permission),
+                    openSettingsButtonViewModel = openSettingsButtonViewModel
+                )
+
+                else -> null
+            }
         }
 
-        else -> Res.drawable.compose_multiplatform
+
+    // - Public functions
+
+    fun requestPermission(permission: Permission) {
+        viewModelScope.launch {
+            permissionService.requestPermission(permission)
+        }
     }
-    val title: StringResource = when (permission) {
+
+    fun openSettings(permission: Permission) {
+        permissionService.openSettingsForPermission(permission)
+    }
+
+
+    // - Private functions
+
+    private fun getTitleForPermission(permission: Permission) = when (permission) {
         Permission.RECORD_AUDIO -> Res.string.request_permission_microphone_title
         Permission.POST_NOTIFICATIONS -> Res.string.request_permission_notifications_title
         Permission.LOCATION_FOREGROUND, Permission.LOCATION_BACKGROUND, Permission.LOCATION_SERVICE_ON -> {
@@ -87,7 +136,8 @@ class RequestPermissionModalViewModel(
 
         else -> Res.string.request_permission_title
     }
-    val description: StringResource = when (permission) {
+
+    private fun getDescriptionForPermission(permission: Permission) = when (permission) {
         Permission.RECORD_AUDIO -> Res.string.request_permission_microphone_description
         Permission.POST_NOTIFICATIONS -> Res.string.request_permission_notifications_description
         Permission.LOCATION_FOREGROUND, Permission.LOCATION_BACKGROUND, Permission.LOCATION_SERVICE_ON -> {
@@ -97,35 +147,13 @@ class RequestPermissionModalViewModel(
         else -> Res.string.request_permission_title
     }
 
-    val viewStateFlow: StateFlow<ViewSate> = permissionStateFlow
-        .map { permissionState ->
-            when (permissionState) {
-                PermissionState.NOT_DETERMINED -> ViewSate(
-                    requestPermissionButtonViewModel = requestPermissionButtonViewModel
-                )
-
-                PermissionState.DENIED -> ViewSate(
-                    openSettingsButtonViewModel = openSettingsButtonViewModel
-                )
-
-                else -> ViewSate()
-            }
+    private fun getIllustrationForPermission(permission: Permission) = when (permission) {
+        Permission.RECORD_AUDIO -> Res.drawable.permission_microphone_illustration
+        Permission.POST_NOTIFICATIONS -> Res.drawable.permission_notifications_illustration
+        Permission.LOCATION_FOREGROUND, Permission.LOCATION_BACKGROUND, Permission.LOCATION_SERVICE_ON -> {
+            Res.drawable.permission_location_illustration
         }
-        .stateInWhileSubscribed(
-            scope = viewModelScope,
-            initialValue = ViewSate()
-        )
 
-
-    // - Public functions
-
-    fun requestPermission() {
-        viewModelScope.launch {
-            permissionService.requestPermission(permission)
-        }
-    }
-
-    fun openSettings() {
-        permissionService.openSettingsForPermission(permission)
+        else -> Res.drawable.compose_multiplatform
     }
 }

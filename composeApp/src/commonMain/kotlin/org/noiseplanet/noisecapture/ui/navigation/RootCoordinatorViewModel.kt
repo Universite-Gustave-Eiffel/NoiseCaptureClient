@@ -4,12 +4,14 @@ import Platform
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.shareIn
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.permission.Permission
@@ -17,19 +19,12 @@ import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.services.measurement.MeasurementRecordingService
 import org.noiseplanet.noisecapture.services.permission.PermissionService
-import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
+import org.noiseplanet.noisecapture.ui.features.permission.PermissionPrompt
+import org.noiseplanet.noisecapture.util.injectLogger
 
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class RootCoordinatorViewModel : ViewModel(), KoinComponent {
-
-    // - Associated types
-
-    data class PermissionPrompt(
-        val permission: Permission,
-        val isRequired: Boolean,
-    )
-
 
     // - Properties
 
@@ -38,7 +33,13 @@ class RootCoordinatorViewModel : ViewModel(), KoinComponent {
     private val permissionService: PermissionService by inject()
     private val platform: Platform by inject()
 
-    private val currentRouteFlow: MutableStateFlow<Route?> = MutableStateFlow(null)
+    private var currentRoute: Route? = null
+    private val refreshPermissionPromptFlow = MutableSharedFlow<Unit>(
+        replay = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
+
+    private val logger by injectLogger()
 
     /**
      * Keep track of optional permissions that were already prompted to the user during this
@@ -50,9 +51,10 @@ class RootCoordinatorViewModel : ViewModel(), KoinComponent {
      * While navigating through the app, check for required permissions for the current route.
      * Prompt user for permission request if necessary.
      */
-    val permissionPrompt: StateFlow<PermissionPrompt?> = currentRouteFlow
-        .filterNotNull()
-        .flatMapLatest { route ->
+    val permissionPrompt: SharedFlow<PermissionPrompt?> = refreshPermissionPromptFlow
+        .flatMapLatest { _ ->
+            val route = currentRoute ?: return@flatMapLatest flowOf(null)
+
             // Get all required or optional permissions for the current route,
             // required permissions come first in the list, then optional.
             val requiredPermissions = platform.requiredPermissions[route.id] ?: emptyList()
@@ -69,26 +71,22 @@ class RootCoordinatorViewModel : ViewModel(), KoinComponent {
                 val permission = routePermissionStates.keys.firstOrNull { permission ->
                     val index = routePermissionStates.keys.indexOf(permission)
                     val isGranted = states[index] == PermissionState.GRANTED
+                    val isRequired = requiredPermissions.contains(permission)
                     val alreadyPrompted = alreadyPromptedPermissionsForCurrentSession
                         .contains(permission)
 
-                    !isGranted && !alreadyPrompted
+                    !isGranted && (isRequired || !alreadyPrompted)
                 }
                 permission?.let {
                     val isRequired = requiredPermissions.contains(it)
-                    if (!isRequired) {
-                        // If permission is optional, keep track that we've already prompted
-                        // it to the user for this screen to avoid asking again.
-                        alreadyPromptedPermissionsForCurrentSession.add(it)
-                    }
                     PermissionPrompt(it, isRequired)
                 }
             }
         }
-        .distinctUntilChanged()
-        .stateInWhileSubscribed(
+        .shareIn(
             scope = viewModelScope,
-            initialValue = null,
+            started = SharingStarted.WhileSubscribed(5_000),
+            replay = 1,
         )
 
     val isRecording: Boolean
@@ -126,9 +124,11 @@ class RootCoordinatorViewModel : ViewModel(), KoinComponent {
      * required permissions if necessary.
      */
     fun setCurrentRoute(route: Route) {
-        if (currentRouteFlow.value != route) {
+        if (currentRoute != route) {
+            currentRoute = route
             toggleAudioSourceForScreen(route)
-            currentRouteFlow.tryEmit(route)
+            refreshPermissionStates()
+            refreshPermissionPromptFlow.tryEmit(Unit)
         }
     }
 
@@ -139,6 +139,15 @@ class RootCoordinatorViewModel : ViewModel(), KoinComponent {
         Permission.entries.forEach {
             permissionService.refreshPermissionState(it)
         }
+    }
+
+    /**
+     * If permission is optional, keep track that we've already prompted
+     * it to the user for this screen to avoid asking again.
+     */
+    fun skipPermission(permission: Permission) {
+        alreadyPromptedPermissionsForCurrentSession.add(permission)
+        refreshPermissionPromptFlow.tryEmit(Unit)
     }
 
 
