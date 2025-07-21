@@ -23,6 +23,9 @@ import org.noiseplanet.noisecapture.audio.signal.window.SpectrogramData
 import org.noiseplanet.noisecapture.audio.signal.window.SpectrogramDataProcessing
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.dao.LeqRecord
+import org.noiseplanet.noisecapture.permission.Permission
+import org.noiseplanet.noisecapture.permission.PermissionState
+import org.noiseplanet.noisecapture.services.permission.PermissionService
 import org.noiseplanet.noisecapture.util.injectLogger
 import kotlin.time.Duration
 
@@ -45,6 +48,13 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
 
     private val logger: Logger by injectLogger()
     private val audioSource: AudioSource by inject()
+    private val permissionService: PermissionService by inject()
+
+    private val isPermissionGrantedFlow: Flow<Boolean> = permissionService
+        .getPermissionStateFlow(Permission.RECORD_AUDIO)
+        .map { it == PermissionState.GRANTED }
+
+    private var startOnReady: Boolean = false
 
     private var indicatorsProcessing: AcousticIndicatorsProcessing? = null
     private var spectrogramDataProcessing: SpectrogramDataProcessing? = null
@@ -108,29 +118,48 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
                 }
         }
 
-        // Setup audio source
-        audioSource.setup()
+        // Setup audio source whenever microphone permission is granted.
+        coroutineScope.launch {
+            permissionService.getPermissionStateFlow(Permission.RECORD_AUDIO)
+                .map { it == PermissionState.GRANTED }
+                .collect { isPermissionGranted ->
+                    if (isPermissionGranted) {
+                        audioSource.setup()
+                    }
+                }
+        }
+
+        // Listen to audio source state to start it whenever it is ready
+        coroutineScope.launch {
+            audioSourceStateFlow.collect { state ->
+                if (state == AudioSourceState.READY && startOnReady) {
+                    audioSource.start()
+                }
+            }
+        }
     }
 
     override fun releaseAudioSource() {
         // Cancel processing job
-        coroutineScope.launch(Dispatchers.Default) {
-            audioJob?.cancel()
-        }
+        audioJob?.cancel()
         // Release audio source
         audioSource.release()
         _isRunningFlow.tryEmit(false)
     }
 
     override fun startListening() {
-        // Start audio source
-        audioSource.start()
-        _isRunningFlow.tryEmit(true)
+        if (audioSourceState == AudioSourceState.UNINITIALIZED) {
+            startOnReady = true
+        } else {
+            audioSource.start()
+            _isRunningFlow.tryEmit(audioSourceState == AudioSourceState.RUNNING)
+        }
     }
 
     override fun stopListening() {
-        // Pause audio source
+        // Pause audio source, or cancel delayed start if needed
         audioSource.pause()
+        startOnReady = false
         _isRunningFlow.tryEmit(false)
     }
 
