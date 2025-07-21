@@ -50,10 +50,6 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
     private val audioSource: AudioSource by inject()
     private val permissionService: PermissionService by inject()
 
-    private val isPermissionGrantedFlow: Flow<Boolean> = permissionService
-        .getPermissionStateFlow(Permission.RECORD_AUDIO)
-        .map { it == PermissionState.GRANTED }
-
     private var startOnReady: Boolean = false
 
     private var indicatorsProcessing: AcousticIndicatorsProcessing? = null
