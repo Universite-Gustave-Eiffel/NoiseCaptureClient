@@ -53,13 +53,6 @@ internal abstract class DefaultPermissionDelegate(
 
     override fun checkPermissionState() {
         // No need for manual updates, new values will come through registered event listener.
-
-//        navigator?.permissions
-//            ?.query(createPermissionDescriptor(permission.toJsPermission()))
-//            ?.then { permissionStatus ->
-//                // Handle initial value
-//                handlePermissionStatus(permissionStatus)
-//                }
     }
 
     override fun openSettingPage() {
