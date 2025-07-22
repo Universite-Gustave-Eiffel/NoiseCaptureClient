@@ -18,6 +18,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -26,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.permission.Permission
@@ -42,10 +47,11 @@ fun RequestPermissionModal(
 ) {
     // - Properties
 
-    val optionalState: RequestPermissionModalViewModel.ViewSate? by viewModel.viewStateFlow
-        .collectAsStateWithLifecycle(null)
+    val scope = rememberCoroutineScope()
+    val isVisible by viewModel.isVisibleFlow.collectAsStateWithLifecycle()
+    val state by viewModel.viewStateFlow.collectAsStateWithLifecycle()
 
-    val viewState = optionalState ?: return
+    val viewState = state as? RequestPermissionModalViewModel.ViewState.Ready ?: return
 
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true,
@@ -54,11 +60,23 @@ fun RequestPermissionModal(
             false
         }
     )
+    var displaySheet by remember { mutableStateOf(isVisible) }
 
     val actionButtonModifier = Modifier.fillMaxWidth(fraction = 0.5f).height(42.dp)
 
 
+    // Show or hide sheet based on visibility property
+    if (isVisible) {
+        displaySheet = true
+        scope.launch { sheetState.show() }
+    } else {
+        scope.launch { sheetState.hide() }
+            .invokeOnCompletion { displaySheet = false }
+    }
+
     // - Layout
+
+    if (!displaySheet) return
 
     ModalBottomSheet(
         sheetState = sheetState,

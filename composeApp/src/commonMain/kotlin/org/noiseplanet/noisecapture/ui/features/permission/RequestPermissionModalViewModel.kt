@@ -3,11 +3,14 @@ package org.noiseplanet.noisecapture.ui.features.permission
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.compose_multiplatform
@@ -35,6 +38,7 @@ import org.noiseplanet.noisecapture.services.permission.PermissionService
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonStyle
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
+import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -44,14 +48,19 @@ class RequestPermissionModalViewModel(
 
     // - Associated types
 
-    data class ViewSate(
-        val permission: Permission,
-        val isRequired: Boolean,
-        val permissionState: PermissionState,
-        val title: StringResource,
-        val description: StringResource,
-        val illustration: DrawableResource,
-    )
+    interface ViewState {
+
+        data class Ready(
+            val permission: Permission,
+            val isRequired: Boolean,
+            val permissionState: PermissionState,
+            val title: StringResource,
+            val description: StringResource,
+            val illustration: DrawableResource,
+        ) : ViewState
+
+        object Loading : ViewState
+    }
 
 
     // - Properties
@@ -80,16 +89,19 @@ class RequestPermissionModalViewModel(
         colors = { NCButtonColors.Defaults.text() }
     )
 
-    val viewStateFlow: Flow<ViewSate?> = permissionPromptFlow
+    val viewStateFlow: StateFlow<ViewState> = permissionPromptFlow
         .flatMapLatest { prompt ->
             prompt?.let {
                 permissionService.getPermissionStateFlow(prompt.permission)
                     .map { Pair(prompt, it) }
             } ?: flowOf(null)
         }
-        .map { promptAndState ->
-            val (prompt, state) = promptAndState ?: return@map null
-            ViewSate(
+        .onEach { promptAndState ->
+            _isVisibleFlow.tryEmit(promptAndState != null)
+        }
+        .filterNotNull()
+        .map { (prompt, state) ->
+            ViewState.Ready(
                 permission = prompt.permission,
                 isRequired = prompt.isRequired,
                 permissionState = state,
@@ -98,6 +110,13 @@ class RequestPermissionModalViewModel(
                 illustration = getIllustrationForPermission(prompt.permission),
             )
         }
+        .stateInWhileSubscribed(
+            scope = viewModelScope,
+            initialValue = ViewState.Loading
+        )
+
+    private val _isVisibleFlow = MutableStateFlow(false)
+    val isVisibleFlow: StateFlow<Boolean> = _isVisibleFlow
 
 
     // - Public functions
