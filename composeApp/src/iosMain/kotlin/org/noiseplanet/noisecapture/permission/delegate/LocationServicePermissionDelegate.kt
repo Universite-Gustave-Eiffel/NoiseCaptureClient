@@ -1,22 +1,42 @@
 package org.noiseplanet.noisecapture.permission.delegate
 
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import org.noiseplanet.noisecapture.permission.LocationManager
 import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.permission.util.openNSUrl
-import platform.CoreLocation.CLLocationManager
 
-internal class LocationServicePermissionDelegate : PermissionDelegate {
+internal class LocationServicePermissionDelegate : PermissionDelegate, KoinComponent {
 
-    private val locationManager = CLLocationManager()
+    // - Properties
 
-    override suspend fun getPermissionState(): PermissionState {
-        return if (locationManager.locationServicesEnabled()) {
+    private val locationManager: LocationManager by inject()
+
+    private val permissionMutableSateFlow = MutableStateFlow(PermissionState.NOT_DETERMINED)
+    override val permissionStateFlow: StateFlow<PermissionState> = permissionMutableSateFlow
+
+
+    // - Lifecycle
+
+    init {
+        checkPermissionState()
+    }
+
+
+    // - Public functions
+
+    override fun checkPermissionState() {
+        val state = if (locationManager.locationServicesEnabled) {
             PermissionState.GRANTED
         } else {
             PermissionState.DENIED
         }
+        permissionMutableSateFlow.tryEmit(state)
     }
 
-    override suspend fun providePermission() {
+    override fun providePermission() {
         openSettingPage()
     }
 

@@ -5,16 +5,19 @@ import kotlinx.serialization.Serializable
 
 /**
  * A unique route identifier, regardless of eventual route constructor parameters
+ *
+ * TODO: With current compose navigation library, using an enum for this property crashes on iOS.
+ *       Check with later updates if we can use an enum instead.
  */
-@Serializable
-enum class RouteId {
+object RouteIds {
 
-    HOME,
-    MEASUREMENT_RECORDING,
-    HISTORY,
-    SETTINGS,
-    MEASUREMENT_DETAILS,
+    const val HOME = "home"
+    const val MEASUREMENT_RECORDING = "measurement_recording"
+    const val HISTORY = "history"
+    const val SETTINGS = "settings"
+    const val MEASUREMENT_DETAILS = "measurement_details"
 }
+typealias RouteId = String
 
 
 /**
@@ -33,19 +36,19 @@ open class Route(
 // - Routes
 
 @Serializable
-class HomeRoute : Route(id = RouteId.HOME, usesAudioSource = true)
+class HomeRoute : Route(id = RouteIds.HOME, usesAudioSource = true)
 
 @Serializable
-class MeasurementRecordingRoute : Route(id = RouteId.MEASUREMENT_RECORDING, usesAudioSource = true)
+class MeasurementRecordingRoute : Route(id = RouteIds.MEASUREMENT_RECORDING, usesAudioSource = true)
 
 @Serializable
-class HistoryRoute : Route(id = RouteId.HISTORY)
+class HistoryRoute : Route(id = RouteIds.HISTORY)
 
 @Serializable
-class SettingsRoute : Route(id = RouteId.SETTINGS)
+class SettingsRoute : Route(id = RouteIds.SETTINGS)
 
 @Serializable
 class MeasurementDetailsRoute(
     val measurementId: String,
     val parentRouteId: String,
-) : Route(id = RouteId.MEASUREMENT_DETAILS)
+) : Route(id = RouteIds.MEASUREMENT_DETAILS)

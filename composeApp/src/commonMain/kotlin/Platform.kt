@@ -1,6 +1,7 @@
 import org.noiseplanet.noisecapture.model.dao.UserAgent
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.ui.navigation.RouteId
+import org.noiseplanet.noisecapture.ui.navigation.RouteIds
 
 /**
  * Describes a platform running the app.
@@ -19,7 +20,7 @@ interface Platform {
      */
     val requiredPermissions: Map<RouteId, List<Permission>>
         get() = mapOf(
-            RouteId.MEASUREMENT_RECORDING to listOf(Permission.RECORD_AUDIO)
+            RouteIds.MEASUREMENT_RECORDING to listOf(Permission.RECORD_AUDIO)
         )
 
     /**
@@ -29,10 +30,10 @@ interface Platform {
      */
     val optionalPermissions: Map<RouteId, List<Permission>>
         get() = mapOf(
-            RouteId.HOME to listOf(Permission.RECORD_AUDIO),
-            RouteId.MEASUREMENT_RECORDING to listOf(
+            RouteIds.HOME to listOf(Permission.RECORD_AUDIO),
+            RouteIds.MEASUREMENT_RECORDING to listOf(
                 Permission.LOCATION_SERVICE_ON,
-                Permission.LOCATION_FOREGROUND,
+                Permission.LOCATION_BACKGROUND,
             )
         )
 }

@@ -1,33 +1,63 @@
 package org.noiseplanet.noisecapture.permission.delegate
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import org.noiseplanet.noisecapture.permission.LocationManager
 import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.permission.util.openNSUrl
-import platform.CoreLocation.CLLocationManager
+import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 import platform.CoreLocation.kCLAuthorizationStatusAuthorizedAlways
 import platform.CoreLocation.kCLAuthorizationStatusAuthorizedWhenInUse
 import platform.CoreLocation.kCLAuthorizationStatusDenied
-import platform.CoreLocation.kCLAuthorizationStatusNotDetermined
 import platform.CoreLocation.kCLAuthorizationStatusRestricted
 
-internal class LocationForegroundPermissionDelegate : PermissionDelegate {
+internal class LocationForegroundPermissionDelegate : PermissionDelegate, KoinComponent {
 
-    private var locationManager = CLLocationManager()
+    // - Properties
 
-    override suspend fun getPermissionState(): PermissionState {
-        return when (locationManager.authorizationStatus()) {
-            kCLAuthorizationStatusAuthorizedAlways,
-            kCLAuthorizationStatusAuthorizedWhenInUse,
-            kCLAuthorizationStatusRestricted,
-            -> PermissionState.GRANTED
+    private val locationManager: LocationManager by inject()
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-            kCLAuthorizationStatusNotDetermined -> PermissionState.NOT_DETERMINED
-            kCLAuthorizationStatusDenied -> PermissionState.DENIED
-            else -> PermissionState.NOT_DETERMINED
-        }
+    override val permissionStateFlow: StateFlow<PermissionState> = locationManager
+        .authorizationStatusFlow
+        .map { status ->
+            when (status) {
+                kCLAuthorizationStatusDenied,
+                kCLAuthorizationStatusRestricted,
+                    -> PermissionState.DENIED
+
+                kCLAuthorizationStatusAuthorizedAlways,
+                kCLAuthorizationStatusAuthorizedWhenInUse,
+                    -> PermissionState.GRANTED
+
+                else -> PermissionState.NOT_DETERMINED
+            }
+        }.stateInWhileSubscribed(
+            scope = scope,
+            initialValue = PermissionState.NOT_DETERMINED
+        )
+
+
+    // - Lifecycle
+
+    init {
+        locationManager.refreshStatus()
     }
 
-    override suspend fun providePermission() {
-        locationManager.requestWhenInUseAuthorization()
+
+    // - Public functions
+
+    override fun checkPermissionState() {
+        locationManager.refreshStatus()
+    }
+
+    override fun providePermission() {
+        locationManager.requestForegroundAuthorization()
     }
 
     override fun openSettingPage() {
