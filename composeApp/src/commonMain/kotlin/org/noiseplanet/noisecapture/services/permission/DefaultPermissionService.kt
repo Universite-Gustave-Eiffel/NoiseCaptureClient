@@ -30,6 +30,10 @@ internal class DefaultPermissionService : PermissionService {
         getPermissionDelegate(permission).providePermission()
     }
 
+    override fun canOpenSettingsForPermission(permission: Permission): Boolean {
+        return getPermissionDelegate(permission).canOpenSettings()
+    }
+
     override fun openSettingsForPermission(permission: Permission) {
         getPermissionDelegate(permission).openSettingPage()
     }

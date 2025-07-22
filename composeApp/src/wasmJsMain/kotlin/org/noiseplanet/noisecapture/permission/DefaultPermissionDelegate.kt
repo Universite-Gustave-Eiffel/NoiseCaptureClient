@@ -55,8 +55,11 @@ internal abstract class DefaultPermissionDelegate(
         // No need for manual updates, new values will come through registered event listener.
     }
 
+    override fun canOpenSettings(): Boolean = false
+
     override fun openSettingPage() {
-        // TODO: Show a popup to the user? Simply hide the open settings button?
+        // For now we just hide the settings button.
+        // TODO: Show a popup to the user?
     }
 
 

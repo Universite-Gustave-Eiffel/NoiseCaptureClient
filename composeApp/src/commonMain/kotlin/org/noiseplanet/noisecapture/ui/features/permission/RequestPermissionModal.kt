@@ -138,7 +138,7 @@ fun RequestPermissionModal(
                         viewModel.requestPermission(viewState.permission)
                     },
                 )
-            } else if (viewState.permissionState == PermissionState.DENIED) {
+            } else if (viewState.permissionState == PermissionState.DENIED && viewState.canOpenSettings) {
                 NCButton(
                     viewModel = viewModel.openSettingsButtonViewModel,
                     modifier = actionButtonModifier,

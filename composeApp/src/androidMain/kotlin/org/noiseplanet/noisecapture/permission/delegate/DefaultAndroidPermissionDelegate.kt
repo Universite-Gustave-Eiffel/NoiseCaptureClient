@@ -48,6 +48,8 @@ internal open class DefaultAndroidPermissionDelegate(
         }
     }
 
+    override fun canOpenSettings(): Boolean = true
+
     override fun openSettingPage() {
         context.openAppSettingsPage(permission)
     }

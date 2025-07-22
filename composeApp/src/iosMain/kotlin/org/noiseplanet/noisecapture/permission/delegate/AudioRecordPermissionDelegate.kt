@@ -45,6 +45,8 @@ internal class AudioRecordPermissionDelegate : PermissionDelegate, KoinComponent
         }
     }
 
+    override fun canOpenSettings(): Boolean = true
+
     override fun openSettingPage() {
         openNSUrl("App-prefs:Privacy&path=MICROPHONE")
     }

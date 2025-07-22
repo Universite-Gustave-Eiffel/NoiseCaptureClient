@@ -49,6 +49,8 @@ internal class LocationServicePermissionDelegate(
         openSettingPage()
     }
 
+    override fun canOpenSettings(): Boolean = true
+
     override fun openSettingPage() {
         context.openPage(
             action = Settings.ACTION_LOCATION_SOURCE_SETTINGS,

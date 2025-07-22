@@ -40,6 +40,8 @@ internal class LocationServicePermissionDelegate : PermissionDelegate, KoinCompo
         openSettingPage()
     }
 
+    override fun canOpenSettings(): Boolean = true
+
     override fun openSettingPage() {
         openNSUrl("App-Prefs:Privacy&path=LOCATION")
     }

@@ -60,6 +60,8 @@ internal class LocationForegroundPermissionDelegate : PermissionDelegate, KoinCo
         locationManager.requestForegroundAuthorization()
     }
 
+    override fun canOpenSettings(): Boolean = true
+
     override fun openSettingPage() {
         openNSUrl("App-Prefs:Privacy&path=LOCATION")
     }

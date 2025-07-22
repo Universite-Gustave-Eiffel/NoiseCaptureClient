@@ -18,9 +18,6 @@ internal interface PermissionDelegate {
      */
     val permissionStateFlow: StateFlow<PermissionState>
 
-    // TODO: Include a property to see if one can open settings for this permission
-    //       (would be always false for web targets)
-
 
     // - Public functions
 
@@ -33,6 +30,13 @@ internal interface PermissionDelegate {
      * Opens permission request dialog if possible.
      */
     fun providePermission()
+
+
+    /**
+     * Returns true if this permission delegate can automatically redirect the user
+     * to the system settings page corresponding to this permission.
+     */
+    fun canOpenSettings(): Boolean
 
     /**
      * Opens the associated settings page, if possible.
@@ -59,6 +63,8 @@ internal class NotImplementedPermissionDelegate : PermissionDelegate {
 
     override fun providePermission() {
     }
+
+    override fun canOpenSettings(): Boolean = false
 
     override fun openSettingPage() {
     }

@@ -18,7 +18,6 @@ interface PermissionService : KoinComponent {
      */
     fun getPermissionStateFlow(permission: Permission): StateFlow<PermissionState>
 
-
     /**
      * Returns the current state of the given permission
      *
@@ -42,6 +41,15 @@ interface PermissionService : KoinComponent {
      * @param permission Target permission
      */
     fun openSettingsForPermission(permission: Permission)
+
+    /**
+     * Tells if device system settings can be opened automatically for the given permission.
+     * (For instance on browsers there is no reliable way atm to automatically open system settings)
+     *
+     * @param permission Target permission
+     * @return True if settings can be opened automatically.
+     */
+    fun canOpenSettingsForPermission(permission: Permission): Boolean
 
     /**
      * Triggers requesting the given permission to the user
