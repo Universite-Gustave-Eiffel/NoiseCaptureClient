@@ -49,7 +49,6 @@ private val Permission.jsName: JsString
         return when (this) {
             Permission.LOCATION_BACKGROUND, Permission.LOCATION_FOREGROUND -> "geolocation"
             Permission.RECORD_AUDIO -> "microphone"
-            Permission.BLUETOOTH -> "bluetooth"
             else -> "_unsupported"
         }.toJsString()
     }
