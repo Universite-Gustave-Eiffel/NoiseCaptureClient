@@ -11,9 +11,9 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.toSize
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.CoroutineScope
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,6 +38,7 @@ import org.noiseplanet.noisecapture.ui.components.plot.PlotAxisSettings
 import org.noiseplanet.noisecapture.ui.theme.SpectrogramColorRamp
 import org.noiseplanet.noisecapture.util.injectLogger
 import org.noiseplanet.noisecapture.util.toFrequencyString
+import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.log10
 import kotlin.math.max
@@ -84,11 +85,10 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
     private val settingsService: UserSettingsService by inject()
     private val logger: Logger by injectLogger()
 
-    private val bitmapProcessingScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-
     private var canvasSize: IntSize = IntSize.Zero
     private var canvasDensity: Density = Density(1f)
 
+    private var spectrogramUpdatesJob: Job? = null
     private var lastSpectrogramDataTimeStamp: Long? = null
 
     private var currentBitmap: ImageBitmap? = null
@@ -120,9 +120,19 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
     )
 
 
-    // - Lifecycle
+    // - Public functions
 
-    init {
+    /**
+     * Starts listening to incoming audio analysis data from live audio source and
+     * push stripes to the spectrogram bitmap.
+     */
+    fun startSpectrogram() {
+        if (spectrogramUpdatesJob != null) {
+            // Spectrogram updates are already running
+            return
+        }
+
+        // Create a flow that will emit a new timestamp value at FRAME_RATE rate.
         val fpsFlow = flow {
             while (currentCoroutineContext().isActive) {
                 emit(Clock.System.now().toEpochMilliseconds())
@@ -130,7 +140,7 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
             }
         }
 
-        bitmapProcessingScope.launch {
+        spectrogramUpdatesJob = viewModelScope.launch(Dispatchers.Default) {
             // Listen to spectrum data updates and build spectrogram along the way
             liveAudioService.getSpectrogramDataFlow()
                 .map {
@@ -151,8 +161,15 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
         }
     }
 
-
-    // - Public functions
+    /**
+     * Stops pushing new stripes to spectrogram bitmap.
+     */
+    fun stopSpectrogram() {
+        spectrogramUpdatesJob?.cancel()
+        spectrogramUpdatesJob = null
+        currentBitmap = null
+        lastSpectrogramDataTimeStamp = null
+    }
 
     /**
      * Updates the canvas size used to generate spectrogram bitmaps.
@@ -251,7 +268,7 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
         val pixelsPerMs = canvasSize.width.toFloat() /
             DISPLAYED_TIME_RANGE.inWholeMilliseconds.toFloat()
         val lastSpectrogramTimestamp =
-            lastSpectrogramDataTimeStamp ?: (timestamp - DISPLAYED_TIME_RANGE.inWholeMilliseconds)
+            lastSpectrogramDataTimeStamp ?: (timestamp - ceil(1 / pixelsPerMs).toLong())
         val stripWidthFloat = (timestamp - lastSpectrogramTimestamp) * pixelsPerMs
 
         // If the new strip is less than one pixel large, drop it
