@@ -16,9 +16,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.ui.components.plot.PlotContainer
 
 
@@ -30,7 +28,6 @@ fun SpectrogramPlotView(
     // - Properties
 
     val viewModel: SpectrogramPlotViewModel = koinViewModel()
-    val logger: Logger = koinInject()
 
     val spectrogramBitmap: SpectrogramBitmap? by viewModel.bitmapFlow.collectAsStateWithLifecycle()
     val density: Density = LocalDensity.current
@@ -41,9 +38,6 @@ fun SpectrogramPlotView(
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-
-            logger.warning(event.toString())
-
             when (event) {
                 Lifecycle.Event.ON_START -> {
                     viewModel.startSpectrogram()

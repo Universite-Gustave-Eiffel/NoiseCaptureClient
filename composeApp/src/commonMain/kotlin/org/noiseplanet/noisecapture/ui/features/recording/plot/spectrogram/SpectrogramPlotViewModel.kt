@@ -155,6 +155,13 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
                     Pair(stripPixels, timestamp)
                 }
                 .collect { (stripPixels, timestamp) ->
+
+                    // TODO: This could be further optimized by drawing every strip once and
+                    //       calculating the width based on timestamp comparison, but then the
+                    //       canvas size would change for every new spectrogram data and we would
+                    //       to create a new bitmap everytime, increasing the memory impact.
+                    //       For now the CPU cost tradeoff is acceptable.
+
                     // On every update, draw a new strip
                     pushToBitmap(
                         timestamp = timestamp,
@@ -302,7 +309,7 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
             stripPixels.forEachIndexed { index, color ->
                 drawRect(
                     color,
-                    topLeft = Offset(size.width - stripWidth, (size.height - index).toFloat()),
+                    topLeft = Offset(size.width - stripWidth, (size.height - index)),
                     size = Size(stripWidth, 1f),
                 )
             }
