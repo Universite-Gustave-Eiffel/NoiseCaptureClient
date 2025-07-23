@@ -7,7 +7,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
@@ -33,7 +32,7 @@ fun SpectrogramPlotView(
     val viewModel: SpectrogramPlotViewModel = koinViewModel()
     val logger: Logger = koinInject()
 
-    val spectrogramBitmap: ImageBitmap? by viewModel.bitmapFlow.collectAsStateWithLifecycle()
+    val spectrogramBitmap: SpectrogramBitmap? by viewModel.bitmapFlow.collectAsStateWithLifecycle()
     val density: Density = LocalDensity.current
     val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
 
@@ -79,7 +78,7 @@ fun SpectrogramPlotView(
                 .blur(radius = 2.dp) // Apply a 1dp blur to the image to antialias to current density
         ) {
             spectrogramBitmap?.let {
-                drawImage(it)
+                drawImage(it.bitmap)
             }
         }
     }

@@ -91,9 +91,12 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
     private var spectrogramUpdatesJob: Job? = null
     private var lastSpectrogramDataTimeStamp: Long? = null
 
+    private var canvas: Canvas? = null
+    private val drawScope: CanvasDrawScope = CanvasDrawScope()
     private var currentBitmap: ImageBitmap? = null
-    private val _bitmapFlow: MutableStateFlow<ImageBitmap?> = MutableStateFlow(null)
-    val bitmapFlow: StateFlow<ImageBitmap?> = _bitmapFlow
+
+    private val _bitmapFlow: MutableStateFlow<SpectrogramBitmap?> = MutableStateFlow(null)
+    val bitmapFlow: StateFlow<SpectrogramBitmap?> = _bitmapFlow
 
     val scaleMode: SpectrogramScaleMode =
         settingsService.get(SettingsKey.SettingSpectrogramScaleMode)
@@ -255,14 +258,16 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
         timestamp: Long,
         stripPixels: List<Color>,
     ) {
-        if (canvasSize == IntSize.Zero) {
-            return
+        if (canvasSize == IntSize.Zero) return
+
+        // If bitmap was invalidated, create a new one and update Canvas.
+        if (currentBitmap == null) {
+            initializeBitmap()
         }
 
-        // Initialise our canvas
-        val drawScope = CanvasDrawScope()
-        val output = ImageBitmap(canvasSize.width, canvasSize.height)
-        val canvas = Canvas(output)
+        // Safely unwrap canvas and current bitmap for easier use
+        val canvas = canvas ?: return
+        val currentBitmap = currentBitmap ?: return
 
         // Calculate the width of the next spectrogram strip
         val pixelsPerMs = canvasSize.width.toFloat() /
@@ -272,9 +277,7 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
         val stripWidthFloat = (timestamp - lastSpectrogramTimestamp) * pixelsPerMs
 
         // If the new strip is less than one pixel large, drop it
-        if (stripWidthFloat < 1) {
-            return
-        }
+        if (stripWidthFloat < 1) return
 
         // Round the strip width to an integer (drawing bitmap with floating point offset leads to
         // unexpected results), and save the skipped milliseconds for the next drawn strip
@@ -289,31 +292,60 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
             canvas = canvas,
             size = canvasSize.toSize(),
         ) {
-            // Fill background with darkest color from palette
-            drawRect(
-                color = SpectrogramColorRamp.palette.first(),
-                size = size
+            // Draw current spectrogram state offset to the left by the width of the next band
+            drawImage(
+                image = currentBitmap,
+                topLeft = Offset(-stripWidth, 0f),
             )
 
-            // Draw current spectrogram state offset to the left by the width of the next band
-            currentBitmap?.let {
-                drawImage(
-                    image = it,
-                    topLeft = Offset(-stripWidth, 0f),
-                )
-            }
-
             // Draw new line at the right of the canvas
-            stripPixels.reversed().forEachIndexed { index, color ->
+            stripPixels.forEachIndexed { index, color ->
                 drawRect(
                     color,
-                    topLeft = Offset(size.width - stripWidth, index.toFloat()),
+                    topLeft = Offset(size.width - stripWidth, (size.height - index).toFloat()),
                     size = Size(stripWidth, 1f),
                 )
             }
         }
 
-        _bitmapFlow.tryEmit(output)
-        currentBitmap = output
+        // Emit new bitmap data through state flow
+        _bitmapFlow.tryEmit(SpectrogramBitmap(currentBitmap, timestamp))
+    }
+
+    /**
+     * Creates a new image bitmap and fills it with background color
+     */
+    private fun initializeBitmap() {
+        // Init ImageBitmap and Canvas
+        ImageBitmap(canvasSize.width, canvasSize.height).apply {
+            currentBitmap = this
+            canvas = Canvas(this)
+        }
+
+        canvas?.let {
+            // Fill the new bitmap with darkest color from palette
+            drawScope.draw(
+                layoutDirection = LayoutDirection.Ltr,
+                density = canvasDensity,
+                canvas = it,
+                size = canvasSize.toSize(),
+            ) {
+                drawRect(
+                    color = SpectrogramColorRamp.palette.first(),
+                    size = size
+                )
+            }
+        }
     }
 }
+
+
+/**
+ * [ImageBitmap] wrapper with a timestamp property so that emitting a new value through our
+ * state flow will effectively trigger a new composition because the class will have a different
+ * hash, without having to copy the bitmap data to a new instance every time.
+ */
+data class SpectrogramBitmap(
+    val bitmap: ImageBitmap,
+    val timestamp: Long,
+)
