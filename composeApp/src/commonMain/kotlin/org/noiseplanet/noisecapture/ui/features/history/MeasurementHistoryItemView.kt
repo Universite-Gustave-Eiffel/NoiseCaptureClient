@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.ui.features.history
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -7,13 +8,17 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -34,9 +39,22 @@ import kotlin.time.Instant
 fun MeasurementHistoryItemView(
     measurement: Measurement,
     onClick: (Measurement) -> Unit,
+    isFirstInSection: Boolean,
+    isLastInSection: Boolean,
     modifier: Modifier = Modifier,
 ) {
     // - Properties
+
+    val shape = MaterialTheme.shapes.medium
+        .let {
+            if (isFirstInSection) it else {
+                it.copy(topStart = CornerSize(0.dp), topEnd = CornerSize(0.dp))
+            }
+        }.let {
+            if (isLastInSection) it else {
+                it.copy(bottomStart = CornerSize(0.dp), bottomEnd = CornerSize(0.dp))
+            }
+        }
 
     val instant = Instant.fromEpochMilliseconds(measurement.startTimestamp)
     val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
@@ -46,10 +64,14 @@ fun MeasurementHistoryItemView(
     // - Layout
 
     Row(
-        modifier = modifier.clickable { onClick(measurement) },
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier.background(MaterialTheme.colorScheme.surface, shape)
+            .clip(shape)
+            .clickable { onClick(measurement) }
+            .padding(start = 16.dp, end = 0.dp, top = 16.dp, bottom = 16.dp)
     ) {
         Column(
-            modifier.padding(16.dp)
+            modifier = Modifier.weight(1f)
         ) {
             Text(
                 text = startTime,
@@ -67,13 +89,7 @@ fun MeasurementHistoryItemView(
 
             Text(
                 // TODO: Get description from measurement
-                text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do " +
-                    "eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad" +
-                    " minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip" +
-                    " ex ea commodo consequat. Duis aute irure dolor in reprehenderit in " +
-                    "voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur " +
-                    "sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt " +
-                    "mollit anim id est laborum.",
+                text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod",
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.bodySmall,
@@ -91,7 +107,8 @@ fun MeasurementHistoryItemView(
         Icon(
             imageVector = Icons.Default.ChevronRight,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+            modifier = Modifier.padding(horizontal = 8.dp).size(20.dp),
         )
     }
 }
