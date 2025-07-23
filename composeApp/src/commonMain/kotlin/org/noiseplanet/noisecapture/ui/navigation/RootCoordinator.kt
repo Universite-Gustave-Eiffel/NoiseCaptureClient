@@ -25,8 +25,8 @@ import org.noiseplanet.noisecapture.ui.components.appbar.AppBarState
 import org.noiseplanet.noisecapture.ui.components.appbar.rememberAppBarState
 import org.noiseplanet.noisecapture.ui.features.details.MeasurementDetailsScreen
 import org.noiseplanet.noisecapture.ui.features.details.MeasurementDetailsScreenViewModel
-import org.noiseplanet.noisecapture.ui.features.history.HistoryScreen
-import org.noiseplanet.noisecapture.ui.features.history.HistoryScreenViewModel
+import org.noiseplanet.noisecapture.ui.features.history.MeasurementHistoryScreen
+import org.noiseplanet.noisecapture.ui.features.history.MeasurementHistoryScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.home.HomeScreen
 import org.noiseplanet.noisecapture.ui.features.home.HomeScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.permission.RequestPermissionScreen
@@ -179,10 +179,10 @@ fun RootCoordinator(
             }
 
             composable<HistoryRoute> {
-                val screenViewModel: HistoryScreenViewModel = koinViewModel()
+                val screenViewModel: MeasurementHistoryScreenViewModel = koinViewModel()
                 appBarState.setCurrentScreenViewModel(screenViewModel)
 
-                HistoryScreen(screenViewModel)
+                MeasurementHistoryScreen(screenViewModel)
             }
 
             composable<MeasurementDetailsRoute> { backstackEntry ->

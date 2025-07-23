@@ -22,8 +22,8 @@ import kotlin.time.Instant
 
 @OptIn(FormatStringsInDatetimeFormats::class, KoinExperimentalAPI::class, ExperimentalTime::class)
 @Composable
-fun HistoryScreen(
-    viewModel: HistoryScreenViewModel,
+fun MeasurementHistoryScreen(
+    viewModel: MeasurementHistoryScreenViewModel,
 ) {
 
     // - DI
