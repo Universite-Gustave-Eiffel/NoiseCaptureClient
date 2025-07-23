@@ -178,11 +178,21 @@ fun RootCoordinator(
                 )
             }
 
-            composable<HistoryRoute> {
+            composable<HistoryRoute> { backstackEntry ->
                 val screenViewModel: MeasurementHistoryScreenViewModel = koinViewModel()
                 appBarState.setCurrentScreenViewModel(screenViewModel)
 
-                MeasurementHistoryScreen(screenViewModel)
+                MeasurementHistoryScreen(
+                    screenViewModel,
+                    onClickMeasurement = { measurement ->
+                        navController.navigate(
+                            MeasurementDetailsRoute(
+                                measurementId = measurement.uuid,
+                                parentRouteId = backstackEntry.id,
+                            )
+                        )
+                    },
+                )
             }
 
             composable<MeasurementDetailsRoute> { backstackEntry ->
