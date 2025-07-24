@@ -1,5 +1,7 @@
 import org.noiseplanet.noisecapture.model.dao.UserAgent
 import org.noiseplanet.noisecapture.permission.Permission
+import org.noiseplanet.noisecapture.ui.navigation.RouteId
+import org.noiseplanet.noisecapture.ui.navigation.RouteIds
 
 /**
  * Describes a platform running the app.
@@ -13,14 +15,25 @@ interface Platform {
     val userAgent: UserAgent
 
     /**
-     * Permissions required to run the app on this platform.
-     * Those can differ based on which features are made available for the app or the amount
-     * of control given to the user on those permissions.
+     * Required permissions to access features of certain app screens.
+     * Can be overridden per platform to ask for platform specific permissions.
      */
-    val requiredPermissions: List<Permission>
-        get() = listOf(
-            Permission.RECORD_AUDIO,
-            Permission.LOCATION_BACKGROUND,
-            Permission.LOCATION_SERVICE_ON
+    val requiredPermissions: Map<RouteId, List<Permission>>
+        get() = mapOf(
+            RouteIds.MEASUREMENT_RECORDING to listOf(Permission.RECORD_AUDIO)
+        )
+
+    /**
+     * Optional permissions to access all features of certain screens.
+     * Will be prompted to the end user when opening the screen if not granted but can be dismissed.
+     * Can be overridden per platform to ask for platform specific permissions.
+     */
+    val optionalPermissions: Map<RouteId, List<Permission>>
+        get() = mapOf(
+            RouteIds.HOME to listOf(Permission.RECORD_AUDIO),
+            RouteIds.MEASUREMENT_RECORDING to listOf(
+                Permission.LOCATION_SERVICE_ON,
+                Permission.LOCATION_BACKGROUND,
+            )
         )
 }

@@ -55,7 +55,7 @@ internal class AndroidAudioSource : AudioSource, KoinComponent {
     override fun start() {
         when (state) {
             AudioSourceState.UNINITIALIZED -> {
-                logger.error("Audio source not initialized. Call setup() first.")
+                logger.warning("Audio source not initialized. Call setup() first.")
                 return
             }
 
@@ -77,7 +77,7 @@ internal class AndroidAudioSource : AudioSource, KoinComponent {
     override fun pause() {
         when (state) {
             AudioSourceState.UNINITIALIZED -> {
-                logger.error("Audio source not initialized. Call setup() first.")
+                logger.warning("Audio source not initialized. Call setup() first.")
                 return
             }
 

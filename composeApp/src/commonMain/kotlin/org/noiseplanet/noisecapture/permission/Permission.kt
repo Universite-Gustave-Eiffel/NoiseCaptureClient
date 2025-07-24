@@ -7,16 +7,6 @@ package org.noiseplanet.noisecapture.permission
 enum class Permission {
 
     /**
-     * Indicates that the system setting bluetooth service is on.
-     */
-    BLUETOOTH_SERVICE_ON,
-
-    /**
-     * App bluetooth permission.
-     */
-    BLUETOOTH,
-
-    /**
      * Indicates that the system setting location service is on.
      */
     LOCATION_SERVICE_ON,

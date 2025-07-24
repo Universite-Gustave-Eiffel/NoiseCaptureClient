@@ -5,9 +5,9 @@ import org.koin.dsl.module
 import org.noiseplanet.noisecapture.ui.features.details.MeasurementDetailsScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.history.HistoryScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.home.HomeScreenViewModel
-import org.noiseplanet.noisecapture.ui.features.permission.RequestPermissionScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.recording.MeasurementRecordingScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.settings.SettingsScreenViewModel
+
 
 val screensModule = module {
 
@@ -27,10 +27,6 @@ val screensModule = module {
 
     viewModel {
         HistoryScreenViewModel()
-    }
-
-    viewModel {
-        RequestPermissionScreenViewModel()
     }
 
     viewModel {

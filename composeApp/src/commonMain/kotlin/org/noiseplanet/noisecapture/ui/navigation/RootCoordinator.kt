@@ -1,40 +1,21 @@
 package org.noiseplanet.noisecapture.ui.navigation
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.ui.Modifier
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
-import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBar
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBarState
 import org.noiseplanet.noisecapture.ui.components.appbar.rememberAppBarState
-import org.noiseplanet.noisecapture.ui.features.details.MeasurementDetailsScreen
-import org.noiseplanet.noisecapture.ui.features.details.MeasurementDetailsScreenViewModel
-import org.noiseplanet.noisecapture.ui.features.history.HistoryScreen
-import org.noiseplanet.noisecapture.ui.features.history.HistoryScreenViewModel
-import org.noiseplanet.noisecapture.ui.features.home.HomeScreen
-import org.noiseplanet.noisecapture.ui.features.home.HomeScreenViewModel
-import org.noiseplanet.noisecapture.ui.features.permission.RequestPermissionScreen
-import org.noiseplanet.noisecapture.ui.features.permission.RequestPermissionScreenViewModel
-import org.noiseplanet.noisecapture.ui.features.recording.MeasurementRecordingScreen
-import org.noiseplanet.noisecapture.ui.features.recording.MeasurementRecordingScreenViewModel
-import org.noiseplanet.noisecapture.ui.features.settings.SettingsScreen
-import org.noiseplanet.noisecapture.ui.features.settings.SettingsScreenViewModel
+import org.noiseplanet.noisecapture.ui.features.permission.RequestPermissionModal
 
 
 /**
@@ -59,7 +40,7 @@ fun RootCoordinator(
     navController.addOnDestinationChangedListener { navController, _, _ ->
         // Triggered when navigating to a new screen or from another screen
         navController.currentBackStackEntry?.toRoute<Route>()?.let {
-            viewModel.toggleAudioSourceForScreen(it)
+            viewModel.setCurrentRoute(it)
         }
     }
 
@@ -80,8 +61,10 @@ fun RootCoordinator(
                     // When app comes back to foreground and the current screen uses incoming
                     // audio, resume audio source if not recording
                     navController.currentBackStackEntry?.toRoute<Route>()?.let {
-                        viewModel.toggleAudioSourceForScreen(it)
+                        viewModel.setCurrentRoute(it)
                     }
+                    // Refresh permission states in case user changed something in the settings
+                    viewModel.refreshPermissionStates()
                 }
 
                 else -> {}
@@ -108,107 +91,26 @@ fun RootCoordinator(
             AppBar(appBarState)
         }
     ) { innerPadding ->
-        // TODO: Handle swipe back gestures on iOS -> encapsulate UINavigationController?
-        NavHost(
+
+        // Manages navigating between screens
+        NavigationManager(
             navController = navController,
-            startDestination = RequestPermissionRoute(),
-            enterTransition = Transitions.enterTransition,
-            exitTransition = Transitions.exitTransition,
-            popEnterTransition = Transitions.popEnterTransition,
-            popExitTransition = Transitions.popExitTransition,
-            modifier = Modifier.fillMaxSize()
-                .padding(top = innerPadding.calculateTopPadding())
-                .background(MaterialTheme.colorScheme.surface)
-        ) {
-            composable<HomeRoute> { backstackEntry ->
-                val screenViewModel: HomeScreenViewModel = koinViewModel {
-                    parametersOf({
-                        // Callback triggered when pressing the settings app bar button
-                        navController.navigate(SettingsRoute())
-                    })
-                }
-                appBarState.setCurrentScreenViewModel(screenViewModel)
-
-                HomeScreen(
-                    viewModel = screenViewModel,
-                    onClickMeasurement = { measurement: Measurement ->
-                        navController.navigate(
-                            MeasurementDetailsRoute(
-                                measurement.uuid,
-                                backstackEntry.id,
-                            )
-                        )
-                    },
-                    onClickOpenSoundLevelMeterButton = {
-                        navController.navigate(MeasurementRecordingRoute())
-                    },
-                    onClickOpenHistoryButton = {
-                        navController.navigate(HistoryRoute())
-                    },
-                )
+            appBarState = appBarState,
+            innerPadding = innerPadding,
+            showPermissionPrompt = { permission ->
+                viewModel.promptPermissionIfNeeded(permission)
             }
+        )
 
-            composable<RequestPermissionRoute> {
-                // TODO: Silently check for permissions and bypass this step if
-                //       they are already all granted
-                val screenViewModel: RequestPermissionScreenViewModel = koinViewModel()
-                appBarState.setCurrentScreenViewModel(screenViewModel)
-
-                RequestPermissionScreen(
-                    viewModel = screenViewModel,
-                    onClickNextButton = {
-                        navController.navigate(HomeRoute())
-                    }
-                )
-            }
-
-            composable<MeasurementRecordingRoute> { backstackEntry ->
-                val screenViewModel: MeasurementRecordingScreenViewModel = koinViewModel()
-                appBarState.setCurrentScreenViewModel(screenViewModel)
-
-                MeasurementRecordingScreen(
-                    onMeasurementDone = { uuid ->
-                        navController.navigate(
-                            MeasurementDetailsRoute(
-                                measurementId = uuid,
-                                parentRouteId = backstackEntry.id
-                            )
-                        )
-                    }
-                )
-            }
-
-            composable<HistoryRoute> {
-                val screenViewModel: HistoryScreenViewModel = koinViewModel()
-                appBarState.setCurrentScreenViewModel(screenViewModel)
-
-                HistoryScreen(screenViewModel)
-            }
-
-            composable<MeasurementDetailsRoute> { backstackEntry ->
-                val route: MeasurementDetailsRoute = backstackEntry.toRoute()
-
-                val screenViewModel: MeasurementDetailsScreenViewModel = koinViewModel {
-                    parametersOf(route.measurementId)
-                }
-                appBarState.setCurrentScreenViewModel(screenViewModel)
-
-                MeasurementDetailsScreen(
-                    viewModel = screenViewModel,
-                    onMeasurementDeleted = {
-                        if (navController.previousBackStackEntry?.id == route.parentRouteId) {
-                            navController.popBackStack()
-                        }
-                    }
-                )
-            }
-
-            composable<SettingsRoute> {
-                val screenViewModel: SettingsScreenViewModel = koinViewModel()
-                appBarState.setCurrentScreenViewModel(screenViewModel)
-
-                SettingsScreen(screenViewModel)
-            }
-        }
+        // If needed, prompt permission request to the user
+        RequestPermissionModal(
+            viewModel = koinViewModel { parametersOf(viewModel.permissionPrompt) },
+            onSkipButtonPress = { permission ->
+                viewModel.skipPermission(permission)
+            },
+            onGoBackButtonPress = {
+                navController.popBackStack()
+            },
+        )
     }
 }

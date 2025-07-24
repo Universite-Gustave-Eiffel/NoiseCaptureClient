@@ -94,6 +94,7 @@ kotlin {
             implementation(libs.androidx.navigation.compose)
             implementation(libs.androidx.viewmodel.compose)
             implementation(libs.androidx.runtime.compose)
+            implementation(libs.androidx.backhandler.compose)
 
             implementation(libs.koin.core)
             implementation(libs.koin.compose)

@@ -1,6 +1,6 @@
 package org.noiseplanet.noisecapture.services.permission
 
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionState
@@ -16,15 +16,22 @@ interface PermissionService : KoinComponent {
      * @param permission Target permission
      * @return Flow of permission states
      */
-    fun getPermissionStateFlow(permission: Permission): Flow<PermissionState>
+    fun getPermissionStateFlow(permission: Permission): StateFlow<PermissionState>
 
     /**
-     * Checks the current state of the given permission, once
+     * Returns the current state of the given permission
      *
      * @param permission Target permission
      * @return Current permission state
      */
-    suspend fun checkPermission(permission: Permission): PermissionState
+    fun getPermissionState(permission: Permission): PermissionState
+
+    /**
+     * Checks the current state of the given permission and emits new value through state flow.
+     *
+     * @param permission Target permission
+     */
+    fun refreshPermissionState(permission: Permission)
 
     /**
      * Opens the settings page corresponding to the given permission.
@@ -36,9 +43,18 @@ interface PermissionService : KoinComponent {
     fun openSettingsForPermission(permission: Permission)
 
     /**
+     * Tells if device system settings can be opened automatically for the given permission.
+     * (For instance on browsers there is no reliable way atm to automatically open system settings)
+     *
+     * @param permission Target permission
+     * @return True if settings can be opened automatically.
+     */
+    fun canOpenSettingsForPermission(permission: Permission): Boolean
+
+    /**
      * Triggers requesting the given permission to the user
      *
      * @param permission Target permission
      */
-    suspend fun requestPermission(permission: Permission)
+    fun requestPermission(permission: Permission)
 }
