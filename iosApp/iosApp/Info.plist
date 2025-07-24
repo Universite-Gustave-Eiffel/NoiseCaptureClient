@@ -22,8 +22,6 @@
 	<string>5</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>TODO: Explain bluetooth usage needs</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>TODO: Explain foreground and background location usage needs</string>
 	<key>NSLocationAlwaysUsageDescription</key>

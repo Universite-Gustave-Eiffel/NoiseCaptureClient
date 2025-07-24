@@ -27,6 +27,14 @@ abstract external class Navigator : org.w3c.dom.Navigator {
      * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/storage)
      */
     val storage: StorageManager
+
+    /**
+     * The permissions read-only property of the Navigator interface returns a Permissions object
+     * that can be used to query and update permission status of APIs covered by the Permissions API.
+     *
+     * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/permissions)
+     */
+    val permissions: Permissions
 }
 
 /**

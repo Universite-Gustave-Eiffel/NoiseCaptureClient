@@ -19,6 +19,7 @@ import org.koin.compose.module.rememberKoinModules
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.model.dao.Measurement
+import org.noiseplanet.noisecapture.permission.Permission
 
 /**
  * Home screen layout.
@@ -30,6 +31,7 @@ fun HomeScreen(
     onClickMeasurement: (Measurement) -> Unit,
     onClickOpenHistoryButton: () -> Unit,
     onClickOpenSoundLevelMeterButton: () -> Unit,
+    showPermissionPrompt: (Permission) -> Unit,
 ) {
     // - DI
 
@@ -61,7 +63,8 @@ fun HomeScreen(
         ) {
             SoundLevelMeterHeaderView(
                 viewModel = viewModel,
-                onClickOpenSoundLevelMeterButton = onClickOpenSoundLevelMeterButton
+                onClickOpenSoundLevelMeterButton = onClickOpenSoundLevelMeterButton,
+                showPermissionPrompt = showPermissionPrompt,
             )
 
             if (measurements.isNotEmpty()) {

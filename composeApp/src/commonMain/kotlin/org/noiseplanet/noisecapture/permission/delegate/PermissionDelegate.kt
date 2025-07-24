@@ -1,5 +1,7 @@
 package org.noiseplanet.noisecapture.permission.delegate
 
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import org.noiseplanet.noisecapture.permission.PermissionState
 
 
@@ -9,8 +11,36 @@ import org.noiseplanet.noisecapture.permission.PermissionState
  */
 internal interface PermissionDelegate {
 
-    suspend fun getPermissionState(): PermissionState
-    suspend fun providePermission()
+    // - Properties
+
+    /**
+     * A flow of permission state values.
+     */
+    val permissionStateFlow: StateFlow<PermissionState>
+
+
+    // - Public functions
+
+    /**
+     * Checks the current permission state, and emits it through the state flow.
+     */
+    fun checkPermissionState()
+
+    /**
+     * Opens permission request dialog if possible.
+     */
+    fun providePermission()
+
+
+    /**
+     * Returns true if this permission delegate can automatically redirect the user
+     * to the system settings page corresponding to this permission.
+     */
+    fun canOpenSettings(): Boolean
+
+    /**
+     * Opens the associated settings page, if possible.
+     */
     fun openSettingPage()
 }
 
@@ -20,12 +50,21 @@ internal interface PermissionDelegate {
  */
 internal class NotImplementedPermissionDelegate : PermissionDelegate {
 
-    override suspend fun getPermissionState(): PermissionState {
-        return PermissionState.NOT_IMPLEMENTED
+    // - Properties
+
+    override val permissionStateFlow: StateFlow<PermissionState> =
+        MutableStateFlow(PermissionState.NOT_IMPLEMENTED)
+
+
+    // - Public functions
+
+    override fun checkPermissionState() {
     }
 
-    override suspend fun providePermission() {
+    override fun providePermission() {
     }
+
+    override fun canOpenSettings(): Boolean = false
 
     override fun openSettingPage() {
     }
