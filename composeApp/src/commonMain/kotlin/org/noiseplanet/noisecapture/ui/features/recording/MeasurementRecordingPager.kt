@@ -16,9 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import org.koin.compose.viewmodel.koinViewModel
 import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrogram.SpectrogramPlotView
-import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrogram.SpectrogramPlotViewModel
 import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrum.SpectrumPlotView
 
 /**
@@ -34,8 +32,6 @@ fun MeasurementRecordingPager(
 
     val animationScope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { MeasurementTabState.entries.size })
-
-    val spectrogramViewModel: SpectrogramPlotViewModel = koinViewModel()
 
 
     // - Layout
@@ -60,7 +56,6 @@ fun MeasurementRecordingPager(
             when (MeasurementTabState.entries[page]) {
                 MeasurementTabState.SPECTROGRAM -> Box {
                     SpectrogramPlotView(
-                        viewModel = spectrogramViewModel,
                         modifier = Modifier.padding(end = 16.dp)
                     )
                 }

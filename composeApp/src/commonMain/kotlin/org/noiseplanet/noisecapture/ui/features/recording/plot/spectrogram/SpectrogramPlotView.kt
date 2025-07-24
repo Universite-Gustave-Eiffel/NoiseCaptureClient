@@ -3,28 +3,59 @@ package org.noiseplanet.noisecapture.ui.features.recording.plot.spectrogram
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.koin.compose.viewmodel.koinViewModel
 import org.noiseplanet.noisecapture.ui.components.plot.PlotContainer
 
 
 @Composable
 fun SpectrogramPlotView(
-    viewModel: SpectrogramPlotViewModel,
     modifier: Modifier = Modifier,
 ) {
 
     // - Properties
 
-    val spectrogramBitmap: ImageBitmap? by viewModel.bitmapFlow.collectAsStateWithLifecycle()
+    val viewModel: SpectrogramPlotViewModel = koinViewModel()
+
+    val spectrogramBitmap: SpectrogramBitmap? by viewModel.bitmapFlow.collectAsStateWithLifecycle()
     val density: Density = LocalDensity.current
+    val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
+
+
+    // - Lifecycle
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_START -> {
+                    viewModel.startSpectrogram()
+                }
+
+                Lifecycle.Event.ON_STOP -> {
+                    viewModel.stopSpectrogram()
+                }
+
+                else -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
 
     // - Layout
@@ -41,7 +72,7 @@ fun SpectrogramPlotView(
                 .blur(radius = 2.dp) // Apply a 1dp blur to the image to antialias to current density
         ) {
             spectrogramBitmap?.let {
-                drawImage(it)
+                drawImage(it.bitmap)
             }
         }
     }
