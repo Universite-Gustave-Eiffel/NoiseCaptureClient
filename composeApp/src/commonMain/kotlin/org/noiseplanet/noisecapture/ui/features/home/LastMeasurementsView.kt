@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.ui.features.home
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -42,15 +43,17 @@ fun LastMeasurementsView(
 
     // - Layout
 
-    when (viewState) {
-        is LastMeasurementsViewModel.ViewState.Loading -> LastMeasurementsViewLoading()
+    Crossfade(viewState) { viewState ->
+        when (viewState) {
+            is LastMeasurementsViewModel.ViewState.Loading -> LastMeasurementsViewLoading()
 
-        is LastMeasurementsViewModel.ViewState.ContentReady -> LastMeasurementsViewContentReady(
-            viewState as LastMeasurementsViewModel.ViewState.ContentReady,
-            onClickMeasurement = onClickMeasurement,
-            onClickOpenHistoryButton = onClickOpenHistoryButton,
-            modifier,
-        )
+            is LastMeasurementsViewModel.ViewState.ContentReady -> LastMeasurementsViewContentReady(
+                viewState,
+                onClickMeasurement = onClickMeasurement,
+                onClickOpenHistoryButton = onClickOpenHistoryButton,
+                modifier,
+            )
+        }
     }
 }
 
@@ -65,53 +68,55 @@ private fun LastMeasurementsViewContentReady(
 
     // - Layout
 
-    ListSectionHeader(
-        title = Res.string.home_last_measurements_section_header,
-        paddingTop = 24.dp,
-    )
+    Column {
+        ListSectionHeader(
+            title = Res.string.home_last_measurements_section_header,
+            paddingTop = 24.dp,
+        )
 
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = modifier.padding(horizontal = 16.dp)
-            .height(IntrinsicSize.Min)
-    ) {
-        CardView(
-            backgroundColor = MaterialTheme.colorScheme.surfaceContainer,
-            modifier = Modifier.fillMaxHeight().width(IntrinsicSize.Min)
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = modifier.padding(horizontal = 16.dp)
+                .height(IntrinsicSize.Min)
         ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxHeight()
+            CardView(
+                backgroundColor = MaterialTheme.colorScheme.surfaceContainer,
+                modifier = Modifier.fillMaxHeight().width(IntrinsicSize.Min)
             ) {
-                Text(
-                    text = "Statistics",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                    ),
-                )
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxHeight()
+                ) {
+                    Text(
+                        text = "Statistics",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        ),
+                    )
 
-                StatisticsElement(viewState.measurementsCount.toString(), "recordings")
-                StatisticsElement(viewState.totalDuration, "${viewState.durationUnit} total")
+                    StatisticsElement(viewState.measurementsCount.toString(), "recordings")
+                    StatisticsElement(viewState.totalDuration, "${viewState.durationUnit} total")
 
-                Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.weight(1f))
 
-                NCButton(
-                    onClick = onClickOpenHistoryButton,
-                    viewModel = viewState.historyButtonViewModel,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                    NCButton(
+                        onClick = onClickOpenHistoryButton,
+                        viewModel = viewState.historyButtonViewModel,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
-        }
 
-        Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.weight(1f).padding(vertical = 12.dp),
-        ) {
-            viewState.lastTwoMeasurements.forEach { measurement ->
-                HomeRecentMeasurementView(
-                    measurement,
-                    onClick = onClickMeasurement,
-                )
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.weight(1f).padding(vertical = 12.dp),
+            ) {
+                viewState.lastTwoMeasurements.forEach { measurement ->
+                    HomeRecentMeasurementView(
+                        measurement,
+                        onClick = onClickMeasurement,
+                    )
+                }
             }
         }
     }
