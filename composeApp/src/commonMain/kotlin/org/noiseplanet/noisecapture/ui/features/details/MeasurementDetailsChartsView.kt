@@ -41,7 +41,7 @@ fun MeasurementDetailsChartsView(
                 Column(
                     verticalArrangement = Arrangement.spacedBy(32.dp),
                     modifier = modifier.fillMaxWidth()
-                        .padding(bottom = 24.dp)
+                        .padding(bottom = 32.dp)
                         .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
                 ) {
                     MeasurementDetailsChartsHeader(

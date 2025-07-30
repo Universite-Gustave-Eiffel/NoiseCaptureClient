@@ -117,7 +117,7 @@ fun MeasurementDetailsScreen(
             sheetSwipeEnabled = enableSheetSwipe,
             sheetContainerColor = MaterialTheme.colorScheme.surfaceContainer,
             containerColor = MaterialTheme.colorScheme.surface,
-            sheetPeekHeight = containerHeight * 0.33f,
+            sheetPeekHeight = containerHeight * 0.4f,
             sheetDragHandle = {
                 BottomSheetDefaults.DragHandle(
                     modifier = Modifier.height(dragHandleHeight)
@@ -139,12 +139,11 @@ fun MeasurementDetailsScreen(
                     }
                 }
             },
-            modifier = Modifier.safeContentPadding()
-                .onGloballyPositioned { coordinates ->
-                    containerHeight = with(localDensity) {
-                        coordinates.size.height.toDp()
-                    }
-                },
+            modifier = Modifier.onGloballyPositioned { coordinates ->
+                containerHeight = with(localDensity) {
+                    coordinates.size.height.toDp()
+                }
+            }.safeContentPadding(),
         ) { contentPadding ->
             Crossfade(viewState) { viewState ->
                 when (viewState) {
@@ -187,7 +186,7 @@ fun MeasurementDetailsScreen(
         }
 
         val footerGradientHeight = WindowInsets.navigationBars.asPaddingValues()
-            .calculateBottomPadding() + 24.dp
+            .calculateBottomPadding() + 32.dp
 
         Box(
             modifier = Modifier
@@ -196,8 +195,8 @@ fun MeasurementDetailsScreen(
                 .height(footerGradientHeight)
                 .background(
                     brush = Brush.verticalGradient(
-                        0f to MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0f),
-                        1f to MaterialTheme.colorScheme.surfaceVariant,
+                        0f to MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0f),
+                        1f to MaterialTheme.colorScheme.surfaceContainer,
                     )
                 )
         )
