@@ -1,10 +1,17 @@
 package org.noiseplanet.noisecapture.ui.features.details
 
+import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
@@ -26,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
@@ -102,77 +110,96 @@ fun MeasurementDetailsScreen(
     // TODO: For lager screens (tablets / browsers), this layout could be improved by splitting
     //       the screen in two instead of using a bottom sheet.
 
-    BottomSheetScaffold(
-        scaffoldState = sheetState,
-        sheetShape = sheetShape,
-        sheetSwipeEnabled = enableSheetSwipe,
-        sheetContainerColor = MaterialTheme.colorScheme.surfaceContainer,
-        containerColor = MaterialTheme.colorScheme.surface,
-        sheetPeekHeight = containerHeight * 0.33f,
-        sheetDragHandle = {
-            BottomSheetDefaults.DragHandle(
-                modifier = Modifier.height(dragHandleHeight)
-            )
-        },
-        sheetContent = {
-            when (viewState) {
-                is MeasurementDetailsScreenViewState.ContentReady -> {
-                    val state = viewState as MeasurementDetailsScreenViewState.ContentReady
-                    MeasurementDetailsChartsView(
-                        state.measurement.uuid,
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                            .verticalScroll(sheetContentScrollState)
-                            .padding(top = sheetContentTopPadding)
-                    )
-                }
+    Box {
+        BottomSheetScaffold(
+            scaffoldState = sheetState,
+            sheetShape = sheetShape,
+            sheetSwipeEnabled = enableSheetSwipe,
+            sheetContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+            containerColor = MaterialTheme.colorScheme.surface,
+            sheetPeekHeight = containerHeight * 0.33f,
+            sheetDragHandle = {
+                BottomSheetDefaults.DragHandle(
+                    modifier = Modifier.height(dragHandleHeight)
+                )
+            },
+            sheetContent = {
+                Crossfade(viewState) { viewState ->
+                    when (viewState) {
+                        is MeasurementDetailsScreenViewState.ContentReady -> {
+                            MeasurementDetailsChartsView(
+                                viewState.measurement.uuid,
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                                    .verticalScroll(sheetContentScrollState)
+                                    .padding(top = sheetContentTopPadding)
+                            )
+                        }
 
-                else -> {}
-            }
-        },
-        modifier = Modifier.safeContentPadding()
-            .onGloballyPositioned { coordinates ->
-                containerHeight = with(localDensity) {
-                    coordinates.size.height.toDp()
+                        else -> {}
+                    }
                 }
             },
-    ) { contentPadding ->
-        when (viewState) {
-            is MeasurementDetailsScreenViewState.Loading -> {
-                Column(
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxSize().padding(bottom = 64.dp)
-                ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(64.dp),
-                        color = MaterialTheme.colorScheme.secondary,
-                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                    )
+            modifier = Modifier.safeContentPadding()
+                .onGloballyPositioned { coordinates ->
+                    containerHeight = with(localDensity) {
+                        coordinates.size.height.toDp()
+                    }
+                },
+        ) { contentPadding ->
+            Crossfade(viewState) { viewState ->
+                when (viewState) {
+                    is MeasurementDetailsScreenViewState.Loading -> {
+                        Column(
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxSize().padding(bottom = 64.dp)
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(64.dp),
+                                color = MaterialTheme.colorScheme.secondary,
+                                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                            )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                            Spacer(modifier = Modifier.height(16.dp))
 
-                    Text(
-                        text = stringResource(Res.string.measurement_details_loading_hint),
-                        style = MaterialTheme.typography.bodyMedium,
-                        textAlign = TextAlign.Center
-                    )
+                            Text(
+                                text = stringResource(Res.string.measurement_details_loading_hint),
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+
+                    is MeasurementDetailsScreenViewState.ContentReady -> {
+                        Text(
+                            text = "Measurement id: ${viewState.measurement.uuid}",
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    }
+
+                    is MeasurementDetailsScreenViewState.NoMeasurement -> {
+                        // If measurement becomes null, it means it was deleted
+                        onMeasurementDeleted()
+                    }
                 }
             }
-
-            is MeasurementDetailsScreenViewState.ContentReady -> {
-                val state = viewState as MeasurementDetailsScreenViewState.ContentReady
-
-                Text(
-                    text = "Measurement id: ${state.measurement.uuid}",
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
-
-            is MeasurementDetailsScreenViewState.NoMeasurement -> {
-                // If measurement becomes null, it means it was deleted
-                onMeasurementDeleted()
-            }
         }
+
+        val footerGradientHeight = WindowInsets.navigationBars.asPaddingValues()
+            .calculateBottomPadding() + 24.dp
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .height(footerGradientHeight)
+                .background(
+                    brush = Brush.verticalGradient(
+                        0f to MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0f),
+                        1f to MaterialTheme.colorScheme.surfaceVariant,
+                    )
+                )
+        )
     }
 }
