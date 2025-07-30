@@ -10,10 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.koalaplot.core.ChartLayout
@@ -29,6 +26,8 @@ import io.github.koalaplot.core.xygraph.XYGraph
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.model.dao.LeqSequenceFragment
+import org.noiseplanet.noisecapture.ui.components.plot.PlotAxisLabel
+import org.noiseplanet.noisecapture.ui.components.plot.PlotGridLineStyle
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -80,55 +79,19 @@ fun MeasurementSplTimePlotView(
                     minorTickCount = 1,
                 ),
                 xAxisLabels = @Composable {
-                    // TODO: Make axis label component
-                    Text(
-                        text = "${(it - startTimestamp).milliseconds.inWholeSeconds}s",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                    )
+                    PlotAxisLabel(text = "${(it - startTimestamp).milliseconds.inWholeSeconds}s")
                 },
                 yAxisModel = DoubleLinearAxisModel(
                     range = 20.0..120.0,
                     minorTickCount = 1,
                 ),
                 yAxisLabels = @Composable {
-                    Text(
-                        text = it.toInt().toString(),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                    )
+                    PlotAxisLabel(text = it.toInt().toString())
                 },
-                horizontalMajorGridLineStyle = LineStyle(
-                    brush = SolidColor(
-                        MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                            alpha = 0.5f
-                        )
-                    ),
-                    pathEffect = PathEffect.dashPathEffect(intervals = floatArrayOf(10f, 10f))
-                ),
-                verticalMajorGridLineStyle = LineStyle(
-                    brush = SolidColor(
-                        MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                            alpha = 0.5f
-                        )
-                    ),
-                    pathEffect = PathEffect.dashPathEffect(intervals = floatArrayOf(10f, 10f))
-                ),
-                horizontalMinorGridLineStyle = LineStyle(
-                    brush = SolidColor(
-                        MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                            alpha = 0.3f
-                        )
-                    )
-                ),
-                verticalMinorGridLineStyle = LineStyle(
-                    brush = SolidColor(
-                        MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                            alpha = 0.2f
-                        )
-                    ),
-                    blendMode = BlendMode.Multiply,
-                )
+                horizontalMajorGridLineStyle = PlotGridLineStyle.majorHorizontal,
+                verticalMajorGridLineStyle = PlotGridLineStyle.majorVertical,
+                horizontalMinorGridLineStyle = PlotGridLineStyle.minorHorizontal,
+                verticalMinorGridLineStyle = PlotGridLineStyle.minorVertical,
             ) {
                 val colorRamp = NoiseLevelColorRamp.ramp.reversed().map { (index, color) ->
                     Pair(1f - index, color)
