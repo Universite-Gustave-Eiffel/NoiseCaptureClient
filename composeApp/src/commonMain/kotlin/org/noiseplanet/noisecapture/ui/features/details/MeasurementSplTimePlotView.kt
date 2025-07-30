@@ -93,14 +93,14 @@ fun MeasurementSplTimePlotView(
                 horizontalMinorGridLineStyle = PlotGridLineStyle.minorHorizontal,
                 verticalMinorGridLineStyle = PlotGridLineStyle.minorVertical,
             ) {
-                val colorRamp = NoiseLevelColorRamp.ramp.reversed().map { (index, color) ->
-                    Pair(1f - index, color)
-                }
+                val colorRamp = NoiseLevelColorRamp.clamped(reversed = true)
+                    .map { (spl, color) -> Pair(spl.toFloat(), color) }
+                    .reversed()
                 val brush = Brush.verticalGradient(*colorRamp.toTypedArray())
 
                 AreaPlot(
-                    data = plotData.timestamp.mapIndexed { index, timestamp ->
-                        Point(x = timestamp, y = plotData.lzeq[index])
+                    data = plotData.map { (timestamp, leq) ->
+                        Point(x = timestamp, y = leq)
                     },
                     lineStyle = LineStyle(
                         brush = brush,

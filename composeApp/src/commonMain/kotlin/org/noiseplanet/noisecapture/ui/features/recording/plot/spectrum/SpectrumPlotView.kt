@@ -69,7 +69,12 @@ fun SpectrumPlotView(
     // Gradient brush to paint the plot background
     val gradientBrush = remember {
         Brush.horizontalGradient(
-            *NoiseLevelColorRamp.ramp.toTypedArray()
+            *NoiseLevelColorRamp.clamped(
+                dbMin = SpectrumPlotViewModel.DBA_MIN,
+                dbMax = SpectrumPlotViewModel.DBA_MAX,
+            ).map { (rampIndex, color) ->
+                Pair(rampIndex.toFloat(), color)
+            }.toTypedArray()
         )
     }
     val weightedSplBoxColor = MaterialTheme.colorScheme.onSurface
