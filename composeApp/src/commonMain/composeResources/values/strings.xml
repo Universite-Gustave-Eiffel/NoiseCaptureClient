@@ -46,6 +46,7 @@
 
     <!-- HistoryScreen -->
     <string name="history_title">Measurements history</string>
+    <string name="history_empty_state_hint">You have no measurements stored locally. Start making some by pressing the "Open sound level meter" button on the home screen!</string>
 
 
     <!-- MeasurementDetailsScreen -->
