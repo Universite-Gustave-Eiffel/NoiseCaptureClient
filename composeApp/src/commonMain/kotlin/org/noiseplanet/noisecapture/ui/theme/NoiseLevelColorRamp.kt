@@ -1,6 +1,8 @@
 package org.noiseplanet.noisecapture.ui.theme
 
 import androidx.compose.ui.graphics.Color
+import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrum.SpectrumPlotViewModel.Companion.DBA_MAX
+import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrum.SpectrumPlotViewModel.Companion.DBA_MIN
 
 /**
  * SPL color representation based on
@@ -23,6 +25,12 @@ object NoiseLevelColorRamp {
         75.0 to Color(0xFF75085C),
         80.0 to Color(0xFF430A4A),
     )
+
+    val ramp: List<Pair<Float, Color>> = palette.map { (spl, color) ->
+        // Map spl index to a value between 0 and 1 based on min/max dB values
+        val rampIndex = (spl - DBA_MIN) / (DBA_MAX - DBA_MIN)
+        Pair(rampIndex.toFloat(), color)
+    }
 
 
     // - Public functions

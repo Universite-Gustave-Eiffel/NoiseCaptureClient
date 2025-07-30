@@ -54,6 +54,8 @@ fun MeasurementDetailsChartsView(
                     AudioPlayerView(audioUrl)
                 }
 
+                MeasurementSplTimePlotView(measurementId)
+
                 LaeqSummaryView(
                     min = state.measurement.laeqMetrics.min,
                     la90 = state.measurement.summary?.la90 ?: 0.0,
