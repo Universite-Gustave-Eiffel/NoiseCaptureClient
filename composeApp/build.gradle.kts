@@ -104,6 +104,7 @@ kotlin {
             implementation(libs.kotlinx.datetime)
             implementation(libs.kotlinx.serialization)
 
+            implementation(libs.koalaplot.core)
             implementation(libs.kstore)
             implementation(libs.humanreadable)
 
