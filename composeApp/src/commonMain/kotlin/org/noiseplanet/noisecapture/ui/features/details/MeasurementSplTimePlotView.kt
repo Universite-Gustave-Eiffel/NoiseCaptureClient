@@ -23,11 +23,16 @@ import io.github.koalaplot.core.xygraph.DoubleLinearAxisModel
 import io.github.koalaplot.core.xygraph.LongLinearAxisModel
 import io.github.koalaplot.core.xygraph.Point
 import io.github.koalaplot.core.xygraph.XYGraph
+import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.measurement_details_spl_time_plot_description
+import noisecapture.composeapp.generated.resources.measurement_details_spl_time_plot_title
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.ui.components.plot.PlotAxisLabel
 import org.noiseplanet.noisecapture.ui.components.plot.PlotGridLineStyle
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
+import org.noiseplanet.noisecapture.util.VuMeterOptions
 import kotlin.time.Duration.Companion.milliseconds
 
 
@@ -55,13 +60,13 @@ fun MeasurementSplTimePlotView(
         modifier = modifier.fillMaxWidth().height(400.dp)
     ) {
         Text(
-            text = "Sound level over time",
+            text = stringResource(Res.string.measurement_details_spl_time_plot_title),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface,
         )
 
         Text(
-            text = "Visualize the evolution of recorded global sound level over time.",
+            text = stringResource(Res.string.measurement_details_spl_time_plot_description),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
         )
@@ -78,7 +83,7 @@ fun MeasurementSplTimePlotView(
                     PlotAxisLabel(text = "${(it - startTimestamp).milliseconds.inWholeSeconds}s")
                 },
                 yAxisModel = DoubleLinearAxisModel(
-                    range = 20.0..120.0,
+                    range = VuMeterOptions.DB_MIN..VuMeterOptions.DB_MAX,
                     minorTickCount = 1,
                 ),
                 yAxisLabels = @Composable {
