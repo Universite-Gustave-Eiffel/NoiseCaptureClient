@@ -25,7 +25,6 @@ import io.github.koalaplot.core.xygraph.Point
 import io.github.koalaplot.core.xygraph.XYGraph
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
-import org.noiseplanet.noisecapture.model.dao.LeqSequenceFragment
 import org.noiseplanet.noisecapture.ui.components.plot.PlotAxisLabel
 import org.noiseplanet.noisecapture.ui.components.plot.PlotGridLineStyle
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
@@ -41,15 +40,12 @@ fun MeasurementSplTimePlotView(
     // - Properties
 
     val viewModel: MeasurementSplTimePlotViewModel = koinInject { parametersOf(measurementId) }
-    val leqSequence: List<LeqSequenceFragment> by viewModel.leqSequenceFlow.collectAsStateWithLifecycle()
+    val plotData: Map<Long, Double> by viewModel.plotDataFlow.collectAsStateWithLifecycle()
 
-    if (leqSequence.isEmpty()) return
+    if (plotData.isEmpty()) return
 
-    val plotData = leqSequence.first()
-    val startTimestamp: Long =
-        plotData.startTimestamp ?: 0 // leqSequence.mapNotNull { it.startTimestamp }.min()
-    val endTimestamp: Long =
-        plotData.endTimestamp ?: 0 // leqSequence.mapNotNull { it.endTimestamp }.max()
+    val startTimestamp: Long = plotData.keys.min()
+    val endTimestamp: Long = plotData.keys.max()
 
 
     // - Layout
