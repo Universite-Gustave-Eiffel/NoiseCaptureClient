@@ -10,13 +10,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewModelScope
 import org.koin.compose.module.rememberKoinModules
-import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.permission.Permission
@@ -40,17 +35,6 @@ fun HomeScreen(
     }
 
 
-    // - Properties
-
-    val measurements = remember { mutableStateListOf<Measurement>() }
-    val lastMeasurementsViewModel: LastMeasurementsViewModel = koinViewModel()
-
-    LaunchedEffect(viewModel.viewModelScope) {
-        measurements.clear()
-        measurements.addAll(viewModel.getStoredMeasurements())
-    }
-
-
     // - Layout
 
     Surface(
@@ -67,13 +51,10 @@ fun HomeScreen(
                 showPermissionPrompt = showPermissionPrompt,
             )
 
-            if (measurements.isNotEmpty()) {
-                LastMeasurementsView(
-                    viewModel = lastMeasurementsViewModel,
-                    onClickMeasurement = onClickMeasurement,
-                    onClickOpenHistoryButton = onClickOpenHistoryButton,
-                )
-            }
+            LastMeasurementsView(
+                onClickMeasurement = onClickMeasurement,
+                onClickOpenHistoryButton = onClickOpenHistoryButton,
+            )
 
             // TODO: Add device calibration section
 

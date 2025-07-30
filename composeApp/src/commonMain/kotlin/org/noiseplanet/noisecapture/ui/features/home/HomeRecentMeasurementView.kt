@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import nl.jacobras.humanreadable.HumanReadable
 import noisecapture.composeapp.generated.resources.Res
@@ -47,7 +48,9 @@ fun HomeRecentMeasurementView(
     // - Layout
 
     Column(
-        modifier = modifier.clickable { onClick(measurement) }
+        modifier = modifier.clip(shape = MaterialTheme.shapes.medium)
+            .clickable { onClick(measurement) }
+            .padding(top = 12.dp, bottom = 12.dp, start = 12.dp)
     ) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,

@@ -14,7 +14,7 @@ import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 
 
-class HistoryScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
+class MeasurementHistoryScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
 
     // - Properties
 

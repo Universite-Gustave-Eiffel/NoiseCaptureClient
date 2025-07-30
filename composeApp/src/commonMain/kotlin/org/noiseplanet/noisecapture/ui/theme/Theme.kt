@@ -1,9 +1,12 @@
 package org.noiseplanet.noisecapture.ui.theme
 
+import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RippleConfiguration
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 
 private val lightColorScheme = lightColorScheme(
     primary = PrimaryLight,
@@ -83,6 +86,8 @@ private val darkColorScheme = darkColorScheme(
     surfaceDim = SurfaceDimDark,
 )
 
+private val NCRippleConfiguration = RippleConfiguration(color = OnSurfaceVariantLight)
+
 
 @Composable
 fun AppTheme(
@@ -94,9 +99,11 @@ fun AppTheme(
         else -> lightColorScheme
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = notoSansTypography(),
-        content = content,
-    )
+    CompositionLocalProvider(LocalRippleConfiguration provides NCRippleConfiguration) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = notoSansTypography(),
+            content = content,
+        )
+    }
 }

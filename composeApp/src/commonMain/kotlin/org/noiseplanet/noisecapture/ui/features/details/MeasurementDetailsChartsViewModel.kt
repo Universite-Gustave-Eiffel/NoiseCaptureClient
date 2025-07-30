@@ -5,17 +5,14 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
-import kotlinx.datetime.format.MonthNames
 import kotlinx.datetime.toLocalDateTime
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
+import org.noiseplanet.noisecapture.util.DateUtil
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
@@ -25,26 +22,6 @@ import kotlin.time.Instant
 class MeasurementDetailsChartsViewModel(
     val measurementId: String,
 ) : ViewModel(), KoinComponent {
-
-    // - Constants
-
-    companion object {
-
-        private val DATE_TIME_FORMAT = LocalDateTime.Format {
-            date(LocalDate.Format {
-                monthName(MonthNames.ENGLISH_ABBREVIATED)
-                chars(". ")
-                day()
-                chars(" ")
-                year()
-            })
-            chars(", at ")
-            time(LocalTime.Format {
-                hour(); chars(":"); minute()
-            })
-        }
-    }
-
 
     // - ViewState
 
@@ -84,7 +61,7 @@ class MeasurementDetailsChartsViewModel(
         val instant = Instant.fromEpochMilliseconds(measurement.startTimestamp)
         val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
 
-        return localDateTime.format(DATE_TIME_FORMAT)
+        return localDateTime.format(DateUtil.Format.MEASUREMENT_START_DATETIME)
     }
 
     private fun getMeasurementDurationString(measurement: Measurement): String {
