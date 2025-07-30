@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.home_last_measurements_section_header
+import org.koin.compose.koinInject
 import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.ui.components.CardView
 import org.noiseplanet.noisecapture.ui.components.ListSectionHeader
@@ -30,7 +31,6 @@ import org.noiseplanet.noisecapture.ui.components.button.NCButton
 
 @Composable
 fun LastMeasurementsView(
-    viewModel: LastMeasurementsViewModel,
     onClickMeasurement: (Measurement) -> Unit,
     onClickOpenHistoryButton: () -> Unit,
     modifier: Modifier = Modifier.fillMaxWidth(),
@@ -38,6 +38,7 @@ fun LastMeasurementsView(
 
     // - Properties
 
+    val viewModel: LastMeasurementsViewModel = koinInject()
     val viewState by viewModel.viewStateFlow.collectAsStateWithLifecycle()
 
 
@@ -68,6 +69,10 @@ private fun LastMeasurementsViewContentReady(
 
     // - Layout
 
+    if (viewState.lastTwoMeasurements.isEmpty()) {
+        return
+    }
+
     Column {
         ListSectionHeader(
             title = Res.string.home_last_measurements_section_header,
@@ -75,7 +80,7 @@ private fun LastMeasurementsViewContentReady(
         )
 
         Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
             modifier = modifier.padding(horizontal = 16.dp)
                 .height(IntrinsicSize.Min)
         ) {
@@ -108,8 +113,7 @@ private fun LastMeasurementsViewContentReady(
             }
 
             Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.weight(1f).padding(vertical = 12.dp),
+                modifier = Modifier.weight(1f),
             ) {
                 viewState.lastTwoMeasurements.forEach { measurement ->
                     HomeRecentMeasurementView(
