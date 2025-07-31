@@ -17,4 +17,8 @@ val measurementDetailsModule = module {
     viewModel { (measurementId: String) ->
         ManageMeasurementViewModel(measurementId)
     }
+
+    viewModel { (measurementId: String) ->
+        MeasurementSplTimePlotViewModel(measurementId)
+    }
 }

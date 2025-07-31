@@ -12,13 +12,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
@@ -28,7 +26,7 @@ import androidx.compose.ui.unit.dp
 /**
  * Lays out X and Y axis with ticks and labels, then draws content in the remaining space.
  *
- * TODO: Add support for placing axes ticks in a non equal disposition (based on raw value)
+ * TODO: Use Koalaplot to draw axes of Spectrum and Spectrogram plots
  *
  * @param axisSettings X and Y axes settings.
  * @param modifier Modifier for the container.
@@ -130,7 +128,7 @@ private fun YAxisTicks(
                         }
                     )
                 ) {
-                    AxisTickLabel(
+                    PlotAxisLabel(
                         text = tick.label,
                     )
                 }
@@ -204,7 +202,7 @@ private fun XAxisTicks(
             modifier = Modifier.weight(1f).fillMaxWidth()
         ) {
             axisSettings.xTicks.forEachIndexed { index, tick ->
-                AxisTickLabel(
+                PlotAxisLabel(
                     text = tick.label,
                     textAlign = when (index) {
                         0 -> TextAlign.Start
@@ -222,21 +220,3 @@ private fun XAxisTicks(
         }
     }
 }
-
-
-/**
- * A tick label with default styling.
- */
-@Composable
-private fun AxisTickLabel(
-    text: String,
-    textAlign: TextAlign = TextAlign.Unspecified,
-    modifier: Modifier = Modifier,
-) = Text(
-    text = text,
-    style = MaterialTheme.typography.labelSmall,
-    fontWeight = FontWeight.SemiBold,
-    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-    textAlign = textAlign,
-    modifier = modifier
-)

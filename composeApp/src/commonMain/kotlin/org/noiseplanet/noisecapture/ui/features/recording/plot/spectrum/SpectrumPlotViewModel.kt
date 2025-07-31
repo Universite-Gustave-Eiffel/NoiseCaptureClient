@@ -11,7 +11,6 @@ import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.ui.components.plot.AxisTick
 import org.noiseplanet.noisecapture.ui.components.plot.PlotAxisSettings
-import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 import org.noiseplanet.noisecapture.util.toFrequencyString
 
@@ -38,13 +37,6 @@ class SpectrumPlotViewModel : ViewModel(), KoinComponent {
     // - Properties
 
     private val liveAudioService: LiveAudioService by inject()
-
-    // color ramp 0F left side of spectrum, 1F right side of spectrum
-    val spectrumColorRamp = NoiseLevelColorRamp.palette.map { (spl, color) ->
-        // Map spl index to a value between 0 and 1 based on min/max dB values
-        val rampIndex = (spl - DBA_MIN) / (DBA_MAX - DBA_MIN)
-        Pair(rampIndex.toFloat(), color)
-    }
 
     val splDataFlow: StateFlow<Map<Int, SplData>> = liveAudioService
         .getLeqRecordsFlow()
