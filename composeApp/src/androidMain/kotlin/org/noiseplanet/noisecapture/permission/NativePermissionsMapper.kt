@@ -19,7 +19,11 @@ fun Permission.toAndroidPermissions(): List<String> {
 
         Permission.RECORD_AUDIO -> listOf(Manifest.permission.RECORD_AUDIO)
 
-        Permission.POST_NOTIFICATIONS -> listOf(Manifest.permission.POST_NOTIFICATIONS)
+        Permission.POST_NOTIFICATIONS -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            listOf(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            emptyList()
+        }
 
         else -> emptyList()
     }
