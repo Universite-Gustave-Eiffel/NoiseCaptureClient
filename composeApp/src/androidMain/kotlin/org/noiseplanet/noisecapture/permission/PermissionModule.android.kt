@@ -3,6 +3,7 @@ package org.noiseplanet.noisecapture.permission
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.location.LocationManager
+import android.os.Build
 import org.koin.core.module.Module
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
