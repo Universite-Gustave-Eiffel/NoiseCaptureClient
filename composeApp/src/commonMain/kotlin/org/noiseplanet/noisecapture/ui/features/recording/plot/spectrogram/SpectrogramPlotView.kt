@@ -60,6 +60,7 @@ fun SpectrogramPlotView(
 
     // - Layout
 
+    // TODO: Use koalaplot to draw axes instead
     PlotContainer(
         axisSettings = viewModel.axisSettings,
         modifier = modifier,

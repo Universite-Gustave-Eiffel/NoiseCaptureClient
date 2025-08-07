@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.compose.viewmodel.koinViewModel
 import org.noiseplanet.noisecapture.ui.components.plot.PlotContainer
+import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import kotlin.math.max
 
 private const val ANIMATION_DURATION_MS = 400
@@ -68,7 +69,12 @@ fun SpectrumPlotView(
     // Gradient brush to paint the plot background
     val gradientBrush = remember {
         Brush.horizontalGradient(
-            *viewModel.spectrumColorRamp.toTypedArray()
+            *NoiseLevelColorRamp.clamped(
+                dbMin = SpectrumPlotViewModel.DBA_MIN,
+                dbMax = SpectrumPlotViewModel.DBA_MAX,
+            ).map { (rampIndex, color) ->
+                Pair(rampIndex.toFloat(), color)
+            }.toTypedArray()
         )
     }
     val weightedSplBoxColor = MaterialTheme.colorScheme.onSurface

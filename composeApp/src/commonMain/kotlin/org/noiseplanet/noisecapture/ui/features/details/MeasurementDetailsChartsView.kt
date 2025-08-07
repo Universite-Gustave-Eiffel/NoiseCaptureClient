@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.ui.features.details
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -34,38 +35,40 @@ fun MeasurementDetailsChartsView(
 
     // - Layout
 
-    when (viewState) {
-        is MeasurementDetailsChartsViewModel.ViewState.ContentReady -> {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(32.dp),
-                modifier = modifier.fillMaxWidth()
-                    .padding(bottom = 24.dp)
-                    .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
-            ) {
-                val state = viewState as MeasurementDetailsChartsViewModel.ViewState.ContentReady
+    Crossfade(viewState) { viewState ->
+        when (viewState) {
+            is MeasurementDetailsChartsViewModel.ViewState.ContentReady -> {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(32.dp),
+                    modifier = modifier.fillMaxWidth()
+                        .padding(bottom = 32.dp)
+                        .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
+                ) {
+                    MeasurementDetailsChartsHeader(
+                        startTime = viewState.startTimeString,
+                        duration = viewState.durationString,
+                        averageLevel = viewState.measurement.laeqMetrics.average,
+                    )
 
-                MeasurementDetailsChartsHeader(
-                    startTime = state.startTimeString,
-                    duration = state.durationString,
-                    averageLevel = state.measurement.laeqMetrics.average,
-                )
+                    viewState.measurement.recordedAudioUrl?.let { audioUrl ->
+                        AudioPlayerView(audioUrl)
+                    }
 
-                state.measurement.recordedAudioUrl?.let { audioUrl ->
-                    AudioPlayerView(audioUrl)
+                    MeasurementSplTimePlotView(measurementId)
+
+                    LaeqSummaryView(
+                        min = viewState.measurement.laeqMetrics.min,
+                        la90 = viewState.measurement.summary?.la90 ?: 0.0,
+                        la50 = viewState.measurement.summary?.la50 ?: 0.0,
+                        la10 = viewState.measurement.summary?.la10 ?: 0.0,
+                        max = viewState.measurement.laeqMetrics.max
+                    )
+
+                    ManageMeasurementView(viewState.measurement.uuid)
                 }
-
-                LaeqSummaryView(
-                    min = state.measurement.laeqMetrics.min,
-                    la90 = state.measurement.summary?.la90 ?: 0.0,
-                    la50 = state.measurement.summary?.la50 ?: 0.0,
-                    la10 = state.measurement.summary?.la10 ?: 0.0,
-                    max = state.measurement.laeqMetrics.max
-                )
-
-                ManageMeasurementView(state.measurement.uuid)
             }
-        }
 
-        else -> return
+            else -> {}
+        }
     }
 }

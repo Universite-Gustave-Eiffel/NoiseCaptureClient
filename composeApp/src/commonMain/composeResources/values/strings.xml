@@ -58,6 +58,9 @@
     <string name="measurement_details_audio_player_title">Recorded audio</string>
     <string name="measurement_details_audio_player_description">Listen to the audio that was recorded during your measurement.</string>
 
+    <string name="measurement_details_spl_time_plot_title">Noise level over time</string>
+    <string name="measurement_details_spl_time_plot_description">Visualise the evolution of recorder noise level as a function of time.</string>
+
     <string name="measurement_details_laeq_summary_title">Sound level summary</string>
     <string name="measurement_details_laeq_summary_min">lowest recorded sound level.</string>
     <string name="measurement_details_laeq_summary_la90">90% of recorded levels were above this value.</string>

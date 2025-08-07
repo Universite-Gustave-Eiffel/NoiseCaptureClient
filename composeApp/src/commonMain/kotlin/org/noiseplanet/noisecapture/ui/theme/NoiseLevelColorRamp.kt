@@ -1,6 +1,7 @@
 package org.noiseplanet.noisecapture.ui.theme
 
 import androidx.compose.ui.graphics.Color
+import org.noiseplanet.noisecapture.util.VuMeterOptions
 
 /**
  * SPL color representation based on
@@ -26,6 +27,30 @@ object NoiseLevelColorRamp {
 
 
     // - Public functions
+
+    /**
+     * Get color palette mapping levels to a 0-1 scale based on given min and max values.
+     *
+     * @param dbMin Target ramp lower bound in decibels
+     * @param dbMax Target ramp upper bound in decibels
+     * @param reversed If true, output ramp will be 0.0 for highest level, 1.0 for lowest level.
+     */
+    fun clamped(
+        dbMin: Double = VuMeterOptions.DB_MIN,
+        dbMax: Double = VuMeterOptions.DB_MAX,
+        reversed: Boolean = false,
+    ): Map<Double, Color> {
+        return palette.mapKeys { (spl, _) ->
+            // Map spl index to a value between 0 and 1 based on min/max dB values
+            val rampIndex = (spl - dbMin) / (dbMax - dbMin)
+
+            if (reversed) {
+                1.0 - rampIndex
+            } else {
+                rampIndex
+            }
+        }
+    }
 
     /**
      * Get the color corresponding to the given SPL value

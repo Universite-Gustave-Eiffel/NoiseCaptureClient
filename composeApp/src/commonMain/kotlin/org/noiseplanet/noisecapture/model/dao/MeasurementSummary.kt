@@ -14,4 +14,5 @@ data class MeasurementSummary(
     val la10: Double,
     val la50: Double,
     val la90: Double,
+    val leqOverTime: Map<Long, Double>,
 )
