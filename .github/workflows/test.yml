@@ -68,7 +68,7 @@ jobs:
 
       - uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '15.0'
+          xcode-version: latest-stable
 
       - name: set up JDK
         uses: actions/setup-java@v3

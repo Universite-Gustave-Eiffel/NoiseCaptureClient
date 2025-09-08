@@ -35,7 +35,14 @@ fun MeasurementDetailsChartsHeader(
 ) {
     // - Properties
 
-    val averageLevelColor: Color = NoiseLevelColorRamp.getColorForSPLValue(averageLevel)
+    val averageLevelColorTint: Color = NoiseLevelColorRamp.getColorForSPLValue(
+        value = averageLevel,
+        palette = NoiseLevelColorRamp.paletteDarker,
+    )
+    val averageLevelColorBackground: Color = NoiseLevelColorRamp.getColorForSPLValue(
+        value = averageLevel,
+        palette = NoiseLevelColorRamp.paletteLighter,
+    )
 
 
     // - Layout
@@ -78,13 +85,13 @@ fun MeasurementDetailsChartsHeader(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.clip(RoundedCornerShape(size = 16.dp))
-                .background(averageLevelColor.copy(alpha = 0.15f))
+                .background(averageLevelColorBackground)
                 .padding(20.dp)
         ) {
             Text(
                 text = averageLevel.roundTo(1).toString(),
                 style = MaterialTheme.typography.headlineLarge,
-                color = averageLevelColor,
+                color = averageLevelColorTint,
                 fontWeight = FontWeight.Black,
                 fontSize = 36.sp,
                 lineHeight = 40.sp,
@@ -92,7 +99,7 @@ fun MeasurementDetailsChartsHeader(
             Text(
                 text = stringResource(Res.string.measurement_details_average_level),
                 style = MaterialTheme.typography.labelSmall,
-                color = averageLevelColor,
+                color = averageLevelColorTint,
             )
         }
     }

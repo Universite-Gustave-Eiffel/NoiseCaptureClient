@@ -45,7 +45,12 @@ fun SoundLevelMeterView(
     val playPauseButtonViewModel by viewModel.playPauseButtonViewModelFlow
         .collectAsStateWithLifecycle()
 
-    val currentSplColor by animateColorAsState(NoiseLevelColorRamp.getColorForSPLValue(currentSpl))
+    val currentSplColor by animateColorAsState(
+        NoiseLevelColorRamp.getColorForSPLValue(
+            value = currentSpl,
+            palette = NoiseLevelColorRamp.paletteDarker,
+        )
+    )
 
 
     // - Layout
