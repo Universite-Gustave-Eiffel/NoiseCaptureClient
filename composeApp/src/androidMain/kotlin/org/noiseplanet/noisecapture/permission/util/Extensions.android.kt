@@ -29,30 +29,6 @@ internal fun Context.openPage(
     }
 }
 
-internal fun Activity.checkPermissions(
-    permissions: List<String>,
-): PermissionState {
-    permissions.ifEmpty {
-        return PermissionState.GRANTED
-    } // no permissions needed
-    val status: List<Int> = permissions.map {
-        this.checkSelfPermission(it)
-    }
-    val isOneDenied: Boolean = permissions.all {
-        this.shouldShowRequestPermissionRationale(it)
-    }
-    val isAllGranted: Boolean = status.all {
-        it == PackageManager.PERMISSION_GRANTED
-    }
-    return if (isAllGranted) {
-        PermissionState.GRANTED
-    } else if (isOneDenied) {
-        PermissionState.DENIED
-    } else {
-        PermissionState.NOT_DETERMINED
-    }
-}
-
 internal fun Activity.checkPermissionState(
     permission: String,
 ): PermissionState {
