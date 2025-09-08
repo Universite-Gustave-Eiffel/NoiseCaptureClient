@@ -39,8 +39,13 @@
         </activity>
 
         <service
-            android:name=".services.measurement.ForegroundServiceWrapper"
+            android:name=".services.measurement.MicrophoneLocationForegroundServiceWrapper"
             android:foregroundServiceType="location|microphone"
+            android:exported="false" />
+
+        <service
+            android:name=".services.measurement.MicrophoneOnlyForegroundServiceWrapper"
+            android:foregroundServiceType="microphone"
             android:exported="false" />
     </application>
 

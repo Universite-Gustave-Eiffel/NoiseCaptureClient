@@ -56,9 +56,7 @@ val platformModule: Module = module {
      * wrapped into a foreground service.
      */
     single<MeasurementRecordingService> {
-        AndroidMeasurementRecordingService(
-            context = get()
-        )
+        AndroidMeasurementRecordingService()
     }
 
     factory<AudioPlayer> { (filePath: String) ->

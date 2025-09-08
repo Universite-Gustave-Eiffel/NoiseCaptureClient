@@ -25,8 +25,13 @@ import noisecapture.composeapp.generated.resources.ongoing_measurement_notificat
 import noisecapture.composeapp.generated.resources.ongoing_measurement_notification_title
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.MainActivity
 import org.noiseplanet.noisecapture.R
+import org.noiseplanet.noisecapture.permission.Permission
+import org.noiseplanet.noisecapture.permission.PermissionState
+import org.noiseplanet.noisecapture.permission.reduce
+import org.noiseplanet.noisecapture.services.permission.PermissionService
 import org.noiseplanet.noisecapture.util.NotificationHelper
 
 
@@ -35,9 +40,7 @@ import org.noiseplanet.noisecapture.util.NotificationHelper
  * [DefaultMeasurementRecordingService] in an Android Foreground Service so it keeps running
  * when the app is sent to the background (as long as the system doesn't kill it).
  */
-class AndroidMeasurementRecordingService(
-    private val context: Context,
-) : MeasurementRecordingService {
+class AndroidMeasurementRecordingService : MeasurementRecordingService, KoinComponent {
 
     // - Properties
 
@@ -92,6 +95,9 @@ class AndroidMeasurementRecordingService(
         }
     }
 
+    private val context: Context by inject()
+    private val permissionService: PermissionService by inject()
+
 
     // - MeasurementRecordingService
 
@@ -120,7 +126,18 @@ class AndroidMeasurementRecordingService(
      * with a persistent notification, or as a "regular" service.
      */
     private fun startForegroundServiceWrapper() {
-        val intent = Intent(context, ForegroundServiceWrapper::class.java)
+        // Based on the current state of location services permission, launch either the microphone
+        // only FGS, or the one with both microphone and location services.
+        val locationAvailable = listOf(
+            permissionService.getPermissionState(Permission.LOCATION_FOREGROUND),
+            permissionService.getPermissionState(Permission.LOCATION_SERVICE_ON),
+        ).reduce() == PermissionState.GRANTED
+
+        val intent = if (locationAvailable) {
+            Intent(context, MicrophoneLocationForegroundServiceWrapper::class.java)
+        } else {
+            Intent(context, MicrophoneOnlyForegroundServiceWrapper::class.java)
+        }
 
         // Based
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -137,7 +154,7 @@ class AndroidMeasurementRecordingService(
 /**
  * Wraps the default implementation of [MeasurementRecordingService] into a Foreground Service.
  */
-internal class ForegroundServiceWrapper : KoinComponent, Service() {
+internal abstract class ForegroundServiceWrapper : KoinComponent, Service() {
 
     // - Constants
 
@@ -289,3 +306,9 @@ internal class ForegroundServiceWrapper : KoinComponent, Service() {
         return notification
     }
 }
+
+// Make two variants of our foreground service wrapper so we can register them with different
+// required permissions, one with record audio only if user denied location services access,
+// and one with both location and microphone access if both permissions have been granted.
+internal class MicrophoneOnlyForegroundServiceWrapper : ForegroundServiceWrapper()
+internal class MicrophoneLocationForegroundServiceWrapper : ForegroundServiceWrapper()
