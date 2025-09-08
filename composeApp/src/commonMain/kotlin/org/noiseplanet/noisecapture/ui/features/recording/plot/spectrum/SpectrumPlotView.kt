@@ -73,7 +73,7 @@ fun SpectrumPlotView(
                 dbMin = SpectrumPlotViewModel.DBA_MIN,
                 dbMax = SpectrumPlotViewModel.DBA_MAX,
             ).map { (rampIndex, color) ->
-                Pair(rampIndex.toFloat(), color)
+                Pair(rampIndex.toFloat(), color.copy(alpha = 1f))
             }.toTypedArray()
         )
     }

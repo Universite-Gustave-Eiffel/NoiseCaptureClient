@@ -41,7 +41,12 @@ fun VuMeter(
     val value: Double by valueFlow.collectAsStateWithLifecycle()
     val valueRatio = (value - minimum) / (maximum - minimum)
 
-    val color by animateColorAsState(NoiseLevelColorRamp.getColorForSPLValue(value))
+    val color by animateColorAsState(
+        NoiseLevelColorRamp.getColorForSPLValue(
+            value = value,
+            palette = NoiseLevelColorRamp.paletteDarker,
+        )
+    )
     val shape = RoundedCornerShape(
         topStartPercent = 0,
         bottomStartPercent = 0,

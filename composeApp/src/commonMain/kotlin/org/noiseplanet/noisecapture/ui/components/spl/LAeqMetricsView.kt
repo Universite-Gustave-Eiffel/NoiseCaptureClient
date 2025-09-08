@@ -72,7 +72,10 @@ fun LAeqMetricsView(
                         textAlign = TextAlign.Start,
                         lineHeight = 24.sp,
                         color = metric.value?.let {
-                            NoiseLevelColorRamp.getColorForSPLValue(it)
+                            NoiseLevelColorRamp.getColorForSPLValue(
+                                value = it,
+                                palette = NoiseLevelColorRamp.paletteDarker,
+                            )
                         } ?: MaterialTheme.colorScheme.onSurface,
                     ),
                     maxLines = 1,
