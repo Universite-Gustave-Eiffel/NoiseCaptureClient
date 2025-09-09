@@ -19,7 +19,7 @@ internal typealias Migration<T> = suspend (
 /**
  * A default migration that does nothing and returns null.
  */
-@Suppress("FunctionName")
+@Suppress("FunctionNaming", "FunctionName")
 fun <T> DefaultMigration(): Migration<T> = { _, _ -> null }
 
 /**
