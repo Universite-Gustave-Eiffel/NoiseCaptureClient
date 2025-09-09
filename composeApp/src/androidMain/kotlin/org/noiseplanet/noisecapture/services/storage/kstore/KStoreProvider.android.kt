@@ -1,10 +1,14 @@
 package org.noiseplanet.noisecapture.services.storage.kstore
 
 import android.content.Context
+import io.github.xxfast.kstore.DefaultJson
 import io.github.xxfast.kstore.KStore
-import io.github.xxfast.kstore.file.storeOf
+import io.github.xxfast.kstore.file.extensions.VersionedCodec
+import io.github.xxfast.kstore.storeOf
+import kotlinx.coroutines.runBlocking
 import kotlinx.io.files.Path
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.serializer
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.io.File
@@ -35,6 +39,8 @@ internal actual class KStoreProvider : KoinComponent {
      */
     actual inline fun <reified T : @Serializable Any> storeOf(
         fileName: String,
+        version: Int,
+        noinline migration: Migration<T>,
         enableCache: Boolean,
     ): KStore<T> {
         val file = getFileHandle(fileName)
@@ -42,7 +48,18 @@ internal actual class KStoreProvider : KoinComponent {
         file.parent?.let { File(it).mkdirs() }
 
         // Return KStore handle
-        return storeOf(file = Path(file.path), enableCache = enableCache)
+        return storeOf(
+            codec = VersionedCodec(
+                file = Path(file.path),
+                version = version,
+                migration = { version, data ->
+                    runBlocking { migration(version, data) }
+                },
+                json = DefaultJson,
+                serializer = DefaultJson.serializersModule.serializer(),
+            ),
+            enableCache = enableCache,
+        )
     }
 
     /**
