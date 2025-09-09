@@ -30,6 +30,7 @@ import kotlin.reflect.KClass
  *               (i.e. for measurements, all records will be stored under "{appDir}/measurements/{id}.json"
  * @param RecordType Type of entity to be stored
  */
+@Suppress("TooManyFunctions")
 open class KStoreStorageService<RecordType : @Serializable Any>(
     private val prefix: String,
     private val type: KClass<RecordType>,
