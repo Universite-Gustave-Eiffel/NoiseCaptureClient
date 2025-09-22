@@ -21,6 +21,8 @@ kotlin = "2.2.20"
 kotlinx-datetime = "0.7.1"
 kotlinx-serialization = "1.9.0"
 kstore = "1.0.0"
+ktor = "3.3.0"
+maps-compose = "0.10.0"
 settings-multiplatform = "1.3.0"
 
 [libraries]
@@ -46,6 +48,11 @@ kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-
 kstore = { module = "io.github.xxfast:kstore", version.ref = "kstore" }
 kstore-file = { module = "io.github.xxfast:kstore-file", version.ref = "kstore" }
 kstore-storage = { module = "io.github.xxfast:kstore-storage", version.ref = "kstore" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+maps-compose = { module = "ovh.plrapps:mapcompose-mp", version.ref = "maps-compose" }
 settings-multiplatform = { module = "com.russhwolf:multiplatform-settings", version.ref = "settings-multiplatform" }
 settings-multiplatform-serialization = { module = "com.russhwolf:multiplatform-settings-serialization", version.ref = "settings-multiplatform" }
 settings-multiplatform-coroutines = { module = "com.russhwolf:multiplatform-settings-coroutines", version.ref = "settings-multiplatform" }

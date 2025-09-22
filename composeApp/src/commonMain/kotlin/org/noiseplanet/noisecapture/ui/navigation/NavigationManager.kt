@@ -16,6 +16,8 @@ import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBarState
+import org.noiseplanet.noisecapture.ui.features.debug.DebugScreen
+import org.noiseplanet.noisecapture.ui.features.debug.DebugScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.details.MeasurementDetailsScreen
 import org.noiseplanet.noisecapture.ui.features.details.MeasurementDetailsScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.history.MeasurementHistoryScreen
@@ -39,7 +41,7 @@ fun NavigationManager(
     // TODO: Handle swipe back gestures on iOS -> encapsulate UINavigationController?
     NavHost(
         navController = navController,
-        startDestination = HomeRoute(),
+        startDestination = DebugRoute(),
         enterTransition = Transitions.enterTransition,
         exitTransition = Transitions.exitTransition,
         popEnterTransition = Transitions.popEnterTransition,
@@ -133,6 +135,13 @@ fun NavigationManager(
             appBarState.setCurrentScreenViewModel(screenViewModel)
 
             SettingsScreen(screenViewModel)
+        }
+
+        composable<DebugRoute> {
+            val screenViewModel: DebugScreenViewModel = koinViewModel()
+            appBarState.setCurrentScreenViewModel(screenViewModel)
+
+            DebugScreen(screenViewModel)
         }
     }
 }

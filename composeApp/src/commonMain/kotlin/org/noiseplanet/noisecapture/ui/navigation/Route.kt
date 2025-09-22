@@ -16,6 +16,8 @@ object RouteIds {
     const val HISTORY = "history"
     const val SETTINGS = "settings"
     const val MEASUREMENT_DETAILS = "measurement_details"
+
+    const val DEBUG = "debug"
 }
 typealias RouteId = String
 
@@ -52,3 +54,6 @@ class MeasurementDetailsRoute(
     val measurementId: String,
     val parentRouteId: String,
 ) : Route(id = RouteIds.MEASUREMENT_DETAILS)
+
+@Serializable
+class DebugRoute : Route(id = RouteIds.DEBUG)

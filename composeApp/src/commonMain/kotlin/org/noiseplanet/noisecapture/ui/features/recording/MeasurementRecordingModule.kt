@@ -2,6 +2,7 @@ package org.noiseplanet.noisecapture.ui.features.recording
 
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
+import org.noiseplanet.noisecapture.ui.components.map.MeasurementsMapViewModel
 import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel
 import org.noiseplanet.noisecapture.ui.features.recording.controls.RecordingControlsViewModel
 import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrogram.SpectrogramPlotViewModel
@@ -27,5 +28,9 @@ val measurementRecordingModule = module {
 
     viewModel {
         RecordingControlsViewModel()
+    }
+
+    viewModel {
+        MeasurementsMapViewModel()
     }
 }
