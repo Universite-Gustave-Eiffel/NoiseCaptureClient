@@ -3,13 +3,22 @@ package org.noiseplanet.noisecapture.ui.components.map
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.log.Logger
+import org.noiseplanet.noisecapture.services.location.UserLocationProvider
 import org.noiseplanet.noisecapture.util.injectLogger
 import ovh.plrapps.mapcompose.api.addLayer
-import ovh.plrapps.mapcompose.api.centroidX
-import ovh.plrapps.mapcompose.api.centroidY
-import ovh.plrapps.mapcompose.api.scale
+import ovh.plrapps.mapcompose.api.addMarker
+import ovh.plrapps.mapcompose.api.enableRotation
+import ovh.plrapps.mapcompose.api.getMarkerInfo
+import ovh.plrapps.mapcompose.api.moveMarker
+import ovh.plrapps.mapcompose.api.scrollTo
 import ovh.plrapps.mapcompose.api.setStateChangeListener
 import ovh.plrapps.mapcompose.core.BelowAll
 import ovh.plrapps.mapcompose.ui.state.MapState
@@ -41,7 +50,7 @@ class MeasurementsMapViewModel : ViewModel(), KoinComponent {
          * Size of tiles in pixels. The greater this value, the more "zoomed in" the map will
          * appear on the device.
          */
-        private const val TILE_SIZE_PX = 512
+        private const val TILE_SIZE_PX = 750
 
         /**
          * Number of threads allocated to fetching and decoding/encoding tiles to bitmap.
@@ -69,12 +78,15 @@ class MeasurementsMapViewModel : ViewModel(), KoinComponent {
 
         private const val MEASUREMENTS_TILESET_URL =
             NOISEPLANET_GEOSERVER_URL + "noisecapture:noisecapture_area@EPSG:900913@png"
+
+        private const val USER_LOCATION_MARKER_ID = "user_location"
     }
 
 
     // - Properties
 
     private val logger: Logger by injectLogger()
+    private val locationProvider: UserLocationProvider by inject()
 
     val backgroundTilesProvider = RemoteTileStreamProvider(
         tileServerUrl = BACKGROUND_TILESET_URL
@@ -107,15 +119,62 @@ class MeasurementsMapViewModel : ViewModel(), KoinComponent {
                 preloadingPadding(TILE_SIZE_PX * 2)
             }
         ).apply {
+            enableRotation()
+
             // Add both background and measurement layers.
             addLayer(backgroundTilesProvider, placement = BelowAll)
-            addLayer(measurementTilesProvider, initialOpacity = 0.3f)
+            addLayer(measurementTilesProvider, initialOpacity = 0.5f)
         }
     )
 
+
+    // - Lifecycle
+
     init {
         mapState.setStateChangeListener {
-            logger.warning("NEW STATE: { x: ${this.centroidX}, y: ${this.centroidY}, scale: ${this.scale}")
+//            logger.warning("NEW STATE: { x: ${this.centroidX}, y: ${this.centroidY}, scale: ${this.scale}")
+        }
+
+        // Subscribe to user location update to follow the user location on the map.
+        locationProvider.startUpdatingLocation()
+        viewModelScope.launch(Dispatchers.Default) {
+            while (isActive) {
+                locationProvider.liveLocation.map { locationRecord ->
+                    logger.debug("NEW LOCATION UPDATE: ${locationRecord.lat}, ${locationRecord.lon}")
+                    // Map 3D coordinates to 2D normalized projection
+                    lonLatToNormalizedWebMercator(
+                        latitude = locationRecord.lat,
+                        longitude = locationRecord.lon
+                    )
+                }.collect { (x, y) ->
+                    updateUserLocationMarker(x, y)
+                    recenterMapIfNeeded(x, y)
+                }
+            }
+        }
+    }
+
+
+    // - Private functions
+
+    private suspend fun recenterMapIfNeeded(centroidX: Double, centroidY: Double) {
+        // TODO: Add a snap to location property to only follow user location if enabled
+        // Scroll map to new location
+        mapState.scrollTo(centroidX, centroidY)
+    }
+
+    /**
+     * Creates or updates the blue dot that marks the user's current location.
+     */
+    private fun updateUserLocationMarker(x: Double, y: Double) {
+        mapState.getMarkerInfo(id = USER_LOCATION_MARKER_ID)?.let {
+            // If marker is already added to the map, move it to the new location
+            mapState.moveMarker(id = USER_LOCATION_MARKER_ID, x = x, y = y)
+        } ?: run {
+            // Otherwise, create and add marker
+            mapState.addMarker(id = USER_LOCATION_MARKER_ID, x = x, y = y) {
+                UserLocationMarker()
+            }
         }
     }
 
