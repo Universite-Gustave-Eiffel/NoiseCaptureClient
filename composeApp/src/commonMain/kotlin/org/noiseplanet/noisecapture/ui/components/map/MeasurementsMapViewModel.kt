@@ -1,5 +1,8 @@
 package org.noiseplanet.noisecapture.ui.components.map
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -12,6 +15,8 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.services.location.UserLocationProvider
+import org.noiseplanet.noisecapture.ui.components.button.IconNCButtonViewModel
+import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.util.injectLogger
 import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.addMarker
@@ -127,6 +132,17 @@ class MeasurementsMapViewModel : ViewModel(), KoinComponent {
         }
     )
 
+    val recenterButtonViewModel = IconNCButtonViewModel(
+        icon = Icons.Default.MyLocation,
+        colors = {
+            NCButtonColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                contentColor = MaterialTheme.colorScheme.onSurface
+            )
+        },
+        hasDropShadow = true,
+    )
+
 
     // - Lifecycle
 
@@ -150,6 +166,21 @@ class MeasurementsMapViewModel : ViewModel(), KoinComponent {
                     updateUserLocationMarker(x, y)
                     recenterMapIfNeeded(x, y)
                 }
+            }
+        }
+    }
+
+
+    // - Public function
+
+    fun recenter() {
+        locationProvider.currentLocation?.let { locationRecord ->
+            val (x, y) = lonLatToNormalizedWebMercator(
+                latitude = locationRecord.lat,
+                longitude = locationRecord.lon
+            )
+            viewModelScope.launch {
+                mapState.scrollTo(x, y, destScale = zoomLevelToScale(INITIAL_ZOOM_LEVEL))
             }
         }
     }
