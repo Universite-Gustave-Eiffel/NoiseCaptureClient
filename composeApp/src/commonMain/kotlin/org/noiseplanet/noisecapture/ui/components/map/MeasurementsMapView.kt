@@ -1,5 +1,7 @@
 package org.noiseplanet.noisecapture.ui.components.map
 
+import androidx.compose.foundation.background
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import org.koin.compose.viewmodel.koinViewModel
@@ -17,7 +19,7 @@ fun MeasurementsMapView(modifier: Modifier = Modifier) {
     // - Layout
 
     MapUI(
-        modifier = Modifier,
+        modifier = modifier.background(MaterialTheme.colorScheme.surfaceContainer),
         state = viewModel.mapState,
     )
 }

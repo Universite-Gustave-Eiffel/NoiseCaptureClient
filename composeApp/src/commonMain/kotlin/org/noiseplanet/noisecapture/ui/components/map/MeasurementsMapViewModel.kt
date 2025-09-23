@@ -3,13 +3,6 @@ package org.noiseplanet.noisecapture.ui.components.map
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.request.get
-import io.ktor.client.statement.bodyAsBytes
-import io.ktor.http.isSuccess
-import kotlinx.io.Buffer
-import kotlinx.io.RawSource
 import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.util.injectLogger
@@ -19,59 +12,104 @@ import ovh.plrapps.mapcompose.api.centroidY
 import ovh.plrapps.mapcompose.api.scale
 import ovh.plrapps.mapcompose.api.setStateChangeListener
 import ovh.plrapps.mapcompose.core.BelowAll
-import ovh.plrapps.mapcompose.core.TileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
 import kotlin.math.PI
 import kotlin.math.ln
+import kotlin.math.log2
 import kotlin.math.pow
 import kotlin.math.tan
 
 
 class MeasurementsMapViewModel : ViewModel(), KoinComponent {
 
+    // - Constants
+
+    companion object {
+
+        /**
+         * Sets the maximum zoom level. Defines the zoom level at which scale will be 1.0.
+         * Each smaller zoom level then divides scale by two so zoom_max-1 = 0.5, zoom_max-2 = 0.25, etc.
+         */
+        private const val MAX_ZOOM_LEVEL = 20
+
+        /**
+         * Zoom level that is initially picked upon opening the map.
+         */
+        private const val INITIAL_ZOOM_LEVEL = 17
+
+        /**
+         * Size of tiles in pixels. The greater this value, the more "zoomed in" the map will
+         * appear on the device.
+         */
+        private const val TILE_SIZE_PX = 512
+
+        /**
+         * Number of threads allocated to fetching and decoding/encoding tiles to bitmap.
+         * Value recommended by MapCompose for remote tiles is 16: https://github.com/p-lr/MapComposeMP#layers
+         */
+        private const val WORKER_COUNT = 16
+
+        /**
+         * Computes the size of the entire map at max zoom level, in pixels.
+         * WMTS levels are 0 based. At level 0, the map corresponds to just one tile.
+         */
+        private val TOTAL_MAP_SIZE_PX = TILE_SIZE_PX * 2.0.pow(MAX_ZOOM_LEVEL).toInt()
+
+        /**
+         * Default coordinates for the map if user location isn't enabled.
+         * Set to Nantes city center.
+         */
+        private const val DEFAULT_LATITUDE = 47.21724981872895
+        private const val DEFAULT_LONGITUDE = -1.5583589911308107
+
+        private const val BACKGROUND_TILESET_URL = "https://a.basemaps.cartocdn.com/light_all"
+
+        private const val NOISEPLANET_GEOSERVER_URL =
+            "https://onomap-gs.noise-planet.org/geoserver/gwc/service/tms/1.0.0/"
+
+        private const val MEASUREMENTS_TILESET_URL =
+            NOISEPLANET_GEOSERVER_URL + "noisecapture:noisecapture_area@EPSG:900913@png"
+    }
+
+
     // - Properties
 
     private val logger: Logger by injectLogger()
 
-    private val levelCount = 19
-    private val tileSize = 512
-    private val mapSize = mapSizeAtLevel(levelCount - 1, tileSize = tileSize)
+    val backgroundTilesProvider = RemoteTileStreamProvider(
+        tileServerUrl = BACKGROUND_TILESET_URL
+    )
 
-    val backgroundTilesProvider = TileStreamProvider { row, col, zoomLvl ->
-        fetchRemoteTile(
-            x = col,
-            y = row,
-            z = zoomLvl,
-            baseUrl = "https://a.basemaps.cartocdn.com/light_all"
-        )
-    }
-
-    val measurementTilesProvider = TileStreamProvider { row, col, zoomLvl ->
-        fetchRemoteTile(
-            x = col,
-            y = row,
-            z = zoomLvl,
-            baseUrl = "https://onomap-gs.noise-planet.org/geoserver/gwc/service/tms/1.0.0/" +
-                "noisecapture:noisecapture_area@EPSG:900913@png",
-            tms = true,
-        )
-    }
+    val measurementTilesProvider = RemoteTileStreamProvider(
+        tileServerUrl = MEASUREMENTS_TILESET_URL,
+        tms = true,
+    )
 
     val mapState: MapState by mutableStateOf(
         MapState(
-            levelCount = levelCount,
-            fullWidth = mapSize,
-            fullHeight = mapSize,
-            tileSize = tileSize,
-            workerCount = 16,
+            levelCount = MAX_ZOOM_LEVEL + 1,
+            fullWidth = TOTAL_MAP_SIZE_PX,
+            fullHeight = TOTAL_MAP_SIZE_PX,
+            tileSize = TILE_SIZE_PX,
+            workerCount = WORKER_COUNT,
             initialValuesBuilder = {
-                scale(1.0)
-                val (x, y) = lonLatToNormalizedWebMercator(latitude = 48.5734, longitude = 7.7521)
+                // Move the map to its initial scale and centroid.
+                val (x, y) = lonLatToNormalizedWebMercator(
+                    latitude = DEFAULT_LATITUDE,
+                    longitude = DEFAULT_LONGITUDE
+                )
                 scroll(x, y)
+                scale(zoomLevelToScale(INITIAL_ZOOM_LEVEL))
+
+                // Preload the next N tiles in every direction for smoother scrolling.
+                // Greater values provide better map scrolling experience but also increase performance
+                // impact and network usage.
+                preloadingPadding(TILE_SIZE_PX * 2)
             }
         ).apply {
+            // Add both background and measurement layers.
             addLayer(backgroundTilesProvider, placement = BelowAll)
-            addLayer(measurementTilesProvider)
+            addLayer(measurementTilesProvider, initialOpacity = 0.3f)
         }
     )
 
@@ -82,25 +120,30 @@ class MeasurementsMapViewModel : ViewModel(), KoinComponent {
     }
 
     /**
-     * wmts level are 0 based.
-     * At level 0, the map corresponds to just one tile.
+     * Converts input latitude and longitude to normalized Web Mercator coordinates.
+     * Basically does a projection from a 3D coordinates system to a 2D projection.
+     *
+     * In the projected referential, [0, 0] is the top left corner of the map, and [1, 1] is the
+     * bottom right corner. This is the coordinates system used by MapCompose.
+     *
+     * @param latitude Input latitude in degrees
+     * @param longitude Input longitude in degrees
+     *
+     * @return X,Y normalized 2D coordinates.
      */
-    private fun mapSizeAtLevel(wmtsLevel: Int, tileSize: Int): Int {
-        return tileSize * 2.0.pow(wmtsLevel).toInt()
-    }
-
     private fun lonLatToNormalizedWebMercator(
         latitude: Double,
         longitude: Double,
     ): Pair<Double, Double> {
+        // Could be precomputed if optimization is needed.
         val earthRadius = 6_378_137.0 // in meters
+        val piR = earthRadius * PI
+
         val latRad = latitude * PI / 180.0
         val lngRad = longitude * PI / 180.0
 
         val x = earthRadius * lngRad
         val y = earthRadius * ln(tan((PI / 4.0) + (latRad / 2.0)))
-
-        val piR = earthRadius * PI
 
         val normalizedX = (x + piR) / (2.0 * piR)
         val normalizedY = (piR - y) / (2.0 * piR)
@@ -108,36 +151,29 @@ class MeasurementsMapViewModel : ViewModel(), KoinComponent {
         return Pair(normalizedX, normalizedY)
     }
 
-    private suspend fun fetchRemoteTile(
-        x: Int,
-        y: Int,
-        z: Int,
-        baseUrl: String,
-        tms: Boolean = false,
-    ): RawSource? {
-        // TODO: Dependency injection of Http client?
-        val client = HttpClient(CIO)
+    /**
+     * Converts a given zoom level to a map scale value based on the map's maximum zoom level.
+     * Each smaller zoom level from the max level divides the scale by two. Max zoom level is scale 1.0.
+     *
+     * @param zoomLevel Tile zoom level.
+     * @return Corresponding scale value.
+     */
+    private fun zoomLevelToScale(zoomLevel: Int): Double {
+        return 1.0 / 2.0.pow(MAX_ZOOM_LEVEL - zoomLevel)
+    }
 
-        logger.debug("FETCHING TILE: x=$x, y=$y, z=$z")
-
-        val trueY = if (tms) {
-            val yTileCountForZoomLevel = 2.0.pow(z) - 1
-            yTileCountForZoomLevel - y
-        } else {
-            y
-        }
-        val url = "$baseUrl/$z/$x/${trueY.toInt()}.png"
-
-        val response = client.get(url)
-        return try {
-            if (response.status.isSuccess()) {
-                Buffer().apply { write(response.bodyAsBytes()) }
-            } else {
-                logger.warning("Failed fetching tile at URL $url: ${response.status}")
-                null
-            }
-        } finally {
-            client.close()
-        }
+    /**
+     * Converts the given scale value to a map zoom level based on the map's maximum zoom level.
+     * Each smaller zoom level from the max level divides the scale by two. Max zoom level is scale 1.0.
+     *
+     * @param scale Input map scale.
+     * @return Tile zoom level.
+     */
+    private fun scaleToZoomLevel(scale: Double): Int {
+        // Solve for zoomLevel: scale = 1 / 2^(MAX_ZOOM_LEVEL - zoomLevel)
+        // => 2^(MAX_ZOOM_LEVEL - zoomLevel) = 1 / scale
+        // => MAX_ZOOM_LEVEL - zoomLevel = log2(1 / scale)
+        // => zoomLevel = MAX_ZOOM_LEVEL - log2(1 / scale)
+        return MAX_ZOOM_LEVEL - log2(1.0 / scale).toInt()
     }
 }

@@ -123,12 +123,10 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.google.play.services.android.location)
             implementation(libs.kstore.file)
-//            implementation(libs.ktor.client.okhttp)
         }
 
         iosMain.dependencies {
             implementation(libs.kstore.file)
-//            implementation(libs.ktor.client.darwin)
         }
 
         wasmJsMain.dependencies {
