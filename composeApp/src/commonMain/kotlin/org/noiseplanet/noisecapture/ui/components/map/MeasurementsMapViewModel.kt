@@ -1,6 +1,7 @@
 package org.noiseplanet.noisecapture.ui.components.map
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
@@ -8,6 +9,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -25,6 +28,9 @@ import ovh.plrapps.mapcompose.api.enableRotation
 import ovh.plrapps.mapcompose.api.getMarkerInfo
 import ovh.plrapps.mapcompose.api.moveMarker
 import ovh.plrapps.mapcompose.api.onTouchDown
+import ovh.plrapps.mapcompose.api.rotateTo
+import ovh.plrapps.mapcompose.api.rotation
+import ovh.plrapps.mapcompose.api.setStateChangeListener
 import ovh.plrapps.mapcompose.core.BelowAll
 import ovh.plrapps.mapcompose.ui.state.MapState
 import kotlin.math.PI
@@ -143,6 +149,20 @@ class MeasurementsMapViewModel : ViewModel(), KoinComponent {
         hasDropShadow = true,
     )
 
+    val compassButtonViewModel = IconNCButtonViewModel(
+        icon = Icons.Default.ArrowUpward,
+        colors = {
+            NCButtonColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                contentColor = MaterialTheme.colorScheme.error
+            )
+        },
+        hasDropShadow = true
+    )
+
+    private var _mapOrientationFlow = MutableStateFlow(0f)
+    var mapOrientationFlow: StateFlow<Float> = _mapOrientationFlow
+
     /**
      * If enabled, automatically recenter the map on every location updates.
      * Useful for following user movements when making a measurement.
@@ -156,6 +176,11 @@ class MeasurementsMapViewModel : ViewModel(), KoinComponent {
         mapState.onTouchDown {
             // If the user manually interacts with the map, disables automatic location tracking.
             autoRecenterEnabled = false
+        }
+
+        mapState.setStateChangeListener {
+            // Whenever map orientation changes, emit new value through flow to update UI.
+            _mapOrientationFlow.tryEmit(this.rotation)
         }
 
         // Subscribe to user location update to follow the user location on the map.
@@ -189,6 +214,12 @@ class MeasurementsMapViewModel : ViewModel(), KoinComponent {
                 id = USER_LOCATION_MARKER_ID,
                 destScale = zoomLevelToScale(INITIAL_ZOOM_LEVEL),
             )
+        }
+    }
+
+    fun resetOrientation() {
+        viewModelScope.launch {
+            mapState.rotateTo(0f)
         }
     }
 
