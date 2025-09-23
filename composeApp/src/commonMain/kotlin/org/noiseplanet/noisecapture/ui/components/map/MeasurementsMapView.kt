@@ -35,7 +35,8 @@ fun MeasurementsMapView(modifier: Modifier = Modifier) {
 
     Row(
         horizontalArrangement = Arrangement.End,
-        modifier = modifier.fillMaxSize().padding(24.dp)
+        modifier = modifier.fillMaxSize()
+            .padding(24.dp)
     ) {
         Spacer(modifier = Modifier.weight(1f))
 
@@ -45,7 +46,10 @@ fun MeasurementsMapView(modifier: Modifier = Modifier) {
 
             NCButton(
                 viewModel = viewModel.recenterButtonViewModel,
-                onClick = viewModel::recenter,
+                onClick = {
+                    viewModel.recenter()
+                    viewModel.autoRecenterEnabled = true
+                },
                 modifier = Modifier.size(48.dp)
             )
         }

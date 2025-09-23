@@ -20,11 +20,11 @@ import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.util.injectLogger
 import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.addMarker
+import ovh.plrapps.mapcompose.api.centerOnMarker
 import ovh.plrapps.mapcompose.api.enableRotation
 import ovh.plrapps.mapcompose.api.getMarkerInfo
 import ovh.plrapps.mapcompose.api.moveMarker
-import ovh.plrapps.mapcompose.api.scrollTo
-import ovh.plrapps.mapcompose.api.setStateChangeListener
+import ovh.plrapps.mapcompose.api.onTouchDown
 import ovh.plrapps.mapcompose.core.BelowAll
 import ovh.plrapps.mapcompose.ui.state.MapState
 import kotlin.math.PI
@@ -143,12 +143,19 @@ class MeasurementsMapViewModel : ViewModel(), KoinComponent {
         hasDropShadow = true,
     )
 
+    /**
+     * If enabled, automatically recenter the map on every location updates.
+     * Useful for following user movements when making a measurement.
+     */
+    var autoRecenterEnabled: Boolean = true
+
 
     // - Lifecycle
 
     init {
-        mapState.setStateChangeListener {
-//            logger.warning("NEW STATE: { x: ${this.centroidX}, y: ${this.centroidY}, scale: ${this.scale}")
+        mapState.onTouchDown {
+            // If the user manually interacts with the map, disables automatic location tracking.
+            autoRecenterEnabled = false
         }
 
         // Subscribe to user location update to follow the user location on the map.
@@ -164,7 +171,10 @@ class MeasurementsMapViewModel : ViewModel(), KoinComponent {
                     )
                 }.collect { (x, y) ->
                     updateUserLocationMarker(x, y)
-                    recenterMapIfNeeded(x, y)
+
+                    if (autoRecenterEnabled) {
+                        recenter()
+                    }
                 }
             }
         }
@@ -174,25 +184,16 @@ class MeasurementsMapViewModel : ViewModel(), KoinComponent {
     // - Public function
 
     fun recenter() {
-        locationProvider.currentLocation?.let { locationRecord ->
-            val (x, y) = lonLatToNormalizedWebMercator(
-                latitude = locationRecord.lat,
-                longitude = locationRecord.lon
+        viewModelScope.launch {
+            mapState.centerOnMarker(
+                id = USER_LOCATION_MARKER_ID,
+                destScale = zoomLevelToScale(INITIAL_ZOOM_LEVEL),
             )
-            viewModelScope.launch {
-                mapState.scrollTo(x, y, destScale = zoomLevelToScale(INITIAL_ZOOM_LEVEL))
-            }
         }
     }
 
 
     // - Private functions
-
-    private suspend fun recenterMapIfNeeded(centroidX: Double, centroidY: Double) {
-        // TODO: Add a snap to location property to only follow user location if enabled
-        // Scroll map to new location
-        mapState.scrollTo(centroidX, centroidY)
-    }
 
     /**
      * Creates or updates the blue dot that marks the user's current location.
