@@ -41,7 +41,7 @@ fun NavigationManager(
     // TODO: Handle swipe back gestures on iOS -> encapsulate UINavigationController?
     NavHost(
         navController = navController,
-        startDestination = DebugRoute(),
+        startDestination = HomeRoute(),
         enterTransition = Transitions.enterTransition,
         exitTransition = Transitions.exitTransition,
         popEnterTransition = Transitions.popEnterTransition,
