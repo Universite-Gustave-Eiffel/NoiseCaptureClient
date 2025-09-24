@@ -36,6 +36,7 @@ import ovh.plrapps.mapcompose.api.rotation
 import ovh.plrapps.mapcompose.api.scale
 import ovh.plrapps.mapcompose.api.scrollTo
 import ovh.plrapps.mapcompose.api.setStateChangeListener
+import ovh.plrapps.mapcompose.api.setVisibleAreaPadding
 import ovh.plrapps.mapcompose.core.BelowAll
 import ovh.plrapps.mapcompose.ui.state.MapState
 import kotlin.math.PI
@@ -45,8 +46,15 @@ import kotlin.math.pow
 import kotlin.math.tan
 
 
+/**
+ * ViewModel for [MeasurementsMapView].
+ *
+ * @param windowSizeClass Current device's [WindowSizeClass]. Used for tiles scaling.
+ * @param visibleAreaPaddingRatio Map content padding relative to the screen dimensions.
+ */
 class MeasurementsMapViewModel(
     windowSizeClass: WindowSizeClass,
+    val visibleAreaPaddingRatio: VisibleAreaPaddingRatio = VisibleAreaPaddingRatio(),
 ) : ViewModel(), KoinComponent {
 
     // - Constants
@@ -87,6 +95,16 @@ class MeasurementsMapViewModel(
 
         private const val USER_LOCATION_MARKER_ID = "user_location"
     }
+
+
+    // - Associated types
+
+    data class VisibleAreaPaddingRatio(
+        val left: Float = 0f,
+        val right: Float = 0f,
+        val top: Float = 0f,
+        val bottom: Float = 0f,
+    )
 
 
     // - Properties
@@ -149,6 +167,15 @@ class MeasurementsMapViewModel(
             // Add both background and measurement layers.
             addLayer(backgroundTilesProvider, placement = BelowAll)
             addLayer(measurementTilesProvider, initialOpacity = 0.5f)
+
+            viewModelScope.launch(Dispatchers.Default) {
+                setVisibleAreaPadding(
+                    leftRatio = visibleAreaPaddingRatio.left,
+                    rightRatio = visibleAreaPaddingRatio.right,
+                    topRatio = visibleAreaPaddingRatio.top,
+                    bottomRatio = visibleAreaPaddingRatio.bottom
+                )
+            }
         }
     )
 
@@ -328,6 +355,7 @@ class MeasurementsMapViewModel(
      */
     private fun snapToZoomLevel(zoomLevel: Int) {
         viewModelScope.launch {
+            // TODO: Take visible area padding into account for getting current centroid.
             mapState.scrollTo(
                 x = mapState.centroidX,
                 y = mapState.centroidY,

@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -20,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
@@ -53,7 +54,9 @@ fun MeasurementsMapView(modifier: Modifier = Modifier) {
 
     Row(
         horizontalArrangement = Arrangement.End,
-        modifier = modifier.fillMaxSize()
+        verticalAlignment = Alignment.Top,
+        modifier = modifier.fillMaxWidth()
+            .fillMaxHeight(fraction = 1f - viewModel.visibleAreaPaddingRatio.bottom)
             .padding(24.dp)
     ) {
         Spacer(modifier = Modifier.weight(1f))

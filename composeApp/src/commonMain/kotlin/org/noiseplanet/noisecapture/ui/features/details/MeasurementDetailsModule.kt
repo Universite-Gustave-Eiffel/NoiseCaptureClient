@@ -25,6 +25,10 @@ val measurementDetailsModule = module {
     }
 
     viewModel { (windowsSizeClass: WindowSizeClass) ->
-        MeasurementsMapViewModel(windowsSizeClass)
+        MeasurementsMapViewModel(
+            windowsSizeClass,
+            // TODO: Use a shared constant for sheet peek height screen ratio.
+            visibleAreaPaddingRatio = MeasurementsMapViewModel.VisibleAreaPaddingRatio(bottom = 0.4f)
+        )
     }
 }
