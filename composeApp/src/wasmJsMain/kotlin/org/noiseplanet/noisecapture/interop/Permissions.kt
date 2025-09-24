@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalWasmJsInterop::class)
+
 package org.noiseplanet.noisecapture.interop
 
 import org.noiseplanet.noisecapture.permission.Permission

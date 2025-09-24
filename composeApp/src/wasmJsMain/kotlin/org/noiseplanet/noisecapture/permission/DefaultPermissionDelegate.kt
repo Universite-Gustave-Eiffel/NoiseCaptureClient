@@ -14,6 +14,7 @@ import org.noiseplanet.noisecapture.permission.delegate.PermissionDelegate
 import org.noiseplanet.noisecapture.util.injectLogger
 
 
+@OptIn(ExperimentalWasmJsInterop::class)
 internal abstract class DefaultPermissionDelegate(
     permission: Permission,
 ) : PermissionDelegate, KoinComponent {

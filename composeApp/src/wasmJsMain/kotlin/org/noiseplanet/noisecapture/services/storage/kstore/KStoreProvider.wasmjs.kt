@@ -12,6 +12,7 @@ import org.w3c.files.File
 /**
  * WasmJs KStore provider using key/value localstorage and JSON encoding/decoding
  */
+@OptIn(ExperimentalWasmJsInterop::class)
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 internal actual class KStoreProvider : KoinComponent {
 

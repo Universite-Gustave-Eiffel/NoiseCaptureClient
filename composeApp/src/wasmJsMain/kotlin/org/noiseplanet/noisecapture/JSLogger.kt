@@ -5,6 +5,7 @@ import org.noiseplanet.noisecapture.log.LogLevel
 import org.noiseplanet.noisecapture.log.Logger
 
 
+@OptIn(ExperimentalWasmJsInterop::class)
 class JSLogger(
     tag: String? = null,
 ) : Logger(tag) {

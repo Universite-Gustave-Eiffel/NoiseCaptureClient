@@ -7,6 +7,7 @@ import org.noiseplanet.noisecapture.permission.DefaultPermissionDelegate
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.util.injectLogger
 
+@OptIn(ExperimentalWasmJsInterop::class)
 internal class LocationBackgroundPermissionDelegate : DefaultPermissionDelegate(
     permission = Permission.LOCATION_BACKGROUND
 ) {

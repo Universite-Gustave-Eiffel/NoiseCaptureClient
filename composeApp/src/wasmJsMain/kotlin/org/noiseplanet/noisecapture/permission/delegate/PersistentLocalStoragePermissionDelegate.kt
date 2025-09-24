@@ -9,6 +9,7 @@ import org.noiseplanet.noisecapture.interop.navigator
 import org.noiseplanet.noisecapture.permission.DefaultPermissionDelegate
 import org.noiseplanet.noisecapture.permission.Permission
 
+@OptIn(ExperimentalWasmJsInterop::class)
 internal class PersistentLocalStoragePermissionDelegate : DefaultPermissionDelegate(
     permission = Permission.PERSISTENT_LOCAL_STORAGE
 ) {
