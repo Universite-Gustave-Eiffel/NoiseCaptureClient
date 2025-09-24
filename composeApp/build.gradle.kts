@@ -107,9 +107,11 @@ kotlin {
             implementation(libs.koalaplot.core)
             implementation(libs.kstore)
             implementation(libs.ktor.client.core)
-            implementation(libs.ktor.client.cio)
             implementation(libs.humanreadable)
             implementation(libs.maps.compose)
+
+            implementation(libs.material3.adaptive)
+            implementation(libs.material3.adaptive.layout)
 
             implementation(libs.settings.multiplatform)
             implementation(libs.settings.multiplatform.serialization)
@@ -123,10 +125,12 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.google.play.services.android.location)
             implementation(libs.kstore.file)
+            implementation(libs.ktor.client.android)
         }
 
         iosMain.dependencies {
             implementation(libs.kstore.file)
+            implementation(libs.ktor.client.darwin)
         }
 
         wasmJsMain.dependencies {

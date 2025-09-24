@@ -10,7 +10,7 @@ androidx-viewmodel-compose = "2.9.4"
 androidx-navigation = "2.9.0"
 androidx-preference = "1.2.1"
 build-konfig-gradle-plugin = "0.17.1"
-compose-plugin = "1.9.0"
+compose-plugin = "1.10.0-alpha01"
 coroutines = "1.10.2"
 detekt = "1.23.8"
 google-play-services-android-location = "21.3.0"
@@ -23,6 +23,7 @@ kotlinx-serialization = "1.9.0"
 kstore = "1.0.0"
 ktor = "3.3.0"
 maps-compose = "0.10.0"
+material3 = "1.2.0-alpha06"
 settings-multiplatform = "1.3.0"
 
 [libraries]
@@ -48,9 +49,12 @@ kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-
 kstore = { module = "io.github.xxfast:kstore", version.ref = "kstore" }
 kstore-file = { module = "io.github.xxfast:kstore-file", version.ref = "kstore" }
 kstore-storage = { module = "io.github.xxfast:kstore-storage", version.ref = "kstore" }
-ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-android = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktor" }
+ktor-client-darwin = { group = "io.ktor", name = "ktor-client-darwin", version.ref = "ktor" }
 maps-compose = { module = "ovh.plrapps:mapcompose-mp", version.ref = "maps-compose" }
+material3-adaptive = { group = "org.jetbrains.compose.material3.adaptive", name = "adaptive", version.ref = "material3" }
+material3-adaptive-layout = { group = "org.jetbrains.compose.material3.adaptive", name = "adaptive-layout", version.ref = "material3" }
 settings-multiplatform = { module = "com.russhwolf:multiplatform-settings", version.ref = "settings-multiplatform" }
 settings-multiplatform-serialization = { module = "com.russhwolf:multiplatform-settings-serialization", version.ref = "settings-multiplatform" }
 settings-multiplatform-coroutines = { module = "com.russhwolf:multiplatform-settings-coroutines", version.ref = "settings-multiplatform" }

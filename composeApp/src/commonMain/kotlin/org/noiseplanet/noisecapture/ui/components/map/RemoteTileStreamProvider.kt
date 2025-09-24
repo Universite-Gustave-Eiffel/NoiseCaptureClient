@@ -1,8 +1,6 @@
 package org.noiseplanet.noisecapture.ui.components.map
 
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.engine.cio.endpoint
 import io.ktor.client.plugins.cache.HttpCache
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsBytes
@@ -29,19 +27,13 @@ class RemoteTileStreamProvider(
 
     // - Properties
 
-    private val httpClient = HttpClient(CIO) {
+    private val httpClient = HttpClient {
         // TODO: Enable persistent storage caching for tiles up to a few megabytes
         //       to avoid reloading the same map area everytime a user opens the app.
         //       This would require to provide a multiplatform file storage API that is not
         //       currently provided by Ktor, but a few tweaks to our KStore implementation should
         //       probably do the job.
         install(HttpCache)
-
-        engine {
-            endpoint {
-                keepAliveTime = 5_000
-            }
-        }
     }
 
     private val logger: Logger by injectLogger()
