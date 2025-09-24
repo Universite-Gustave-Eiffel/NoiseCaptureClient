@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.ui.features.recording
 
+import androidx.window.core.layout.WindowSizeClass
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 import org.noiseplanet.noisecapture.ui.components.map.MeasurementsMapViewModel
@@ -30,7 +31,7 @@ val measurementRecordingModule = module {
         RecordingControlsViewModel()
     }
 
-    viewModel {
-        MeasurementsMapViewModel()
+    viewModel { (windowSizeClass: WindowSizeClass) ->
+        MeasurementsMapViewModel(windowSizeClass)
     }
 }

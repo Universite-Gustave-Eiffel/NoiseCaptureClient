@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.window.core.layout.WindowSizeClass
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -40,7 +41,9 @@ import kotlin.math.pow
 import kotlin.math.tan
 
 
-class MeasurementsMapViewModel : ViewModel(), KoinComponent {
+class MeasurementsMapViewModel(
+    windowSizeClass: WindowSizeClass,
+) : ViewModel(), KoinComponent {
 
     // - Constants
 
@@ -58,22 +61,10 @@ class MeasurementsMapViewModel : ViewModel(), KoinComponent {
         private const val INITIAL_ZOOM_LEVEL = 17
 
         /**
-         * Size of tiles in pixels. The greater this value, the more "zoomed in" the map will
-         * appear on the device.
-         */
-        private const val TILE_SIZE_PX = 750
-
-        /**
          * Number of threads allocated to fetching and decoding/encoding tiles to bitmap.
          * Value recommended by MapCompose for remote tiles is 16: https://github.com/p-lr/MapComposeMP#layers
          */
         private const val WORKER_COUNT = 16
-
-        /**
-         * Computes the size of the entire map at max zoom level, in pixels.
-         * WMTS levels are 0 based. At level 0, the map corresponds to just one tile.
-         */
-        private val TOTAL_MAP_SIZE_PX = TILE_SIZE_PX * 2.0.pow(MAX_ZOOM_LEVEL).toInt()
 
         /**
          * Default coordinates for the map if user location isn't enabled.
@@ -108,12 +99,31 @@ class MeasurementsMapViewModel : ViewModel(), KoinComponent {
         tms = true,
     )
 
+    /*
+     * Adapt the size of tiles based on window size class.
+     * Higher tile size values will make map appear more zoomed in (better fit for phones)?
+     * Might need some tweaking after further testing.
+     */
+    val tileSizePx = when (windowSizeClass.minWidthDp) {
+        WindowSizeClass.WIDTH_DP_EXTRA_LARGE_LOWER_BOUND -> 200
+        WindowSizeClass.WIDTH_DP_LARGE_LOWER_BOUND -> 300
+        WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND -> 350
+        WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND -> 400
+        else -> 600
+    }
+
+    /**
+     * Computes the size of the entire map at max zoom level, in pixels.
+     * WMTS levels are 0 based. At level 0, the map corresponds to just one tile.
+     */
+    val totalMapSizePx = tileSizePx * 2.0.pow(MAX_ZOOM_LEVEL).toInt()
+
     val mapState: MapState by mutableStateOf(
         MapState(
             levelCount = MAX_ZOOM_LEVEL + 1,
-            fullWidth = TOTAL_MAP_SIZE_PX,
-            fullHeight = TOTAL_MAP_SIZE_PX,
-            tileSize = TILE_SIZE_PX,
+            fullWidth = totalMapSizePx,
+            fullHeight = totalMapSizePx,
+            tileSize = tileSizePx,
             workerCount = WORKER_COUNT,
             initialValuesBuilder = {
                 // Move the map to its initial scale and centroid.
@@ -127,7 +137,7 @@ class MeasurementsMapViewModel : ViewModel(), KoinComponent {
                 // Preload the next N tiles in every direction for smoother scrolling.
                 // Greater values provide better map scrolling experience but also increase performance
                 // impact and network usage.
-                preloadingPadding(TILE_SIZE_PX * 2)
+                preloadingPadding(tileSizePx * 2)
             }
         ).apply {
             enableRotation()
