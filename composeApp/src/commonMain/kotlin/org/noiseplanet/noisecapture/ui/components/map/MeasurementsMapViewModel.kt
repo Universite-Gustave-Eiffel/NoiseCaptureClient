@@ -25,12 +25,16 @@ import org.noiseplanet.noisecapture.util.injectLogger
 import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.addMarker
 import ovh.plrapps.mapcompose.api.centerOnMarker
+import ovh.plrapps.mapcompose.api.centroidX
+import ovh.plrapps.mapcompose.api.centroidY
 import ovh.plrapps.mapcompose.api.enableRotation
 import ovh.plrapps.mapcompose.api.getMarkerInfo
 import ovh.plrapps.mapcompose.api.moveMarker
 import ovh.plrapps.mapcompose.api.onTouchDown
 import ovh.plrapps.mapcompose.api.rotateTo
 import ovh.plrapps.mapcompose.api.rotation
+import ovh.plrapps.mapcompose.api.scale
+import ovh.plrapps.mapcompose.api.scrollTo
 import ovh.plrapps.mapcompose.api.setStateChangeListener
 import ovh.plrapps.mapcompose.core.BelowAll
 import ovh.plrapps.mapcompose.ui.state.MapState
@@ -233,6 +237,16 @@ class MeasurementsMapViewModel(
         }
     }
 
+    fun zoomIn() {
+        val zoomLevel = scaleToZoomLevel(mapState.scale)
+        snapToZoomLevel(zoomLevel + 1)
+    }
+
+    fun zoomOut() {
+        val zoomLevel = scaleToZoomLevel(mapState.scale)
+        snapToZoomLevel(zoomLevel - 1)
+    }
+
 
     // - Private functions
 
@@ -307,5 +321,18 @@ class MeasurementsMapViewModel(
         // => MAX_ZOOM_LEVEL - zoomLevel = log2(1 / scale)
         // => zoomLevel = MAX_ZOOM_LEVEL - log2(1 / scale)
         return MAX_ZOOM_LEVEL - log2(1.0 / scale).toInt()
+    }
+
+    /**
+     * Animates mapState to new zoom level.
+     */
+    private fun snapToZoomLevel(zoomLevel: Int) {
+        viewModelScope.launch {
+            mapState.scrollTo(
+                x = mapState.centroidX,
+                y = mapState.centroidY,
+                destScale = zoomLevelToScale(zoomLevel)
+            )
+        }
     }
 }
