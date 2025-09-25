@@ -275,7 +275,7 @@ class MeasurementsMapViewModel(
         } ?: run {
             // Otherwise, create and add marker
             mapState.addMarker(id = USER_LOCATION_MARKER_ID, x = x, y = y) {
-                UserLocationMarker()
+                UserLocationMarker(orientationDegrees = mapState.rotation)
             }
         }
     }
