@@ -141,7 +141,7 @@ fun NavigationManager(
             val screenViewModel: DebugScreenViewModel = koinViewModel()
             appBarState.setCurrentScreenViewModel(screenViewModel)
 
-            DebugScreen(screenViewModel)
+            DebugScreen()
         }
     }
 }
