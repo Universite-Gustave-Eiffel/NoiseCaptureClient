@@ -27,7 +27,7 @@ fun UserLocationMarker(modifier: Modifier = Modifier) {
     // TODO: Show orientation
 
     Box(
-        modifier = modifier.size(18.dp)
+        modifier = modifier.size(20.dp)
             .dropShadow(
                 shape = CircleShape,
                 shadow = Shadow(

@@ -1,7 +1,6 @@
 package org.noiseplanet.noisecapture.ui.components.map
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
@@ -188,17 +187,6 @@ class MeasurementsMapViewModel(
             )
         },
         hasDropShadow = true,
-    )
-
-    val compassButtonViewModel = IconNCButtonViewModel(
-        icon = Icons.Default.ArrowUpward,
-        colors = {
-            NCButtonColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                contentColor = MaterialTheme.colorScheme.error
-            )
-        },
-        hasDropShadow = true
     )
 
     private var _mapOrientationFlow = MutableStateFlow(0f)
