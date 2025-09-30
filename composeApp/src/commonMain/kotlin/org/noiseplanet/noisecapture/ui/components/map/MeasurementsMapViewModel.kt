@@ -5,29 +5,35 @@ import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.window.core.layout.WindowSizeClass
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.services.location.UserLocationProvider
+import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.ui.components.button.IconNCButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
+import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
+import org.noiseplanet.noisecapture.util.GeoUtil
 import org.noiseplanet.noisecapture.util.injectLogger
+import ovh.plrapps.mapcompose.api.BoundingBox
 import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.addMarker
+import ovh.plrapps.mapcompose.api.addPath
 import ovh.plrapps.mapcompose.api.centerOnMarker
 import ovh.plrapps.mapcompose.api.centroidX
 import ovh.plrapps.mapcompose.api.centroidY
 import ovh.plrapps.mapcompose.api.enableRotation
-import ovh.plrapps.mapcompose.api.getMarkerInfo
+import ovh.plrapps.mapcompose.api.hasMarker
 import ovh.plrapps.mapcompose.api.moveMarker
 import ovh.plrapps.mapcompose.api.onTouchDown
 import ovh.plrapps.mapcompose.api.rotateTo
@@ -38,11 +44,8 @@ import ovh.plrapps.mapcompose.api.setStateChangeListener
 import ovh.plrapps.mapcompose.api.setVisibleAreaPadding
 import ovh.plrapps.mapcompose.core.BelowAll
 import ovh.plrapps.mapcompose.ui.state.MapState
-import kotlin.math.PI
-import kotlin.math.ln
 import kotlin.math.log2
 import kotlin.math.pow
-import kotlin.math.tan
 
 
 /**
@@ -110,6 +113,7 @@ class MeasurementsMapViewModel(
 
     private val logger: Logger by injectLogger()
     private val locationProvider: UserLocationProvider by inject()
+    private val measurementService: MeasurementService by inject()
 
     val backgroundTilesProvider = RemoteTileStreamProvider(
         tileServerUrl = BACKGROUND_TILESET_URL
@@ -148,7 +152,7 @@ class MeasurementsMapViewModel(
             workerCount = WORKER_COUNT,
             initialValuesBuilder = {
                 // Move the map to its initial scale and centroid.
-                val (x, y) = lonLatToNormalizedWebMercator(
+                val (x, y) = GeoUtil.lonLatToNormalizedWebMercator(
                     latitude = DEFAULT_LATITUDE,
                     longitude = DEFAULT_LONGITUDE
                 )
@@ -174,6 +178,9 @@ class MeasurementsMapViewModel(
                     topRatio = visibleAreaPaddingRatio.top,
                     bottomRatio = visibleAreaPaddingRatio.bottom
                 )
+
+                val measurementUuid = measurementService.getAllMeasurements().first().uuid
+                addPathsForMeasurement(measurementUuid)
             }
         }
     )
@@ -216,18 +223,17 @@ class MeasurementsMapViewModel(
         locationProvider.startUpdatingLocation()
         viewModelScope.launch(Dispatchers.Default) {
             while (isActive) {
-                locationProvider.liveLocation.map { locationRecord ->
+                locationProvider.liveLocation.collect { locationRecord ->
                     logger.debug("NEW LOCATION UPDATE: ${locationRecord.lat}, ${locationRecord.lon}")
                     // Map 3D coordinates to 2D normalized projection
-                    lonLatToNormalizedWebMercator(
+                    val (x, y) = GeoUtil.lonLatToNormalizedWebMercator(
                         latitude = locationRecord.lat,
                         longitude = locationRecord.lon
                     )
-                }.collect { (x, y) ->
                     updateUserLocationMarker(x, y)
 
                     if (autoRecenterEnabled) {
-                        recenter()
+                        recenter(locationRecord.orientation)
                     }
                 }
             }
@@ -237,11 +243,12 @@ class MeasurementsMapViewModel(
 
     // - Public function
 
-    fun recenter() {
-        viewModelScope.launch {
+    fun recenter(heading: Double?) {
+        viewModelScope.launch(Dispatchers.Default) {
             mapState.centerOnMarker(
                 id = USER_LOCATION_MARKER_ID,
                 destScale = zoomLevelToScale(INITIAL_ZOOM_LEVEL),
+//                destAngle = heading?.toFloat() ?: mapState.rotation
             )
         }
     }
@@ -269,47 +276,15 @@ class MeasurementsMapViewModel(
      * Creates or updates the blue dot that marks the user's current location.
      */
     private fun updateUserLocationMarker(x: Double, y: Double) {
-        mapState.getMarkerInfo(id = USER_LOCATION_MARKER_ID)?.let {
+        if (mapState.hasMarker(id = USER_LOCATION_MARKER_ID)) {
             // If marker is already added to the map, move it to the new location
             mapState.moveMarker(id = USER_LOCATION_MARKER_ID, x = x, y = y)
-        } ?: run {
+        } else {
             // Otherwise, create and add marker
             mapState.addMarker(id = USER_LOCATION_MARKER_ID, x = x, y = y) {
                 UserLocationMarker(orientationDegrees = mapState.rotation)
             }
         }
-    }
-
-    /**
-     * Converts input latitude and longitude to normalized Web Mercator coordinates.
-     * Basically does a projection from a 3D coordinates system to a 2D projection.
-     *
-     * In the projected referential, [0, 0] is the top left corner of the map, and [1, 1] is the
-     * bottom right corner. This is the coordinates system used by MapCompose.
-     *
-     * @param latitude Input latitude in degrees
-     * @param longitude Input longitude in degrees
-     *
-     * @return X,Y normalized 2D coordinates.
-     */
-    private fun lonLatToNormalizedWebMercator(
-        latitude: Double,
-        longitude: Double,
-    ): Pair<Double, Double> {
-        // Could be precomputed if optimization is needed.
-        val earthRadius = 6_378_137.0 // in meters
-        val piR = earthRadius * PI
-
-        val latRad = latitude * PI / 180.0
-        val lngRad = longitude * PI / 180.0
-
-        val x = earthRadius * lngRad
-        val y = earthRadius * ln(tan((PI / 4.0) + (latRad / 2.0)))
-
-        val normalizedX = (x + piR) / (2.0 * piR)
-        val normalizedY = (piR - y) / (2.0 * piR)
-
-        return Pair(normalizedX, normalizedY)
     }
 
     /**
@@ -350,5 +325,56 @@ class MeasurementsMapViewModel(
                 destScale = zoomLevelToScale(zoomLevel)
             )
         }
+    }
+
+    /**
+     * Resamples the measurement LAEq values to get one sound level value per GPS point.
+     */
+    private suspend fun addPathsForMeasurement(measurementUuid: String) {
+        val pathBuilder = SoundLevelPathBuilder(measurementService)
+        val pathPoints = pathBuilder.pathForMeasurement(measurementUuid)
+        var prevXY: Pair<Double, Double>? = null
+
+        // Add path data to map
+        pathPoints.forEachIndexed { index, point ->
+            if (index == 0) {
+                prevXY = GeoUtil.lonLatToNormalizedWebMercator(point.latitude, point.longitude)
+                return@forEachIndexed
+            }
+            val currXY = GeoUtil.lonLatToNormalizedWebMercator(
+                latitude = point.latitude,
+                longitude = point.longitude
+            )
+
+            mapState.addPath(
+                id = "path-$index",
+                color = NoiseLevelColorRamp.getColorForSPLValue(value = point.level),
+                width = 6.dp,
+                zIndex = pathPoints.size - index.toFloat(),
+            ) {
+                addPoints(listOfNotNull(prevXY, currXY))
+            }
+            prevXY = currXY
+        }
+
+        // Calculate path bounding box
+        autoRecenterEnabled = false
+        val (xLeft, yTop) = GeoUtil.lonLatToNormalizedWebMercator(
+            latitude = pathPoints.minOf { it.latitude },
+            longitude = pathPoints.minOf { it.longitude }
+        )
+        val (xRight, yBottom) = GeoUtil.lonLatToNormalizedWebMercator(
+            latitude = pathPoints.maxOf { it.latitude },
+            longitude = pathPoints.maxOf { it.longitude }
+        )
+        mapState.scrollTo(
+            area = BoundingBox(
+                xLeft = xLeft,
+                xRight = xRight,
+                yTop = yTop,
+                yBottom = yBottom
+            ),
+            padding = Offset(x = 0.1f, y = 0.1f)
+        )
     }
 }
