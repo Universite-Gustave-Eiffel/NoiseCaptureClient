@@ -17,6 +17,7 @@ import org.noiseplanet.noisecapture.model.dao.MutableMeasurement
 import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
 import org.noiseplanet.noisecapture.services.storage.StorageService
 import org.noiseplanet.noisecapture.services.storage.injectStorageService
+import org.noiseplanet.noisecapture.util.dbAverage
 import org.noiseplanet.noisecapture.util.injectLogger
 import org.noiseplanet.noisecapture.util.isInVuMeterRange
 import org.noiseplanet.noisecapture.util.roundTo
@@ -344,7 +345,7 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
 
         // Calculate the average for each interval
         return downsampledMap.mapValues { (_, levels) ->
-            levels.average()
+            levels.dbAverage()
         }
     }
 }
