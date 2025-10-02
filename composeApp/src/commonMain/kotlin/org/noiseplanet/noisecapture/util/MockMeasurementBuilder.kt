@@ -8,17 +8,27 @@ import kotlin.math.floor
 import kotlin.random.Random
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
-@OptIn(ExperimentalTime::class)
+@OptIn(ExperimentalTime::class, ExperimentalUuidApi::class)
 class MockMeasurementBuilder(
     private val measurementService: MeasurementService,
 ) {
 
+    /**
+     * Generate a dummy measurement with random sound levels and location data.
+     *
+     * @param leqSequenceLength Number of sound level values in measurement.
+     * @param locationSequenceLength Number of generated location points.
+     *
+     * @return UUID of the generated measurement.
+     */
     suspend fun make(
-        uuid: String,
         leqSequenceLength: Int,
         locationSequenceLength: Int,
     ): String? {
+        val uuid = "debug_" + Uuid.random().toString()
         val startTime = Clock.System.now().toEpochMilliseconds()
         var currentTime = startTime
         val leqSequenceInterval: Long = 125
@@ -27,7 +37,7 @@ class MockMeasurementBuilder(
         // Use a 1D perlin noise generator for smooth random numbers
         val perlin = PerlinNoise1D(seed = Random.nextInt())
 
-        measurementService.openOngoingMeasurement()
+        measurementService.openOngoingMeasurement(uuid)
 
         // Start at 50dB
         repeat(leqSequenceLength) {
@@ -89,9 +99,7 @@ class MockMeasurementBuilder(
             currentTime += locationSequenceInterval
         }
 
-        val uuid = measurementService.ongoingMeasurementUuid
         measurementService.closeOngoingMeasurement()
-
         return uuid
     }
 }

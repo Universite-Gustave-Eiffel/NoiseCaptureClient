@@ -134,10 +134,10 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override fun openOngoingMeasurement() {
+    override fun openOngoingMeasurement(uuid: String?) {
         // Create a new ongoing measurement with a unique identifier and start time to now.
         ongoingMeasurement = MutableMeasurement(
-            uuid = Uuid.random().toString(),
+            uuid = uuid ?: Uuid.random().toString(),
             startTimestamp = Clock.System.now().toEpochMilliseconds()
         )
         logger.info("Starting new measurement with id ${ongoingMeasurement?.uuid}")
