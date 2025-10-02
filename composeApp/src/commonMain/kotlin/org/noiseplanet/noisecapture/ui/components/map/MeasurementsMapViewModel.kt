@@ -335,6 +335,10 @@ class MeasurementsMapViewModel(
         val pathPoints = pathBuilder.pathForMeasurement(measurementUuid)
         var prevXY: Pair<Double, Double>? = null
 
+        if (pathPoints.isEmpty()) {
+            return
+        }
+
         // Add path data to map
         pathPoints.forEachIndexed { index, point ->
             if (index == 0) {
@@ -367,14 +371,39 @@ class MeasurementsMapViewModel(
             latitude = pathPoints.maxOf { it.latitude },
             longitude = pathPoints.maxOf { it.longitude }
         )
-        mapState.scrollTo(
-            area = BoundingBox(
-                xLeft = xLeft,
-                xRight = xRight,
-                yTop = yTop,
-                yBottom = yBottom
-            ),
-            padding = Offset(x = 0.1f, y = 0.1f)
+
+        // Center path into visible viewport
+        withVisibleAreaPaddingRatio(visibleAreaPaddingRatio) {
+            mapState.scrollTo(
+                area = BoundingBox(
+                    xLeft = xLeft,
+                    xRight = xRight,
+                    yTop = yTop,
+                    yBottom = yBottom
+                ),
+                padding = Offset(x = 0.1f, y = 0.1f)
+            )
+        }
+    }
+
+    /**
+     * Sets map state's visible area padding ratio to the given values, runs the given block and
+     * sets visible padding ratio back to its original value.
+     *
+     * @param paddingRatio Visible padding ratio to apply before running the block
+     * @param block Closure to execute
+     */
+    private suspend fun withVisibleAreaPaddingRatio(
+        paddingRatio: VisibleAreaPaddingRatio,
+        block: suspend (VisibleAreaPaddingRatio) -> Unit,
+    ) {
+        mapState.setVisibleAreaPadding(
+            leftRatio = paddingRatio.left,
+            rightRatio = paddingRatio.right,
+            bottomRatio = paddingRatio.bottom,
+            topRatio = paddingRatio.top
         )
+        block(paddingRatio)
+        mapState.setVisibleAreaPadding(0f)
     }
 }

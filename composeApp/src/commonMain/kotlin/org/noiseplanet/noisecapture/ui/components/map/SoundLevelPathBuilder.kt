@@ -2,9 +2,8 @@ package org.noiseplanet.noisecapture.ui.components.map
 
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.util.GeoUtil
+import org.noiseplanet.noisecapture.util.dbAverage
 import org.noiseplanet.noisecapture.util.isInVuMeterRange
-import kotlin.math.log10
-import kotlin.math.pow
 
 
 /**
@@ -37,6 +36,21 @@ class SoundLevelPathBuilder(
         val coords = getSortedLocationSequence(measurementUuid)
         val laeqs = getSortedLaeqSequence(measurementUuid)
 
+        // If we only have a single point (user is stationary), calculate average of all LAEq values,
+        // and return it twice so the path still has first and end points.
+        if (coords.size == 1) {
+            val coord = coords.first()
+            val (lat, lon) = coord.value
+
+            val point = PathPoint(
+                timestamp = coord.key,
+                latitude = lat,
+                longitude = lon,
+                level = laeqs.map { (_, value) -> value }.dbAverage()
+            )
+            return listOf(point, point)
+        }
+
         val result = mutableListOf<PathPoint>() // Will hold resampled data points
         var laeqsCursor = 0 // Current index in the sound levels list
 
@@ -44,29 +58,24 @@ class SoundLevelPathBuilder(
             // Get timestamps of previous point and current point
             val prevTime = coords[i - 1].key
             val currTime = coords[i].key
-            var totalEnergy = 0.0
-            var count = 0
+            val laeqsForTimeWindow = mutableListOf<Double>()
 
             // Process all sound entries in [prevTime, currTime)
             while (laeqsCursor < laeqs.size && laeqs[laeqsCursor].key < currTime) {
                 val laeqEntry = laeqs[laeqsCursor]
                 if (laeqEntry.key >= prevTime) {
-                    val energy = 10.0.pow(laeqEntry.value / 10.0)
-                    totalEnergy += energy
-                    count++
+                    laeqsForTimeWindow.add(laeqEntry.value)
                 }
                 laeqsCursor++
             }
 
             // Calculate energetic mean and push new point to path data
-            if (count > 0) {
-                val avgEnergy = totalEnergy / count
-                val avgDb = 10.0 * log10(avgEnergy)
+            if (laeqsForTimeWindow.isNotEmpty()) {
                 val point = PathPoint(
                     timestamp = currTime,
                     latitude = coords[i].value.first,
                     longitude = coords[i].value.second,
-                    level = avgDb,
+                    level = laeqsForTimeWindow.dbAverage(),
                 )
                 result.add(point)
             }
@@ -104,7 +113,7 @@ class SoundLevelPathBuilder(
         // Minimum distance required between two points, in meters
         val distThreshold = 2.0
 
-        return sortedPoints.filterIndexed { index, entry ->
+        val dbg = sortedPoints.filterIndexed { index, entry ->
             if (index == 0) {
                 prevPoint = entry.value
                 return@filterIndexed true
@@ -125,6 +134,7 @@ class SoundLevelPathBuilder(
                 true
             }
         }
+        return dbg
     }
 
     /**
