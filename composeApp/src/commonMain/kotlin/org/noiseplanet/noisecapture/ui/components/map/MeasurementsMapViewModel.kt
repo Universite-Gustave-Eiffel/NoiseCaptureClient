@@ -29,10 +29,10 @@ import ovh.plrapps.mapcompose.api.BoundingBox
 import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.addMarker
 import ovh.plrapps.mapcompose.api.addPath
-import ovh.plrapps.mapcompose.api.centerOnMarker
 import ovh.plrapps.mapcompose.api.centroidX
 import ovh.plrapps.mapcompose.api.centroidY
 import ovh.plrapps.mapcompose.api.enableRotation
+import ovh.plrapps.mapcompose.api.getMarkerInfo
 import ovh.plrapps.mapcompose.api.hasMarker
 import ovh.plrapps.mapcompose.api.moveMarker
 import ovh.plrapps.mapcompose.api.onTouchDown
@@ -52,10 +52,13 @@ import kotlin.math.pow
  * ViewModel for [MeasurementsMapView].
  *
  * @param windowSizeClass Current device's [WindowSizeClass]. Used for tiles scaling.
+ * @param focusedMeasurementUuid UUID of the focused measurement. If given, the map will show the
+ *                               path of the given measurement colored with noise level values.
  * @param visibleAreaPaddingRatio Map content padding relative to the screen dimensions.
  */
 class MeasurementsMapViewModel(
     windowSizeClass: WindowSizeClass,
+    focusedMeasurementUuid: String? = null,
     val visibleAreaPaddingRatio: VisibleAreaPaddingRatio = VisibleAreaPaddingRatio(),
 ) : ViewModel(), KoinComponent {
 
@@ -171,16 +174,13 @@ class MeasurementsMapViewModel(
             addLayer(backgroundTilesProvider, placement = BelowAll)
             addLayer(measurementTilesProvider, initialOpacity = 0.5f)
 
-            viewModelScope.launch(Dispatchers.Default) {
-                setVisibleAreaPadding(
-                    leftRatio = visibleAreaPaddingRatio.left,
-                    rightRatio = visibleAreaPaddingRatio.right,
-                    topRatio = visibleAreaPaddingRatio.top,
-                    bottomRatio = visibleAreaPaddingRatio.bottom
-                )
-
-                val measurementUuid = measurementService.getAllMeasurements().first().uuid
-                addPathsForMeasurement(measurementUuid)
+            focusedMeasurementUuid?.let { uuid ->
+                // If a measurement is focused, add its path as map markers and disable
+                // automatic recenter to user location
+                viewModelScope.launch(Dispatchers.Default) {
+                    addPathsForMeasurement(uuid)
+                    autoRecenterEnabled = false
+                }
             }
         }
     )
@@ -205,6 +205,11 @@ class MeasurementsMapViewModel(
      */
     var autoRecenterEnabled: Boolean = true
 
+    /**
+     * Holds the bounding box of the currently focused measurement, if any.
+     */
+    private var measurementPathBoundingBox: BoundingBox? = null
+
 
     // - Lifecycle
 
@@ -219,20 +224,24 @@ class MeasurementsMapViewModel(
             _mapOrientationFlow.tryEmit(this.rotation)
         }
 
-        // Subscribe to user location update to follow the user location on the map.
-        locationProvider.startUpdatingLocation()
-        viewModelScope.launch(Dispatchers.Default) {
-            while (isActive) {
-                locationProvider.liveLocation.collect { locationRecord ->
-                    // Map 3D coordinates to 2D normalized projection
-                    val (x, y) = GeoUtil.lonLatToNormalizedWebMercator(
-                        latitude = locationRecord.lat,
-                        longitude = locationRecord.lon
-                    )
-                    updateUserLocationMarker(x, y)
+        if (focusedMeasurementUuid == null) {
+            // Subscribe to user location update to follow the user location on the map.
+            // Do this only if the map is not currently focusing on a measurement.
+            locationProvider.startUpdatingLocation()
 
-                    if (autoRecenterEnabled) {
-                        recenter()
+            viewModelScope.launch(Dispatchers.Default) {
+                while (isActive) {
+                    locationProvider.liveLocation.collect { locationRecord ->
+                        // Map 3D coordinates to 2D normalized projection
+                        val (x, y) = GeoUtil.lonLatToNormalizedWebMercator(
+                            latitude = locationRecord.lat,
+                            longitude = locationRecord.lon
+                        )
+                        updateUserLocationMarker(x, y)
+
+                        if (autoRecenterEnabled) {
+                            recenter()
+                        }
                     }
                 }
             }
@@ -244,13 +253,27 @@ class MeasurementsMapViewModel(
 
     fun recenter() {
         viewModelScope.launch(Dispatchers.Default) {
-            mapState.getMarkerInfo(id = USER_LOCATION_MARKER_ID)?.let {
-                mapState.scrollTo(
-                    it.x,
-                    it.y,
-                    destScale = zoomLevelToScale(INITIAL_ZOOM_LEVEL),
-                    screenOffset = Offset(x = -0.5f, y = -0.5f + visibleAreaPaddingRatio.bottom / 2)
-                )
+            // If a measurement is focused, center its path in the viewport.
+            measurementPathBoundingBox?.let { boundingBox ->
+                withVisibleAreaPaddingRatio(visibleAreaPaddingRatio) {
+                    mapState.scrollTo(
+                        area = boundingBox,
+                        padding = Offset(x = 0.1f, y = 0.1f)
+                    )
+                }
+            } ?: run {
+                // Otherwise, if user location is known, center it in the viewport.
+                mapState.getMarkerInfo(id = USER_LOCATION_MARKER_ID)?.let {
+                    mapState.scrollTo(
+                        it.x,
+                        it.y,
+                        destScale = zoomLevelToScale(INITIAL_ZOOM_LEVEL),
+                        screenOffset = Offset(
+                            x = -0.5f,
+                            y = -0.5f + visibleAreaPaddingRatio.bottom / 2
+                        )
+                    )
+                }
             }
         }
     }
@@ -379,18 +402,15 @@ class MeasurementsMapViewModel(
             longitude = pathPoints.maxOf { it.longitude }
         )
 
-        // Center path into visible viewport
-        withVisibleAreaPaddingRatio(visibleAreaPaddingRatio) {
-            mapState.scrollTo(
-                area = BoundingBox(
-                    xLeft = xLeft,
-                    xRight = xRight,
-                    yTop = yTop,
-                    yBottom = yBottom
-                ),
-                padding = Offset(x = 0.1f, y = 0.1f)
-            )
-        }
+        // Save it for future calls to recenter()
+        measurementPathBoundingBox = BoundingBox(
+            xLeft = xLeft,
+            xRight = xRight,
+            yTop = yTop,
+            yBottom = yBottom
+        )
+
+        recenter()
     }
 
     /**

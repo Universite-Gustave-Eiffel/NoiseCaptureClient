@@ -168,7 +168,8 @@ fun MeasurementDetailsScreen(
                         MeasurementsMapView(
                             // Compensate the top padding of the expended sheet by shifting the map
                             // view up by the same amount.
-                            modifier = Modifier.offset(y = -(32.dp))
+                            modifier = Modifier.offset(y = -(32.dp)),
+                            focusedMeasurementUuid = viewModel.measurementId,
                         )
                     }
 

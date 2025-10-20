@@ -42,13 +42,16 @@ private val CONTROLS_SIZE = 40.dp
 
 
 @Composable
-fun MeasurementsMapView(modifier: Modifier = Modifier) {
+fun MeasurementsMapView(
+    focusedMeasurementUuid: String? = null,
+    modifier: Modifier = Modifier,
+) {
 
     // - Properties
 
     val sizeClass = currentWindowAdaptiveInfo().windowSizeClass
     val viewModel: MeasurementsMapViewModel = koinViewModel {
-        parametersOf(sizeClass)
+        parametersOf(sizeClass, focusedMeasurementUuid)
     }
     val mapOrientation by viewModel.mapOrientationFlow.collectAsStateWithLifecycle()
 

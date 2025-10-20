@@ -24,11 +24,12 @@ val measurementDetailsModule = module {
         MeasurementSplTimePlotViewModel(measurementId)
     }
 
-    viewModel { (windowsSizeClass: WindowSizeClass) ->
+    viewModel { (windowsSizeClass: WindowSizeClass, measurementId: String) ->
         MeasurementsMapViewModel(
             windowsSizeClass,
+            focusedMeasurementUuid = measurementId,
             // TODO: Use a shared constant for sheet peek height screen ratio.
-            visibleAreaPaddingRatio = MeasurementsMapViewModel.VisibleAreaPaddingRatio(bottom = 0.4f)
+            visibleAreaPaddingRatio = MeasurementsMapViewModel.VisibleAreaPaddingRatio(bottom = 0.4f),
         )
     }
 }
