@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.safeContent
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalBottomSheetProperties
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -33,6 +34,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
+import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
@@ -47,6 +50,7 @@ fun RequestPermissionModal(
 ) {
     // - Properties
 
+    val logger: Logger = koinInject()
     val scope = rememberCoroutineScope()
     val isVisible by viewModel.isVisibleFlow.collectAsStateWithLifecycle()
     val state by viewModel.viewStateFlow.collectAsStateWithLifecycle()
@@ -55,11 +59,15 @@ fun RequestPermissionModal(
 
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true,
-        confirmValueChange = { _ ->
+        confirmValueChange = { sheetValue ->
             // Only allow to close modal by pressing skip or go back button.
-            false
+            when (sheetValue) {
+                SheetValue.Expanded -> true
+                else -> false
+            }
         }
     )
+
     var displaySheet by remember { mutableStateOf(isVisible) }
 
     val actionButtonModifier = Modifier.fillMaxWidth(fraction = 0.5f).height(42.dp)
@@ -88,7 +96,6 @@ fun RequestPermissionModal(
             WindowInsets.safeContent.only(WindowInsetsSides.Bottom)
         },
     ) {
-
         // Handle back press or back gesture.
         BackHandler {
             if (viewState.isRequired) {
