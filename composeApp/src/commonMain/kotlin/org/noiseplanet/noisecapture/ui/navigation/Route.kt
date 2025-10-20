@@ -17,7 +17,9 @@ object RouteIds {
     const val SETTINGS = "settings"
     const val MEASUREMENT_DETAILS = "measurement_details"
 
-    const val DEBUG = "debug"
+    // Naming this route "DEBUG" breaks compilation on iOS because it gets interpreted as and
+    // obj-C macro.
+    const val DEBUG_ROUTE = "debug"
 }
 typealias RouteId = String
 
@@ -56,4 +58,4 @@ class MeasurementDetailsRoute(
 ) : Route(id = RouteIds.MEASUREMENT_DETAILS)
 
 @Serializable
-class DebugRoute : Route(id = RouteIds.DEBUG)
+class DebugRoute : Route(id = RouteIds.DEBUG_ROUTE)
