@@ -27,11 +27,15 @@ import androidx.compose.ui.unit.dp
  * MapCompose places markers based on the bottom center of the view (so that a pin marker pins
  * the exact location it is placed above).
  *
- * @param orientationDegrees Angle (in decimal degrees) of clockwise rotation using north as 0 degrees.
+ * @param orientationDegrees Direction in which the user is facing (in decimal degrees).
+ *                           Clockwise rotation using north as 0 degrees.
+ * @param mapRotationDegrees Direction in which the map is facing (in decimal degrees).
+ *                           Clockwise rotation using north as 0 degrees.
  */
 @Composable
 fun UserLocationMarker(
-    orientationDegrees: Float,
+    mapRotationDegrees: Float,
+    orientationDegrees: Float? = null,
     modifier: Modifier = Modifier,
 ) {
 
@@ -46,31 +50,33 @@ fun UserLocationMarker(
         contentAlignment = Alignment.BottomCenter,
         modifier = modifier.graphicsLayer {
             transformOrigin = TransformOrigin(0.5f, 1f) // Set rotation anchor to bottom center
-            rotationZ = orientationDegrees
+            rotationZ = mapRotationDegrees
         }
     ) {
-        // Draw heading gradient arc to show which direction user is looking at
-        Box(
-            modifier = Modifier.size(128.dp)
-                .drawWithCache {
-                    val orientationArcBrush = Brush.radialGradient(
-                        colors = listOf(markerColor, markerColor.copy(alpha = 0.0f)),
-                        radius = size.height / 2f,
-                        center = Offset(size.width / 2f, size.height)
-                    )
-                    onDrawBehind {
-                        drawArc(
-                            brush = orientationArcBrush,
-                            topLeft = Offset(0f, size.height / 2f),
-                            startAngle = -90f - 30f,
-                            sweepAngle = 60f,
-                            alpha = 0.25f,
-                            useCenter = true,
-                            size = Size(size.width, size.height),
+        orientationDegrees?.let { _ ->
+            // Draw heading gradient arc to show which direction user is looking at
+            Box(
+                modifier = Modifier.size(128.dp)
+                    .drawWithCache {
+                        val orientationArcBrush = Brush.radialGradient(
+                            colors = listOf(markerColor, markerColor.copy(alpha = 0.0f)),
+                            radius = size.height / 2f,
+                            center = Offset(size.width / 2f, size.height)
                         )
+                        onDrawBehind {
+                            drawArc(
+                                brush = orientationArcBrush,
+                                topLeft = Offset(0f, size.height / 2f),
+                                startAngle = -90f - 30f,
+                                sweepAngle = 60f,
+                                alpha = 0.25f,
+                                useCenter = true,
+                                size = Size(size.width, size.height),
+                            )
+                        }
                     }
-                }
-        )
+            )
+        }
 
         // Draw blue dot showing user location
         Box(

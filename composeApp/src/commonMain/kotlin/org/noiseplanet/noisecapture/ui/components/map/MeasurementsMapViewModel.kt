@@ -224,7 +224,6 @@ class MeasurementsMapViewModel(
         viewModelScope.launch(Dispatchers.Default) {
             while (isActive) {
                 locationProvider.liveLocation.collect { locationRecord ->
-                    logger.debug("NEW LOCATION UPDATE: ${locationRecord.lat}, ${locationRecord.lon}")
                     // Map 3D coordinates to 2D normalized projection
                     val (x, y) = GeoUtil.lonLatToNormalizedWebMercator(
                         latitude = locationRecord.lat,
@@ -233,7 +232,7 @@ class MeasurementsMapViewModel(
                     updateUserLocationMarker(x, y)
 
                     if (autoRecenterEnabled) {
-                        recenter(locationRecord.orientation)
+                        recenter()
                     }
                 }
             }
@@ -243,13 +242,16 @@ class MeasurementsMapViewModel(
 
     // - Public function
 
-    fun recenter(heading: Double?) {
+    fun recenter() {
         viewModelScope.launch(Dispatchers.Default) {
-            mapState.centerOnMarker(
-                id = USER_LOCATION_MARKER_ID,
-                destScale = zoomLevelToScale(INITIAL_ZOOM_LEVEL),
-//                destAngle = heading?.toFloat() ?: mapState.rotation
-            )
+            mapState.getMarkerInfo(id = USER_LOCATION_MARKER_ID)?.let {
+                mapState.scrollTo(
+                    it.x,
+                    it.y,
+                    destScale = zoomLevelToScale(INITIAL_ZOOM_LEVEL),
+                    screenOffset = Offset(x = -0.5f, y = -0.5f + visibleAreaPaddingRatio.bottom / 2)
+                )
+            }
         }
     }
 
@@ -262,11 +264,13 @@ class MeasurementsMapViewModel(
     fun zoomIn() {
         val zoomLevel = scaleToZoomLevel(mapState.scale)
         snapToZoomLevel(zoomLevel + 1)
+        autoRecenterEnabled = false
     }
 
     fun zoomOut() {
         val zoomLevel = scaleToZoomLevel(mapState.scale)
         snapToZoomLevel(zoomLevel - 1)
+        autoRecenterEnabled = false
     }
 
 
@@ -275,14 +279,18 @@ class MeasurementsMapViewModel(
     /**
      * Creates or updates the blue dot that marks the user's current location.
      */
-    private fun updateUserLocationMarker(x: Double, y: Double) {
+    private fun updateUserLocationMarker(x: Double, y: Double, orientation: Double? = null) {
         if (mapState.hasMarker(id = USER_LOCATION_MARKER_ID)) {
             // If marker is already added to the map, move it to the new location
             mapState.moveMarker(id = USER_LOCATION_MARKER_ID, x = x, y = y)
         } else {
             // Otherwise, create and add marker
             mapState.addMarker(id = USER_LOCATION_MARKER_ID, x = x, y = y) {
-                UserLocationMarker(orientationDegrees = mapState.rotation)
+                // TODO: Pass down user facing direction when better implemented.
+                UserLocationMarker(
+                    mapRotationDegrees = mapState.rotation,
+                    orientationDegrees = orientation?.toFloat(),
+                )
             }
         }
     }
@@ -318,11 +326,10 @@ class MeasurementsMapViewModel(
      */
     private fun snapToZoomLevel(zoomLevel: Int) {
         viewModelScope.launch {
-            // TODO: Take visible area padding into account for getting current centroid.
             mapState.scrollTo(
                 x = mapState.centroidX,
                 y = mapState.centroidY,
-                destScale = zoomLevelToScale(zoomLevel)
+                destScale = zoomLevelToScale(zoomLevel),
             )
         }
     }
@@ -340,6 +347,7 @@ class MeasurementsMapViewModel(
         }
 
         // Add path data to map
+        // TODO: When only a single point, show colored marker instead of path?
         pathPoints.forEachIndexed { index, point ->
             if (index == 0) {
                 prevXY = GeoUtil.lonLatToNormalizedWebMercator(point.latitude, point.longitude)
@@ -362,7 +370,6 @@ class MeasurementsMapViewModel(
         }
 
         // Calculate path bounding box
-        autoRecenterEnabled = false
         val (xLeft, yTop) = GeoUtil.lonLatToNormalizedWebMercator(
             latitude = pathPoints.minOf { it.latitude },
             longitude = pathPoints.minOf { it.longitude }
