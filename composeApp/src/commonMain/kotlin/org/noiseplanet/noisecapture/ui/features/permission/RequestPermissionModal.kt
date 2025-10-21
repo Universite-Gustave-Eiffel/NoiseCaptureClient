@@ -34,8 +34,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
-import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
@@ -50,7 +48,6 @@ fun RequestPermissionModal(
 ) {
     // - Properties
 
-    val logger: Logger = koinInject()
     val scope = rememberCoroutineScope()
     val isVisible by viewModel.isVisibleFlow.collectAsStateWithLifecycle()
     val state by viewModel.viewStateFlow.collectAsStateWithLifecycle()
