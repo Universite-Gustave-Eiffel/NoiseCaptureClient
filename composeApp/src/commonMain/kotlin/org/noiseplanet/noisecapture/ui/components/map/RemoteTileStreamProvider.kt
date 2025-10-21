@@ -1,9 +1,8 @@
 package org.noiseplanet.noisecapture.ui.components.map
 
 import io.ktor.client.HttpClient
-import io.ktor.client.plugins.HttpTimeoutConfig
+import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.cache.HttpCache
-import io.ktor.client.plugins.timeout
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsBytes
 import io.ktor.http.isSuccess
@@ -36,6 +35,13 @@ class RemoteTileStreamProvider(
         //       currently provided by Ktor, but a few tweaks to our KStore implementation should
         //       probably do the job.
         install(HttpCache)
+
+        install(HttpRequestRetry) {
+            retryOnServerErrors(maxRetries = 5)
+            exponentialDelay()
+        }
+
+        // TODO: Configure logging with ability to enable/disable
     }
 
     private val logger: Logger by injectLogger()
@@ -56,21 +62,19 @@ class RemoteTileStreamProvider(
         }
 
         val url = "$tileServerUrl/$zoomLvl/$col/$trueRow.png"
-        val response = httpClient.get(url) {
-            timeout {
-                // TODO: Better handling of timeout:
-                //       - Catch exception silently?
-                //       - Close connection?
-                connectTimeoutMillis = HttpTimeoutConfig.INFINITE_TIMEOUT_MS
-            }
-        }
 
-        return if (response.status.isSuccess()) {
-            Buffer().apply {
-                write(response.bodyAsBytes())
+        return runCatching {
+            val response = httpClient.get(url)
+            if (response.status.isSuccess()) {
+                Buffer().apply {
+                    write(response.bodyAsBytes())
+                }
+            } else {
+                logger.error("Failed fetching tile at URL $url: ${response.status}")
+                null
             }
-        } else {
-            logger.warning("Failed fetching tile at URL $url: ${response.status}")
+        }.getOrElse { exception ->
+            logger.error("Exception during call to $url:", exception)
             null
         }
     }
