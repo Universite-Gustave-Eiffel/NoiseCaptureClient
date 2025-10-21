@@ -2,6 +2,7 @@ package org.noiseplanet.noisecapture.services.storage
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 
 
 /**
@@ -39,6 +40,26 @@ interface StorageService<T : @Serializable Any> {
      * @return Entity instance or null if not found in storage
      */
     suspend fun get(uuid: String): T?
+
+    /**
+     * Migrates the given entity from the given stored version to the current version. Triggered when
+     * trying to deserialize a model unsuccessfully.
+     *
+     * By default, this function just removes the stored version from disk and returns null.
+     * Override this method in model specific [StorageService] implementations to provide a proper
+     * custom migration behaviour.
+     *
+     * @param uuid Unique entity identifier
+     * @param currentVersion Version of the stored entity.
+     * @param storedVersion Current entity version.
+     * @param storedData Raw json data that couldn't be parsed automatically to the current entity version.
+     */
+    suspend fun migrate(
+        uuid: String,
+        currentVersion: Int,
+        storedVersion: Int?,
+        storedData: JsonElement?,
+    ): T?
 
     /**
      * Gets the size of an entity in bytes from its unique identifier

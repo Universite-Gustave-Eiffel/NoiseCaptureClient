@@ -35,6 +35,8 @@ internal actual class KStoreProvider : KoinComponent {
      */
     actual inline fun <reified T : @Serializable Any> storeOf(
         fileName: String,
+        version: Int,
+        noinline migration: Migration<T>,
         enableCache: Boolean,
     ): KStore<T> {
         // For WasmJS, KStore doesn't support file storage out of the box so we use a custom codec
@@ -43,6 +45,8 @@ internal actual class KStoreProvider : KoinComponent {
             codec = KStoreOpfsCodec(
                 filePath = fileName,
                 logger = logger,
+                version = version,
+                migration = migration,
             ),
             enableCache = enableCache,
         )
