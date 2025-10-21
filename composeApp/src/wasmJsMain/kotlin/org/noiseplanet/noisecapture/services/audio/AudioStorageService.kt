@@ -41,6 +41,7 @@ interface AudioStorageService {
 /**
  * [AudioStorageService] implementation using OPFS to store data persistently
  */
+@OptIn(ExperimentalWasmJsInterop::class)
 class OPFSAudioStorageService : AudioStorageService, KoinComponent {
 
     override suspend fun store(key: String, blob: Blob) {

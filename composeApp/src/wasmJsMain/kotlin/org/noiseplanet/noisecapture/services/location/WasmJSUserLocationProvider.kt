@@ -12,6 +12,7 @@ import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.dao.LocationRecord
 import org.noiseplanet.noisecapture.util.injectLogger
 
+@OptIn(ExperimentalWasmJsInterop::class)
 class WasmJSUserLocationProvider : KoinComponent, UserLocationProvider {
 
     // - Constants

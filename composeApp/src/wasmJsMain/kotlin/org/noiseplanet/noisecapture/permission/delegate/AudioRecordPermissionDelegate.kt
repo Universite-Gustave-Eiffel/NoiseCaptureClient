@@ -7,6 +7,7 @@ import org.noiseplanet.noisecapture.permission.Permission
 import org.w3c.dom.mediacapture.MediaStreamConstraints
 
 
+@OptIn(ExperimentalWasmJsInterop::class)
 internal class AudioRecordPermissionDelegate : DefaultPermissionDelegate(
     permission = Permission.RECORD_AUDIO
 ) {

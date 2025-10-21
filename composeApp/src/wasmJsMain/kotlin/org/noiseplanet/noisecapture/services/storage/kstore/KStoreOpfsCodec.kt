@@ -25,6 +25,7 @@ import kotlin.coroutines.suspendCoroutine
  * @param serializer Serializer to use for values.
  * @param logger Logger for logging.
  */
+@OptIn(ExperimentalWasmJsInterop::class)
 class KStoreOpfsCodec<T : @Serializable Any>(
     private val filePath: String,
     private val json: Json,

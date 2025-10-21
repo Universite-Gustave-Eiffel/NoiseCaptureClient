@@ -35,20 +35,20 @@ fun Modifier.dropShadow(
     blur: Float = 12f,
     offset: Offset = Offset(x = 0f, y = 2f),
     spread: Float = 0f,
-    isPressed: Boolean? = null,
+    isPressed: Boolean = false,
 ): Modifier {
 
     // - Animated properties
 
     val animatedOffset by animateOffsetAsState(
-        targetValue = if (isPressed != false) {
+        targetValue = if (isPressed) {
             Offset.Zero
         } else {
             offset
         }
     )
     val animatedBlur by animateFloatAsState(
-        targetValue = if (isPressed != false) 0f else blur
+        targetValue = if (isPressed) 0f else blur
     )
 
 

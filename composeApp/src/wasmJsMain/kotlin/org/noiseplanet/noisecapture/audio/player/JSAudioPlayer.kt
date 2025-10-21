@@ -14,6 +14,7 @@ import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 
+@OptIn(ExperimentalWasmJsInterop::class)
 class JSAudioPlayer(filePath: String) : AudioPlayer(filePath), KoinComponent {
 
     // - Properties

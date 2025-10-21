@@ -2,13 +2,13 @@ package org.noiseplanet.noisecapture.ui.features.recording
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import org.noiseplanet.noisecapture.ui.components.map.MeasurementsMapView
 import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrogram.SpectrogramPlotView
 import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrum.SpectrumPlotView
 
@@ -40,7 +41,7 @@ fun MeasurementRecordingPager(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier,
     ) {
-        TabRow(
+        SecondaryTabRow(
             selectedTabIndex = pagerState.currentPage,
             containerColor = MaterialTheme.colorScheme.surfaceContainer
         ) {
@@ -64,13 +65,8 @@ fun MeasurementRecordingPager(
                     SpectrumPlotView(modifier = Modifier.padding(start = 8.dp, end = 16.dp))
                 }
 
-                else -> Surface(
-                    color = MaterialTheme.colorScheme.surfaceContainer
-                ) {
-                    Text(
-                        text = "Text tab ${MEASUREMENT_TAB_LABEL[page]} selected",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
+                else -> Box {
+                    MeasurementsMapView(modifier = Modifier.fillMaxSize())
                 }
             }
         }

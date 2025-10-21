@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalWasmJsInterop::class)
+
 package org.noiseplanet.noisecapture.audio
 
 import kotlinx.browser.window

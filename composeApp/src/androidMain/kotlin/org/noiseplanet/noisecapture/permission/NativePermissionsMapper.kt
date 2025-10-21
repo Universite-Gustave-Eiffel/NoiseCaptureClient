@@ -36,8 +36,8 @@ fun Permission.toAndroidPermissions(): List<String> {
 fun List<String>.toPermission(): Permission? {
     return when (this) {
         listOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_FINE_LOCATION
         ),
             -> Permission.LOCATION_FOREGROUND
 

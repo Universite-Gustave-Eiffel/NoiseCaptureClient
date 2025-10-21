@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +48,7 @@ import org.koin.compose.koinInject
 import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.log.Logger
+import org.noiseplanet.noisecapture.ui.components.map.MeasurementsMapView
 
 
 @OptIn(KoinExperimentalAPI::class)
@@ -69,6 +70,7 @@ fun MeasurementDetailsScreen(
     val logger: Logger = koinInject()
     val localDensity = LocalDensity.current
     var containerHeight by remember { mutableStateOf(0.dp) }
+    val sheetPeekHeight by derivedStateOf { containerHeight * 0.4f }
 
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
     val isLoading: Boolean = viewState is MeasurementDetailsScreenViewState.Loading
@@ -117,7 +119,7 @@ fun MeasurementDetailsScreen(
             sheetSwipeEnabled = enableSheetSwipe,
             sheetContainerColor = MaterialTheme.colorScheme.surfaceContainer,
             containerColor = MaterialTheme.colorScheme.surface,
-            sheetPeekHeight = containerHeight * 0.4f,
+            sheetPeekHeight = sheetPeekHeight,
             sheetDragHandle = {
                 BottomSheetDefaults.DragHandle(
                     modifier = Modifier.height(dragHandleHeight)
@@ -143,7 +145,7 @@ fun MeasurementDetailsScreen(
                 containerHeight = with(localDensity) {
                     coordinates.size.height.toDp()
                 }
-            }.safeContentPadding(),
+            },
         ) { contentPadding ->
             Crossfade(viewState) { viewState ->
                 when (viewState) {
@@ -170,11 +172,7 @@ fun MeasurementDetailsScreen(
                     }
 
                     is MeasurementDetailsScreenViewState.ContentReady -> {
-                        Text(
-                            text = "Measurement id: ${viewState.measurement.uuid}",
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxSize(),
-                        )
+                        MeasurementsMapView()
                     }
 
                     is MeasurementDetailsScreenViewState.NoMeasurement -> {
