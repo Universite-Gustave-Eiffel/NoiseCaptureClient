@@ -5,6 +5,11 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
+ * Current model version, used for potential migrations.
+ */
+val LeqSequenceFragment.Companion.VERSION: Int get() = 1
+
+/**
  * For compression reasons when storing values in JSON format, we want to group values
  * into a representation where each property is an array of values to spare writing the
  * keys everytime.

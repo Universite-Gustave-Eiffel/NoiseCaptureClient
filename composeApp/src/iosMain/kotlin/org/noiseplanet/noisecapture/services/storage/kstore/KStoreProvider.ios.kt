@@ -1,7 +1,9 @@
 package org.noiseplanet.noisecapture.services.storage.kstore
 
+import io.github.xxfast.kstore.DefaultJson
 import io.github.xxfast.kstore.KStore
-import io.github.xxfast.kstore.file.storeOf
+import io.github.xxfast.kstore.file.extensions.VersionedCodec
+import io.github.xxfast.kstore.storeOf
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCObjectVar
@@ -9,8 +11,10 @@ import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.value
+import kotlinx.coroutines.runBlocking
 import kotlinx.io.files.Path
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.serializer
 import org.noiseplanet.noisecapture.util.NSFileManagerUtils
 import org.noiseplanet.noisecapture.util.checkNoError
 import platform.Foundation.NSError
@@ -37,6 +41,8 @@ internal actual class KStoreProvider {
      */
     actual inline fun <reified T : @Serializable Any> storeOf(
         fileName: String,
+        version: Int,
+        noinline migration: Migration<T>,
         enableCache: Boolean,
     ): KStore<T> {
         val filePath = getFilePath(fileName)
@@ -57,7 +63,18 @@ internal actual class KStoreProvider {
         }
 
         // Return KStore handle
-        return storeOf(file = filePath, enableCache = enableCache)
+        return storeOf(
+            codec = VersionedCodec(
+                file = filePath,
+                version = version,
+                migration = { version, data ->
+                    runBlocking { migration(version, data) }
+                },
+                json = DefaultJson,
+                serializer = DefaultJson.serializersModule.serializer(),
+            ),
+            enableCache = enableCache,
+        )
     }
 
     /**

@@ -12,7 +12,7 @@ import org.noiseplanet.noisecapture.ui.components.map.MeasurementsMapView
 @OptIn(KoinExperimentalAPI::class)
 @Composable
 fun DebugScreen(
-    viewModel: DebugScreenViewModel,
+//    viewModel: DebugScreenViewModel,
 ) {
     // - DI
 
