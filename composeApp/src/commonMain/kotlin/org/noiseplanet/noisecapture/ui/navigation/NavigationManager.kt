@@ -53,17 +53,19 @@ fun NavigationManager(
             .background(MaterialTheme.colorScheme.surface)
     ) {
         composable<HomeRoute> { backStackEntry ->
+            val router = HomeRouter(navController, backStackEntry)
+
             val screenViewModel: HomeScreenViewModel = koinViewModel {
-                parametersOf({
+                parametersOf(
                     // Callback triggered when pressing the settings app bar button
-                    navController.navigate(SettingsRoute())
-                })
+                    router::onClickSettingsButton
+                )
             }
             appBarState.setCurrentScreenViewModel(screenViewModel)
 
             HomeScreen(
                 viewModel = screenViewModel,
-                router = HomeRouter(navController, backStackEntry),
+                router = router,
                 showPermissionPrompt = showPermissionPrompt,
             )
         }

@@ -6,6 +6,7 @@ import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.ui.navigation.HistoryRoute
 import org.noiseplanet.noisecapture.ui.navigation.MeasurementDetailsRoute
 import org.noiseplanet.noisecapture.ui.navigation.MeasurementRecordingRoute
+import org.noiseplanet.noisecapture.ui.navigation.SettingsRoute
 
 
 /**
@@ -34,6 +35,10 @@ class HomeRouter(
 
     fun onClickOpenHistoryButton() {
         navController.navigate(HistoryRoute())
+    }
+
+    fun onClickSettingsButton() {
+        navController.navigate(SettingsRoute())
     }
 
     fun onClickOpenMapButton() {
