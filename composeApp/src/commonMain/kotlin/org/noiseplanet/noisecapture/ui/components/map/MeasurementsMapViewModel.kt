@@ -1,34 +1,37 @@
 package org.noiseplanet.noisecapture.ui.components.map
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.window.core.layout.WindowSizeClass
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.services.location.UserLocationProvider
+import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.ui.components.button.IconNCButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
-import org.noiseplanet.noisecapture.util.injectLogger
+import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
+import org.noiseplanet.noisecapture.util.GeoUtil
+import ovh.plrapps.mapcompose.api.BoundingBox
 import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.addMarker
-import ovh.plrapps.mapcompose.api.centerOnMarker
+import ovh.plrapps.mapcompose.api.addPath
 import ovh.plrapps.mapcompose.api.centroidX
 import ovh.plrapps.mapcompose.api.centroidY
 import ovh.plrapps.mapcompose.api.enableRotation
 import ovh.plrapps.mapcompose.api.getMarkerInfo
+import ovh.plrapps.mapcompose.api.hasMarker
 import ovh.plrapps.mapcompose.api.moveMarker
 import ovh.plrapps.mapcompose.api.onTouchDown
 import ovh.plrapps.mapcompose.api.rotateTo
@@ -39,21 +42,21 @@ import ovh.plrapps.mapcompose.api.setStateChangeListener
 import ovh.plrapps.mapcompose.api.setVisibleAreaPadding
 import ovh.plrapps.mapcompose.core.BelowAll
 import ovh.plrapps.mapcompose.ui.state.MapState
-import kotlin.math.PI
-import kotlin.math.ln
 import kotlin.math.log2
 import kotlin.math.pow
-import kotlin.math.tan
 
 
 /**
  * ViewModel for [MeasurementsMapView].
  *
  * @param windowSizeClass Current device's [WindowSizeClass]. Used for tiles scaling.
+ * @param focusedMeasurementUuid UUID of the focused measurement. If given, the map will show the
+ *                               path of the given measurement colored with noise level values.
  * @param visibleAreaPaddingRatio Map content padding relative to the screen dimensions.
  */
 class MeasurementsMapViewModel(
     windowSizeClass: WindowSizeClass,
+    focusedMeasurementUuid: String? = null,
     val visibleAreaPaddingRatio: VisibleAreaPaddingRatio = VisibleAreaPaddingRatio(),
 ) : ViewModel(), KoinComponent {
 
@@ -109,8 +112,8 @@ class MeasurementsMapViewModel(
 
     // - Properties
 
-    private val logger: Logger by injectLogger()
     private val locationProvider: UserLocationProvider by inject()
+    private val measurementService: MeasurementService by inject()
 
     val backgroundTilesProvider = RemoteTileStreamProvider(
         tileServerUrl = BACKGROUND_TILESET_URL
@@ -149,7 +152,7 @@ class MeasurementsMapViewModel(
             workerCount = WORKER_COUNT,
             initialValuesBuilder = {
                 // Move the map to its initial scale and centroid.
-                val (x, y) = lonLatToNormalizedWebMercator(
+                val (x, y) = GeoUtil.lonLatToNormalizedWebMercator(
                     latitude = DEFAULT_LATITUDE,
                     longitude = DEFAULT_LONGITUDE
                 )
@@ -168,13 +171,13 @@ class MeasurementsMapViewModel(
             addLayer(backgroundTilesProvider, placement = BelowAll)
             addLayer(measurementTilesProvider, initialOpacity = 0.5f)
 
-            viewModelScope.launch(Dispatchers.Default) {
-                setVisibleAreaPadding(
-                    leftRatio = visibleAreaPaddingRatio.left,
-                    rightRatio = visibleAreaPaddingRatio.right,
-                    topRatio = visibleAreaPaddingRatio.top,
-                    bottomRatio = visibleAreaPaddingRatio.bottom
-                )
+            focusedMeasurementUuid?.let { uuid ->
+                // If a measurement is focused, add its path as map markers and disable
+                // automatic recenter to user location
+                viewModelScope.launch(Dispatchers.Default) {
+                    addPathsForMeasurement(uuid)
+                    autoRecenterEnabled = false
+                }
             }
         }
     )
@@ -190,17 +193,6 @@ class MeasurementsMapViewModel(
         hasDropShadow = true,
     )
 
-    val compassButtonViewModel = IconNCButtonViewModel(
-        icon = Icons.Default.ArrowUpward,
-        colors = {
-            NCButtonColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                contentColor = MaterialTheme.colorScheme.error
-            )
-        },
-        hasDropShadow = true
-    )
-
     private var _mapOrientationFlow = MutableStateFlow(0f)
     var mapOrientationFlow: StateFlow<Float> = _mapOrientationFlow
 
@@ -209,6 +201,11 @@ class MeasurementsMapViewModel(
      * Useful for following user movements when making a measurement.
      */
     var autoRecenterEnabled: Boolean = true
+
+    /**
+     * Holds the bounding box of the currently focused measurement, if any.
+     */
+    private var measurementPathBoundingBox: BoundingBox? = null
 
 
     // - Lifecycle
@@ -224,22 +221,24 @@ class MeasurementsMapViewModel(
             _mapOrientationFlow.tryEmit(this.rotation)
         }
 
-        // Subscribe to user location update to follow the user location on the map.
-        locationProvider.startUpdatingLocation()
-        viewModelScope.launch(Dispatchers.Default) {
-            while (isActive) {
-                locationProvider.liveLocation.map { locationRecord ->
-                    logger.debug("NEW LOCATION UPDATE: ${locationRecord.lat}, ${locationRecord.lon}")
-                    // Map 3D coordinates to 2D normalized projection
-                    lonLatToNormalizedWebMercator(
-                        latitude = locationRecord.lat,
-                        longitude = locationRecord.lon
-                    )
-                }.collect { (x, y) ->
-                    updateUserLocationMarker(x, y)
+        if (focusedMeasurementUuid == null) {
+            // Subscribe to user location update to follow the user location on the map.
+            // Do this only if the map is not currently focusing on a measurement.
+            locationProvider.startUpdatingLocation()
 
-                    if (autoRecenterEnabled) {
-                        recenter()
+            viewModelScope.launch(Dispatchers.Default) {
+                while (isActive) {
+                    locationProvider.liveLocation.collect { locationRecord ->
+                        // Map 3D coordinates to 2D normalized projection
+                        val (x, y) = GeoUtil.lonLatToNormalizedWebMercator(
+                            latitude = locationRecord.lat,
+                            longitude = locationRecord.lon
+                        )
+                        updateUserLocationMarker(x, y)
+
+                        if (autoRecenterEnabled) {
+                            recenter()
+                        }
                     }
                 }
             }
@@ -250,11 +249,29 @@ class MeasurementsMapViewModel(
     // - Public function
 
     fun recenter() {
-        viewModelScope.launch {
-            mapState.centerOnMarker(
-                id = USER_LOCATION_MARKER_ID,
-                destScale = zoomLevelToScale(INITIAL_ZOOM_LEVEL),
-            )
+        viewModelScope.launch(Dispatchers.Default) {
+            // If a measurement is focused, center its path in the viewport.
+            measurementPathBoundingBox?.let { boundingBox ->
+                withVisibleAreaPaddingRatio(visibleAreaPaddingRatio) {
+                    mapState.scrollTo(
+                        area = boundingBox,
+                        padding = Offset(x = 0.1f, y = 0.1f)
+                    )
+                }
+            } ?: run {
+                // Otherwise, if user location is known, center it in the viewport.
+                mapState.getMarkerInfo(id = USER_LOCATION_MARKER_ID)?.let {
+                    mapState.scrollTo(
+                        it.x,
+                        it.y,
+                        destScale = zoomLevelToScale(INITIAL_ZOOM_LEVEL),
+                        screenOffset = Offset(
+                            x = -0.5f,
+                            y = -0.5f + visibleAreaPaddingRatio.bottom / 2
+                        )
+                    )
+                }
+            }
         }
     }
 
@@ -267,11 +284,13 @@ class MeasurementsMapViewModel(
     fun zoomIn() {
         val zoomLevel = scaleToZoomLevel(mapState.scale)
         snapToZoomLevel(zoomLevel + 1)
+        autoRecenterEnabled = false
     }
 
     fun zoomOut() {
         val zoomLevel = scaleToZoomLevel(mapState.scale)
         snapToZoomLevel(zoomLevel - 1)
+        autoRecenterEnabled = false
     }
 
 
@@ -280,48 +299,20 @@ class MeasurementsMapViewModel(
     /**
      * Creates or updates the blue dot that marks the user's current location.
      */
-    private fun updateUserLocationMarker(x: Double, y: Double) {
-        mapState.getMarkerInfo(id = USER_LOCATION_MARKER_ID)?.let {
+    private fun updateUserLocationMarker(x: Double, y: Double, orientation: Double? = null) {
+        if (mapState.hasMarker(id = USER_LOCATION_MARKER_ID)) {
             // If marker is already added to the map, move it to the new location
             mapState.moveMarker(id = USER_LOCATION_MARKER_ID, x = x, y = y)
-        } ?: run {
+        } else {
             // Otherwise, create and add marker
             mapState.addMarker(id = USER_LOCATION_MARKER_ID, x = x, y = y) {
-                UserLocationMarker()
+                // TODO: Pass down user facing direction when better implemented.
+                UserLocationMarker(
+                    mapRotationDegrees = mapState.rotation,
+                    orientationDegrees = orientation?.toFloat(),
+                )
             }
         }
-    }
-
-    /**
-     * Converts input latitude and longitude to normalized Web Mercator coordinates.
-     * Basically does a projection from a 3D coordinates system to a 2D projection.
-     *
-     * In the projected referential, [0, 0] is the top left corner of the map, and [1, 1] is the
-     * bottom right corner. This is the coordinates system used by MapCompose.
-     *
-     * @param latitude Input latitude in degrees
-     * @param longitude Input longitude in degrees
-     *
-     * @return X,Y normalized 2D coordinates.
-     */
-    private fun lonLatToNormalizedWebMercator(
-        latitude: Double,
-        longitude: Double,
-    ): Pair<Double, Double> {
-        // Could be precomputed if optimization is needed.
-        val earthRadius = 6_378_137.0 // in meters
-        val piR = earthRadius * PI
-
-        val latRad = latitude * PI / 180.0
-        val lngRad = longitude * PI / 180.0
-
-        val x = earthRadius * lngRad
-        val y = earthRadius * ln(tan((PI / 4.0) + (latRad / 2.0)))
-
-        val normalizedX = (x + piR) / (2.0 * piR)
-        val normalizedY = (piR - y) / (2.0 * piR)
-
-        return Pair(normalizedX, normalizedY)
     }
 
     /**
@@ -355,12 +346,88 @@ class MeasurementsMapViewModel(
      */
     private fun snapToZoomLevel(zoomLevel: Int) {
         viewModelScope.launch {
-            // TODO: Take visible area padding into account for getting current centroid.
             mapState.scrollTo(
                 x = mapState.centroidX,
                 y = mapState.centroidY,
-                destScale = zoomLevelToScale(zoomLevel)
+                destScale = zoomLevelToScale(zoomLevel),
             )
         }
+    }
+
+    /**
+     * Resamples the measurement LAEq values to get one sound level value per GPS point.
+     */
+    private suspend fun addPathsForMeasurement(measurementUuid: String) {
+        val pathBuilder = SoundLevelPathBuilder(measurementService)
+        val pathPoints = pathBuilder.pathForMeasurement(measurementUuid)
+        var prevXY: Pair<Double, Double>? = null
+
+        if (pathPoints.isEmpty()) {
+            return
+        }
+
+        // Add path data to map
+        // TODO: When only a single point, show colored marker instead of path?
+        pathPoints.forEachIndexed { index, point ->
+            if (index == 0) {
+                prevXY = GeoUtil.lonLatToNormalizedWebMercator(point.latitude, point.longitude)
+                return@forEachIndexed
+            }
+            val currXY = GeoUtil.lonLatToNormalizedWebMercator(
+                latitude = point.latitude,
+                longitude = point.longitude
+            )
+
+            mapState.addPath(
+                id = "path-$index",
+                color = NoiseLevelColorRamp.getColorForSPLValue(value = point.level),
+                width = 6.dp,
+                zIndex = pathPoints.size - index.toFloat(),
+            ) {
+                addPoints(listOfNotNull(prevXY, currXY))
+            }
+            prevXY = currXY
+        }
+
+        // Calculate path bounding box
+        val (xLeft, yTop) = GeoUtil.lonLatToNormalizedWebMercator(
+            latitude = pathPoints.minOf { it.latitude },
+            longitude = pathPoints.minOf { it.longitude }
+        )
+        val (xRight, yBottom) = GeoUtil.lonLatToNormalizedWebMercator(
+            latitude = pathPoints.maxOf { it.latitude },
+            longitude = pathPoints.maxOf { it.longitude }
+        )
+
+        // Save it for future calls to recenter()
+        measurementPathBoundingBox = BoundingBox(
+            xLeft = xLeft,
+            xRight = xRight,
+            yTop = yTop,
+            yBottom = yBottom
+        )
+
+        recenter()
+    }
+
+    /**
+     * Sets map state's visible area padding ratio to the given values, runs the given block and
+     * sets visible padding ratio back to its original value.
+     *
+     * @param paddingRatio Visible padding ratio to apply before running the block
+     * @param block Closure to execute
+     */
+    private suspend fun withVisibleAreaPaddingRatio(
+        paddingRatio: VisibleAreaPaddingRatio,
+        block: suspend (VisibleAreaPaddingRatio) -> Unit,
+    ) {
+        mapState.setVisibleAreaPadding(
+            leftRatio = paddingRatio.left,
+            rightRatio = paddingRatio.right,
+            bottomRatio = paddingRatio.bottom,
+            topRatio = paddingRatio.top
+        )
+        block(paddingRatio)
+        mapState.setVisibleAreaPadding(0f)
     }
 }

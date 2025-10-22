@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.safeContent
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalBottomSheetProperties
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -55,11 +56,15 @@ fun RequestPermissionModal(
 
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true,
-        confirmValueChange = { _ ->
+        confirmValueChange = { sheetValue ->
             // Only allow to close modal by pressing skip or go back button.
-            false
+            when (sheetValue) {
+                SheetValue.Expanded -> true
+                else -> false
+            }
         }
     )
+
     var displaySheet by remember { mutableStateOf(isVisible) }
 
     val actionButtonModifier = Modifier.fillMaxWidth(fraction = 0.5f).height(42.dp)
@@ -88,7 +93,6 @@ fun RequestPermissionModal(
             WindowInsets.safeContent.only(WindowInsetsSides.Bottom)
         },
     ) {
-
         // Handle back press or back gesture.
         BackHandler {
             if (viewState.isRequired) {

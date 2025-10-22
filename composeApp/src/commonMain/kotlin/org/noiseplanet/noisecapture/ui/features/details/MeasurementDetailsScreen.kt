@@ -12,10 +12,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
@@ -39,7 +39,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.min
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.measurement_details_loading_hint
@@ -84,23 +83,13 @@ fun MeasurementDetailsScreen(
 
     // Subscribe to sheet state updates to get the current bottom sheet offset
     val currentBottomSheetOffset: Dp = try {
-        with(localDensity) { sheetState.bottomSheetState.requireOffset().toDp() }
+        with(localDensity) {
+            sheetState.bottomSheetState.requireOffset().toDp()
+        }
     } catch (e: IllegalStateException) {
         logger.debug("Offset is not available yet: $e")
         Dp.Infinity
     }
-
-    // Animate sheet corner radius when expanding to the top to blend with top app bar
-    val sheetShape = RoundedCornerShape(
-        topStart = min(currentBottomSheetOffset, 28.dp),
-        topEnd = min(currentBottomSheetOffset, 28.dp),
-        bottomStart = 0.dp,
-        bottomEnd = 0.dp
-    )
-
-    // Collapse drag handle when fully expanded, and add a bit of padding to the top of the content
-    val dragHandleHeight = min(currentBottomSheetOffset, 48.dp)
-    val sheetContentTopPadding = 24.dp - dragHandleHeight / 2
 
     // Only allow dismissing the sheet by swiping when content is fully scrolled at the top
     val sheetContentScrollState = rememberScrollState()
@@ -112,18 +101,23 @@ fun MeasurementDetailsScreen(
     // TODO: For lager screens (tablets / browsers), this layout could be improved by splitting
     //       the screen in two instead of using a bottom sheet.
 
-    Box {
+    Box(
+        contentAlignment = Alignment.BottomCenter,
+        modifier = Modifier.fillMaxSize()
+            .onGloballyPositioned { coordinates ->
+                containerHeight = with(localDensity) {
+                    coordinates.size.height.toDp()
+                }
+            }
+    ) {
         BottomSheetScaffold(
             scaffoldState = sheetState,
-            sheetShape = sheetShape,
             sheetSwipeEnabled = enableSheetSwipe,
             sheetContainerColor = MaterialTheme.colorScheme.surfaceContainer,
             containerColor = MaterialTheme.colorScheme.surface,
             sheetPeekHeight = sheetPeekHeight,
             sheetDragHandle = {
-                BottomSheetDefaults.DragHandle(
-                    modifier = Modifier.height(dragHandleHeight)
-                )
+                BottomSheetDefaults.DragHandle()
             },
             sheetContent = {
                 Crossfade(viewState) { viewState ->
@@ -133,7 +127,6 @@ fun MeasurementDetailsScreen(
                                 viewState.measurement.uuid,
                                 modifier = Modifier.padding(horizontal = 16.dp)
                                     .verticalScroll(sheetContentScrollState)
-                                    .padding(top = sheetContentTopPadding)
                             )
                         }
 
@@ -141,11 +134,9 @@ fun MeasurementDetailsScreen(
                     }
                 }
             },
-            modifier = Modifier.onGloballyPositioned { coordinates ->
-                containerHeight = with(localDensity) {
-                    coordinates.size.height.toDp()
-                }
-            },
+            // Leave some extra space at the top when sheet is expended so the user knows it can
+            // still be dismissed to access the content behind.
+            modifier = Modifier.padding(top = 32.dp)
         ) { contentPadding ->
             Crossfade(viewState) { viewState ->
                 when (viewState) {
@@ -172,7 +163,12 @@ fun MeasurementDetailsScreen(
                     }
 
                     is MeasurementDetailsScreenViewState.ContentReady -> {
-                        MeasurementsMapView()
+                        MeasurementsMapView(
+                            // Compensate the top padding of the expended sheet by shifting the map
+                            // view up by the same amount.
+                            modifier = Modifier.offset(y = -(32.dp)),
+                            focusedMeasurementUuid = viewModel.measurementId,
+                        )
                     }
 
                     is MeasurementDetailsScreenViewState.NoMeasurement -> {

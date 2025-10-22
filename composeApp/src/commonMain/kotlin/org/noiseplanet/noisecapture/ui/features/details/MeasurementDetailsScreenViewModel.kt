@@ -17,7 +17,7 @@ import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 
 
 class MeasurementDetailsScreenViewModel(
-    private val measurementId: String,
+    val measurementId: String,
 ) : ViewModel(), ScreenViewModel, KoinComponent {
 
     // - Properties

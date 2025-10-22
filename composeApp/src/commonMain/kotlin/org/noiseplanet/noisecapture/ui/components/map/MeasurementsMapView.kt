@@ -2,6 +2,7 @@ package org.noiseplanet.noisecapture.ui.components.map
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,8 +25,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.compass
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
@@ -33,14 +38,20 @@ import org.noiseplanet.noisecapture.util.shadow.dropShadow
 import ovh.plrapps.mapcompose.ui.MapUI
 
 
+private val CONTROLS_SIZE = 40.dp
+
+
 @Composable
-fun MeasurementsMapView(modifier: Modifier = Modifier) {
+fun MeasurementsMapView(
+    focusedMeasurementUuid: String? = null,
+    modifier: Modifier = Modifier,
+) {
 
     // - Properties
 
     val sizeClass = currentWindowAdaptiveInfo().windowSizeClass
     val viewModel: MeasurementsMapViewModel = koinViewModel {
-        parametersOf(sizeClass)
+        parametersOf(sizeClass, focusedMeasurementUuid)
     }
     val mapOrientation by viewModel.mapOrientationFlow.collectAsStateWithLifecycle()
 
@@ -57,7 +68,7 @@ fun MeasurementsMapView(modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.Top,
         modifier = modifier.fillMaxWidth()
             .fillMaxHeight(fraction = 1f - viewModel.visibleAreaPaddingRatio.bottom)
-            .padding(24.dp)
+            .padding(16.dp)
     ) {
         Spacer(modifier = Modifier.weight(1f))
 
@@ -65,19 +76,32 @@ fun MeasurementsMapView(modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.fillMaxHeight()
         ) {
-            // TODO: Improve compass button styling
-            NCButton(
-                viewModel = viewModel.compassButtonViewModel,
-                onClick = {
-                    viewModel.resetOrientation()
-                },
-                modifier = Modifier.size(48.dp)
+            // Compass button
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.size(CONTROLS_SIZE)
+                    .dropShadow(shape = RoundedCornerShape(percent = 100))
+                    .clip(RoundedCornerShape(percent = 100))
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
                     .rotate(mapOrientation)
-            )
+            ) {
+                IconButton(
+                    onClick = {
+                        viewModel.resetOrientation()
+                    },
+                ) {
+                    Icon(
+                        painter = painterResource(Res.drawable.compass),
+                        contentDescription = "Compass",
+                        tint = Color.Unspecified,
+                    )
+                }
+            }
 
+            // Zoom controls
             Column(
-                modifier = Modifier.width(48.dp)
-                    .dropShadow(shape = RoundedCornerShape(percent = 100), isPressed = false)
+                modifier = Modifier.width(CONTROLS_SIZE)
+                    .dropShadow(shape = RoundedCornerShape(percent = 100))
                     .clip(shape = RoundedCornerShape(percent = 100))
                     .background(MaterialTheme.colorScheme.surfaceContainer)
             ) {
@@ -104,6 +128,7 @@ fun MeasurementsMapView(modifier: Modifier = Modifier) {
 
             Spacer(modifier = Modifier.weight(1f))
 
+            // Recenter button
             NCButton(
                 viewModel = viewModel.recenterButtonViewModel,
                 onClick = {

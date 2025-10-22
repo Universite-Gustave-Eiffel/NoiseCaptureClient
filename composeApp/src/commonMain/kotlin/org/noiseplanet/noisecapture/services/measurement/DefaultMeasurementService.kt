@@ -17,6 +17,7 @@ import org.noiseplanet.noisecapture.model.dao.MutableMeasurement
 import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
 import org.noiseplanet.noisecapture.services.storage.StorageService
 import org.noiseplanet.noisecapture.services.storage.injectStorageService
+import org.noiseplanet.noisecapture.util.dbAverage
 import org.noiseplanet.noisecapture.util.injectLogger
 import org.noiseplanet.noisecapture.util.isInVuMeterRange
 import org.noiseplanet.noisecapture.util.roundTo
@@ -133,10 +134,10 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override fun openOngoingMeasurement() {
+    override fun openOngoingMeasurement(uuid: String?) {
         // Create a new ongoing measurement with a unique identifier and start time to now.
         ongoingMeasurement = MutableMeasurement(
-            uuid = Uuid.random().toString(),
+            uuid = uuid ?: Uuid.random().toString(),
             startTimestamp = Clock.System.now().toEpochMilliseconds()
         )
         logger.info("Starting new measurement with id ${ongoingMeasurement?.uuid}")
@@ -344,7 +345,7 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
 
         // Calculate the average for each interval
         return downsampledMap.mapValues { (_, levels) ->
-            levels.average()
+            levels.dbAverage()
         }
     }
 }

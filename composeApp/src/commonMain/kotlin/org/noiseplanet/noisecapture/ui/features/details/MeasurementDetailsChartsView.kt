@@ -1,6 +1,7 @@
 package org.noiseplanet.noisecapture.ui.features.details
 
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -38,33 +40,39 @@ fun MeasurementDetailsChartsView(
     Crossfade(viewState) { viewState ->
         when (viewState) {
             is MeasurementDetailsChartsViewModel.ViewState.ContentReady -> {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(32.dp),
-                    modifier = modifier.fillMaxWidth()
-                        .padding(bottom = 32.dp)
-                        .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
+                CompositionLocalProvider(
+                    // Disable overscroll on this view so that scrolling up past the limit starts
+                    // dismissing the bottom sheet instead of bouncing back on iOS.
+                    LocalOverscrollFactory provides null
                 ) {
-                    MeasurementDetailsChartsHeader(
-                        startTime = viewState.startTimeString,
-                        duration = viewState.durationString,
-                        averageLevel = viewState.measurement.laeqMetrics.average,
-                    )
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(32.dp),
+                        modifier = modifier.fillMaxWidth()
+                            .padding(bottom = 32.dp)
+                            .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
+                    ) {
+                        MeasurementDetailsChartsHeader(
+                            startTime = viewState.startTimeString,
+                            duration = viewState.durationString,
+                            averageLevel = viewState.measurement.laeqMetrics.average,
+                        )
 
-                    viewState.measurement.recordedAudioUrl?.let { audioUrl ->
-                        AudioPlayerView(audioUrl)
+                        viewState.measurement.recordedAudioUrl?.let { audioUrl ->
+                            AudioPlayerView(audioUrl)
+                        }
+
+                        MeasurementSplTimePlotView(measurementId)
+
+                        LaeqSummaryView(
+                            min = viewState.measurement.laeqMetrics.min,
+                            la90 = viewState.measurement.summary?.la90 ?: 0.0,
+                            la50 = viewState.measurement.summary?.la50 ?: 0.0,
+                            la10 = viewState.measurement.summary?.la10 ?: 0.0,
+                            max = viewState.measurement.laeqMetrics.max
+                        )
+
+                        ManageMeasurementView(viewState.measurement.uuid)
                     }
-
-                    MeasurementSplTimePlotView(measurementId)
-
-                    LaeqSummaryView(
-                        min = viewState.measurement.laeqMetrics.min,
-                        la90 = viewState.measurement.summary?.la90 ?: 0.0,
-                        la50 = viewState.measurement.summary?.la50 ?: 0.0,
-                        la10 = viewState.measurement.summary?.la10 ?: 0.0,
-                        max = viewState.measurement.laeqMetrics.max
-                    )
-
-                    ManageMeasurementView(viewState.measurement.uuid)
                 }
             }
 
