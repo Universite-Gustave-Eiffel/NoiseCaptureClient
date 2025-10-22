@@ -3,7 +3,10 @@ package org.noiseplanet.noisecapture.ui.features.home
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -11,10 +14,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
-import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.permission.Permission
+import org.noiseplanet.noisecapture.ui.components.button.NCButton
+import org.noiseplanet.noisecapture.ui.navigation.router.HomeRouter
 
 /**
  * Home screen layout.
@@ -23,9 +28,7 @@ import org.noiseplanet.noisecapture.permission.Permission
 @Composable
 fun HomeScreen(
     viewModel: HomeScreenViewModel,
-    onClickMeasurement: (Measurement) -> Unit,
-    onClickOpenHistoryButton: () -> Unit,
-    onClickOpenSoundLevelMeterButton: () -> Unit,
+    router: HomeRouter,
     showPermissionPrompt: (Permission) -> Unit,
 ) {
     // - DI
@@ -47,13 +50,22 @@ fun HomeScreen(
         ) {
             SoundLevelMeterHeaderView(
                 viewModel = viewModel,
-                onClickOpenSoundLevelMeterButton = onClickOpenSoundLevelMeterButton,
+                onClickOpenSoundLevelMeterButton = router::onClickOpenSoundLevelMeterButton,
                 showPermissionPrompt = showPermissionPrompt,
             )
 
             LastMeasurementsView(
-                onClickMeasurement = onClickMeasurement,
-                onClickOpenHistoryButton = onClickOpenHistoryButton,
+                onClickMeasurement = router::onClickMeasurement,
+                onClickOpenHistoryButton = router::onClickOpenHistoryButton,
+            )
+
+            // TODO: Proper styling for this button
+            NCButton(
+                viewModel.openMapButtonViewModel,
+                onClick = router::onClickOpenMapButton,
+                modifier = Modifier.fillMaxWidth()
+                    .padding(16.dp)
+                    .height(50.dp)
             )
 
             // TODO: Add device calibration section

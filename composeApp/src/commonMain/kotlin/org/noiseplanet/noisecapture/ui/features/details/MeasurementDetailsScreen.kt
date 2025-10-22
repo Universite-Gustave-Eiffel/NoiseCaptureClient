@@ -48,13 +48,14 @@ import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.ui.components.map.MeasurementsMapView
+import org.noiseplanet.noisecapture.ui.navigation.router.DetailsRouter
 
 
 @OptIn(KoinExperimentalAPI::class)
 @Composable
 fun MeasurementDetailsScreen(
     viewModel: MeasurementDetailsScreenViewModel,
-    onMeasurementDeleted: () -> Unit,
+    router: DetailsRouter,
 ) {
 
     // - DI
@@ -173,7 +174,7 @@ fun MeasurementDetailsScreen(
 
                     is MeasurementDetailsScreenViewState.NoMeasurement -> {
                         // If measurement becomes null, it means it was deleted
-                        onMeasurementDeleted()
+                        router.onMeasurementDeleted()
                     }
                 }
             }

@@ -26,14 +26,14 @@ import noisecapture.composeapp.generated.resources.history_empty_state_hint
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
-import org.noiseplanet.noisecapture.model.dao.Measurement
+import org.noiseplanet.noisecapture.ui.navigation.router.HistoryRouter
 import kotlin.time.ExperimentalTime
 
 @OptIn(FormatStringsInDatetimeFormats::class, KoinExperimentalAPI::class, ExperimentalTime::class)
 @Composable
 fun MeasurementHistoryScreen(
     viewModel: MeasurementHistoryScreenViewModel,
-    onClickMeasurement: (Measurement) -> Unit,
+    router: HistoryRouter,
 ) {
 
     // - DI
@@ -64,7 +64,7 @@ fun MeasurementHistoryScreen(
 
             MeasurementHistoryItemView(
                 measurement = measurement,
-                onClick = onClickMeasurement,
+                onClick = router::onClickMeasurement,
                 isFirstInSection = isFirstInSection,
                 isLastInSection = isLastInSection,
             )
