@@ -3,6 +3,7 @@ package org.noiseplanet.noisecapture.ui.navigation.router
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import org.noiseplanet.noisecapture.model.dao.Measurement
+import org.noiseplanet.noisecapture.ui.navigation.CommunityMapRoute
 import org.noiseplanet.noisecapture.ui.navigation.HistoryRoute
 import org.noiseplanet.noisecapture.ui.navigation.MeasurementDetailsRoute
 import org.noiseplanet.noisecapture.ui.navigation.MeasurementRecordingRoute
@@ -42,6 +43,6 @@ class HomeRouter(
     }
 
     fun onClickOpenMapButton() {
-        
+        navController.navigate(CommunityMapRoute())
     }
 }

@@ -80,6 +80,10 @@
     <string name="measurement_details_delete_measurement_audio_dialog_text">This action cannot be undone. This will not delete the measurement itself but only the audio clip that is attached to it. You won't be able to listen to the measurement audio afterwards but will still be able to see the measurement details.</string>
 
 
+    <!-- CommunityMapScreen -->
+    <string name="community_map_title">Community measurements</string>
+
+
     <!-- Settings -->
     <string name="settings_title">Settings</string>
 

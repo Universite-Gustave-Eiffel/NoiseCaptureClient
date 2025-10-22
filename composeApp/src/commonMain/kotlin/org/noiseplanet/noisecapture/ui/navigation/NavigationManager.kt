@@ -23,6 +23,8 @@ import org.noiseplanet.noisecapture.ui.features.history.MeasurementHistoryScreen
 import org.noiseplanet.noisecapture.ui.features.history.MeasurementHistoryScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.home.HomeScreen
 import org.noiseplanet.noisecapture.ui.features.home.HomeScreenViewModel
+import org.noiseplanet.noisecapture.ui.features.map.CommunityMapScreen
+import org.noiseplanet.noisecapture.ui.features.map.CommunityMapScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.recording.MeasurementRecordingScreen
 import org.noiseplanet.noisecapture.ui.features.recording.MeasurementRecordingScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.settings.SettingsScreen
@@ -101,6 +103,13 @@ fun NavigationManager(
                 viewModel = screenViewModel,
                 router = DetailsRouter(navController, backStackEntry)
             )
+        }
+
+        composable<CommunityMapRoute> { backStackEntry ->
+            val screenViewModel: CommunityMapScreenViewModel = koinViewModel()
+            appBarState.setCurrentScreenViewModel(screenViewModel)
+
+            CommunityMapScreen(viewModel = screenViewModel)
         }
 
         composable<SettingsRoute> {
