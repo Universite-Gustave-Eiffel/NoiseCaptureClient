@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -19,28 +19,30 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.util.IterableEnum
 
-private const val CORNER_RADIUS: Float = 10f
 
 @Composable
 fun <T : Any> SettingsItem(
     viewModel: SettingsItemViewModel<T>,
 ) {
-    val shape = RoundedCornerShape(
-        topStart = if (viewModel.isFirstInSection) CORNER_RADIUS.dp else 0.dp,
-        topEnd = if (viewModel.isFirstInSection) CORNER_RADIUS.dp else 0.dp,
-        bottomStart = if (viewModel.isLastInSection) CORNER_RADIUS.dp else 0.dp,
-        bottomEnd = if (viewModel.isLastInSection) CORNER_RADIUS.dp else 0.dp,
-    )
+    val shape = MaterialTheme.shapes.medium
+        .let {
+            if (viewModel.isFirstInSection) it else {
+                it.copy(topStart = CornerSize(0.dp), topEnd = CornerSize(0.dp))
+            }
+        }.let {
+            if (viewModel.isLastInSection) it else {
+                it.copy(bottomStart = CornerSize(0.dp), bottomEnd = CornerSize(0.dp))
+            }
+        }
     val isEnabled by viewModel.isEnabled.collectAsState(true)
 
     Column(
-        modifier = Modifier.background(Color.White, shape)
+        modifier = Modifier.background(MaterialTheme.colorScheme.surface, shape)
             .clip(shape)
             .padding(horizontal = 16.dp),
     ) {

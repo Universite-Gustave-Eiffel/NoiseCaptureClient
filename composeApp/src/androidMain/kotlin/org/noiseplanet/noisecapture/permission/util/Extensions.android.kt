@@ -9,7 +9,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.Settings
 import androidx.core.app.ActivityCompat
-import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
+import androidx.core.net.toUri
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionState
 
@@ -29,27 +29,21 @@ internal fun Context.openPage(
     }
 }
 
-internal fun Activity.checkPermissions(
-    permissions: List<String>,
+internal fun Activity.checkPermissionState(
+    permission: String,
 ): PermissionState {
-    permissions.ifEmpty {
-        return PermissionState.GRANTED
-    } // no permissions needed
-    val status: List<Int> = permissions.map {
-        this.checkSelfPermission(it)
-    }
-    val isOneDenied: Boolean = permissions.all() {
-        this.shouldShowRequestPermissionRationale(it)
-    }
-    val isAllGranted: Boolean = status.all {
-        it == PackageManager.PERMISSION_GRANTED
-    }
-    return if (isAllGranted) {
-        PermissionState.GRANTED
-    } else if(isOneDenied) {
-        PermissionState.DENIED
-    } else {
-        PermissionState.NOT_DETERMINED
+    return when (this.checkSelfPermission(permission)) {
+        PackageManager.PERMISSION_GRANTED -> PermissionState.GRANTED
+
+        PackageManager.PERMISSION_DENIED -> {
+            if (this.shouldShowRequestPermissionRationale(permission)) {
+                PermissionState.DENIED
+            } else {
+                PermissionState.NOT_DETERMINED
+            }
+        }
+
+        else -> PermissionState.NOT_DETERMINED
     }
 }
 
@@ -73,7 +67,7 @@ internal fun Activity.providePermissions(
 internal fun Context.openAppSettingsPage(permission: Permission) {
     openPage(
         action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-        newData = Uri.parse("package:$packageName"),
+        newData = "package:$packageName".toUri(),
         onError = { throw CannotOpenSettingsException(permission.name) }
     )
 }

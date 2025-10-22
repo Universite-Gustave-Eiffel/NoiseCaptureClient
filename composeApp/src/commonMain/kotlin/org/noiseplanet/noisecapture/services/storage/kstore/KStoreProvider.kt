@@ -2,6 +2,25 @@ package org.noiseplanet.noisecapture.services.storage.kstore
 
 import io.github.xxfast.kstore.KStore
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
+
+/**
+ * Defines the signature of the migration method that will be called when unable to deserialize
+ * an object due to version mismatch.
+ *
+ * @param storedVersion Stored entity version.
+ * @param storedData Raw json data that couldn't be parsed automatically to the current entity version.
+ */
+internal typealias Migration<T> = suspend (
+    storedVersion: Int?,
+    storedData: JsonElement?,
+) -> T?
+
+/**
+ * A default migration that does nothing and returns null.
+ */
+@Suppress("FunctionNaming", "FunctionName")
+fun <T> DefaultMigration(): Migration<T> = { _, _ -> null }
 
 /**
  * Abstracts providing the store object itself to be adapted for each separate platform.
@@ -25,6 +44,8 @@ internal expect class KStoreProvider() {
      */
     inline fun <reified T : @Serializable Any> storeOf(
         fileName: String,
+        version: Int = 0,
+        noinline migration: Migration<T> = DefaultMigration(),
         enableCache: Boolean = true,
     ): KStore<T>
 

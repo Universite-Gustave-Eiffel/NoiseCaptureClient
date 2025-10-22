@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.ui.theme.NotoSansMono
@@ -29,7 +30,9 @@ import org.noiseplanet.noisecapture.util.isInVuMeterRange
 
 
 @Composable
-fun SoundLevelMeterView() {
+fun SoundLevelMeterView(
+    showPermissionPrompt: (Permission) -> Unit = {},
+) {
 
     // - Properties
 
@@ -42,12 +45,19 @@ fun SoundLevelMeterView() {
     val playPauseButtonViewModel by viewModel.playPauseButtonViewModelFlow
         .collectAsStateWithLifecycle()
 
-    val currentSplColor by animateColorAsState(NoiseLevelColorRamp.getColorForSPLValue(currentSpl))
+    val currentSplColor by animateColorAsState(
+        NoiseLevelColorRamp.getColorForSPLValue(
+            value = currentSpl,
+            palette = NoiseLevelColorRamp.paletteDarker,
+        )
+    )
 
 
     // - Layout
 
-    Box(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
+    Box(
+        modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer)
+    ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.padding(top = 16.dp)
@@ -82,7 +92,7 @@ fun SoundLevelMeterView() {
 
                 if (viewModel.showPlayPauseButton) {
                     NCButton(
-                        onClick = viewModel::toggleAudioSource,
+                        onClick = { viewModel.toggleAudioSource(showPermissionPrompt) },
                         viewModel = playPauseButtonViewModel,
                         modifier = Modifier.size(40.dp)
                     )

@@ -6,8 +6,8 @@ import org.noiseplanet.noisecapture.audio.AudioSamples
 import org.noiseplanet.noisecapture.audio.signal.FrequencyBand
 import org.noiseplanet.noisecapture.audio.signal.FrequencyBand.Companion.emptyFrequencyBands
 import org.noiseplanet.noisecapture.audio.signal.LevelDisplayWeightedDecay
-import org.noiseplanet.noisecapture.audio.signal.window.SpectrumData
-import org.noiseplanet.noisecapture.audio.signal.window.SpectrumDataProcessing
+import org.noiseplanet.noisecapture.audio.signal.window.SpectrogramData
+import org.noiseplanet.noisecapture.audio.signal.window.SpectrogramDataProcessing
 import org.noiseplanet.noisecapture.audio.signal.window.Window
 import kotlin.math.PI
 import kotlin.math.ceil
@@ -31,7 +31,7 @@ class TestWindowAnalysis {
             0f, 0.0954915f, 0.3454915f, 0.6545085f, 0.9045085f, 1f,
             0.9045085f, 0.6545085f, 0.3454915f, 0.0954915f, 0f
         )
-        val windowAnalysis = SpectrumDataProcessing(44100, expected.size, 1)
+        val windowAnalysis = SpectrogramDataProcessing(44100, expected.size, 1)
 
         expected.forEachIndexed { index, value ->
             assertEquals(value, windowAnalysis.hannWindow?.get(index) ?: 0.0F, 1e-8f)
@@ -42,7 +42,7 @@ class TestWindowAnalysis {
     fun testOverlapWindows() {
         val arraySize = 13
         val ones = FloatArray(arraySize) { if (it in 2..arraySize - 3) 1f else 0f }
-        val windowAnalysis = SpectrumDataProcessing(1, 5, 2)
+        val windowAnalysis = SpectrogramDataProcessing(1, 5, 2)
         val processedWindows = ArrayList<Window>()
         windowAnalysis.pushSamples(0, ones, processedWindows).toList()
         assertEquals(5, processedWindows.size)
@@ -53,7 +53,7 @@ class TestWindowAnalysis {
     fun testOverlapWindowsSegments() {
         for (arraySize in 9..13) {
             val ones = FloatArray(arraySize) { if (it in 2..arraySize - 3) 1f else 0f }
-            val windowAnalysis = SpectrumDataProcessing(1, 5, 2)
+            val windowAnalysis = SpectrogramDataProcessing(1, 5, 2)
             val processedWindows = ArrayList<Window>()
             windowAnalysis.pushSamples(
                 (arraySize * 0.6).toLong(),
@@ -84,7 +84,7 @@ class TestWindowAnalysis {
         val arraySize = 13
         val ones = FloatArray(arraySize) { if (it in 2..arraySize - 3) 1f else 0f }
         // val ones = FloatArray(arraySize) {it.toFloat()}
-        val windowAnalysis = SpectrumDataProcessing(1, 5, 2)
+        val windowAnalysis = SpectrogramDataProcessing(1, 5, 2)
         val processedWindows = ArrayList<Window>()
         val step = 3
         for (i in ones.indices step step) {
@@ -127,17 +127,17 @@ class TestWindowAnalysis {
 
         val bufferSize = (sampleRate * 0.1).toInt()
         var cursor = 0
-        val wa = SpectrumDataProcessing(sampleRate, 4096, 4096, applyHannWindow = false)
-        val spectrumDataArray = ArrayList<SpectrumData>()
+        val wa = SpectrogramDataProcessing(sampleRate, 4096, 4096, applyHannWindow = false)
+        val spectrogramDataArray = ArrayList<SpectrogramData>()
         while (cursor < signal.size) {
             val windowSize = min(bufferSize, signal.size - cursor)
             val windowBuffer = signal.copyOfRange(cursor, cursor + windowSize)
             val epoch = (((cursor + windowSize) / sampleRate.toDouble()) * 1000).toLong()
-            spectrumDataArray.addAll(wa.pushSamples(epoch, windowBuffer))
+            spectrogramDataArray.addAll(wa.pushSamples(epoch, windowBuffer))
             cursor += windowSize
         }
         val hertzPerCell = wa.windowSize / sampleRate.toDouble()
-        spectrumDataArray.forEach { spectrumData ->
+        spectrogramDataArray.forEach { spectrumData ->
             assertEquals(
                 expectedLevel,
                 spectrumData.spectrum[(hertzPerCell * frequencyPeaks[0]).toInt()].toDouble(),
@@ -168,16 +168,16 @@ class TestWindowAnalysis {
         val bufferSize = (sampleRate * 0.1).toInt()
         var cursor = 0
         val windowSize = (sampleRate * 0.125).toInt()
-        val wa = SpectrumDataProcessing(sampleRate, windowSize, windowSize / 2)
-        val spectrumDataArray = ArrayList<SpectrumData>()
+        val wa = SpectrogramDataProcessing(sampleRate, windowSize, windowSize / 2)
+        val spectrogramDataArray = ArrayList<SpectrogramData>()
         while (cursor < signal.size) {
             val windowSize = min(bufferSize, signal.size - cursor)
             val windowBuffer = signal.copyOfRange(cursor, cursor + windowSize)
             val epoch = (((cursor + windowSize) / sampleRate.toDouble()) * 1000).toLong()
-            spectrumDataArray.addAll(wa.pushSamples(epoch, windowBuffer))
+            spectrogramDataArray.addAll(wa.pushSamples(epoch, windowBuffer))
             cursor += windowSize
         }
-        spectrumDataArray.forEachIndexed { index, spectrumData ->
+        spectrogramDataArray.forEachIndexed { index, spectrumData ->
             val thirdOctaveSquare = spectrumData.thirdOctaveProcessing(
                 50.0,
                 12000.0,
@@ -250,7 +250,7 @@ class TestWindowAnalysis {
         val processed = acousticIndicatorProcessing.processSamples(
             AudioSamples(0, signal, sampleRate)
         )
-        val averageLeq = processed.map { indicators -> indicators.leq }.average()
+        val averageLeq = processed.map { indicators -> indicators.lzeq }.average()
         assertEquals(expectedLevel, averageLeq, 0.01)
     }
 }
@@ -270,7 +270,7 @@ enum class OctaveWindow {
  * @param octaveWindow Rectangular association of frequency band or fractional close to done by a filter
  */
 @Suppress("NestedBlockDepth")
-fun SpectrumData.thirdOctaveProcessing(
+fun SpectrogramData.thirdOctaveProcessing(
     firstFrequencyBand: Double,
     lastFrequencyBand: Double,
     base: FrequencyBand.BaseMethod = FrequencyBand.BaseMethod.B10,

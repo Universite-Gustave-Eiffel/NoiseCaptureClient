@@ -8,6 +8,7 @@ import kotlin.js.Promise
  *
  * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemWritableFileStream)
  */
+@OptIn(ExperimentalWasmJsInterop::class)
 external interface FileSystemWritableFileStream : JsAny {
 
     /**

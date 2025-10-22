@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.ui.features.home
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -21,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.home_last_measurements_section_header
+import org.koin.compose.koinInject
 import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.ui.components.CardView
 import org.noiseplanet.noisecapture.ui.components.ListSectionHeader
@@ -29,7 +31,6 @@ import org.noiseplanet.noisecapture.ui.components.button.NCButton
 
 @Composable
 fun LastMeasurementsView(
-    viewModel: LastMeasurementsViewModel,
     onClickMeasurement: (Measurement) -> Unit,
     onClickOpenHistoryButton: () -> Unit,
     modifier: Modifier = Modifier.fillMaxWidth(),
@@ -37,20 +38,23 @@ fun LastMeasurementsView(
 
     // - Properties
 
+    val viewModel: LastMeasurementsViewModel = koinInject()
     val viewState by viewModel.viewStateFlow.collectAsStateWithLifecycle()
 
 
     // - Layout
 
-    when (viewState) {
-        is LastMeasurementsViewModel.ViewState.Loading -> LastMeasurementsViewLoading()
+    Crossfade(viewState) { viewState ->
+        when (viewState) {
+            is LastMeasurementsViewModel.ViewState.Loading -> LastMeasurementsViewLoading()
 
-        is LastMeasurementsViewModel.ViewState.ContentReady -> LastMeasurementsViewContentReady(
-            viewState as LastMeasurementsViewModel.ViewState.ContentReady,
-            onClickMeasurement = onClickMeasurement,
-            onClickOpenHistoryButton = onClickOpenHistoryButton,
-            modifier,
-        )
+            is LastMeasurementsViewModel.ViewState.ContentReady -> LastMeasurementsViewContentReady(
+                viewState,
+                onClickMeasurement = onClickMeasurement,
+                onClickOpenHistoryButton = onClickOpenHistoryButton,
+                modifier,
+            )
+        }
     }
 }
 
@@ -65,53 +69,58 @@ private fun LastMeasurementsViewContentReady(
 
     // - Layout
 
-    ListSectionHeader(
-        title = Res.string.home_last_measurements_section_header,
-        paddingTop = 24.dp,
-    )
+    if (viewState.lastTwoMeasurements.isEmpty()) {
+        return
+    }
 
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = modifier.padding(horizontal = 16.dp)
-            .height(IntrinsicSize.Min)
-    ) {
-        CardView(
-            backgroundColor = MaterialTheme.colorScheme.surface,
-            modifier = Modifier.fillMaxHeight().width(IntrinsicSize.Min)
+    Column {
+        ListSectionHeader(
+            title = Res.string.home_last_measurements_section_header,
+            paddingTop = 24.dp,
+        )
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            modifier = modifier.padding(horizontal = 16.dp)
+                .height(IntrinsicSize.Min)
         ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxHeight()
+            CardView(
+                backgroundColor = MaterialTheme.colorScheme.surfaceContainer,
+                modifier = Modifier.fillMaxHeight().width(IntrinsicSize.Min)
             ) {
-                Text(
-                    text = "Statistics",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    ),
-                )
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxHeight()
+                ) {
+                    Text(
+                        text = "Statistics",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        ),
+                    )
 
-                StatisticsElement(viewState.measurementsCount.toString(), "recordings")
-                StatisticsElement(viewState.totalDuration, "${viewState.durationUnit} total")
+                    StatisticsElement(viewState.measurementsCount.toString(), "recordings")
+                    StatisticsElement(viewState.totalDuration, "${viewState.durationUnit} total")
 
-                Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.weight(1f))
 
-                NCButton(
-                    onClick = onClickOpenHistoryButton,
-                    viewModel = viewState.historyButtonViewModel,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                    NCButton(
+                        onClick = onClickOpenHistoryButton,
+                        viewModel = viewState.historyButtonViewModel,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
-        }
 
-        Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.weight(1f).padding(vertical = 12.dp),
-        ) {
-            viewState.lastTwoMeasurements.forEach { measurement ->
-                HomeRecentMeasurementView(
-                    measurement,
-                    onClick = onClickMeasurement,
-                )
+            Column(
+                modifier = Modifier.weight(1f),
+            ) {
+                viewState.lastTwoMeasurements.forEach { measurement ->
+                    HomeRecentMeasurementView(
+                        measurement,
+                        onClick = onClickMeasurement,
+                    )
+                }
             }
         }
     }

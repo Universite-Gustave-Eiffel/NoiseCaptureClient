@@ -102,8 +102,10 @@ interface MeasurementService {
      * This will create a new mutable measurement object internally, then
      * Leq and location values can be pushed to this measurement as the
      * recording session goes.
+     *
+     * @param uuid Optional custom UUID. If not provided, it will be randomly generated.
      */
-    fun openOngoingMeasurement()
+    fun openOngoingMeasurement(uuid: String? = null)
 
     /**
      * Gets a flow of leq metrics (min/max/average) for the ongoing measurement, or

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -13,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
+import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
 import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterView
 
@@ -21,13 +23,22 @@ import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterView
 fun SoundLevelMeterHeaderView(
     viewModel: HomeScreenViewModel,
     onClickOpenSoundLevelMeterButton: () -> Unit,
+    showPermissionPrompt: (Permission) -> Unit,
 ) {
+    // - Properties
+
+    val shape = MaterialTheme.shapes.large.copy(
+        topStart = CornerSize(0),
+        topEnd = CornerSize(0),
+    )
+
+
     // - Layout
 
     Column(
-        modifier = Modifier.background(MaterialTheme.colorScheme.background)
+        modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer, shape)
     ) {
-        SoundLevelMeterView()
+        SoundLevelMeterView(showPermissionPrompt = showPermissionPrompt)
 
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),

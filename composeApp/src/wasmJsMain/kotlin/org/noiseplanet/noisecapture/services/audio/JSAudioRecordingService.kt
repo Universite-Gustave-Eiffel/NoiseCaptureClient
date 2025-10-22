@@ -16,6 +16,7 @@ import org.w3c.dom.mediacapture.MediaStreamConstraints
 import org.w3c.files.Blob
 import org.w3c.files.File
 
+@OptIn(ExperimentalWasmJsInterop::class)
 class JSAudioRecordingService : AudioRecordingService, KoinComponent {
 
     // - Properties

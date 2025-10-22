@@ -8,11 +8,15 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 import org.koin.core.component.KoinComponent
+import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.dao.LeqSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.LocationSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.Measurement
+import org.noiseplanet.noisecapture.model.dao.VERSION
 import org.noiseplanet.noisecapture.services.storage.StorageService
+import org.noiseplanet.noisecapture.util.injectLogger
 import kotlin.reflect.KClass
 
 
@@ -26,12 +30,15 @@ import kotlin.reflect.KClass
  *               (i.e. for measurements, all records will be stored under "{appDir}/measurements/{id}.json"
  * @param RecordType Type of entity to be stored
  */
-class KStoreStorageService<RecordType : @Serializable Any>(
+@Suppress("TooManyFunctions")
+open class KStoreStorageService<RecordType : @Serializable Any>(
     private val prefix: String,
     private val type: KClass<RecordType>,
 ) : StorageService<RecordType>, KoinComponent {
 
     // - Properties
+
+    private val logger: Logger by injectLogger()
 
     private val storeProvider = KStoreProvider()
     private val indexStore: KStore<List<String>> = storeProvider.storeOf(
@@ -58,6 +65,20 @@ class KStoreStorageService<RecordType : @Serializable Any>(
     override suspend fun get(uuid: String): RecordType? {
         val store = storeCache[uuid] ?: getStoreForRecord(uuid)
         return store.get()
+    }
+
+    override suspend fun migrate(
+        uuid: String,
+        currentVersion: Int,
+        storedVersion: Int?,
+        storedData: JsonElement?,
+    ): RecordType? {
+        logger.warning("Couldn't deserialize versioned entity with id: $uuid")
+        logger.warning("Current model version: $currentVersion / Stored version: $storedVersion")
+        logger.warning("No custom migration provided, deleting.")
+
+        delete(uuid)
+        return null
     }
 
     override suspend fun getSize(uuid: String): Long? {
@@ -119,18 +140,51 @@ class KStoreStorageService<RecordType : @Serializable Any>(
      */
     @Suppress("UNCHECKED_CAST")
     private fun getStoreForRecord(uuid: String): KStore<RecordType> {
-        val key = getFileNameForRecord(uuid)
-
         // Check at runtime for record type
         return when (type) {
-            Measurement::class -> storeProvider.storeOf<Measurement>(key)
-            LeqSequenceFragment::class -> storeProvider.storeOf<LeqSequenceFragment>(key)
-            LocationSequenceFragment::class -> storeProvider.storeOf<LocationSequenceFragment>(key)
+            Measurement::class -> storeForTypedRecord<Measurement>(
+                uuid,
+                modelVersion = Measurement.VERSION
+            )
+
+            LeqSequenceFragment::class -> storeForTypedRecord<LeqSequenceFragment>(
+                uuid,
+                modelVersion = LeqSequenceFragment.VERSION
+            )
+
+            LocationSequenceFragment::class -> storeForTypedRecord<LocationSequenceFragment>(
+                uuid,
+                modelVersion = LocationSequenceFragment.VERSION
+            )
 
             // Add other types that can be stored here.
 
             else -> throw UnsupportedOperationException("Trying to access unsupported storage type")
         } as KStore<RecordType>
+    }
+
+    /**
+     * Wrapper for `storeProvider.storeOf` call using a reified type to avoid duplicating migration
+     * encapsulation for every model type.
+     */
+    private inline fun <reified T : Any> storeForTypedRecord(
+        uuid: String,
+        modelVersion: Int,
+    ): KStore<T> {
+        val fileName = getFileNameForRecord(uuid)
+
+        return storeProvider.storeOf(
+            fileName = fileName,
+            version = modelVersion,
+            migration = { version, data ->
+                migrate(
+                    uuid = uuid,
+                    currentVersion = modelVersion,
+                    storedVersion = version,
+                    storedData = data
+                ) as T?
+            }
+        )
     }
 
     private fun getFileNameForRecord(uuid: String): String {

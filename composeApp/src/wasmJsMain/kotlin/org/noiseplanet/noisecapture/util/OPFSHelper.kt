@@ -12,6 +12,7 @@ import org.noiseplanet.noisecapture.log.Logger
 /**
  * Utility object to access OPFS features
  */
+@OptIn(ExperimentalWasmJsInterop::class)
 object OPFSHelper : KoinComponent {
 
     // - Properties

@@ -17,6 +17,7 @@ import org.noiseplanet.noisecapture.model.dao.MutableMeasurement
 import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
 import org.noiseplanet.noisecapture.services.storage.StorageService
 import org.noiseplanet.noisecapture.services.storage.injectStorageService
+import org.noiseplanet.noisecapture.util.dbAverage
 import org.noiseplanet.noisecapture.util.injectLogger
 import org.noiseplanet.noisecapture.util.isInVuMeterRange
 import org.noiseplanet.noisecapture.util.roundTo
@@ -39,10 +40,19 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
 
     private companion object {
 
-        // Sets the maximum number of records that can be in a sequence fragment. Whenever a
-        // sequence fragment reaches this limit, it gets stored and a new fragment is created.
-        // 250 records is roughly 30 seconds of data coming at 125ms interval.
+        /**
+         * Sets the maximum number of records that can be in a sequence fragment. Whenever a
+         * sequence fragment reaches this limit, it gets stored and a new fragment is created.
+         * 250 records is roughly 30 seconds of data coming at 125ms interval.
+         */
         const val SEQUENCE_FRAGMENT_MAX_SIZE: Int = 250
+
+        /**
+         * Sets the length of measurement leq sequence summary used for plotting measurement data.
+         * To avoid reading the entire leq sequence everytime, we downsample it to this amount of
+         * values by performing an average
+         */
+        const val LEQ_SEQUENCE_SUMMARY_SIZE: Int = 250
     }
 
 
@@ -124,10 +134,10 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override fun openOngoingMeasurement() {
+    override fun openOngoingMeasurement(uuid: String?) {
         // Create a new ongoing measurement with a unique identifier and start time to now.
         ongoingMeasurement = MutableMeasurement(
-            uuid = Uuid.random().toString(),
+            uuid = uuid ?: Uuid.random().toString(),
             startTimestamp = Clock.System.now().toEpochMilliseconds()
         )
         logger.info("Starting new measurement with id ${ongoingMeasurement?.uuid}")
@@ -210,18 +220,26 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
      * TODO: Benchmark this implementation for very large measurements and optimize if needed.
      */
     override suspend fun calculateSummary(measurement: Measurement): Measurement {
-        // Get a sorted list of all leq values that are in valid dB range.
-        val allMeasurementLeqSorted: List<Double> = measurement.leqsSequenceIds
-            .fold(listOf<Double>()) { accumulator, sequenceId ->
-                accumulator + (leqSequenceStorageService.get(sequenceId)?.laeq ?: emptyList())
+        // Get a map of all LAEq values with their associated timestamp
+        val allMeasurementLeq: Map<Long, Double> = measurement.leqsSequenceIds
+            .fold(mapOf<Long, Double>()) { accumulator, sequenceId ->
+                val laeqs = leqSequenceStorageService.get(sequenceId)
+                    ?.let { it.timestamp.zip(it.laeq) }
+                    ?: emptyList()
+                accumulator + laeqs
+            }.filter { (_, laeq) ->
+                laeq.isInVuMeterRange()
             }
-            .filter { it.isInVuMeterRange() }
-            .sorted()
+
+        // Get a list of all sorted LAEq values
+        val allMeasurementLeqSorted = allMeasurementLeq.values.sorted()
+
         // Calculate LA10/50/90 based on indices in the sorted list.
         val summary = MeasurementSummary(
             la10 = allMeasurementLeqSorted[(allMeasurementLeqSorted.size / 100.0 * 90.0).toInt()],
             la50 = allMeasurementLeqSorted[(allMeasurementLeqSorted.size / 100.0 * 50.0).toInt()],
             la90 = allMeasurementLeqSorted[(allMeasurementLeqSorted.size / 100.0 * 10.0).toInt()],
+            leqOverTime = downsampleLeqSequence(allMeasurementLeq)
         )
         // Build a new measurement object with the summary property.
         val newValue = measurement.copy(summary = summary)
@@ -293,5 +311,41 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
         )
         measurementStorageService.set(measurement.uuid, measurement)
         laeqMetricsFlow.emit(null)
+    }
+
+    /**
+     * Downsamples the given leq sequence to the given output values count by grouping values
+     * together based on corresponding timestamp and calculating the average value of each group.
+     */
+    private fun downsampleLeqSequence(
+        leqSequence: Map<Long, Double>,
+        outputValuesCount: Int = LEQ_SEQUENCE_SUMMARY_SIZE,
+    ): Map<Long, Double> {
+        // If total length of leq sequence is below target values count, just return the raw map.
+        if (leqSequence.size <= outputValuesCount || leqSequence.isEmpty() || outputValuesCount <= 0) {
+            return leqSequence
+        }
+
+        val sortedEntries = leqSequence.entries.sortedBy { it.key }
+        val minTime = sortedEntries.first().key
+        val maxTime = sortedEntries.last().key
+
+        // Calculate the time interval for each output value
+        val totalTimeRange = maxTime - minTime
+        val interval = totalTimeRange / outputValuesCount
+
+        val downsampledMap = mutableMapOf<Long, MutableList<Double>>()
+
+        // Group the entries into the calculated intervals
+        for ((timestamp, level) in sortedEntries) {
+            val intervalIndex = ((timestamp - minTime) / interval).toInt()
+            val intervalKey = minTime + intervalIndex * interval
+            downsampledMap.getOrPut(intervalKey) { mutableListOf() }.add(level)
+        }
+
+        // Calculate the average for each interval
+        return downsampledMap.mapValues { (_, levels) ->
+            levels.dbAverage()
+        }
     }
 }

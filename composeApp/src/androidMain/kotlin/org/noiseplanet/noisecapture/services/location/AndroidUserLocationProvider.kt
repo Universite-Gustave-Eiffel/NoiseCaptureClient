@@ -11,9 +11,7 @@ import com.google.android.gms.location.Priority
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.flow.zip
-import kotlinx.coroutines.runBlocking
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.noiseplanet.noisecapture.log.Logger
@@ -64,6 +62,7 @@ class AndroidUserLocationProvider :
         ).build()
     }
     private val locationClient = LocationServices.getFusedLocationProviderClient(get())
+    private var lastRecordedLocation: LocationRecord? = null
 
     /**
      * Specifies the desired accuracy/power policy and interval between orientation updates
@@ -92,11 +91,14 @@ class AndroidUserLocationProvider :
                 // Zip the results of both flows to get location updates with both
                 // position and orientation.
                 logger.debug("Got new orientation and location: $orientation, $location")
-                buildLocationFromRawData(location, orientation)
+                val locationRecord = buildLocationFromRawData(location, orientation)
+                lastRecordedLocation = locationRecord
+
+                locationRecord
             }
 
     override val currentLocation: LocationRecord?
-        get() = runBlocking { liveLocation.lastOrNull() }
+        get() = lastRecordedLocation
 
     override fun startUpdatingLocation() {
         try {

@@ -1,247 +1,171 @@
 package org.noiseplanet.noisecapture.ui.features.recording.plot.spectrum
 
-import androidx.compose.foundation.Canvas
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.EaseOutBack
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.ColorScheme
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextMeasurer
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.drawText
-import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.TextUnitType
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import org.noiseplanet.noisecapture.ui.features.recording.plot.PlotAxisBuilder
-import org.noiseplanet.noisecapture.ui.features.recording.plot.PlotBitmapOverlay
-import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrum.SpectrumPlotViewModel.Companion.DBA_MAX
-import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrum.SpectrumPlotViewModel.Companion.DBA_MIN
-import org.noiseplanet.noisecapture.util.toFrequencyString
+import org.koin.compose.viewmodel.koinViewModel
+import org.noiseplanet.noisecapture.ui.components.plot.PlotContainer
+import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import kotlin.math.max
-import kotlin.math.min
 
-
-private val SPECTRUM_PLOT_SQUARE_WIDTH = 10.dp
-private val SPECTRUM_PLOT_SQUARE_OFFSET = 1.dp
+private const val ANIMATION_DURATION_MS = 400
+private val ANIMATION_CURVE = EaseOutBack
+private val WEIGHTED_SPL_BOX_WIDTH = 10.dp
 
 
 @Composable
 fun SpectrumPlotView(
-    viewModel: SpectrumPlotViewModel,
+    backgroundColor: Color = MaterialTheme.colorScheme.surface,
     modifier: Modifier = Modifier,
 ) {
-    val surfaceColor = MaterialTheme.colorScheme.onSurface
+    // - Properties
 
-    var preparedSpectrumOverlayBitmap = PlotBitmapOverlay(
-        ImageBitmap(1, 1),
-        Size(0F, 0F),
-        Size(0F, 0F),
-        Size(0F, 0F),
-        0
-    )
+    val viewModel: SpectrumPlotViewModel = koinViewModel()
 
-    val rawSplPerThirdOctave: Map<Int, Double> by viewModel.rawSplFlow
-        .collectAsStateWithLifecycle()
-    val weightedSplPerThirdOctave: Map<Int, Double> by viewModel.weightedSplFlow
-        .collectAsStateWithLifecycle()
-    val axisSettings: SpectrumPlotViewModel.AxisSettings by viewModel.axisSettingsFlow
-        .collectAsStateWithLifecycle()
+    val axisSettings by viewModel.axisSettingsFlow.collectAsStateWithLifecycle()
+    val xAxisMax: Double = axisSettings.xTicks.maxOfOrNull { it.value } ?: 1.0
 
+    val splData by viewModel.splDataFlow.collectAsStateWithLifecycle()
 
-    Canvas(modifier = modifier.fillMaxSize()) {
-        val pathEffect = PathEffect.dashPathEffect(
-            floatArrayOf(
-                SPECTRUM_PLOT_SQUARE_WIDTH.toPx(),
-                SPECTRUM_PLOT_SQUARE_OFFSET.toPx()
-            )
-        )
-        val axisBuilder = PlotAxisBuilder()
-        val weightedBarWidth = 10.dp.toPx()
-        val maxYAxisWidth = preparedSpectrumOverlayBitmap.verticalLegendSize.width
-        val barMaxWidth: Float = size.width - maxYAxisWidth
-        val maxXAxisHeight = preparedSpectrumOverlayBitmap.horizontalLegendSize.height
-        val chartHeight = (size.height - maxXAxisHeight - axisBuilder.tickLength.toPx())
-        val barHeight = chartHeight / rawSplPerThirdOctave.size - SPECTRUM_PLOT_SQUARE_OFFSET.toPx()
-
-
-        // TODO: Use new map property instead of double array
-
-        rawSplPerThirdOctave.keys.forEachIndexed { index, frequency ->
-            val spl = rawSplPerThirdOctave[frequency] ?: return@forEachIndexed
-            val weightedSpl = weightedSplPerThirdOctave[frequency] ?: return@forEachIndexed
-            val barYOffset =
-                (barHeight + SPECTRUM_PLOT_SQUARE_OFFSET.toPx()) * (rawSplPerThirdOctave.size - 1 - index)
-            val splRatio = (spl - DBA_MIN) / (DBA_MAX - DBA_MIN)
-            val splWeighted = max(spl, weightedSpl)
-            val splWeightedRatio = min(
-                1.0,
-                max(
-                    0.0,
-                    (splWeighted - DBA_MIN) / (DBA_MAX - DBA_MIN)
-                )
-            )
-            val splGradient =
-                Brush.horizontalGradient(
-                    *viewModel.spectrumColorRamp.toTypedArray(),
-                    startX = 0F,
-                    endX = size.width
-                )
-            drawLine(
-                brush = splGradient,
-                start = Offset(maxYAxisWidth, barYOffset + barHeight / 2),
-                end = Offset(
-                    max(
-                        maxYAxisWidth,
-                        ((barMaxWidth * splRatio).toFloat() + maxYAxisWidth)
-                    ),
-                    barYOffset + barHeight / 2
-                ),
-                strokeWidth = barHeight,
-                pathEffect = pathEffect
-            )
-            drawRect(
-                color = surfaceColor,
-                topLeft = Offset(
-                    max(
-                        maxYAxisWidth,
-                        (barMaxWidth * splWeightedRatio).toFloat() - weightedBarWidth + maxYAxisWidth
-                    ), barYOffset
-                ),
-                size = Size(weightedBarWidth, barHeight)
-            )
-        }
+    // How wide is each frequency band bar relative to the width of the plot width
+    val rawSplBarWidths by derivedStateOf {
+        splData.mapValues { (_, spl) ->
+            (spl.raw / xAxisMax).toFloat()
+        }.values.reversed()
     }
 
-    val colors = MaterialTheme.colorScheme
-    val textMeasurer = rememberTextMeasurer()
+    // Offset of each weighted spl value per frequency band (-1 is left aligned, 1 is right aligned)
+    val weightedSplBoxOffsets by derivedStateOf {
+        splData.mapValues { (_, spl) ->
+            ((max(spl.weighted, spl.raw) / xAxisMax)).toFloat()
+        }.values.reversed()
+    }
 
-    Canvas(modifier = Modifier.fillMaxSize()) {
-        if (preparedSpectrumOverlayBitmap.imageSize != size ||
-            preparedSpectrumOverlayBitmap.plotSettingsHashCode != axisSettings.hashCode()
+    // Gradient brush to paint the plot background
+    val gradientBrush = remember {
+        Brush.horizontalGradient(
+            *NoiseLevelColorRamp.clamped(
+                dbMin = SpectrumPlotViewModel.DBA_MIN,
+                dbMax = SpectrumPlotViewModel.DBA_MAX,
+            ).map { (rampIndex, color) ->
+                Pair(rampIndex.toFloat(), color.copy(alpha = 1f))
+            }.toTypedArray()
+        )
+    }
+    val weightedSplBoxColor = MaterialTheme.colorScheme.onSurface
+
+
+    // - Layout
+
+    PlotContainer(
+        axisSettings = axisSettings,
+        modifier = modifier,
+    ) {
+        Column(
+            horizontalAlignment = Alignment.End,
+            modifier = Modifier.fillMaxSize()
         ) {
-            preparedSpectrumOverlayBitmap = buildSpectrumAxisBitmap(
-                size,
-                Density(density),
-                axisSettings,
-                textMeasurer,
-                colors
-            )
+            rawSplBarWidths.forEachIndexed { index, widthFraction ->
+
+                // 1. Pain the whole line using gradient brush
+                Box(
+                    modifier = Modifier.weight(1f)
+                        .background(gradientBrush)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.CenterEnd
+                ) {
+                    // 2. Fill the right end of the bar with background color based on current value
+                    Box(
+                        modifier = Modifier.fillMaxHeight()
+                            .background(backgroundColor)
+                            .animateContentSize(
+                                tween(
+                                    easing = ANIMATION_CURVE,
+                                    durationMillis = ANIMATION_DURATION_MS
+                                )
+                            )
+                            .fillMaxWidth(fraction = 1f - widthFraction)
+                    )
+
+                    // 3. Add a grid on top of the bars to add vertical stripes
+                    SpectrumPlotXAxisGrid(
+                        xAxisTicks = (axisSettings.xTicks.size - 1) * 5,
+                        lineColor = backgroundColor,
+                    )
+
+                    // 4. Add a grey box to represent weighted spl value.
+                    val animatedBias by animateFloatAsState(
+                        targetValue = weightedSplBoxOffsets[index],
+                        animationSpec = tween(
+                            easing = ANIMATION_CURVE,
+                            durationMillis = ANIMATION_DURATION_MS
+                        )
+                    )
+
+                    Box(
+                        modifier = Modifier.fillMaxHeight()
+                            .fillMaxWidth(fraction = 1f - animatedBias),
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxHeight()
+                                .width(WEIGHTED_SPL_BOX_WIDTH)
+                                .background(weightedSplBoxColor)
+                        )
+                    }
+                }
+
+                // 5. For every bar except for the last, add a horizontal spacer
+                if (index < rawSplBarWidths.size - 1) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                }
+            }
         }
-        drawImage(preparedSpectrumOverlayBitmap.imageBitmap)
     }
 }
 
 
 /**
- * Generate bitmap of Axis (as it does not change between redraw of values)
+ * Lays out a grid of given X vertical lines with given line color.
  */
-@Suppress("LongParameterList", "LongMethod")
-private fun buildSpectrumAxisBitmap(
-    size: Size,
-    density: Density,
-    settings: SpectrumPlotViewModel.AxisSettings,
-    textMeasurer: TextMeasurer,
-    colors: ColorScheme,
-): PlotBitmapOverlay {
-    val drawScope = CanvasDrawScope()
-    val bitmap = ImageBitmap(size.width.toInt(), size.height.toInt())
-    val canvas = androidx.compose.ui.graphics.Canvas(bitmap)
-    val legendTexts = List(settings.nominalFrequencies.size) { frequencyIndex ->
-        val textLayoutResult = textMeasurer.measure(buildAnnotatedString {
-            withStyle(
-                SpanStyle(
-                    fontSize = TextUnit(
-                        10F,
-                        TextUnitType.Sp
-                    )
-                )
-            ) {
-                append(settings.nominalFrequencies[frequencyIndex].toInt().toFrequencyString())
-            }
-        })
-        textLayoutResult
-    }
-
-    var horizontalLegendSize = Size(0F, 0F)
-    var verticalLegendSize = Size(0F, 0F)
-    drawScope.draw(
-        density = density,
-        layoutDirection = LayoutDirection.Ltr,
-        canvas = canvas,
-        size = size,
-    ) {
-        val axisBuilder = PlotAxisBuilder()
-        val maxYAxisWidth = (legendTexts.maxOfOrNull { it.size.width }) ?: 0
-        verticalLegendSize = Size(maxYAxisWidth.toFloat(), size.height)
-        val barMaxWidth: Float = size.width - maxYAxisWidth
-        val legendElements = axisBuilder.makeXLabels(
-            textMeasurer, settings.minimumX, settings.maximumX, barMaxWidth,
-            axisBuilder::noiseLevelAxisFormater
+@Composable
+private fun SpectrumPlotXAxisGrid(
+    xAxisTicks: Int,
+    lineColor: Color,
+    strokeWidth: Dp = 2.dp,
+) = Row(
+    horizontalArrangement = Arrangement.SpaceEvenly,
+    modifier = Modifier.fillMaxSize()
+) {
+    repeat(xAxisTicks - 1) {
+        VerticalDivider(
+            thickness = strokeWidth,
+            modifier = Modifier.fillMaxHeight(),
+            color = lineColor
         )
-        val maxXAxisHeight = (legendElements.maxOfOrNull { it.text.size.height }) ?: 0
-        horizontalLegendSize = Size(size.width, maxXAxisHeight.toFloat())
-        val chartHeight = (size.height - maxXAxisHeight - axisBuilder.tickLength.toPx())
-        legendElements.forEach { legendElement ->
-            val tickPos =
-                maxYAxisWidth + max(
-                    axisBuilder.tickStroke.toPx() / 2F,
-                    min(
-                        barMaxWidth - axisBuilder.tickStroke.toPx(),
-                        legendElement.xPos - axisBuilder.tickStroke.toPx() / 2F
-                    )
-                )
-            drawLine(
-                color = colors.onSurfaceVariant, start = Offset(
-                    tickPos,
-                    chartHeight
-                ),
-                end = Offset(
-                    tickPos,
-                    chartHeight + axisBuilder.tickLength.toPx()
-                ),
-                strokeWidth = axisBuilder.tickStroke.toPx()
-            )
-            drawText(
-                legendElement.text,
-                topLeft = Offset(
-                    maxYAxisWidth + legendElement.textPos,
-                    chartHeight + axisBuilder.tickLength.toPx()
-                )
-            )
-        }
-        val barHeight =
-            chartHeight / settings.nominalFrequencies.size - SPECTRUM_PLOT_SQUARE_OFFSET.toPx()
-        legendTexts.forEachIndexed { index, legendText ->
-            val barYOffset =
-                (barHeight + SPECTRUM_PLOT_SQUARE_OFFSET.toPx()) * (settings.nominalFrequencies.size - 1 - index)
-            drawText(
-                textMeasurer,
-                legendText.layoutInput.text,
-                topLeft = Offset(
-                    0F,
-                    barYOffset + barHeight / 2 - legendText.size.height / 2F
-                )
-            )
-        }
     }
-    return PlotBitmapOverlay(
-        bitmap,
-        size,
-        horizontalLegendSize,
-        verticalLegendSize,
-        settings.hashCode()
-    )
 }

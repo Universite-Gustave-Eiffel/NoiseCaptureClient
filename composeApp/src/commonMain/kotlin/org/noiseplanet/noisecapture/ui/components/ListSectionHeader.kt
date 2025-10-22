@@ -22,8 +22,8 @@ fun ListSectionHeader(
         Text(
             text = stringResource(title).uppercase(),
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-            modifier = Modifier.padding(top = paddingTop, bottom = 4.dp, start = 16.dp)
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+            modifier = Modifier.padding(top = paddingTop, bottom = 8.dp, start = 16.dp)
         )
     }
 }

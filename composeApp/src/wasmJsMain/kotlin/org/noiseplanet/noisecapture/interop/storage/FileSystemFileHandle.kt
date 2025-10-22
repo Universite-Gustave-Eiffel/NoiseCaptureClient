@@ -8,6 +8,7 @@ import kotlin.js.Promise
  *
  * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemFileHandle)
  */
+@OptIn(ExperimentalWasmJsInterop::class)
 external interface FileSystemFileHandle : FileSystemHandle {
 
     /**
@@ -56,6 +57,7 @@ external interface FileSystemFileHandle : FileSystemHandle {
 /**
  * Type utility for [FileSystemFileHandle] options.
  */
+@ExperimentalWasmJsInterop
 typealias FileSystemFileHandleOptions = JsAny
 
 /**
@@ -76,6 +78,7 @@ typealias FileSystemFileHandleOptions = JsAny
  *                      on a file, provided they are all opened in "readwrite-unsafe" mode. Once
  *                      opened, any available method can be called on the handles.
  */
+@OptIn(ExperimentalWasmJsInterop::class)
 @Suppress("UnusedParameter")
 fun fileSystemFileHandleOptions(
     mode: JsString = "read-only".toJsString(),

@@ -12,6 +12,7 @@ import org.w3c.files.File
 /**
  * WasmJs KStore provider using key/value localstorage and JSON encoding/decoding
  */
+@OptIn(ExperimentalWasmJsInterop::class)
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 internal actual class KStoreProvider : KoinComponent {
 
@@ -34,6 +35,8 @@ internal actual class KStoreProvider : KoinComponent {
      */
     actual inline fun <reified T : @Serializable Any> storeOf(
         fileName: String,
+        version: Int,
+        noinline migration: Migration<T>,
         enableCache: Boolean,
     ): KStore<T> {
         // For WasmJS, KStore doesn't support file storage out of the box so we use a custom codec
@@ -42,6 +45,8 @@ internal actual class KStoreProvider : KoinComponent {
             codec = KStoreOpfsCodec(
                 filePath = fileName,
                 logger = logger,
+                version = version,
+                migration = migration,
             ),
             enableCache = enableCache,
         )

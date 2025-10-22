@@ -7,6 +7,7 @@ import kotlin.js.Promise
  *
  * [MSDN documentation](https://developer.mozilla.org/en-US/docs/Web/API/StorageManager)
  */
+@OptIn(ExperimentalWasmJsInterop::class)
 external interface StorageManager {
 
     /**

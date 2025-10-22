@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import nl.jacobras.humanreadable.HumanReadable
 import noisecapture.composeapp.generated.resources.Res
@@ -47,7 +48,9 @@ fun HomeRecentMeasurementView(
     // - Layout
 
     Column(
-        modifier = modifier.clickable { onClick(measurement) }
+        modifier = modifier.clip(shape = MaterialTheme.shapes.medium)
+            .clickable { onClick(measurement) }
+            .padding(top = 12.dp, bottom = 12.dp, start = 12.dp)
     ) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -56,20 +59,20 @@ fun HomeRecentMeasurementView(
             Text(
                 text = HumanReadable.timeAgo(startTime),
                 style = MaterialTheme.typography.titleMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurface
                 ),
             )
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = "Open",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                 modifier = Modifier.size(24.dp),
             )
         }
         Text(
             text = "${durationPrefix}: ${HumanReadable.duration(duration)}",
             style = MaterialTheme.typography.titleSmall.copy(
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
             )
         )
 

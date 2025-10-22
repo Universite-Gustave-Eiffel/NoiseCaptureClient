@@ -3,6 +3,7 @@ package org.noiseplanet.noisecapture.audio
 import org.noiseplanet.noisecapture.audio.signal.SpectrumChannel
 import org.noiseplanet.noisecapture.audio.signal.get44100HZ
 import org.noiseplanet.noisecapture.audio.signal.get48000HZ
+import org.noiseplanet.noisecapture.model.dao.LeqRecord
 import org.noiseplanet.noisecapture.util.roundTo
 import kotlin.math.log10
 import kotlin.math.max
@@ -52,32 +53,35 @@ class AcousticIndicatorsProcessing(val sampleRate: Int, val dbGain: Double = AND
 
     // - Public functions
 
-    suspend fun processSamples(samples: AudioSamples): List<AcousticIndicatorsData> {
-        val acousticIndicatorsDataList = ArrayList<AcousticIndicatorsData>()
+    suspend fun processSamples(samples: AudioSamples): List<LeqRecord> {
+        val leqRecords = ArrayList<LeqRecord>()
         var samplesProcessed = 0
+
         while (samplesProcessed < samples.samples.size) {
-            while (windowDataCursor < windowLength &&
-                samplesProcessed < samples.samples.size
-            ) {
+
+            while (windowDataCursor < windowLength && samplesProcessed < samples.samples.size) {
                 val remainingToProcess = min(
                     windowLength - windowDataCursor,
                     samples.samples.size - samplesProcessed
                 )
                 for (i in 0..<remainingToProcess) {
-                    windowData[i + windowDataCursor] =
-                        samples.samples[i + samplesProcessed]
+                    windowData[i + windowDataCursor] = samples.samples[i + samplesProcessed]
                 }
                 windowDataCursor += remainingToProcess
                 samplesProcessed += remainingToProcess
             }
+
             if (windowDataCursor == windowLength) {
                 // window complete
-                val rms =
-                    sqrt(windowData.fold(0.0) { acc, sample ->
+                val rms = sqrt(
+                    windowData.fold(0.0) { acc, sample ->
                         acc + sample * sample
-                    } / windowData.size)
+                    } / windowData.size
+                )
                 val leq = dbGain + 20 * log10(rms)
                 val laeq = dbGain + spectrumChannel.processSamplesWeightA(windowData)
+                val lceq = dbGain + spectrumChannel.processSamplesWeightC(windowData)
+
                 val thirdOctave = spectrumChannel.processSamples(windowData)
                 val thirdOctaveGain = 10 * log10(10.0.pow(dbGain / 10.0) / thirdOctave.size)
                 val leqsPerThirdOctave = nominalFrequencies
@@ -85,29 +89,20 @@ class AcousticIndicatorsProcessing(val sampleRate: Int, val dbGain: Double = AND
                         // Clip values to -999dB to avoid -Inf in JSON exports
                         max(it + thirdOctaveGain, -999.0).roundTo(1)
                     }).toMap()
-                acousticIndicatorsDataList.add(
-                    // TODO: Adapt this to directly return LeqRecords
-                    AcousticIndicatorsData(
-                        samples.epoch,
+
+                leqRecords.add(
+                    LeqRecord(
+                        timestamp = samples.epoch,
                         // Clip values to -999dB to avoid -Inf in JSON exports
-                        max(leq, -999.0).roundTo(1),
-                        max(laeq, -999.0).roundTo(1),
-                        rms.roundTo(1),
-                        leqsPerThirdOctave,
+                        lzeq = max(leq, -999.0).roundTo(1),
+                        lceq = max(lceq, -999.0).roundTo(1),
+                        laeq = max(laeq, -999.0).roundTo(1),
+                        leqsPerThirdOctave = leqsPerThirdOctave,
                     )
                 )
                 windowDataCursor = 0
             }
         }
-        return acousticIndicatorsDataList
+        return leqRecords
     }
 }
-
-
-data class AcousticIndicatorsData(
-    val epoch: Long,
-    val leq: Double,
-    val laeq: Double,
-    val rms: Double,
-    val leqsPerThirdOctave: Map<Int, Double>,
-)
