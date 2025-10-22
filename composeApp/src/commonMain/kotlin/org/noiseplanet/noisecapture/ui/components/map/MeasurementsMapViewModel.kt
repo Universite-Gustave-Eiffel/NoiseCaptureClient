@@ -130,8 +130,10 @@ class MeasurementsMapViewModel(
      * Might need some tweaking after further testing.
      */
     val tileSizePx = when (windowSizeClass.minWidthDp) {
-        WindowSizeClass.WIDTH_DP_EXTRA_LARGE_LOWER_BOUND -> 200
-        WindowSizeClass.WIDTH_DP_LARGE_LOWER_BOUND -> 300
+        // TODO: Large/Extra large size classes are only introduced in material3:1.2.0-alpha07
+        //       but for now the compose library only forces 1.2.0-alpha05
+        // WindowSizeClass.WIDTH_DP_EXTRA_LARGE_LOWER_BOUND -> 200
+        // WindowSizeClass.WIDTH_DP_LARGE_LOWER_BOUND -> 300
         WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND -> 350
         WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND -> 400
         else -> 600
