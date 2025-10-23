@@ -14,7 +14,7 @@ object NoiseLevelColorRamp {
      * Base color palette with true colors picked from [Coloring Noise](https://www.coloringnoise.com/)
      */
     val palette: Map<Double, Color> = mapOf(
-        0.0 to Color(0xFF82A6AD),
+        20.0 to Color(0xFF82A6AD),
         35.0 to Color(0xFFA0BABF),
         40.0 to Color(0xFFB8D6D1),
         45.0 to Color(0xFFCEE4CC),
@@ -31,7 +31,7 @@ object NoiseLevelColorRamp {
      * A darker version of the color palette to provide better contrast against light backgrounds
      */
     val paletteDarker: Map<Double, Color> = mapOf(
-        0.0 to Color(0xFF576F73),
+        20.0 to Color(0xFF576F73),
         35.0 to Color(0xFF6B7C7F),
         40.0 to Color(0xFF7B8F8B),
         45.0 to Color(0xFF899888),
@@ -48,7 +48,7 @@ object NoiseLevelColorRamp {
      * A lighter version of the color palette to use as background tint.
      */
     val paletteLighter: Map<Double, Color> = mapOf(
-        0.0 to Color(0xFFE6EDEF),
+        20.0 to Color(0xFFE6EDEF),
         35.0 to Color(0xFFECF1F2),
         40.0 to Color(0xFFF1F7F6),
         45.0 to Color(0xFFF5FAF5),
