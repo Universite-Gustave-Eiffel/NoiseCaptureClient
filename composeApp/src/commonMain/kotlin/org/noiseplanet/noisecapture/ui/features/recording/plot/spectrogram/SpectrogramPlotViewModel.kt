@@ -65,7 +65,7 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
         // TODO: Platform dependant gain?
         private const val DB_GAIN = AcousticIndicatorsProcessing.ANDROID_GAIN
 
-        private val FRAME_RATE: Duration = (1.0 / 30.0).milliseconds
+        private val FRAME_RATE: Duration = (1.0 / 30.0 * 1_000).milliseconds
 
         // TODO: Make this a user settings property?
         val DISPLAYED_TIME_RANGE: Duration = 20.seconds
