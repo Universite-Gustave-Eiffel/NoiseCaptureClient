@@ -5,6 +5,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.ImageBitmapConfig
 import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
@@ -319,8 +320,13 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
      * Creates a new image bitmap and fills it with background color
      */
     private fun initializeBitmap() {
-        // Init ImageBitmap and Canvas
-        ImageBitmap(canvasSize.width, canvasSize.height).apply {
+        // Initialize ImageBitmap and Canvas
+        ImageBitmap(
+            width = canvasSize.width,
+            height = canvasSize.height,
+            config = ImageBitmapConfig.Rgb565, // Use lightweight color coding for faster draw
+            hasAlpha = false // We don't need the alpha chanel, omitting it will make bitmap even lighter
+        ).apply {
             currentBitmap = this
             canvas = Canvas(this)
         }
