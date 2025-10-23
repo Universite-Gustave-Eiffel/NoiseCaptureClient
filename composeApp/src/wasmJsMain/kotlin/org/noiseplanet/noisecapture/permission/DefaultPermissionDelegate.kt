@@ -23,8 +23,8 @@ internal abstract class DefaultPermissionDelegate(
 
     private val logger: Logger by injectLogger()
 
-    private val _permissionStateFlow = MutableStateFlow(PermissionState.NOT_DETERMINED)
-    override val permissionStateFlow: StateFlow<PermissionState> = _permissionStateFlow
+    protected val permissionMutableStateFlow = MutableStateFlow(PermissionState.NOT_DETERMINED)
+    override val permissionStateFlow: StateFlow<PermissionState> = permissionMutableStateFlow
 
 
     // - Lifecycle
@@ -37,10 +37,7 @@ internal abstract class DefaultPermissionDelegate(
                 // Handle initial value
                 handlePermissionStatus(permissionStatus)
 
-                logger.warning("GOT INITIAL STATE: ${permissionStatus.state}")
-
                 permissionStatus.onchange = { _ ->
-                    logger.warning("GOT NEW STATE: ${permissionStatus.state}")
                     // Handle subsequent updates
                     handlePermissionStatus(permissionStatus)
                 }
@@ -68,7 +65,7 @@ internal abstract class DefaultPermissionDelegate(
 
     private fun handlePermissionStatus(permissionStatus: PermissionStatus) {
         JsPermissionState.fromValue(permissionStatus.state)?.toPermissionState()?.let {
-            _permissionStateFlow.tryEmit(it)
+            permissionMutableStateFlow.tryEmit(it)
         }
     }
 }
