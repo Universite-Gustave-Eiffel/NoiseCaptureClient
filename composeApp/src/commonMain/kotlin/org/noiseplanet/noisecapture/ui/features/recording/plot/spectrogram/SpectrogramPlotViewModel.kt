@@ -18,9 +18,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
@@ -144,30 +142,28 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
         }
 
         spectrogramUpdatesJob = viewModelScope.launch(Dispatchers.Default) {
-            // Listen to spectrum data updates and build spectrogram along the way
-            liveAudioService.getSpectrogramDataFlow()
-                .map {
-                    // For each new spectrogram data, build a pixels strip
-                    getSpectrogramStrip(it)
-                }
-                .combine(fpsFlow) { stripPixels, timestamp ->
-                    // Combine fixed FPS timer with new spectrogram strips updates
-                    Pair(stripPixels, timestamp)
-                }
-                .collect { (stripPixels, timestamp) ->
+            var currentPixelStrip: List<Color>? = null
 
-                    // TODO: This could be further optimized by drawing every strip once and
-                    //       calculating the width based on timestamp comparison, but then the
-                    //       canvas size would change for every new spectrogram data and we would
-                    //       to create a new bitmap everytime, increasing the memory impact.
-                    //       For now the CPU cost tradeoff is acceptable.
+            launch {
+                // Listen to spectrum data updates and build spectrogram along the way
+                liveAudioService.getSpectrogramDataFlow()
+                    .collect {
+                        // For each new spectrogram data, build a pixels strip
+                        currentPixelStrip = getSpectrogramStrip(it)
+                    }
+            }
 
+            launch {
+                fpsFlow.collect { timestamp ->
                     // On every update, draw a new strip
-                    pushToBitmap(
-                        timestamp = timestamp,
-                        stripPixels = stripPixels,
-                    )
+                    currentPixelStrip?.let {
+                        pushToBitmap(
+                            timestamp = timestamp,
+                            stripPixels = it,
+                        )
+                    }
                 }
+            }
         }
     }
 
