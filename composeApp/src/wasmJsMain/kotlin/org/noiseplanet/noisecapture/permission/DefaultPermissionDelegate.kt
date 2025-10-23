@@ -2,26 +2,21 @@ package org.noiseplanet.noisecapture.permission
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.interop.JsPermissionState
 import org.noiseplanet.noisecapture.interop.PermissionStatus
 import org.noiseplanet.noisecapture.interop.createPermissionDescriptor
 import org.noiseplanet.noisecapture.interop.navigator
 import org.noiseplanet.noisecapture.interop.toJsPermission
 import org.noiseplanet.noisecapture.interop.toPermissionState
-import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.permission.delegate.PermissionDelegate
-import org.noiseplanet.noisecapture.util.injectLogger
 
 
 @OptIn(ExperimentalWasmJsInterop::class)
 internal abstract class DefaultPermissionDelegate(
     permission: Permission,
-) : PermissionDelegate, KoinComponent {
+) : PermissionDelegate {
 
     // - Properties
-
-    private val logger: Logger by injectLogger()
 
     protected val permissionMutableStateFlow = MutableStateFlow(PermissionState.NOT_DETERMINED)
     override val permissionStateFlow: StateFlow<PermissionState> = permissionMutableStateFlow
