@@ -132,6 +132,11 @@
     <string name="settings_map_measurements_count_description">Adjust the maximum number of measurements shown on the map at once (set this to 0 to show all measurements)</string>
 
 
+    <!-- Map -->
+    <string name="map_legend_title">Legend</string>
+    <string name="map_legend_description">The map shows recorded noise levels by steps of 5 decibels.</string>
+
+
     <!-- User acoustics knowledge -->
     <string name="acoustics_knowledge_beginner_title">Beginner</string>
     <string name="acoustics_knowledge_beginner_description">I know nothing or only a few things about noise</string>

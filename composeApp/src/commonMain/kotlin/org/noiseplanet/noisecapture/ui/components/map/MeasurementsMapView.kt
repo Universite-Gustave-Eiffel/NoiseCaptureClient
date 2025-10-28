@@ -21,6 +21,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,6 +58,8 @@ fun MeasurementsMapView(
     }
     val mapOrientation by viewModel.mapOrientationFlow.collectAsStateWithLifecycle()
 
+    var showHelpDialog by remember { mutableStateOf(false) }
+
 
     // - Layout
 
@@ -70,6 +75,21 @@ fun MeasurementsMapView(
             .fillMaxHeight(fraction = 1f - viewModel.visibleAreaPaddingRatio.bottom)
             .padding(16.dp)
     ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.fillMaxHeight()
+        ) {
+            // Help button (shows legend and any additional info)
+            NCButton(
+                viewModel = viewModel.helpButtonViewModel,
+                onClick = {
+                    showHelpDialog = true
+                },
+                modifier = Modifier.size(CONTROLS_SIZE)
+                    .mapControl()
+            )
+        }
+
         Spacer(modifier = Modifier.weight(1f))
 
         Column(
@@ -80,15 +100,11 @@ fun MeasurementsMapView(
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.size(CONTROLS_SIZE)
-                    .dropShadow(shape = RoundedCornerShape(percent = 100))
-                    .clip(RoundedCornerShape(percent = 100))
-                    .background(MaterialTheme.colorScheme.surfaceContainer)
+                    .mapControl()
                     .rotate(mapOrientation)
             ) {
                 IconButton(
-                    onClick = {
-                        viewModel.resetOrientation()
-                    },
+                    onClick = { viewModel.resetOrientation() },
                 ) {
                     Icon(
                         painter = painterResource(Res.drawable.compass),
@@ -101,9 +117,7 @@ fun MeasurementsMapView(
             // Zoom controls
             Column(
                 modifier = Modifier.width(CONTROLS_SIZE)
-                    .dropShadow(shape = RoundedCornerShape(percent = 100))
-                    .clip(shape = RoundedCornerShape(percent = 100))
-                    .background(MaterialTheme.colorScheme.surfaceContainer)
+                    .mapControl()
             ) {
                 IconButton(
                     onClick = { viewModel.zoomIn() },
@@ -135,8 +149,22 @@ fun MeasurementsMapView(
                     viewModel.recenter()
                     viewModel.autoRecenterEnabled = true
                 },
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier.size(CONTROLS_SIZE)
+                    .mapControl()
             )
         }
     }
+
+    if (showHelpDialog) {
+        MapLegendView(
+            onDismissRequest = { showHelpDialog = false }
+        )
+    }
 }
+
+
+@Composable
+private fun Modifier.mapControl() = this
+    .dropShadow(shape = RoundedCornerShape(100))
+    .clip(shape = RoundedCornerShape(percent = 100))
+    .background(MaterialTheme.colorScheme.surfaceContainer)
