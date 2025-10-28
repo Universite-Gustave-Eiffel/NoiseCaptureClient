@@ -73,7 +73,9 @@ private fun LastMeasurementsViewContentReady(
         return
     }
 
-    Column {
+    Column(
+        modifier = Modifier.padding(horizontal = 16.dp)
+    ) {
         ListSectionHeader(
             title = Res.string.home_last_measurements_section_header,
             paddingTop = 24.dp,
@@ -81,8 +83,7 @@ private fun LastMeasurementsViewContentReady(
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
-            modifier = modifier.padding(horizontal = 16.dp)
-                .height(IntrinsicSize.Min)
+            modifier = modifier.height(IntrinsicSize.Min)
         ) {
             CardView(
                 backgroundColor = MaterialTheme.colorScheme.surfaceContainer,

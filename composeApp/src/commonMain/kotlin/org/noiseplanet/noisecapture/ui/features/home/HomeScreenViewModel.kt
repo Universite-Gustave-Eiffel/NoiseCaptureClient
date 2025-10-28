@@ -1,7 +1,6 @@
 package org.noiseplanet.noisecapture.ui.features.home
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.outlined.Settings
 import androidx.lifecycle.ViewModel
@@ -9,7 +8,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.app_name
-import noisecapture.composeapp.generated.resources.home_open_map_button_title
 import noisecapture.composeapp.generated.resources.home_slm_button_title
 import noisecapture.composeapp.generated.resources.home_slm_hint
 import org.jetbrains.compose.resources.StringResource
@@ -35,13 +33,6 @@ class HomeScreenViewModel(
         title = Res.string.home_slm_button_title,
         icon = Icons.Filled.Mic,
         colors = { NCButtonColors.Defaults.secondary() },
-        hasDropShadow = true,
-    )
-
-    val openMapButtonViewModel = NCButtonViewModel(
-        title = Res.string.home_open_map_button_title,
-        icon = Icons.Filled.Map,
-        colors = { NCButtonColors.Defaults.primary() },
         hasDropShadow = true,
     )
 

@@ -12,7 +12,7 @@
     <string name="home_last_measurements_section_header">Last measurements</string>
     <string name="home_last_measurement_duration">Duration</string>
     <string name="home_open_history_button_title">History</string>
-    <string name="home_open_map_button_title">Community map</string>
+    <string name="home_map_section_header">Community measurements</string>
 
 
     <!--  Sound level meter  -->
