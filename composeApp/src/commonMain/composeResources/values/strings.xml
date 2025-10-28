@@ -9,10 +9,11 @@
     <!--  HomeScreen  -->
     <string name="home_slm_hint">Visualise and measure the noise level around you as you navigate your surroundings!</string>
     <string name="home_slm_button_title">Open sound level meter</string>
-    <string name="home_last_measurements_section_header">Last measurements</string>
+    <string name="home_last_measurements_section_header">Your measurements</string>
     <string name="home_last_measurement_duration">Duration</string>
     <string name="home_open_history_button_title">History</string>
     <string name="home_map_section_header">Community measurements</string>
+    <string name="home_map_browse_button">Browse</string>
 
 
     <!--  Sound level meter  -->

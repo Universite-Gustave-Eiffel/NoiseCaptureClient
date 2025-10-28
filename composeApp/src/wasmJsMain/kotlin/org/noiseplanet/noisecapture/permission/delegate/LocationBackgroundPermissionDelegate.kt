@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.permission.delegate
 
+import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.interop.createGeolocationOptions
 import org.noiseplanet.noisecapture.interop.navigator
 import org.noiseplanet.noisecapture.log.Logger
@@ -11,7 +12,7 @@ import org.noiseplanet.noisecapture.util.injectLogger
 @OptIn(ExperimentalWasmJsInterop::class)
 internal class LocationBackgroundPermissionDelegate : DefaultPermissionDelegate(
     permission = Permission.LOCATION_BACKGROUND
-) {
+), KoinComponent {
 
     // - Properties
 

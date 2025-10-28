@@ -22,6 +22,7 @@ import org.noiseplanet.noisecapture.services.location.UserLocationProvider
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.ui.components.button.IconNCButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
+import org.noiseplanet.noisecapture.ui.components.map.MeasurementsMapViewModel.VisibleAreaPaddingRatio
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.GeoUtil
 import ovh.plrapps.mapcompose.api.BoundingBox
@@ -48,17 +49,46 @@ import kotlin.math.pow
 
 
 /**
- * ViewModel for [MeasurementsMapView].
+ * Parameters for [MeasurementsMapViewModel]
  *
- * @param windowSizeClass Current device's [WindowSizeClass]. Used for tiles scaling.
  * @param focusedMeasurementUuid UUID of the focused measurement. If given, the map will show the
  *                               path of the given measurement colored with noise level values.
  * @param visibleAreaPaddingRatio Map content padding relative to the screen dimensions.
+ * @param showControls Whether or not to show map controls (compass, zoom, recenter, ...)
+ * @param initialZoomLevel Initial zoom level upon opening the map.
+ * @param followUserLocation If true, the map will automatically recenter to follow the user
+ *                           location. If false, no location updates are required. By default if
+ *                           a measurement id is provided, this parameter will be false.
+ */
+data class MapViewModelParameters(
+    val focusedMeasurementUuid: String? = null,
+    val visibleAreaPaddingRatio: VisibleAreaPaddingRatio = VisibleAreaPaddingRatio(),
+    val showControls: Boolean = true,
+    val initialZoomLevel: Int = DEFAULT_INITIAL_ZOOM_LEVEL,
+    val followUserLocation: Boolean = focusedMeasurementUuid == null,
+) {
+
+    // - Constants
+
+    companion object {
+
+        /**
+         * Zoom level that is initially picked upon opening the map.
+         */
+        const val DEFAULT_INITIAL_ZOOM_LEVEL = 17
+    }
+}
+
+
+/**
+ * ViewModel for [MeasurementsMapView].
+ *
+ * @param windowSizeClass Current device's [WindowSizeClass]. Used for tiles scaling.
+ *
  */
 class MeasurementsMapViewModel(
     windowSizeClass: WindowSizeClass,
-    focusedMeasurementUuid: String? = null,
-    val visibleAreaPaddingRatio: VisibleAreaPaddingRatio = VisibleAreaPaddingRatio(),
+    val parameters: MapViewModelParameters = MapViewModelParameters(),
 ) : ViewModel(), KoinComponent {
 
     // - Constants
@@ -70,11 +100,6 @@ class MeasurementsMapViewModel(
          * Each smaller zoom level then divides scale by two so zoom_max-1 = 0.5, zoom_max-2 = 0.25, etc.
          */
         private const val MAX_ZOOM_LEVEL = 20
-
-        /**
-         * Zoom level that is initially picked upon opening the map.
-         */
-        private const val INITIAL_ZOOM_LEVEL = 17
 
         /**
          * Number of threads allocated to fetching and decoding/encoding tiles to bitmap.
@@ -160,7 +185,7 @@ class MeasurementsMapViewModel(
                     longitude = DEFAULT_LONGITUDE
                 )
                 scroll(x, y)
-                scale(zoomLevelToScale(INITIAL_ZOOM_LEVEL))
+                scale(zoomLevelToScale(parameters.initialZoomLevel))
 
                 // Preload the next N tiles in every direction for smoother scrolling.
                 // Greater values provide better map scrolling experience but also increase performance
@@ -174,7 +199,7 @@ class MeasurementsMapViewModel(
             addLayer(backgroundTilesProvider, placement = BelowAll)
             addLayer(measurementTilesProvider, initialOpacity = 0.5f)
 
-            focusedMeasurementUuid?.let { uuid ->
+            parameters.focusedMeasurementUuid?.let { uuid ->
                 // If a measurement is focused, add its path as map markers and disable
                 // automatic recenter to user location
                 viewModelScope.launch(Dispatchers.Default) {
@@ -212,7 +237,7 @@ class MeasurementsMapViewModel(
      * If enabled, automatically recenter the map on every location updates.
      * Useful for following user movements when making a measurement.
      */
-    var autoRecenterEnabled: Boolean = true
+    var autoRecenterEnabled: Boolean = parameters.followUserLocation
 
     /**
      * Holds the bounding box of the currently focused measurement, if any.
@@ -233,7 +258,7 @@ class MeasurementsMapViewModel(
             _mapOrientationFlow.tryEmit(this.rotation)
         }
 
-        if (focusedMeasurementUuid == null) {
+        if (parameters.followUserLocation) {
             // Subscribe to user location update to follow the user location on the map.
             // Do this only if the map is not currently focusing on a measurement.
             locationProvider.startUpdatingLocation()
@@ -246,7 +271,10 @@ class MeasurementsMapViewModel(
                             latitude = locationRecord.lat,
                             longitude = locationRecord.lon
                         )
-                        updateUserLocationMarker(x, y)
+
+                        if (parameters.showControls) {
+                            updateUserLocationMarker(x, y)
+                        }
 
                         if (autoRecenterEnabled) {
                             recenter()
@@ -264,7 +292,7 @@ class MeasurementsMapViewModel(
         viewModelScope.launch(Dispatchers.Default) {
             // If a measurement is focused, center its path in the viewport.
             measurementPathBoundingBox?.let { boundingBox ->
-                withVisibleAreaPaddingRatio(visibleAreaPaddingRatio) {
+                withVisibleAreaPaddingRatio(parameters.visibleAreaPaddingRatio) {
                     mapState.scrollTo(
                         area = boundingBox,
                         padding = Offset(x = 0.1f, y = 0.1f)
@@ -276,10 +304,10 @@ class MeasurementsMapViewModel(
                     mapState.scrollTo(
                         it.x,
                         it.y,
-                        destScale = zoomLevelToScale(INITIAL_ZOOM_LEVEL),
+                        destScale = zoomLevelToScale(parameters.initialZoomLevel),
                         screenOffset = Offset(
                             x = -0.5f,
-                            y = -0.5f + visibleAreaPaddingRatio.bottom / 2
+                            y = -0.5f + parameters.visibleAreaPaddingRatio.bottom / 2
                         )
                     )
                 }

@@ -63,102 +63,106 @@ fun MeasurementsMapView(
 
     // - Layout
 
-    MapUI(
-        modifier = modifier.background(MaterialTheme.colorScheme.surfaceContainer),
-        state = viewModel.mapState,
-    )
-
-    Row(
-        horizontalArrangement = Arrangement.End,
-        verticalAlignment = Alignment.Top,
-        modifier = modifier.fillMaxWidth()
-            .fillMaxHeight(fraction = 1f - viewModel.visibleAreaPaddingRatio.bottom)
-            .padding(16.dp)
-    ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.fillMaxHeight()
-        ) {
-            // Help button (shows legend and any additional info)
-            NCButton(
-                viewModel = viewModel.helpButtonViewModel,
-                onClick = {
-                    showHelpDialog = true
-                },
-                modifier = Modifier.size(CONTROLS_SIZE)
-                    .mapControl()
-            )
-        }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.fillMaxHeight()
-        ) {
-            // Compass button
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.size(CONTROLS_SIZE)
-                    .mapControl()
-                    .rotate(mapOrientation)
-            ) {
-                IconButton(
-                    onClick = { viewModel.resetOrientation() },
-                ) {
-                    Icon(
-                        painter = painterResource(Res.drawable.compass),
-                        contentDescription = "Compass",
-                        tint = Color.Unspecified,
-                    )
-                }
-            }
-
-            // Zoom controls
-            Column(
-                modifier = Modifier.width(CONTROLS_SIZE)
-                    .mapControl()
-            ) {
-                IconButton(
-                    onClick = { viewModel.zoomIn() },
-                ) {
-                    Icon(
-                        Icons.Default.Add,
-                        contentDescription = "Zoom in",
-                        modifier = Modifier.size(18.dp),
-                    )
-                }
-
-                IconButton(
-                    onClick = { viewModel.zoomOut() },
-                ) {
-                    Icon(
-                        Icons.Default.Remove,
-                        contentDescription = "Zoom out",
-                        modifier = Modifier.size(18.dp),
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Recenter button
-            NCButton(
-                viewModel = viewModel.recenterButtonViewModel,
-                onClick = {
-                    viewModel.recenter()
-                    viewModel.autoRecenterEnabled = true
-                },
-                modifier = Modifier.size(CONTROLS_SIZE)
-                    .mapControl()
-            )
-        }
-    }
-
-    if (showHelpDialog) {
-        MapLegendView(
-            onDismissRequest = { showHelpDialog = false }
+    Box {
+        MapUI(
+            modifier = modifier.background(MaterialTheme.colorScheme.surfaceContainer),
+            state = viewModel.mapState,
         )
+
+        if (viewModel.parameters.showControls) {
+            Row(
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.Top,
+                modifier = modifier.fillMaxWidth()
+                    .fillMaxHeight(fraction = 1f - viewModel.parameters.visibleAreaPaddingRatio.bottom)
+                    .padding(16.dp)
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.fillMaxHeight()
+                ) {
+                    // Help button (shows legend and any additional info)
+                    NCButton(
+                        viewModel = viewModel.helpButtonViewModel,
+                        onClick = {
+                            showHelpDialog = true
+                        },
+                        modifier = Modifier.size(CONTROLS_SIZE)
+                            .mapControl()
+                    )
+                }
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.fillMaxHeight()
+                ) {
+                    // Compass button
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.size(CONTROLS_SIZE)
+                            .mapControl()
+                            .rotate(mapOrientation)
+                    ) {
+                        IconButton(
+                            onClick = { viewModel.resetOrientation() },
+                        ) {
+                            Icon(
+                                painter = painterResource(Res.drawable.compass),
+                                contentDescription = "Compass",
+                                tint = Color.Unspecified,
+                            )
+                        }
+                    }
+
+                    // Zoom controls
+                    Column(
+                        modifier = Modifier.width(CONTROLS_SIZE)
+                            .mapControl()
+                    ) {
+                        IconButton(
+                            onClick = { viewModel.zoomIn() },
+                        ) {
+                            Icon(
+                                Icons.Default.Add,
+                                contentDescription = "Zoom in",
+                                modifier = Modifier.size(18.dp),
+                            )
+                        }
+
+                        IconButton(
+                            onClick = { viewModel.zoomOut() },
+                        ) {
+                            Icon(
+                                Icons.Default.Remove,
+                                contentDescription = "Zoom out",
+                                modifier = Modifier.size(18.dp),
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    // Recenter button
+                    NCButton(
+                        viewModel = viewModel.recenterButtonViewModel,
+                        onClick = {
+                            viewModel.recenter()
+                            viewModel.autoRecenterEnabled = true
+                        },
+                        modifier = Modifier.size(CONTROLS_SIZE)
+                            .mapControl()
+                    )
+                }
+            }
+
+            if (showHelpDialog) {
+                MapLegendView(
+                    onDismissRequest = { showHelpDialog = false }
+                )
+            }
+        }
     }
 }
 

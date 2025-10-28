@@ -45,6 +45,7 @@ fun HomeScreen(
         Column(
             modifier = Modifier.verticalScroll(rememberScrollState())
                 .windowInsetsPadding(WindowInsets.navigationBars)
+                .padding(bottom = 32.dp)
         ) {
             SoundLevelMeterHeaderView(
                 viewModel = viewModel,
@@ -53,6 +54,7 @@ fun HomeScreen(
             )
 
             HomeMapView(
+                router = router,
                 modifier = Modifier.fillMaxWidth()
                     .padding(horizontal = 16.dp)
             )
