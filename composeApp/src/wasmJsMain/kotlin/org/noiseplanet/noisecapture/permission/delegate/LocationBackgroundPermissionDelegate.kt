@@ -5,6 +5,7 @@ import org.noiseplanet.noisecapture.interop.navigator
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.permission.DefaultPermissionDelegate
 import org.noiseplanet.noisecapture.permission.Permission
+import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.util.injectLogger
 
 @OptIn(ExperimentalWasmJsInterop::class)
@@ -24,6 +25,7 @@ internal class LocationBackgroundPermissionDelegate : DefaultPermissionDelegate(
         navigator?.geolocation?.getCurrentPosition(
             success = { pos ->
                 logger.debug("Geolocation ping: ${pos?.coords}")
+                permissionMutableStateFlow.tryEmit(PermissionState.GRANTED)
             },
             error = { err ->
                 logger.warning("Geolocation ping failed: ${err.message}")

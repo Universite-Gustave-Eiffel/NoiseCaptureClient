@@ -5,6 +5,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.ImageBitmapConfig
 import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
@@ -18,9 +19,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
@@ -65,7 +64,7 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
         // TODO: Platform dependant gain?
         private const val DB_GAIN = AcousticIndicatorsProcessing.ANDROID_GAIN
 
-        private val FRAME_RATE: Duration = (1.0 / 30.0).milliseconds
+        private val FRAME_RATE: Duration = (1.0 / 30.0 * 1_000).milliseconds
 
         // TODO: Make this a user settings property?
         val DISPLAYED_TIME_RANGE: Duration = 20.seconds
@@ -144,30 +143,28 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
         }
 
         spectrogramUpdatesJob = viewModelScope.launch(Dispatchers.Default) {
-            // Listen to spectrum data updates and build spectrogram along the way
-            liveAudioService.getSpectrogramDataFlow()
-                .map {
-                    // For each new spectrogram data, build a pixels strip
-                    getSpectrogramStrip(it)
-                }
-                .combine(fpsFlow) { stripPixels, timestamp ->
-                    // Combine fixed FPS timer with new spectrogram strips updates
-                    Pair(stripPixels, timestamp)
-                }
-                .collect { (stripPixels, timestamp) ->
+            var currentPixelStrip: List<Color>? = null
 
-                    // TODO: This could be further optimized by drawing every strip once and
-                    //       calculating the width based on timestamp comparison, but then the
-                    //       canvas size would change for every new spectrogram data and we would
-                    //       to create a new bitmap everytime, increasing the memory impact.
-                    //       For now the CPU cost tradeoff is acceptable.
+            launch {
+                // Listen to spectrum data updates and build spectrogram along the way
+                liveAudioService.getSpectrogramDataFlow()
+                    .collect {
+                        // For each new spectrogram data, build a pixels strip
+                        currentPixelStrip = getSpectrogramStrip(it)
+                    }
+            }
 
+            launch {
+                fpsFlow.collect { timestamp ->
                     // On every update, draw a new strip
-                    pushToBitmap(
-                        timestamp = timestamp,
-                        stripPixels = stripPixels,
-                    )
+                    currentPixelStrip?.let {
+                        pushToBitmap(
+                            timestamp = timestamp,
+                            stripPixels = it,
+                        )
+                    }
                 }
+            }
         }
     }
 
@@ -323,8 +320,13 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
      * Creates a new image bitmap and fills it with background color
      */
     private fun initializeBitmap() {
-        // Init ImageBitmap and Canvas
-        ImageBitmap(canvasSize.width, canvasSize.height).apply {
+        // Initialize ImageBitmap and Canvas
+        ImageBitmap(
+            width = canvasSize.width,
+            height = canvasSize.height,
+            config = ImageBitmapConfig.Rgb565, // Use lightweight color coding for faster draw
+            hasAlpha = false // We don't need the alpha chanel, omitting it will make bitmap even lighter
+        ).apply {
             currentBitmap = this
             canvas = Canvas(this)
         }
