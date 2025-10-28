@@ -2,6 +2,7 @@ package org.noiseplanet.noisecapture.ui.components.map
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -192,7 +193,16 @@ class MeasurementsMapViewModel(
                 contentColor = MaterialTheme.colorScheme.onSurface
             )
         },
-        hasDropShadow = true,
+    )
+
+    val helpButtonViewModel = IconNCButtonViewModel(
+        icon = Icons.Default.QuestionMark,
+        colors = {
+            NCButtonColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                contentColor = MaterialTheme.colorScheme.onSurface
+            )
+        },
     )
 
     private var _mapOrientationFlow = MutableStateFlow(0f)
