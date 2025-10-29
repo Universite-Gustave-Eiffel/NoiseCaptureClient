@@ -50,6 +50,8 @@ class RecordingControlsViewModel : ViewModel(), KoinComponent {
             getStartStopButtonViewModel(isRecording)
         )
 
+    val isRecordingFlow: StateFlow<Boolean> = measurementRecordingService.isRecordingFlow
+
     val isRecording: Boolean
         get() = measurementRecordingService.isRecording
 
