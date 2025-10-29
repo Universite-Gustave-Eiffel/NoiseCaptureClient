@@ -30,7 +30,7 @@ fun SettingsScreen(
 ) {
     // - DI
 
-    rememberKoinModules(unloadOnForgotten = true) {
+    rememberKoinModules {
         listOf(settingsModule)
     }
 

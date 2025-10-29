@@ -16,7 +16,7 @@ fun DebugScreen(
 ) {
     // - DI
 
-    rememberKoinModules(unloadOnForgotten = true) {
+    rememberKoinModules {
         listOf(debugModule)
     }
 

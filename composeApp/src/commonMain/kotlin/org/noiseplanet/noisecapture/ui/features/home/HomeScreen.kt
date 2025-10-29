@@ -31,7 +31,7 @@ fun HomeScreen(
 ) {
     // - DI
 
-    rememberKoinModules(unloadOnForgotten = true) {
+    rememberKoinModules {
         listOf(homeModule)
     }
 

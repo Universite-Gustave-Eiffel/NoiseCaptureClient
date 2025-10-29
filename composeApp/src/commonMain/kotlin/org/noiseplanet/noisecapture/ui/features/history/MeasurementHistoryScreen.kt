@@ -38,7 +38,7 @@ fun MeasurementHistoryScreen(
 
     // - DI
 
-    rememberKoinModules(unloadOnForgotten = true) {
+    rememberKoinModules {
         listOf(historyModule)
     }
 

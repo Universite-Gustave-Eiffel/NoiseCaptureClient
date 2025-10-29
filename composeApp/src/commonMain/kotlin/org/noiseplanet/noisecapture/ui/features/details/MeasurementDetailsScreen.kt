@@ -60,7 +60,7 @@ fun MeasurementDetailsScreen(
 
     // - DI
 
-    rememberKoinModules(unloadOnForgotten = true) {
+    rememberKoinModules {
         listOf(measurementDetailsModule)
     }
 

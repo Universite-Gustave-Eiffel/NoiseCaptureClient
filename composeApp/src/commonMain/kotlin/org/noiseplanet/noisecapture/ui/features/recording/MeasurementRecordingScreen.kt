@@ -27,7 +27,7 @@ fun MeasurementRecordingScreen(
 
     // - DI
 
-    rememberKoinModules(unloadOnForgotten = true) {
+    rememberKoinModules {
         listOf(measurementRecordingModule)
     }
 

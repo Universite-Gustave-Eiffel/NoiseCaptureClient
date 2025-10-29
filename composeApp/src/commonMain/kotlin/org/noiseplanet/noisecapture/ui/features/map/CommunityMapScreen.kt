@@ -14,7 +14,7 @@ fun CommunityMapScreen(
 
     // - DI
 
-    rememberKoinModules(unloadOnForgotten = true) {
+    rememberKoinModules {
         listOf(communityMapModule)
     }
 

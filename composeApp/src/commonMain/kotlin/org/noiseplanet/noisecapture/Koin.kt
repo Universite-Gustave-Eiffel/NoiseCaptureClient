@@ -21,6 +21,8 @@ fun initKoin(
     stopKoin()
 
     return startKoin {
+        allowOverride(true)
+
         modules(
             servicesModule,
             coordinatorModule,
