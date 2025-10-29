@@ -109,7 +109,7 @@ fun NavigationManager(
             val screenViewModel: CommunityMapScreenViewModel = koinViewModel()
             appBarState.setCurrentScreenViewModel(screenViewModel)
 
-            CommunityMapScreen(viewModel = screenViewModel)
+            CommunityMapScreen()
         }
 
         composable<SettingsRoute> {

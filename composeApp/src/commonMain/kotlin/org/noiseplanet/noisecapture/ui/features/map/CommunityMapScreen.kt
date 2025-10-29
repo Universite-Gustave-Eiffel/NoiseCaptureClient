@@ -8,9 +8,7 @@ import org.noiseplanet.noisecapture.ui.components.map.MeasurementsMapView
 
 @OptIn(KoinExperimentalAPI::class)
 @Composable
-fun CommunityMapScreen(
-    viewModel: CommunityMapScreenViewModel,
-) {
+fun CommunityMapScreen() {
 
     // - DI
 
