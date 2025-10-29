@@ -67,6 +67,7 @@ fun RecordingControls(
 
     val isRecording by viewModel.isRecordingFlow.collectAsStateWithLifecycle()
     val isAudioSourceRunning by viewModel.isAudioSourceRunningFlow.collectAsStateWithLifecycle()
+    val recordingDuration by viewModel.recordingDurationFlow.collectAsStateWithLifecycle()
 
 
     // - Lifecycle
@@ -144,7 +145,11 @@ fun RecordingControls(
                         Spacer(modifier = Modifier.size(64.dp))
 
                         Text(
-                            text = "00:12:30",
+                            text = recordingDuration.toComponents { hours, minutes, seconds, _ ->
+                                hours.toString().padStart(2, '0') + ":" +
+                                    minutes.toString().padStart(2, '0') + ":" +
+                                    seconds.toString().padStart(2, '0')
+                            },
                             style = MaterialTheme.typography.bodyLarge.copy(
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,

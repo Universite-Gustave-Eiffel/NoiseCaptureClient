@@ -1,23 +1,20 @@
 package org.noiseplanet.noisecapture.ui.features.recording.controls
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import noisecapture.composeapp.generated.resources.Res
-import noisecapture.composeapp.generated.resources.measurement_end_recording_button_title
-import noisecapture.composeapp.generated.resources.measurement_start_recording_button_title
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.services.measurement.MeasurementRecordingService
-import org.noiseplanet.noisecapture.ui.components.button.IconNCButtonViewModel
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonStyle
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 class RecordingControlsViewModel : ViewModel(), KoinComponent {
 
@@ -29,13 +26,21 @@ class RecordingControlsViewModel : ViewModel(), KoinComponent {
     val isRecordingFlow: StateFlow<Boolean> = measurementRecordingService.isRecordingFlow
     val isAudioSourceRunningFlow: StateFlow<Boolean> = liveAudioService.isRunningFlow
 
+    private val _recordingDurationFlow = MutableStateFlow(Duration.ZERO)
+    val recordingDurationFlow: StateFlow<Duration>
+        get() = _recordingDurationFlow.asStateFlow()
+
+    private var timerJob: Job? = null
+
 
     // - Public functions
 
     fun toggleAudioSource() {
         if (liveAudioService.isRunning) {
+            stopTimer()
             liveAudioService.stopListening()
         } else {
+            startTimer()
             liveAudioService.startListening()
         }
     }
@@ -43,8 +48,11 @@ class RecordingControlsViewModel : ViewModel(), KoinComponent {
     fun toggleRecording() {
         if (measurementRecordingService.isRecording) {
             measurementRecordingService.endAndSave()
+            stopTimer()
+            _recordingDurationFlow.tryEmit(Duration.ZERO)
         } else {
             measurementRecordingService.start()
+            startTimer()
         }
     }
 
@@ -64,35 +72,16 @@ class RecordingControlsViewModel : ViewModel(), KoinComponent {
 
     // - Private functions
 
-    private fun getPlayPauseButtonViewModel(isAudioSourceRunning: Boolean): NCButtonViewModel {
-        val icon = if (isAudioSourceRunning) Icons.Filled.Pause else Icons.Filled.PlayArrow
-        val style = if (isAudioSourceRunning) NCButtonStyle.OUTLINED else NCButtonStyle.FILLED
-        val colors = @Composable {
-            if (isAudioSourceRunning) {
-                NCButtonColors.Defaults.outlined()
-            } else {
-                NCButtonColors.Defaults.primary()
+    private fun startTimer() {
+        timerJob = viewModelScope.launch {
+            while (isActive) {
+                delay(250.milliseconds)
+                _recordingDurationFlow.tryEmit(_recordingDurationFlow.value + 250.milliseconds)
             }
         }
-
-        return IconNCButtonViewModel(
-            icon = icon,
-            style = style,
-            colors = colors,
-        )
     }
 
-    private fun getStartStopButtonViewModel(isRecording: Boolean): NCButtonViewModel {
-        val title = if (isRecording) {
-            Res.string.measurement_end_recording_button_title
-        } else {
-            Res.string.measurement_start_recording_button_title
-        }
-        val icon = if (isRecording) null else Icons.Filled.Mic
-
-        return NCButtonViewModel(
-            title = title,
-            icon = icon,
-        )
+    private fun stopTimer() {
+        timerJob?.cancel()
     }
 }
