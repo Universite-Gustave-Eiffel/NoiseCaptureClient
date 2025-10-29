@@ -19,7 +19,7 @@ fun PlotAxisLabel(
         style = MaterialTheme.typography.labelSmall,
         textAlign = textAlign,
         fontWeight = FontWeight.SemiBold,
-        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
         modifier = modifier,
     )
 }
