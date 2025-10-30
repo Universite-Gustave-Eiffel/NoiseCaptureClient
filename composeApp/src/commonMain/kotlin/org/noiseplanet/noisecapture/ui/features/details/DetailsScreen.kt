@@ -53,15 +53,15 @@ import org.noiseplanet.noisecapture.ui.navigation.router.DetailsRouter
 
 @OptIn(KoinExperimentalAPI::class)
 @Composable
-fun MeasurementDetailsScreen(
-    viewModel: MeasurementDetailsScreenViewModel,
+fun DetailsScreen(
+    viewModel: DetailsScreenViewModel,
     router: DetailsRouter,
 ) {
 
     // - DI
 
     rememberKoinModules {
-        listOf(measurementDetailsModule)
+        listOf(detailsModule)
     }
 
 
@@ -124,7 +124,7 @@ fun MeasurementDetailsScreen(
                 Crossfade(viewState) { viewState ->
                     when (viewState) {
                         is MeasurementDetailsScreenViewState.ContentReady -> {
-                            MeasurementDetailsChartsView(
+                            DetailsChartsView(
                                 viewState.measurement.uuid,
                                 modifier = Modifier.padding(horizontal = 16.dp)
                                     .verticalScroll(sheetContentScrollState)

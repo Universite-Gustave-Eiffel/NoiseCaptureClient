@@ -7,10 +7,10 @@ import org.noiseplanet.noisecapture.ui.components.audioplayer.AudioPlayerViewMod
 import org.noiseplanet.noisecapture.ui.components.map.MapViewModel
 import org.noiseplanet.noisecapture.ui.components.map.MapViewModelParameters
 
-val measurementDetailsModule = module {
+val detailsModule = module {
 
     viewModel { (measurementId: String) ->
-        MeasurementDetailsChartsViewModel(measurementId)
+        DetailsViewModel(measurementId)
     }
 
     viewModel { (filePath: String) ->
@@ -22,7 +22,7 @@ val measurementDetailsModule = module {
     }
 
     viewModel { (measurementId: String) ->
-        MeasurementSplTimePlotViewModel(measurementId)
+        SplTimePlotViewModel(measurementId)
     }
 
     viewModel { (windowsSizeClass: WindowSizeClass, measurementId: String) ->

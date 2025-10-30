@@ -28,7 +28,7 @@ import org.noiseplanet.noisecapture.util.roundTo
 
 
 @Composable
-fun MeasurementDetailsChartsHeader(
+fun DetailsChartsHeader(
     startTime: String,
     duration: String,
     averageLevel: Double,
