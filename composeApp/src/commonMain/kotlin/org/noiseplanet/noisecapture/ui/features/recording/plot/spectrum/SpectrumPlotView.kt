@@ -84,6 +84,7 @@ fun SpectrumPlotView(
 
     PlotContainer(
         axisSettings = axisSettings,
+        tintColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
         modifier = modifier,
     ) {
         Column(

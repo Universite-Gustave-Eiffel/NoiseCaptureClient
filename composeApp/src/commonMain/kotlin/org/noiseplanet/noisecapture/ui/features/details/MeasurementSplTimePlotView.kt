@@ -85,14 +85,20 @@ fun MeasurementSplTimePlotView(
                     minorTickCount = 1,
                 ),
                 xAxisLabels = @Composable {
-                    PlotAxisLabel(text = "${(it - startTimestamp).milliseconds.inWholeSeconds}s")
+                    PlotAxisLabel(
+                        text = "${(it - startTimestamp).milliseconds.inWholeSeconds}s",
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                    )
                 },
                 yAxisModel = DoubleLinearAxisModel(
                     range = VuMeterOptions.DB_MIN..VuMeterOptions.DB_MAX,
                     minorTickCount = 1,
                 ),
                 yAxisLabels = @Composable {
-                    PlotAxisLabel(text = it.toInt().toString())
+                    PlotAxisLabel(
+                        text = it.toInt().toString(),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                    )
                 },
                 horizontalMajorGridLineStyle = PlotGridLineStyle.majorHorizontal,
                 verticalMajorGridLineStyle = PlotGridLineStyle.majorVertical,

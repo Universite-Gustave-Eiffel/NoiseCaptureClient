@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
@@ -35,6 +36,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun PlotContainer(
     axisSettings: PlotAxisSettings,
+    tintColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
@@ -53,7 +55,7 @@ fun PlotContainer(
     ) {
         // Y axis if layout is left to right
         if (axisSettings.yAxisLayoutDirection == LayoutDirection.Ltr) {
-            YAxisTicks(axisSettings, xAxisTicksHeight)
+            YAxisTicks(axisSettings, xAxisTicksHeight, tintColor)
         }
 
         Column(
@@ -68,12 +70,12 @@ fun PlotContainer(
             }
 
             // X axis
-            XAxisTicks(axisSettings, xAxisTicksHeight)
+            XAxisTicks(axisSettings, xAxisTicksHeight, tintColor)
         }
 
         // Y axis if layout is right to left
         if (axisSettings.yAxisLayoutDirection == LayoutDirection.Rtl) {
-            YAxisTicks(axisSettings, xAxisTicksHeight)
+            YAxisTicks(axisSettings, xAxisTicksHeight, tintColor)
         }
     }
 }
@@ -86,6 +88,7 @@ fun PlotContainer(
 private fun YAxisTicks(
     axisSettings: PlotAxisSettings,
     xAxisTicksHeight: Dp,
+    tintColor: Color,
 ) {
     // - Properties
 
@@ -100,7 +103,7 @@ private fun YAxisTicks(
             .padding(bottom = xAxisTicksHeight + 4.dp)
     ) {
         if (axisSettings.yAxisLayoutDirection == LayoutDirection.Rtl && axisSettings.showYTickMarks) {
-            YAxisTickMarks(axisSettings)
+            YAxisTickMarks(axisSettings, tintColor)
         }
 
         Column(
@@ -130,13 +133,14 @@ private fun YAxisTicks(
                 ) {
                     PlotAxisLabel(
                         text = tick.label,
+                        color = tintColor,
                     )
                 }
             }
         }
 
         if (axisSettings.yAxisLayoutDirection == LayoutDirection.Ltr && axisSettings.showYTickMarks) {
-            YAxisTickMarks(axisSettings)
+            YAxisTickMarks(axisSettings, tintColor)
         }
     }
 }
@@ -146,7 +150,7 @@ private fun YAxisTicks(
  * Lays out Y axis tick marks
  */
 @Composable
-private fun YAxisTickMarks(axisSettings: PlotAxisSettings) {
+private fun YAxisTickMarks(axisSettings: PlotAxisSettings, tintColor: Color) {
     Column(
         verticalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier.fillMaxHeight()
@@ -155,7 +159,7 @@ private fun YAxisTickMarks(axisSettings: PlotAxisSettings) {
             HorizontalDivider(
                 modifier = Modifier.width(4.dp),
                 thickness = 2.dp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                color = tintColor,
             )
         }
     }
@@ -169,6 +173,7 @@ private fun YAxisTickMarks(axisSettings: PlotAxisSettings) {
 private fun XAxisTicks(
     axisSettings: PlotAxisSettings,
     xAxisTicksHeight: Dp,
+    tintColor: Color,
 ) {
     // - Properties
 
@@ -190,7 +195,7 @@ private fun XAxisTicks(
                     VerticalDivider(
                         modifier = Modifier.height(4.dp),
                         thickness = 2.dp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                        color = tintColor,
                     )
                 }
             }
@@ -209,6 +214,7 @@ private fun XAxisTicks(
                         xAxisTicksCount - 1 -> TextAlign.End
                         else -> TextAlign.Center
                     },
+                    color = tintColor,
                     modifier = Modifier.weight(
                         when (index) {
                             0, xAxisTicksCount - 1 -> 0.5f
