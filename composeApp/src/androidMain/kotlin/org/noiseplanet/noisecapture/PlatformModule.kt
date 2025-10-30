@@ -17,8 +17,8 @@ import org.noiseplanet.noisecapture.services.audio.AndroidAudioRecordingService
 import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
 import org.noiseplanet.noisecapture.services.location.AndroidUserLocationProvider
 import org.noiseplanet.noisecapture.services.location.UserLocationProvider
-import org.noiseplanet.noisecapture.services.measurement.AndroidMeasurementRecordingService
-import org.noiseplanet.noisecapture.services.measurement.MeasurementRecordingService
+import org.noiseplanet.noisecapture.services.measurement.AndroidRecordingService
+import org.noiseplanet.noisecapture.services.measurement.RecordingService
 
 /**
  * Registers koin components specific to this platform
@@ -52,11 +52,11 @@ val platformModule: Module = module {
     }
 
     /**
-     * Override the default [MeasurementRecordingService] implementation with the one
+     * Override the default [RecordingService] implementation with the one
      * wrapped into a foreground service.
      */
-    single<MeasurementRecordingService> {
-        AndroidMeasurementRecordingService()
+    single<RecordingService> {
+        AndroidRecordingService()
     }
 
     factory<AudioPlayer> { (filePath: String) ->

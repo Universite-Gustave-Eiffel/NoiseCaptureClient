@@ -17,7 +17,7 @@ import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
-import org.noiseplanet.noisecapture.services.measurement.MeasurementRecordingService
+import org.noiseplanet.noisecapture.services.measurement.RecordingService
 import org.noiseplanet.noisecapture.services.permission.PermissionService
 import org.noiseplanet.noisecapture.ui.features.permission.PermissionPrompt
 
@@ -28,7 +28,7 @@ class RootCoordinatorViewModel : ViewModel(), KoinComponent {
     // - Properties
 
     private val liveAudioService: LiveAudioService by inject()
-    private val measurementRecordingService: MeasurementRecordingService by inject()
+    private val recordingService: RecordingService by inject()
     private val permissionService: PermissionService by inject()
     private val platform: Platform by inject()
 
@@ -87,7 +87,7 @@ class RootCoordinatorViewModel : ViewModel(), KoinComponent {
         )
 
     val isRecording: Boolean
-        get() = measurementRecordingService.isRecording
+        get() = recordingService.isRecording
 
 
     // - Public functions
@@ -113,7 +113,7 @@ class RootCoordinatorViewModel : ViewModel(), KoinComponent {
         }
     }
 
-    fun endRecording() = measurementRecordingService.endAndSave()
+    fun endRecording() = recordingService.endAndSave()
 
     /**
      * Updates the current route.

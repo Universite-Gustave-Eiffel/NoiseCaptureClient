@@ -32,7 +32,7 @@ import kotlin.time.ExperimentalTime
 
 
 @OptIn(FormatStringsInDatetimeFormats::class, ExperimentalTime::class)
-open class DefaultMeasurementRecordingService : MeasurementRecordingService, KoinComponent {
+open class DefaultRecordingService : RecordingService, KoinComponent {
 
     // - Constants
 
@@ -75,7 +75,7 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
     override val isRecordingFlow: StateFlow<Boolean>
         get() = _isRecordingFlow.asStateFlow()
 
-    override var onMeasurementDone: MeasurementRecordingService.OnMeasurementDoneListener? = null
+    override var onMeasurementDone: RecordingService.OnMeasurementDoneListener? = null
 
 
     override fun start() {
