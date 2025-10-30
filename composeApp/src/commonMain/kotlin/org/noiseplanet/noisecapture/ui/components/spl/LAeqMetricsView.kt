@@ -59,7 +59,10 @@ fun LAeqMetricsView(
             ) {
                 Text(
                     text = metric.label,
-                    style = MaterialTheme.typography.labelLarge
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
 
                 val value = metric.value

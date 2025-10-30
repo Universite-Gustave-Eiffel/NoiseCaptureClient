@@ -2,6 +2,7 @@ package org.noiseplanet.noisecapture.ui.features.recording.plot.spectrogram
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -63,6 +64,7 @@ fun SpectrogramPlotView(
     // TODO: Use koalaplot to draw axes instead
     PlotContainer(
         axisSettings = viewModel.axisSettings,
+        tintColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
         modifier = modifier,
     ) {
         Canvas(

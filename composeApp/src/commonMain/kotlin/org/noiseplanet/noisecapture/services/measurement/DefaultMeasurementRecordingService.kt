@@ -57,7 +57,7 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
     private var recordingJob: Job? = null
     private var recordingLimitJob: Job? = null
 
-    private val _isRecording = MutableStateFlow(value = false)
+    private val _isRecordingFlow = MutableStateFlow<Boolean>(value = false)
 
     // Stores the collected acoustic indicators and location data.
     @Volatile
@@ -70,17 +70,17 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
     // - RecordingService
 
     override val isRecording: Boolean
-        get() = _isRecording.value
+        get() = _isRecordingFlow.value
 
     override val isRecordingFlow: StateFlow<Boolean>
-        get() = _isRecording.asStateFlow()
+        get() = _isRecordingFlow.asStateFlow()
 
     override var onMeasurementDone: MeasurementRecordingService.OnMeasurementDoneListener? = null
 
 
     override fun start() {
         logger.debug("Start recording")
-        _isRecording.tryEmit(true)
+        _isRecordingFlow.tryEmit(true)
 
         // Start live location updates
         userLocationService.startUpdatingLocation()
@@ -122,7 +122,7 @@ open class DefaultMeasurementRecordingService : MeasurementRecordingService, Koi
         recordingLimitJob?.cancel()
         recordingLimitJob = null
 
-        _isRecording.tryEmit(false)
+        _isRecordingFlow.tryEmit(false)
 
         // Stop live location updates
         userLocationService.stopUpdatingLocation()
