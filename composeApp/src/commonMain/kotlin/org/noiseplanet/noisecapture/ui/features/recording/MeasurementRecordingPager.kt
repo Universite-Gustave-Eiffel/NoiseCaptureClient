@@ -56,7 +56,10 @@ fun MeasurementRecordingPager(
                 )
             }
         }
-        HorizontalPager(state = pagerState) { page ->
+        HorizontalPager(
+            state = pagerState,
+            beyondViewportPageCount = 1,
+        ) { page ->
             when (MeasurementTabState.entries[page]) {
                 MeasurementTabState.SPECTROGRAM -> Box {
                     SpectrogramPlotView(
