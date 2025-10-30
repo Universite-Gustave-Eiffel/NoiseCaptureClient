@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -29,7 +30,7 @@ fun SettingsScreen(
 ) {
     // - DI
 
-    rememberKoinModules(unloadOnForgotten = true) {
+    rememberKoinModules {
         listOf(settingsModule)
     }
 
@@ -69,6 +70,7 @@ fun SettingsScreen(
                     ListSectionHeader(
                         sectionTitle,
                         modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer)
+                            .padding(start = 16.dp)
                     )
                 }
 

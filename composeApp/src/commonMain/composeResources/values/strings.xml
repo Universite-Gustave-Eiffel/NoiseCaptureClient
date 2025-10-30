@@ -9,9 +9,11 @@
     <!--  HomeScreen  -->
     <string name="home_slm_hint">Visualise and measure the noise level around you as you navigate your surroundings!</string>
     <string name="home_slm_button_title">Open sound level meter</string>
-    <string name="home_last_measurements_section_header">Last measurements</string>
+    <string name="home_last_measurements_section_header">Your measurements</string>
     <string name="home_last_measurement_duration">Duration</string>
     <string name="home_open_history_button_title">History</string>
+    <string name="home_map_section_header">Community measurements</string>
+    <string name="home_map_browse_button">Browse</string>
 
 
     <!--  Sound level meter  -->
@@ -77,6 +79,10 @@
     <string name="measurement_details_delete_measurement_dialog_title">Are you sure?</string>
     <string name="measurement_details_delete_measurement_dialog_text">This action cannot be undone. Note that this will only the local copy of your measurement, if you've already synced it before, the distant copy will be kept but you won't be able to download it again.</string>
     <string name="measurement_details_delete_measurement_audio_dialog_text">This action cannot be undone. This will not delete the measurement itself but only the audio clip that is attached to it. You won't be able to listen to the measurement audio afterwards but will still be able to see the measurement details.</string>
+
+
+    <!-- CommunityMapScreen -->
+    <string name="community_map_title">Community measurements</string>
 
 
     <!-- Settings -->

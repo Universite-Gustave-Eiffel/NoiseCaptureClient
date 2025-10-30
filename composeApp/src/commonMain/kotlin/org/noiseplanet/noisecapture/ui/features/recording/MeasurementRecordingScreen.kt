@@ -16,17 +16,18 @@ import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterView
 import org.noiseplanet.noisecapture.ui.features.recording.controls.RecordingControls
+import org.noiseplanet.noisecapture.ui.navigation.router.RecordingRouter
 
 
 @OptIn(KoinExperimentalAPI::class)
 @Composable
 fun MeasurementRecordingScreen(
-    onMeasurementDone: (String) -> Unit,
+    router: RecordingRouter,
 ) {
 
     // - DI
 
-    rememberKoinModules(unloadOnForgotten = true) {
+    rememberKoinModules {
         listOf(measurementRecordingModule)
     }
 
@@ -42,7 +43,7 @@ fun MeasurementRecordingScreen(
                 Row(modifier = Modifier.fillMaxSize()) {
                     Column(modifier = Modifier.fillMaxWidth(.5F)) {
                         SoundLevelMeterView()
-                        RecordingControls(onMeasurementDone)
+                        RecordingControls(router::onMeasurementDone)
                     }
                     Column(modifier = Modifier) {
                         MeasurementRecordingPager()
@@ -52,7 +53,7 @@ fun MeasurementRecordingScreen(
                 Column {
                     SoundLevelMeterView()
                     MeasurementRecordingPager(modifier = Modifier.fillMaxWidth().weight(1f))
-                    RecordingControls(onMeasurementDone)
+                    RecordingControls(router::onMeasurementDone)
                 }
             }
         }

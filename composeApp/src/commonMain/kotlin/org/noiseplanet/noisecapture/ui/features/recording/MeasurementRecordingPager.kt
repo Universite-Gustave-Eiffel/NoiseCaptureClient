@@ -65,7 +65,7 @@ fun MeasurementRecordingPager(
                     SpectrumPlotView(modifier = Modifier.padding(start = 8.dp, end = 16.dp))
                 }
 
-                else -> Box {
+                MeasurementTabState.MAP -> Box {
                     MeasurementsMapView(modifier = Modifier.fillMaxSize())
                 }
             }

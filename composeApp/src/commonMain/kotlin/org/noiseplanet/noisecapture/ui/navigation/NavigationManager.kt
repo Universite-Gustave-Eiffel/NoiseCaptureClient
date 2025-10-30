@@ -13,7 +13,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
-import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBarState
 import org.noiseplanet.noisecapture.ui.features.debug.DebugScreen
@@ -24,10 +23,16 @@ import org.noiseplanet.noisecapture.ui.features.history.MeasurementHistoryScreen
 import org.noiseplanet.noisecapture.ui.features.history.MeasurementHistoryScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.home.HomeScreen
 import org.noiseplanet.noisecapture.ui.features.home.HomeScreenViewModel
+import org.noiseplanet.noisecapture.ui.features.map.CommunityMapScreen
+import org.noiseplanet.noisecapture.ui.features.map.CommunityMapScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.recording.MeasurementRecordingScreen
 import org.noiseplanet.noisecapture.ui.features.recording.MeasurementRecordingScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.settings.SettingsScreen
 import org.noiseplanet.noisecapture.ui.features.settings.SettingsScreenViewModel
+import org.noiseplanet.noisecapture.ui.navigation.router.DetailsRouter
+import org.noiseplanet.noisecapture.ui.navigation.router.HistoryRouter
+import org.noiseplanet.noisecapture.ui.navigation.router.HomeRouter
+import org.noiseplanet.noisecapture.ui.navigation.router.RecordingRouter
 
 
 @Composable
@@ -38,7 +43,6 @@ fun NavigationManager(
     showPermissionPrompt: (Permission) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // TODO: Handle swipe back gestures on iOS -> encapsulate UINavigationController?
     NavHost(
         navController = navController,
         startDestination = HomeRoute(),
@@ -50,70 +54,45 @@ fun NavigationManager(
             .padding(top = innerPadding.calculateTopPadding())
             .background(MaterialTheme.colorScheme.surface)
     ) {
-        composable<HomeRoute> { backstackEntry ->
+        composable<HomeRoute> { backStackEntry ->
+            val router = HomeRouter(navController, backStackEntry)
+
             val screenViewModel: HomeScreenViewModel = koinViewModel {
-                parametersOf({
+                parametersOf(
                     // Callback triggered when pressing the settings app bar button
-                    navController.navigate(SettingsRoute())
-                })
+                    router::onClickSettingsButton
+                )
             }
             appBarState.setCurrentScreenViewModel(screenViewModel)
 
             HomeScreen(
                 viewModel = screenViewModel,
-                onClickMeasurement = { measurement: Measurement ->
-                    navController.navigate(
-                        MeasurementDetailsRoute(
-                            measurement.uuid,
-                            backstackEntry.id,
-                        )
-                    )
-                },
-                onClickOpenSoundLevelMeterButton = {
-                    navController.navigate(MeasurementRecordingRoute())
-                },
-                onClickOpenHistoryButton = {
-                    navController.navigate(HistoryRoute())
-                },
+                router = router,
                 showPermissionPrompt = showPermissionPrompt,
             )
         }
 
-        composable<MeasurementRecordingRoute> { backstackEntry ->
+        composable<MeasurementRecordingRoute> { backStackEntry ->
             val screenViewModel: MeasurementRecordingScreenViewModel = koinViewModel()
             appBarState.setCurrentScreenViewModel(screenViewModel)
 
             MeasurementRecordingScreen(
-                onMeasurementDone = { uuid ->
-                    navController.navigate(
-                        MeasurementDetailsRoute(
-                            measurementId = uuid,
-                            parentRouteId = backstackEntry.id
-                        )
-                    )
-                }
+                router = RecordingRouter(navController, backStackEntry)
             )
         }
 
-        composable<HistoryRoute> { backstackEntry ->
+        composable<HistoryRoute> { backStackEntry ->
             val screenViewModel: MeasurementHistoryScreenViewModel = koinViewModel()
             appBarState.setCurrentScreenViewModel(screenViewModel)
 
             MeasurementHistoryScreen(
-                screenViewModel,
-                onClickMeasurement = { measurement ->
-                    navController.navigate(
-                        route = MeasurementDetailsRoute(
-                            measurementId = measurement.uuid,
-                            parentRouteId = backstackEntry.id,
-                        )
-                    )
-                }
+                viewModel = screenViewModel,
+                router = HistoryRouter(navController, backStackEntry)
             )
         }
 
-        composable<MeasurementDetailsRoute> { backstackEntry ->
-            val route: MeasurementDetailsRoute = backstackEntry.toRoute()
+        composable<MeasurementDetailsRoute> { backStackEntry ->
+            val route: MeasurementDetailsRoute = backStackEntry.toRoute()
 
             val screenViewModel: MeasurementDetailsScreenViewModel = koinViewModel {
                 parametersOf(route.measurementId)
@@ -122,12 +101,15 @@ fun NavigationManager(
 
             MeasurementDetailsScreen(
                 viewModel = screenViewModel,
-                onMeasurementDeleted = {
-                    if (navController.previousBackStackEntry?.id == route.parentRouteId) {
-                        navController.popBackStack()
-                    }
-                }
+                router = DetailsRouter(navController, backStackEntry)
             )
+        }
+
+        composable<CommunityMapRoute> { backStackEntry ->
+            val screenViewModel: CommunityMapScreenViewModel = koinViewModel()
+            appBarState.setCurrentScreenViewModel(screenViewModel)
+
+            CommunityMapScreen()
         }
 
         composable<SettingsRoute> {
