@@ -36,7 +36,7 @@ import kotlin.time.Instant
 
 @OptIn(ExperimentalTime::class)
 @Composable
-fun MeasurementHistoryItemView(
+fun HistoryItemView(
     measurement: Measurement,
     onClick: (Measurement) -> Unit,
     isFirstInSection: Boolean,

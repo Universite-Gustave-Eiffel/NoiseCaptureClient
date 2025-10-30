@@ -31,8 +31,8 @@ import kotlin.time.ExperimentalTime
 
 @OptIn(FormatStringsInDatetimeFormats::class, KoinExperimentalAPI::class, ExperimentalTime::class)
 @Composable
-fun MeasurementHistoryScreen(
-    viewModel: MeasurementHistoryScreenViewModel,
+fun HistoryScreen(
+    viewModel: HistoryScreenViewModel,
     router: HistoryRouter,
 ) {
 
@@ -62,7 +62,7 @@ fun MeasurementHistoryScreen(
             val isFirstInSection = index == 0
             val isLastInSection = index == measurements.size - 1
 
-            MeasurementHistoryItemView(
+            HistoryItemView(
                 measurement = measurement,
                 onClick = router::onClickMeasurement,
                 isFirstInSection = isFirstInSection,
