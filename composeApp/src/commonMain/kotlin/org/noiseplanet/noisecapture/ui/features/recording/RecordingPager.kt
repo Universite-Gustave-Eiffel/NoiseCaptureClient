@@ -19,6 +19,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.measurement_pager_tab_map
+import noisecapture.composeapp.generated.resources.measurement_pager_tab_spectrogram
+import noisecapture.composeapp.generated.resources.measurement_pager_tab_spectrum
+import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.ui.components.map.MapView
 import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrogram.SpectrogramPlotView
 import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrum.SpectrumPlotView
@@ -28,14 +33,20 @@ import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrum.Spectrum
  * spectrum, spectrogram and map views.
  */
 @Composable
-fun MeasurementRecordingPager(
+fun RecordingPager(
     modifier: Modifier = Modifier,
 ) {
 
     // - Properties
 
     val animationScope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(pageCount = { MeasurementTabState.entries.size })
+    val pagerState = rememberPagerState(pageCount = { TabState.entries.size })
+
+    val tabLabels = mapOf(
+        TabState.SPECTRUM to stringResource(Res.string.measurement_pager_tab_spectrum),
+        TabState.SPECTROGRAM to stringResource(Res.string.measurement_pager_tab_spectrogram),
+        TabState.MAP to stringResource(Res.string.measurement_pager_tab_map),
+    )
 
 
     // - Layout
@@ -48,9 +59,9 @@ fun MeasurementRecordingPager(
             selectedTabIndex = pagerState.currentPage,
             containerColor = MaterialTheme.colorScheme.surfaceContainer
         ) {
-            MeasurementTabState.entries.forEach { entry ->
+            TabState.entries.forEach { entry ->
                 Tab(
-                    text = { Text(MEASUREMENT_TAB_LABEL[entry.ordinal]) },
+                    text = { Text(tabLabels[entry] ?: "") },
                     selected = pagerState.currentPage == entry.ordinal,
                     onClick = { animationScope.launch { pagerState.animateScrollToPage(entry.ordinal) } }
                 )
@@ -60,8 +71,8 @@ fun MeasurementRecordingPager(
             state = pagerState,
             beyondViewportPageCount = 1,
         ) { page ->
-            when (MeasurementTabState.entries[page]) {
-                MeasurementTabState.SPECTROGRAM -> Box {
+            when (TabState.entries[page]) {
+                TabState.SPECTROGRAM -> Box {
                     SpectrogramPlotView(
                         modifier = Modifier.padding(end = 16.dp)
                             .windowInsetsPadding(WindowInsets.navigationBars)
@@ -69,7 +80,7 @@ fun MeasurementRecordingPager(
                     )
                 }
 
-                MeasurementTabState.SPECTRUM -> Box {
+                TabState.SPECTRUM -> Box {
                     SpectrumPlotView(
                         modifier = Modifier.padding(end = 16.dp)
                             .windowInsetsPadding(WindowInsets.navigationBars)
@@ -77,7 +88,7 @@ fun MeasurementRecordingPager(
                     )
                 }
 
-                MeasurementTabState.MAP -> Box {
+                TabState.MAP -> Box {
                     MapView(modifier = Modifier.fillMaxSize())
                 }
             }
@@ -85,10 +96,8 @@ fun MeasurementRecordingPager(
     }
 }
 
-enum class MeasurementTabState {
+private enum class TabState {
     SPECTRUM,
     SPECTROGRAM,
     MAP
 }
-
-val MEASUREMENT_TAB_LABEL = listOf("Spectrum", "Spectrogram", "Map")

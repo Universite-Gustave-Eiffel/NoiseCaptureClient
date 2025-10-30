@@ -10,7 +10,7 @@ import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrogram.Spect
 import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrum.SpectrumPlotViewModel
 
 
-val measurementRecordingModule = module {
+val recordingModule = module {
 
     viewModel {
         SoundLevelMeterViewModel(

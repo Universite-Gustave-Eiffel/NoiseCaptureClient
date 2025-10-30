@@ -7,7 +7,7 @@ import org.noiseplanet.noisecapture.ui.features.details.MeasurementDetailsScreen
 import org.noiseplanet.noisecapture.ui.features.history.HistoryScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.home.HomeScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.map.CommunityMapScreenViewModel
-import org.noiseplanet.noisecapture.ui.features.recording.MeasurementRecordingScreenViewModel
+import org.noiseplanet.noisecapture.ui.features.recording.RecordingScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.settings.SettingsScreenViewModel
 
 
@@ -20,7 +20,7 @@ val screensModule = module {
     }
 
     viewModel {
-        MeasurementRecordingScreenViewModel()
+        RecordingScreenViewModel()
     }
 
     viewModel { (measurementId: String) ->

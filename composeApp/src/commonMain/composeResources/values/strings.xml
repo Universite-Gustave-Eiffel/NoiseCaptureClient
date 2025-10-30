@@ -44,6 +44,9 @@
     <string name="measurement_title">New measurement</string>
     <string name="measurement_start_recording_button_title">Start recording</string>
     <string name="measurement_end_recording_button_title">End recording</string>
+    <string name="measurement_pager_tab_spectrum">Spectrum</string>
+    <string name="measurement_pager_tab_spectrogram">Spectrogram</string>
+    <string name="measurement_pager_tab_map">Map</string>
 
 
     <!-- HistoryScreen -->
