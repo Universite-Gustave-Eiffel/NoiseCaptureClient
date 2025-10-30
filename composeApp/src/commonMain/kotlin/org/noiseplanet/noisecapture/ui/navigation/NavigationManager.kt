@@ -72,7 +72,7 @@ fun NavigationManager(
             )
         }
 
-        composable<MeasurementRecordingRoute> { backStackEntry ->
+        composable<RecordingRoute> { backStackEntry ->
             val screenViewModel: RecordingScreenViewModel = koinViewModel()
             appBarState.setCurrentScreenViewModel(screenViewModel)
 
@@ -91,8 +91,8 @@ fun NavigationManager(
             )
         }
 
-        composable<MeasurementDetailsRoute> { backStackEntry ->
-            val route: MeasurementDetailsRoute = backStackEntry.toRoute()
+        composable<DetailsRoute> { backStackEntry ->
+            val route: DetailsRoute = backStackEntry.toRoute()
 
             val screenViewModel: DetailsScreenViewModel = koinViewModel {
                 parametersOf(route.measurementId)

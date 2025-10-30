@@ -25,14 +25,14 @@ class AndroidPlatform : Platform {
         get() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 return super.requiredPermissions + mapOf(
-                    RouteIds.MEASUREMENT_RECORDING to listOf(
+                    RouteIds.RECORDING to listOf(
                         Permission.RECORD_AUDIO,
                         Permission.POST_NOTIFICATIONS,
                     )
                 )
             } else {
                 return super.requiredPermissions + mapOf(
-                    RouteIds.MEASUREMENT_RECORDING to listOf(
+                    RouteIds.RECORDING to listOf(
                         Permission.RECORD_AUDIO
                     )
                 )
@@ -44,7 +44,7 @@ class AndroidPlatform : Platform {
         // foreground location with a ForegroundService to keep the location
         // updates coming.
         get() = super.optionalPermissions + mapOf(
-            RouteIds.MEASUREMENT_RECORDING to listOf(
+            RouteIds.RECORDING to listOf(
                 Permission.LOCATION_SERVICE_ON,
                 Permission.LOCATION_FOREGROUND,
             )

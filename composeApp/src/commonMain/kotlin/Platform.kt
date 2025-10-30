@@ -20,7 +20,7 @@ interface Platform {
      */
     val requiredPermissions: Map<RouteId, List<Permission>>
         get() = mapOf(
-            RouteIds.MEASUREMENT_RECORDING to listOf(Permission.RECORD_AUDIO)
+            RouteIds.RECORDING to listOf(Permission.RECORD_AUDIO)
         )
 
     /**
@@ -31,7 +31,7 @@ interface Platform {
     val optionalPermissions: Map<RouteId, List<Permission>>
         get() = mapOf(
             RouteIds.HOME to listOf(Permission.RECORD_AUDIO),
-            RouteIds.MEASUREMENT_RECORDING to listOf(
+            RouteIds.RECORDING to listOf(
                 Permission.LOCATION_SERVICE_ON,
                 Permission.LOCATION_BACKGROUND,
             )
