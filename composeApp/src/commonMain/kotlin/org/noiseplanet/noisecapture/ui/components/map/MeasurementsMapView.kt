@@ -6,11 +6,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -70,16 +75,24 @@ fun MeasurementsMapView(
         )
 
         if (viewModel.parameters.showControls) {
+
+            var controlsModifier = modifier
+            // If the view expands down to the bottom of the screen, take safe area padding into account
+            if (viewModel.parameters.visibleAreaPaddingRatio.bottom == 0.0f) {
+                controlsModifier = controlsModifier.windowInsetsPadding(
+                    WindowInsets.navigationBars.only(WindowInsetsSides.Bottom)
+                )
+            }
+
             Row(
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.Top,
-                modifier = modifier.fillMaxWidth()
+                modifier = controlsModifier.fillMaxWidth()
                     .fillMaxHeight(fraction = 1f - viewModel.parameters.visibleAreaPaddingRatio.bottom)
                     .padding(16.dp)
             ) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.fillMaxHeight()
                 ) {
                     // Help button (shows legend and any additional info)
                     NCButton(
@@ -96,7 +109,6 @@ fun MeasurementsMapView(
 
                 Column(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.fillMaxHeight()
                 ) {
                     // Compass button
                     Box(
