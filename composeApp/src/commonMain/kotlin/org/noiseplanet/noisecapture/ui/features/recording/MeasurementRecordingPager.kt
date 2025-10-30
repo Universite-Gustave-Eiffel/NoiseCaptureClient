@@ -19,7 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import org.noiseplanet.noisecapture.ui.components.map.MeasurementsMapView
+import org.noiseplanet.noisecapture.ui.components.map.MapView
 import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrogram.SpectrogramPlotView
 import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrum.SpectrumPlotView
 
@@ -78,7 +78,7 @@ fun MeasurementRecordingPager(
                 }
 
                 MeasurementTabState.MAP -> Box {
-                    MeasurementsMapView(modifier = Modifier.fillMaxSize())
+                    MapView(modifier = Modifier.fillMaxSize())
                 }
             }
         }

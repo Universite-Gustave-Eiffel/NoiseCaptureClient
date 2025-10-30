@@ -47,7 +47,7 @@ import org.koin.compose.koinInject
 import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.log.Logger
-import org.noiseplanet.noisecapture.ui.components.map.MeasurementsMapView
+import org.noiseplanet.noisecapture.ui.components.map.MapView
 import org.noiseplanet.noisecapture.ui.navigation.router.DetailsRouter
 
 
@@ -164,7 +164,7 @@ fun MeasurementDetailsScreen(
                     }
 
                     is MeasurementDetailsScreenViewState.ContentReady -> {
-                        MeasurementsMapView(
+                        MapView(
                             // Compensate the top padding of the expended sheet by shifting the map
                             // view up by the same amount.
                             modifier = Modifier.offset(y = -(32.dp)),

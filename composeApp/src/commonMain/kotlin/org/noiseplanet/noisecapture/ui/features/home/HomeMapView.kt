@@ -24,7 +24,7 @@ import org.noiseplanet.noisecapture.ui.components.button.NCButton
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonIconPlacement
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
-import org.noiseplanet.noisecapture.ui.components.map.MeasurementsMapView
+import org.noiseplanet.noisecapture.ui.components.map.MapView
 import org.noiseplanet.noisecapture.ui.navigation.router.HomeRouter
 
 
@@ -62,7 +62,7 @@ fun HomeMapView(
             contentAlignment = Alignment.BottomEnd,
             modifier = Modifier.aspectRatio(1.5f).clip(MaterialTheme.shapes.medium)
         ) {
-            MeasurementsMapView(
+            MapView(
                 modifier = Modifier.fillMaxSize()
             )
 
