@@ -25,14 +25,14 @@ import org.noiseplanet.noisecapture.ui.navigation.router.RecordingRouter
 
 @OptIn(KoinExperimentalAPI::class)
 @Composable
-fun MeasurementRecordingScreen(
+fun RecordingScreen(
     router: RecordingRouter,
 ) {
 
     // - DI
 
     rememberKoinModules {
-        listOf(measurementRecordingModule)
+        listOf(recordingModule)
     }
 
 
@@ -51,7 +51,7 @@ fun MeasurementRecordingScreen(
                         RecordingControls(router::onMeasurementDone)
                     }
                     Column(modifier = Modifier) {
-                        MeasurementRecordingPager()
+                        RecordingPager()
                     }
                 }
             } else {
@@ -62,7 +62,7 @@ fun MeasurementRecordingScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         SoundLevelMeterView()
-                        MeasurementRecordingPager(modifier = Modifier.fillMaxWidth().weight(1f))
+                        RecordingPager(modifier = Modifier.fillMaxWidth().weight(1f))
                     }
 
                     RecordingControls(

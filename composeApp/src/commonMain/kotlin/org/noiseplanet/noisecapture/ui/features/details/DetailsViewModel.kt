@@ -19,7 +19,7 @@ import kotlin.time.Instant
 
 
 @OptIn(ExperimentalTime::class)
-class MeasurementDetailsChartsViewModel(
+class DetailsViewModel(
     val measurementId: String,
 ) : ViewModel(), KoinComponent {
 

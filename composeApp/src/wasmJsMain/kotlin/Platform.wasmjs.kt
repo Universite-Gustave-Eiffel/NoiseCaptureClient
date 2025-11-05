@@ -30,7 +30,7 @@ class WasmJSPlatform : Platform {
         // check if location services are on. It will be part of the
         // location background permission check.
         get() = super.optionalPermissions + mapOf(
-            RouteIds.MEASUREMENT_RECORDING to listOf(
+            RouteIds.RECORDING to listOf(
                 Permission.LOCATION_BACKGROUND,
             )
         )

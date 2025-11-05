@@ -17,16 +17,16 @@ import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBarState
 import org.noiseplanet.noisecapture.ui.features.debug.DebugScreen
 import org.noiseplanet.noisecapture.ui.features.debug.DebugScreenViewModel
-import org.noiseplanet.noisecapture.ui.features.details.MeasurementDetailsScreen
-import org.noiseplanet.noisecapture.ui.features.details.MeasurementDetailsScreenViewModel
-import org.noiseplanet.noisecapture.ui.features.history.MeasurementHistoryScreen
-import org.noiseplanet.noisecapture.ui.features.history.MeasurementHistoryScreenViewModel
+import org.noiseplanet.noisecapture.ui.features.details.DetailsScreen
+import org.noiseplanet.noisecapture.ui.features.details.DetailsScreenViewModel
+import org.noiseplanet.noisecapture.ui.features.history.HistoryScreen
+import org.noiseplanet.noisecapture.ui.features.history.HistoryScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.home.HomeScreen
 import org.noiseplanet.noisecapture.ui.features.home.HomeScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.map.CommunityMapScreen
 import org.noiseplanet.noisecapture.ui.features.map.CommunityMapScreenViewModel
-import org.noiseplanet.noisecapture.ui.features.recording.MeasurementRecordingScreen
-import org.noiseplanet.noisecapture.ui.features.recording.MeasurementRecordingScreenViewModel
+import org.noiseplanet.noisecapture.ui.features.recording.RecordingScreen
+import org.noiseplanet.noisecapture.ui.features.recording.RecordingScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.settings.SettingsScreen
 import org.noiseplanet.noisecapture.ui.features.settings.SettingsScreenViewModel
 import org.noiseplanet.noisecapture.ui.navigation.router.DetailsRouter
@@ -72,34 +72,34 @@ fun NavigationManager(
             )
         }
 
-        composable<MeasurementRecordingRoute> { backStackEntry ->
-            val screenViewModel: MeasurementRecordingScreenViewModel = koinViewModel()
+        composable<RecordingRoute> { backStackEntry ->
+            val screenViewModel: RecordingScreenViewModel = koinViewModel()
             appBarState.setCurrentScreenViewModel(screenViewModel)
 
-            MeasurementRecordingScreen(
+            RecordingScreen(
                 router = RecordingRouter(navController, backStackEntry)
             )
         }
 
         composable<HistoryRoute> { backStackEntry ->
-            val screenViewModel: MeasurementHistoryScreenViewModel = koinViewModel()
+            val screenViewModel: HistoryScreenViewModel = koinViewModel()
             appBarState.setCurrentScreenViewModel(screenViewModel)
 
-            MeasurementHistoryScreen(
+            HistoryScreen(
                 viewModel = screenViewModel,
                 router = HistoryRouter(navController, backStackEntry)
             )
         }
 
-        composable<MeasurementDetailsRoute> { backStackEntry ->
-            val route: MeasurementDetailsRoute = backStackEntry.toRoute()
+        composable<DetailsRoute> { backStackEntry ->
+            val route: DetailsRoute = backStackEntry.toRoute()
 
-            val screenViewModel: MeasurementDetailsScreenViewModel = koinViewModel {
+            val screenViewModel: DetailsScreenViewModel = koinViewModel {
                 parametersOf(route.measurementId)
             }
             appBarState.setCurrentScreenViewModel(screenViewModel)
 
-            MeasurementDetailsScreen(
+            DetailsScreen(
                 viewModel = screenViewModel,
                 router = DetailsRouter(navController, backStackEntry)
             )

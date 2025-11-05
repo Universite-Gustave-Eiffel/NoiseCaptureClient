@@ -47,21 +47,21 @@ import org.koin.compose.koinInject
 import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.log.Logger
-import org.noiseplanet.noisecapture.ui.components.map.MeasurementsMapView
+import org.noiseplanet.noisecapture.ui.components.map.MapView
 import org.noiseplanet.noisecapture.ui.navigation.router.DetailsRouter
 
 
 @OptIn(KoinExperimentalAPI::class)
 @Composable
-fun MeasurementDetailsScreen(
-    viewModel: MeasurementDetailsScreenViewModel,
+fun DetailsScreen(
+    viewModel: DetailsScreenViewModel,
     router: DetailsRouter,
 ) {
 
     // - DI
 
     rememberKoinModules {
-        listOf(measurementDetailsModule)
+        listOf(detailsModule)
     }
 
 
@@ -124,7 +124,7 @@ fun MeasurementDetailsScreen(
                 Crossfade(viewState) { viewState ->
                     when (viewState) {
                         is MeasurementDetailsScreenViewState.ContentReady -> {
-                            MeasurementDetailsChartsView(
+                            DetailsChartsView(
                                 viewState.measurement.uuid,
                                 modifier = Modifier.padding(horizontal = 16.dp)
                                     .verticalScroll(sheetContentScrollState)
@@ -164,7 +164,7 @@ fun MeasurementDetailsScreen(
                     }
 
                     is MeasurementDetailsScreenViewState.ContentReady -> {
-                        MeasurementsMapView(
+                        MapView(
                             // Compensate the top padding of the expended sheet by shifting the map
                             // view up by the same amount.
                             modifier = Modifier.offset(y = -(32.dp)),

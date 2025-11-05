@@ -22,7 +22,7 @@ import org.noiseplanet.noisecapture.services.location.UserLocationProvider
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.ui.components.button.IconNCButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
-import org.noiseplanet.noisecapture.ui.components.map.MeasurementsMapViewModel.VisibleAreaPaddingRatio
+import org.noiseplanet.noisecapture.ui.components.map.MapViewModel.VisibleAreaPaddingRatio
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.GeoUtil
 import ovh.plrapps.mapcompose.api.BoundingBox
@@ -49,7 +49,7 @@ import kotlin.math.pow
 
 
 /**
- * Parameters for [MeasurementsMapViewModel]
+ * Parameters for [MapViewModel]
  *
  * @param focusedMeasurementUuid UUID of the focused measurement. If given, the map will show the
  *                               path of the given measurement colored with noise level values.
@@ -81,19 +81,19 @@ data class MapViewModelParameters(
 
 
 /**
- * ViewModel for [MeasurementsMapView].
+ * ViewModel for [MapView].
  *
  * @param windowSizeClass Current device's [WindowSizeClass]. Used for tiles scaling.
  *
  */
-class MeasurementsMapViewModel(
+class MapViewModel(
     windowSizeClass: WindowSizeClass,
     val parameters: MapViewModelParameters = MapViewModelParameters(),
 ) : ViewModel(), KoinComponent {
 
     // - Constants
 
-    companion object {
+    companion object Companion {
 
         /**
          * Sets the maximum zoom level. Defines the zoom level at which scale will be 1.0.

@@ -38,13 +38,13 @@ import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalKoalaPlotApi::class)
 @Composable
-fun MeasurementSplTimePlotView(
+fun SplTimePlotView(
     measurementId: String,
     modifier: Modifier = Modifier,
 ) {
     // - Properties
 
-    val viewModel: MeasurementSplTimePlotViewModel = koinInject { parametersOf(measurementId) }
+    val viewModel: SplTimePlotViewModel = koinInject { parametersOf(measurementId) }
     val plotData: Map<Long, Double> by viewModel.plotDataFlow.collectAsStateWithLifecycle()
 
     if (plotData.isEmpty()) return

@@ -10,7 +10,7 @@ import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 
 
-class MeasurementSplTimePlotViewModel(
+class SplTimePlotViewModel(
     measurementId: String,
 ) : ViewModel(), KoinComponent {
 

@@ -7,10 +7,10 @@ import org.noiseplanet.noisecapture.services.audio.DefaultLiveAudioService
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.services.location.DefaultUserLocationService
 import org.noiseplanet.noisecapture.services.location.UserLocationService
-import org.noiseplanet.noisecapture.services.measurement.DefaultMeasurementRecordingService
 import org.noiseplanet.noisecapture.services.measurement.DefaultMeasurementService
-import org.noiseplanet.noisecapture.services.measurement.MeasurementRecordingService
+import org.noiseplanet.noisecapture.services.measurement.DefaultRecordingService
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
+import org.noiseplanet.noisecapture.services.measurement.RecordingService
 import org.noiseplanet.noisecapture.services.permission.DefaultPermissionService
 import org.noiseplanet.noisecapture.services.permission.PermissionService
 import org.noiseplanet.noisecapture.services.settings.DefaultUserSettingsService
@@ -39,8 +39,8 @@ val servicesModule = module {
         DefaultUserLocationService()
     }
 
-    single<MeasurementRecordingService> {
-        DefaultMeasurementRecordingService()
+    single<RecordingService> {
+        DefaultRecordingService()
     }
 
     single<MeasurementService> {

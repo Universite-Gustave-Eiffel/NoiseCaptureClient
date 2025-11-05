@@ -16,7 +16,7 @@ import org.noiseplanet.noisecapture.util.injectLogger
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 
 
-class MeasurementDetailsScreenViewModel(
+class DetailsScreenViewModel(
     val measurementId: String,
 ) : ViewModel(), ScreenViewModel, KoinComponent {
 

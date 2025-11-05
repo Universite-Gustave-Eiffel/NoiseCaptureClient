@@ -3,7 +3,7 @@ package org.noiseplanet.noisecapture.services.measurement
 import kotlinx.coroutines.flow.StateFlow
 
 
-interface MeasurementRecordingService {
+interface RecordingService {
 
     // - Listeners
 

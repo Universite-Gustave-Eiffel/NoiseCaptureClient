@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
-import org.noiseplanet.noisecapture.services.measurement.MeasurementRecordingService
+import org.noiseplanet.noisecapture.services.measurement.RecordingService
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -20,10 +20,10 @@ class RecordingControlsViewModel : ViewModel(), KoinComponent {
 
     // - Properties
 
-    private val measurementRecordingService: MeasurementRecordingService by inject()
+    private val recordingService: RecordingService by inject()
     private val liveAudioService: LiveAudioService by inject()
 
-    val isRecordingFlow: StateFlow<Boolean> = measurementRecordingService.isRecordingFlow
+    val isRecordingFlow: StateFlow<Boolean> = recordingService.isRecordingFlow
     val isAudioSourceRunningFlow: StateFlow<Boolean> = liveAudioService.isRunningFlow
 
     private val _recordingDurationFlow = MutableStateFlow(Duration.ZERO)
@@ -46,19 +46,19 @@ class RecordingControlsViewModel : ViewModel(), KoinComponent {
     }
 
     fun toggleRecording() {
-        if (measurementRecordingService.isRecording) {
-            measurementRecordingService.endAndSave()
+        if (recordingService.isRecording) {
+            recordingService.endAndSave()
             stopTimer()
             _recordingDurationFlow.tryEmit(Duration.ZERO)
         } else {
-            measurementRecordingService.start()
+            recordingService.start()
             startTimer()
         }
     }
 
     fun registerListener(onMeasurementDone: (String) -> Unit) {
-        measurementRecordingService.onMeasurementDone =
-            object : MeasurementRecordingService.OnMeasurementDoneListener {
+        recordingService.onMeasurementDone =
+            object : RecordingService.OnMeasurementDoneListener {
                 override fun onDone(measurementUuid: String) {
                     onMeasurementDone(measurementUuid)
                 }
@@ -66,7 +66,7 @@ class RecordingControlsViewModel : ViewModel(), KoinComponent {
     }
 
     fun deregisterListener() {
-        measurementRecordingService.onMeasurementDone = null
+        recordingService.onMeasurementDone = null
     }
 
 

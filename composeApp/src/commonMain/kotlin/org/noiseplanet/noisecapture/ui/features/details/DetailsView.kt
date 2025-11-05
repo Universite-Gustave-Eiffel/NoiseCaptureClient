@@ -23,13 +23,13 @@ import org.noiseplanet.noisecapture.ui.components.audioplayer.AudioPlayerView
 
 
 @Composable
-fun MeasurementDetailsChartsView(
+fun DetailsChartsView(
     measurementId: String,
     modifier: Modifier = Modifier,
 ) {
     // - Properties
 
-    val viewModel: MeasurementDetailsChartsViewModel = koinViewModel {
+    val viewModel: DetailsViewModel = koinViewModel {
         parametersOf(measurementId)
     }
     val viewState by viewModel.viewStateFlow.collectAsStateWithLifecycle()
@@ -39,7 +39,7 @@ fun MeasurementDetailsChartsView(
 
     Crossfade(viewState) { viewState ->
         when (viewState) {
-            is MeasurementDetailsChartsViewModel.ViewState.ContentReady -> {
+            is DetailsViewModel.ViewState.ContentReady -> {
                 CompositionLocalProvider(
                     // Disable overscroll on this view so that scrolling up past the limit starts
                     // dismissing the bottom sheet instead of bouncing back on iOS.
@@ -51,7 +51,7 @@ fun MeasurementDetailsChartsView(
                             .padding(bottom = 32.dp)
                             .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
                     ) {
-                        MeasurementDetailsChartsHeader(
+                        DetailsChartsHeader(
                             startTime = viewState.startTimeString,
                             duration = viewState.durationString,
                             averageLevel = viewState.measurement.laeqMetrics.average,
@@ -61,7 +61,7 @@ fun MeasurementDetailsChartsView(
                             AudioPlayerView(audioUrl)
                         }
 
-                        MeasurementSplTimePlotView(measurementId)
+                        SplTimePlotView(measurementId)
 
                         LaeqSummaryView(
                             min = viewState.measurement.laeqMetrics.min,

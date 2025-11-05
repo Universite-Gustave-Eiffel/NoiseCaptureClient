@@ -7,7 +7,7 @@ import org.jetbrains.compose.resources.StringResource
 import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 
-class MeasurementRecordingScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
+class RecordingScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
 
     // - ScreenViewModel
 

@@ -36,11 +36,11 @@ import org.noiseplanet.noisecapture.util.NotificationHelper
 
 
 /**
- * An implementation of [MeasurementRecordingService] that will start a wrapped instance of
- * [DefaultMeasurementRecordingService] in an Android Foreground Service so it keeps running
+ * An implementation of [RecordingService] that will start a wrapped instance of
+ * [DefaultRecordingService] in an Android Foreground Service so it keeps running
  * when the app is sent to the background (as long as the system doesn't kill it).
  */
-class AndroidMeasurementRecordingService : MeasurementRecordingService, KoinComponent {
+class AndroidRecordingService : RecordingService, KoinComponent {
 
     // - Properties
 
@@ -107,7 +107,7 @@ class AndroidMeasurementRecordingService : MeasurementRecordingService, KoinComp
     override val isRecordingFlow: StateFlow<Boolean>
         get() = mergedIsRecordingFlow
 
-    override var onMeasurementDone: MeasurementRecordingService.OnMeasurementDoneListener? = null
+    override var onMeasurementDone: RecordingService.OnMeasurementDoneListener? = null
 
 
     override fun start() {
@@ -152,7 +152,7 @@ class AndroidMeasurementRecordingService : MeasurementRecordingService, KoinComp
 
 
 /**
- * Wraps the default implementation of [MeasurementRecordingService] into a Foreground Service.
+ * Wraps the default implementation of [RecordingService] into a Foreground Service.
  */
 internal abstract class ForegroundServiceWrapper : KoinComponent, Service() {
 
@@ -187,7 +187,7 @@ internal abstract class ForegroundServiceWrapper : KoinComponent, Service() {
     private val coroutineScope = CoroutineScope(Dispatchers.IO + job)
 
     // Build inner service instance
-    val innerService = DefaultMeasurementRecordingService()
+    val innerService = DefaultRecordingService()
 
 
     // - Service
