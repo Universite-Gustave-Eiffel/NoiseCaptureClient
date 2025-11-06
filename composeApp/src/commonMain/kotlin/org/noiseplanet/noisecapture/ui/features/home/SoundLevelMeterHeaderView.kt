@@ -7,13 +7,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowSizeClass
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
@@ -27,13 +30,26 @@ fun SoundLevelMeterHeaderView(
     showPermissionPrompt: (Permission) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // - Properties
+
+    val sizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    val shape = if (sizeClass.minWidthDp >= WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) {
+        MaterialTheme.shapes.large
+    } else {
+        MaterialTheme.shapes.large.copy(
+            topStart = CornerSize(0),
+            topEnd = CornerSize(0),
+        )
+    }
+
+
     // - Layout
 
     Box(
         contentAlignment = Alignment.CenterStart,
         modifier = modifier.background(
             color = MaterialTheme.colorScheme.surfaceContainer,
-            shape = MaterialTheme.shapes.large,
+            shape = shape,
         )
     ) {
         Column {

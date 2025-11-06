@@ -66,6 +66,7 @@ fun HomeScreen(
 @Composable
 private fun HomeScreenCompact(viewModel: HomeScreenViewModel, router: HomeRouter) {
     Column(
+        verticalArrangement = Arrangement.spacedBy(24.dp),
         modifier = Modifier.verticalScroll(rememberScrollState())
             .windowInsetsPadding(WindowInsets.navigationBars)
             .padding(bottom = 32.dp)
@@ -86,6 +87,7 @@ private fun HomeScreenCompact(viewModel: HomeScreenViewModel, router: HomeRouter
         LastMeasurementsView(
             onClickMeasurement = router::onClickMeasurement,
             onClickOpenHistoryButton = router::onClickOpenHistoryButton,
+            modifier = Modifier.padding(horizontal = 16.dp)
         )
 
         // TODO: Add device calibration section

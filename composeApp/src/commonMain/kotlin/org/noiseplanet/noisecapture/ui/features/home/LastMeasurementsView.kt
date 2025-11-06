@@ -83,6 +83,7 @@ private fun LastMeasurementsViewContentReady(
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             modifier = Modifier.height(IntrinsicSize.Min)
+                .fillMaxWidth()
         ) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -129,9 +130,9 @@ private fun LastMeasurementsViewContentReady(
 
 
 @Composable
-private fun LastMeasurementsViewLoading() {
+private fun LastMeasurementsViewLoading(modifier: Modifier = Modifier) =
     // Loading placeholder layout goes here
-}
+    Box(modifier.background(Color.Red))
 
 
 @Composable
