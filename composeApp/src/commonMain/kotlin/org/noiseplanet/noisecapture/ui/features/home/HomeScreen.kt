@@ -65,16 +65,30 @@ fun HomeScreen(
 
 @Composable
 private fun HomeScreenCompact(viewModel: HomeScreenViewModel, router: HomeRouter) {
+
+    // - Properties
+
+    val sizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    val horizontalPadding =
+        if (sizeClass.minWidthDp >= WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) 16.dp else 0.dp
+    val topPadding =
+        if (sizeClass.minWidthDp >= WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) 32.dp else 0.dp
+
+    // - Layout
+
     Column(
         verticalArrangement = Arrangement.spacedBy(24.dp),
         modifier = Modifier.verticalScroll(rememberScrollState())
             .windowInsetsPadding(WindowInsets.navigationBars)
             .padding(bottom = 32.dp)
+            .padding(top = topPadding)
+            .padding(horizontal = horizontalPadding)
     ) {
         SoundLevelMeterHeaderView(
             viewModel = viewModel,
             onClickOpenSoundLevelMeterButton = router::onClickOpenSoundLevelMeterButton,
             showPermissionPrompt = router.showPermissionPrompt,
+            modifier = Modifier.padding(horizontal = horizontalPadding)
         )
 
         HomeMapView(
