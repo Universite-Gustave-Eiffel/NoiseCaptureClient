@@ -55,7 +55,7 @@ fun NavigationManager(
             .background(MaterialTheme.colorScheme.surface)
     ) {
         composable<HomeRoute> { backStackEntry ->
-            val router = HomeRouter(navController, backStackEntry)
+            val router = HomeRouter(navController, backStackEntry, showPermissionPrompt)
 
             val screenViewModel: HomeScreenViewModel = koinViewModel {
                 parametersOf(
@@ -68,7 +68,6 @@ fun NavigationManager(
             HomeScreen(
                 viewModel = screenViewModel,
                 router = router,
-                showPermissionPrompt = showPermissionPrompt,
             )
         }
 

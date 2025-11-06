@@ -83,7 +83,8 @@ fun SettingsScreen(
                 viewModel.settingsItems.forEach { (sectionTitle, sectionItems) ->
                     stickyHeader {
                         ListSectionHeader(
-                            sectionTitle,
+                            title = sectionTitle,
+                            paddingTop = 16.dp,
                             modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer)
                                 .padding(start = 16.dp)
                         )

@@ -1,7 +1,10 @@
 package org.noiseplanet.noisecapture.ui.features.home
 
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -17,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -24,7 +28,6 @@ import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.home_last_measurements_section_header
 import org.koin.compose.koinInject
 import org.noiseplanet.noisecapture.model.dao.Measurement
-import org.noiseplanet.noisecapture.ui.components.CardView
 import org.noiseplanet.noisecapture.ui.components.ListSectionHeader
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
 
@@ -44,7 +47,7 @@ fun LastMeasurementsView(
 
     // - Layout
 
-    Crossfade(viewState) { viewState ->
+    Crossfade(viewState, modifier = modifier) { viewState ->
         when (viewState) {
             is LastMeasurementsViewModel.ViewState.Loading -> LastMeasurementsViewLoading()
 
@@ -52,7 +55,6 @@ fun LastMeasurementsView(
                 viewState,
                 onClickMeasurement = onClickMeasurement,
                 onClickOpenHistoryButton = onClickOpenHistoryButton,
-                modifier,
             )
         }
     }
@@ -64,7 +66,7 @@ private fun LastMeasurementsViewContentReady(
     viewState: LastMeasurementsViewModel.ViewState.ContentReady,
     onClickMeasurement: (Measurement) -> Unit,
     onClickOpenHistoryButton: () -> Unit,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
 ) {
 
     // - Layout
@@ -73,44 +75,42 @@ private fun LastMeasurementsViewContentReady(
         return
     }
 
-    Column(
-        modifier = Modifier.padding(horizontal = 16.dp)
-    ) {
+    Column(modifier = modifier.fillMaxHeight().animateContentSize()) {
         ListSectionHeader(
             title = Res.string.home_last_measurements_section_header,
-            paddingTop = 24.dp,
         )
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
-            modifier = modifier.height(IntrinsicSize.Min)
+            modifier = Modifier.height(IntrinsicSize.Min)
         ) {
-            CardView(
-                backgroundColor = MaterialTheme.colorScheme.surfaceContainer,
-                modifier = Modifier.fillMaxHeight().width(IntrinsicSize.Min)
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.width(IntrinsicSize.Min)
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceContainer,
+                        shape = MaterialTheme.shapes.medium,
+                    )
+                    .fillMaxHeight()
+                    .padding(16.dp)
             ) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxHeight()
-                ) {
-                    Text(
-                        text = "Statistics",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            color = MaterialTheme.colorScheme.onSecondaryContainer
-                        ),
-                    )
+                Text(
+                    text = "Statistics",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    ),
+                )
 
-                    StatisticsElement(viewState.measurementsCount.toString(), "recordings")
-                    StatisticsElement(viewState.totalDuration, "${viewState.durationUnit} total")
+                StatisticsElement(viewState.measurementsCount.toString(), "recordings")
+                StatisticsElement(viewState.totalDuration, "${viewState.durationUnit} total")
 
-                    Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.weight(1f))
 
-                    NCButton(
-                        onClick = onClickOpenHistoryButton,
-                        viewModel = viewState.historyButtonViewModel,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
+                NCButton(
+                    onClick = onClickOpenHistoryButton,
+                    viewModel = viewState.historyButtonViewModel,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
 
             Column(
