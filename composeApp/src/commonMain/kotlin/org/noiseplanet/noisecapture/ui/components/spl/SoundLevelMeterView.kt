@@ -1,6 +1,7 @@
 package org.noiseplanet.noisecapture.ui.components.spl
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -54,7 +55,9 @@ fun SoundLevelMeterView(
 
     // - Layout
 
-    Box {
+    Box(
+        modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer)
+    ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.padding(top = 16.dp)

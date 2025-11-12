@@ -262,7 +262,7 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
         timestamp: Long,
         stripPixels: List<Color>,
     ) {
-        if (canvasSize == IntSize.Zero) return
+        if (canvasSize.width == 0 || canvasSize.height == 0) return
 
         // If bitmap was invalidated, create a new one and update Canvas.
         if (currentBitmap == null) {
