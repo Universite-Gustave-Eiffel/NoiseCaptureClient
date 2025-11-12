@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import org.jetbrains.compose.resources.stringResource
@@ -51,10 +52,9 @@ fun SoundLevelMeterHeaderView(
 
     Box(
         contentAlignment = Alignment.CenterStart,
-        modifier = modifier.background(
-            color = MaterialTheme.colorScheme.surfaceContainer,
-            shape = shape,
-        ).clickable(onClick = onClickOpenSoundLevelMeterButton)
+        modifier = modifier.clip(shape)
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .clickable(onClick = onClickOpenSoundLevelMeterButton)
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(16.dp),
