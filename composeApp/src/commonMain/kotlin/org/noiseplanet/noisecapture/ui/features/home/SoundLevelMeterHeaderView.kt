@@ -1,9 +1,11 @@
 package org.noiseplanet.noisecapture.ui.features.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -33,13 +35,15 @@ fun SoundLevelMeterHeaderView(
     // - Properties
 
     val sizeClass = currentWindowAdaptiveInfo().windowSizeClass
-    val shape = if (sizeClass.minWidthDp >= WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) {
-        MaterialTheme.shapes.large
-    } else {
+    val isCompact = sizeClass.minWidthDp < WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND
+
+    val shape = if (isCompact) {
         MaterialTheme.shapes.large.copy(
             topStart = CornerSize(0),
             topEnd = CornerSize(0),
         )
+    } else {
+        MaterialTheme.shapes.large
     }
 
 
@@ -50,32 +54,50 @@ fun SoundLevelMeterHeaderView(
         modifier = modifier.background(
             color = MaterialTheme.colorScheme.surfaceContainer,
             shape = shape,
-        )
+        ).clickable(onClick = onClickOpenSoundLevelMeterButton)
     ) {
-        Column {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(bottom = 16.dp)
+        ) {
             SoundLevelMeterView(showPermissionPrompt = showPermissionPrompt)
 
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(
-                    top = 8.dp,
-                    bottom = 16.dp,
-                    start = 16.dp,
-                    end = 16.dp
-                )
-            ) {
-                Text(
-                    text = stringResource(viewModel.soundLevelMeterHintText),
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.alpha(0.75f)
-                )
+            if (isCompact) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                ) {
+                    Text(
+                        text = stringResource(viewModel.soundLevelMeterHintText),
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.alpha(0.75f)
+                    )
 
-                NCButton(
-                    onClick = onClickOpenSoundLevelMeterButton,
-                    viewModel = viewModel.soundLevelMeterButtonViewModel,
-                    modifier = Modifier.height(50.dp)
-                        .fillMaxWidth()
-                )
+                    NCButton(
+                        onClick = onClickOpenSoundLevelMeterButton,
+                        viewModel = viewModel.soundLevelMeterButtonViewModel,
+                        modifier = Modifier.height(50.dp)
+                            .fillMaxWidth()
+                    )
+                }
+            } else {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                ) {
+                    Text(
+                        text = stringResource(viewModel.soundLevelMeterHintText),
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.alpha(0.75f).weight(1f)
+                    )
+
+                    NCButton(
+                        onClick = onClickOpenSoundLevelMeterButton,
+                        viewModel = viewModel.soundLevelMeterButtonViewModel,
+                        modifier = Modifier.height(50.dp)
+                    )
+                }
             }
         }
     }
