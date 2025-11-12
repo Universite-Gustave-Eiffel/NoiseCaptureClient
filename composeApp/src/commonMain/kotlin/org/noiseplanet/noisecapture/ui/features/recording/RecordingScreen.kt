@@ -91,7 +91,7 @@ private fun RecordingScreenMedium(router: RecordingRouter) {
         verticalArrangement = Arrangement.spacedBy(24.dp),
         modifier = Modifier
             .padding(horizontal = 24.dp)
-            .padding(top = 24.dp)
+            .padding(top = 24.dp, bottom = 16.dp)
             .windowInsetsPadding(
                 WindowInsets.navigationBars.only(WindowInsetsSides.Bottom)
             ),
@@ -128,7 +128,7 @@ private fun RecordingScreenLarge(router: RecordingRouter) {
         horizontalArrangement = Arrangement.spacedBy(24.dp),
         modifier = Modifier
             .padding(horizontal = 24.dp)
-            .padding(top = 24.dp)
+            .padding(top = 24.dp, bottom = 16.dp)
             .windowInsetsPadding(
                 WindowInsets.navigationBars.only(WindowInsetsSides.Bottom)
             ),
