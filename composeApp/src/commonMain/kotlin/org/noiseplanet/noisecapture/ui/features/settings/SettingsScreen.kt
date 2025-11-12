@@ -29,6 +29,7 @@ import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.ui.components.ListSectionHeader
 import org.noiseplanet.noisecapture.ui.features.settings.item.SettingsItem
+import org.noiseplanet.noisecapture.util.AdaptiveUtil
 
 @OptIn(ExperimentalFoundationApi::class, KoinExperimentalAPI::class)
 @Composable
@@ -72,7 +73,8 @@ fun SettingsScreen(
                     end = 16.dp,
                     bottom = navBarBottomPadding + 16.dp,
                 ),
-                modifier = Modifier.widthIn(max = 600.dp).fillMaxHeight()
+                modifier = Modifier.widthIn(max = AdaptiveUtil.MAX_FULL_SCREEN_WIDTH)
+                    .fillMaxHeight()
                     .clickable(
                         interactionSource = interactionSource,
                         indication = null,
