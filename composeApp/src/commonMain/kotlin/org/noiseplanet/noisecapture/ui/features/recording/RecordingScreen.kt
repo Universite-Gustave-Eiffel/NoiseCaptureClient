@@ -69,6 +69,7 @@ fun RecordingScreen(
 private fun RecordingScreenCompact(router: RecordingRouter) {
     Box(
         contentAlignment = Alignment.BottomCenter,
+        modifier = Modifier.background(color = MaterialTheme.colorScheme.inverseSurface)
     ) {
         Column(
             modifier = Modifier.fillMaxWidth()
