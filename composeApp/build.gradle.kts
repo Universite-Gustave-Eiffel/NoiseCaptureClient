@@ -72,6 +72,13 @@ kotlin {
             baseName = "ComposeApp"
             isStatic = true
         }
+
+        iosTarget.compilations.getByName("main") {
+            cinterops.create("DeviceUtil") {
+                definitionFile.set(file(rootDir.absolutePath + "/iosApp/iosApp/DeviceUtil.def"))
+                includeDirs.allHeaders(rootDir.absolutePath + "/iosApp/iosApp/")
+            }
+        }
     }
 
     sourceSets {

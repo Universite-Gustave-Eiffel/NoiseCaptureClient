@@ -1,11 +1,11 @@
 package org.noiseplanet.noisecapture.ui.features.recording.plot.spectrogram
 
+import Platform
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.ImageBitmapConfig
 import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
@@ -82,6 +82,7 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
 
     private val liveAudioService: LiveAudioService by inject()
     private val settingsService: UserSettingsService by inject()
+    private val platform: Platform by inject()
     private val logger: Logger by injectLogger()
 
     private var canvasSize: IntSize = IntSize.Zero
@@ -324,7 +325,7 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
         ImageBitmap(
             width = canvasSize.width,
             height = canvasSize.height,
-            config = ImageBitmapConfig.Rgb565, // Use lightweight color coding for faster draw
+            config = platform.bitmapConfig, // Use platform optimized color coding for faster draw
             hasAlpha = false // We don't need the alpha chanel, omitting it will make bitmap even lighter
         ).apply {
             currentBitmap = this
