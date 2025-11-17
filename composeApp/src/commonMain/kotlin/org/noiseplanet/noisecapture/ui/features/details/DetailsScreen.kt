@@ -5,9 +5,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,6 +25,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
@@ -40,6 +43,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.window.core.layout.WindowSizeClass
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.measurement_details_loading_hint
 import org.jetbrains.compose.resources.stringResource
@@ -67,18 +71,108 @@ fun DetailsScreen(
 
     // - Properties
 
+    val viewState by viewModel.viewState.collectAsStateWithLifecycle()
+    val sizeClass = currentWindowAdaptiveInfo().windowSizeClass
+
+
+    // - Layout
+
+    Crossfade(viewState) { viewState ->
+        when (viewState) {
+            is MeasurementDetailsScreenViewState.ContentReady -> {
+                if (sizeClass.minWidthDp < WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) {
+                    DetailsScreenCompact(viewState)
+                } else if (sizeClass.minWidthDp < WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND) {
+                    DetailsScreenMedium(viewState)
+                } else {
+                    DetailsScreenLarge(viewState)
+                }
+            }
+
+            is MeasurementDetailsScreenViewState.Loading -> {
+                ContentLoadingView()
+            }
+
+            is MeasurementDetailsScreenViewState.NoMeasurement -> {
+                // If measurement becomes null, it means it was deleted
+                router.onMeasurementDeleted()
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun DetailsScreenLarge(
+    viewState: MeasurementDetailsScreenViewState.ContentReady,
+) {
+    // - Properties
+
+    val scrollState = rememberScrollState()
+
+
+    // - Layout
+
+    Row {
+        DetailsChartsView(
+            measurementId = viewState.measurement.uuid,
+            modifier = Modifier.weight(1f)
+                .padding(top = 32.dp)
+                .padding(horizontal = 32.dp)
+                .verticalScroll(scrollState),
+        )
+
+        MapView(
+            modifier = Modifier.weight(2f),
+            focusedMeasurementUuid = viewState.measurement.uuid,
+        )
+    }
+}
+
+
+@Composable
+private fun DetailsScreenMedium(
+    viewState: MeasurementDetailsScreenViewState.ContentReady,
+) {
+    // - Properties
+
+    val scrollState = rememberScrollState()
+
+
+    // - Layout
+
+    Column {
+        MapView(
+            modifier = Modifier.aspectRatio(2f),
+            focusedMeasurementUuid = viewState.measurement.uuid,
+        )
+
+        DetailsChartsView(
+            measurementId = viewState.measurement.uuid,
+            modifier = Modifier
+                .padding(top = 32.dp)
+                .padding(horizontal = 32.dp)
+                .verticalScroll(scrollState),
+        )
+    }
+}
+
+
+@Composable
+private fun DetailsScreenCompact(
+    viewState: MeasurementDetailsScreenViewState.ContentReady,
+) {
+    // - Properties
+
     val logger: Logger = koinInject()
     val localDensity = LocalDensity.current
     var containerHeight by remember { mutableStateOf(0.dp) }
     val sheetPeekHeight by derivedStateOf { containerHeight * 0.4f }
 
-    val viewState by viewModel.viewState.collectAsStateWithLifecycle()
-    val isLoading: Boolean = viewState is MeasurementDetailsScreenViewState.Loading
-
     val sheetState = rememberBottomSheetScaffoldState(
         bottomSheetState = rememberStandardBottomSheetState(
-            initialValue = if (isLoading) SheetValue.Hidden else SheetValue.PartiallyExpanded,
-            skipHiddenState = !isLoading
+            initialValue = SheetValue.PartiallyExpanded,
+            skipHiddenState = true,
         ),
     )
 
@@ -99,9 +193,6 @@ fun DetailsScreen(
 
     // - Layout
 
-    // TODO: For lager screens (tablets / browsers), this layout could be improved by splitting
-    //       the screen in two instead of using a bottom sheet.
-
     Box(
         contentAlignment = Alignment.BottomCenter,
         modifier = Modifier.fillMaxSize()
@@ -117,68 +208,31 @@ fun DetailsScreen(
             sheetContainerColor = MaterialTheme.colorScheme.surfaceContainer,
             containerColor = MaterialTheme.colorScheme.surface,
             sheetPeekHeight = sheetPeekHeight,
+            sheetMaxWidth = Dp.Infinity,
             sheetDragHandle = {
                 BottomSheetDefaults.DragHandle()
             },
             sheetContent = {
-                Crossfade(viewState) { viewState ->
-                    when (viewState) {
-                        is MeasurementDetailsScreenViewState.ContentReady -> {
-                            DetailsChartsView(
-                                viewState.measurement.uuid,
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                                    .verticalScroll(sheetContentScrollState)
-                            )
-                        }
-
-                        else -> {}
-                    }
-                }
+                DetailsChartsView(
+                    viewState.measurement.uuid,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                        .verticalScroll(sheetContentScrollState)
+                )
             },
             // Leave some extra space at the top when sheet is expended so the user knows it can
             // still be dismissed to access the content behind.
             modifier = Modifier.padding(top = 32.dp)
         ) { contentPadding ->
-            Crossfade(viewState) { viewState ->
-                when (viewState) {
-                    is MeasurementDetailsScreenViewState.Loading -> {
-                        Column(
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.fillMaxSize().padding(bottom = 64.dp)
-                        ) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(64.dp),
-                                color = MaterialTheme.colorScheme.secondary,
-                                trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                            )
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            Text(
-                                text = stringResource(Res.string.measurement_details_loading_hint),
-                                style = MaterialTheme.typography.bodyMedium,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
-
-                    is MeasurementDetailsScreenViewState.ContentReady -> {
-                        MapView(
-                            // Compensate the top padding of the expended sheet by shifting the map
-                            // view up by the same amount.
-                            modifier = Modifier.offset(y = -(32.dp)),
-                            focusedMeasurementUuid = viewModel.measurementId,
-                        )
-                    }
-
-                    is MeasurementDetailsScreenViewState.NoMeasurement -> {
-                        // If measurement becomes null, it means it was deleted
-                        router.onMeasurementDeleted()
-                    }
-                }
-            }
+            MapView(
+                // Compensate the top padding of the expended sheet by shifting the map
+                // view up by the same amount.
+                modifier = Modifier.offset(y = -(32.dp)),
+                focusedMeasurementUuid = viewState.measurement.uuid,
+            )
         }
+
+
+        // - Footer gradient
 
         val footerGradientHeight = WindowInsets.navigationBars.asPaddingValues()
             .calculateBottomPadding() + 32.dp
@@ -194,6 +248,30 @@ fun DetailsScreen(
                         1f to MaterialTheme.colorScheme.surfaceContainer,
                     )
                 )
+        )
+    }
+}
+
+
+@Composable
+private fun ContentLoadingView() {
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxSize().padding(bottom = 64.dp)
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.size(64.dp),
+            color = MaterialTheme.colorScheme.secondary,
+            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = stringResource(Res.string.measurement_details_loading_hint),
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center
         )
     }
 }

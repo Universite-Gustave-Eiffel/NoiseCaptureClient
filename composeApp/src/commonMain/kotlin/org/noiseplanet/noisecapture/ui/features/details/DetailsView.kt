@@ -3,23 +3,26 @@ package org.noiseplanet.noisecapture.ui.features.details
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.ui.components.audioplayer.AudioPlayerView
+import org.noiseplanet.noisecapture.util.AdaptiveUtil
 
 
 @Composable
@@ -38,18 +41,23 @@ fun DetailsChartsView(
     // - Layout
 
     Crossfade(viewState) { viewState ->
-        when (viewState) {
-            is DetailsViewModel.ViewState.ContentReady -> {
-                CompositionLocalProvider(
-                    // Disable overscroll on this view so that scrolling up past the limit starts
-                    // dismissing the bottom sheet instead of bouncing back on iOS.
-                    LocalOverscrollFactory provides null
+        if (viewState is DetailsViewModel.ViewState.ContentReady) {
+            CompositionLocalProvider(
+                // Disable overscroll on this view so that scrolling up past the limit starts
+                // dismissing the bottom sheet instead of bouncing back on iOS.
+                LocalOverscrollFactory provides null
+            ) {
+                Box(
+                    contentAlignment = Alignment.TopCenter,
+//                    modifier = Modifier.fillMaxSize()
                 ) {
                     Column(
                         verticalArrangement = Arrangement.spacedBy(32.dp),
-                        modifier = modifier.fillMaxWidth()
+                        modifier = modifier.widthIn(max = AdaptiveUtil.MAX_FULL_SCREEN_WIDTH)
                             .padding(bottom = 32.dp)
-                            .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
+                            .windowInsetsPadding(
+                                WindowInsets.navigationBars.only(WindowInsetsSides.Bottom)
+                            )
                     ) {
                         DetailsChartsHeader(
                             startTime = viewState.startTimeString,
@@ -75,8 +83,6 @@ fun DetailsChartsView(
                     }
                 }
             }
-
-            else -> {}
         }
     }
 }
