@@ -3,7 +3,6 @@ package org.noiseplanet.noisecapture.ui.features.home
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -56,15 +55,13 @@ fun HomeMapView(
     Column(
         modifier = modifier,
     ) {
-        ListSectionHeader(title = Res.string.home_map_section_header, paddingTop = 24.dp)
+        ListSectionHeader(title = Res.string.home_map_section_header)
 
         Box(
             contentAlignment = Alignment.BottomEnd,
-            modifier = Modifier.aspectRatio(1.5f).clip(MaterialTheme.shapes.medium)
+            modifier = Modifier.clip(MaterialTheme.shapes.large)
         ) {
-            MapView(
-                modifier = Modifier.fillMaxSize()
-            )
+            MapView()
 
             Box(modifier = Modifier.fillMaxSize().clickable(onClick = router::onClickOpenMapButton))
 

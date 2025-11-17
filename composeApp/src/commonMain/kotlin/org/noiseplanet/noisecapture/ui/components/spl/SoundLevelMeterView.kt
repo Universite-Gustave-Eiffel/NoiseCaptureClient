@@ -56,7 +56,7 @@ fun SoundLevelMeterView(
     // - Layout
 
     Box(
-        modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer)
+        modifier = Modifier.background(color = MaterialTheme.colorScheme.surfaceContainer)
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),

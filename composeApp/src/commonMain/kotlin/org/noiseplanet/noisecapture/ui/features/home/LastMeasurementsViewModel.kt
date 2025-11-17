@@ -35,7 +35,7 @@ class LastMeasurementsViewModel : ViewModel(), KoinComponent {
             val totalDuration: String,
             val durationUnit: String,
             val historyButtonViewModel: NCButtonViewModel,
-            val lastTwoMeasurements: List<Measurement>,
+            val lastMeasurements: List<Measurement>,
         ) : ViewState
     }
 
@@ -63,7 +63,7 @@ class LastMeasurementsViewModel : ViewModel(), KoinComponent {
                 totalDuration = durationValue,
                 durationUnit = durationUnit,
                 historyButtonViewModel = openHistoryButtonViewModel,
-                lastTwoMeasurements = measurements.sortedByDescending { it.startTimestamp }.take(2)
+                lastMeasurements = measurements.sortedByDescending { it.startTimestamp }.take(4)
             )
         }.stateInWhileSubscribed(
             scope = viewModelScope,

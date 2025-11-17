@@ -1,10 +1,9 @@
 package org.noiseplanet.noisecapture
 
-import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
-import org.koin.core.context.stopKoin
 import org.koin.core.module.Module
 import org.koin.dsl.module
+import org.koin.mp.KoinPlatform
 import org.noiseplanet.noisecapture.permission.defaultPermissionModule
 import org.noiseplanet.noisecapture.permission.platformPermissionModule
 import org.noiseplanet.noisecapture.services.servicesModule
@@ -16,11 +15,13 @@ import org.noiseplanet.noisecapture.ui.navigation.coordinatorModule
  */
 fun initKoin(
     additionalModules: List<Module> = emptyList(),
-): KoinApplication {
+) {
+    if (KoinPlatform.getKoinOrNull() != null) {
+        // If application is already running, dont restart it.
+        return
+    }
 
-    stopKoin()
-
-    return startKoin {
+    startKoin {
         allowOverride(true)
 
         modules(

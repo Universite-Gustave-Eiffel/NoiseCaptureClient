@@ -3,10 +3,13 @@ package org.noiseplanet.noisecapture
 import App
 import android.app.Activity
 import android.content.Context
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.window.core.layout.WindowSizeClass
 import org.koin.android.ext.android.get
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -44,6 +47,15 @@ class MainActivity : ComponentActivity() {
         )
 
         setContent {
+            // Lock orientation on phones only (i.e. devices with compact width or height)
+            val sizeClas = currentWindowAdaptiveInfo().windowSizeClass
+            val isCompact = sizeClas.minWidthDp < WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND ||
+                sizeClas.minHeightDp < WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND
+
+            if (isCompact) {
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            }
+
             App()
         }
 

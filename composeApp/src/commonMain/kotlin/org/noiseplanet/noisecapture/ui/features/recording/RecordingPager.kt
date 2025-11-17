@@ -13,11 +13,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowSizeClass
 import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.measurement_pager_tab_map
@@ -39,14 +41,29 @@ fun RecordingPager(
 
     // - Properties
 
-    val animationScope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(pageCount = { TabState.entries.size })
+    val sizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    val isCompact = sizeClass.minWidthDp < WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND
 
-    val tabLabels = mapOf(
-        TabState.SPECTRUM to stringResource(Res.string.measurement_pager_tab_spectrum),
-        TabState.SPECTROGRAM to stringResource(Res.string.measurement_pager_tab_spectrogram),
-        TabState.MAP to stringResource(Res.string.measurement_pager_tab_map),
+    var tabs = mapOf(
+        TabId.SPECTRUM to stringResource(Res.string.measurement_pager_tab_spectrum),
+        TabId.SPECTROGRAM to stringResource(Res.string.measurement_pager_tab_spectrogram),
     )
+
+    // Only show the map tab on compact screens. On larger screens, map is always visible.
+    if (isCompact) {
+        tabs = tabs + mapOf(
+            TabId.MAP to stringResource(Res.string.measurement_pager_tab_map)
+        )
+    }
+    val pagePaddingModifier = if (isCompact) {
+        Modifier.padding(end = 16.dp, bottom = 80.dp)
+            .windowInsetsPadding(WindowInsets.navigationBars)
+    } else {
+        Modifier.padding(end = 16.dp, bottom = 16.dp)
+    }
+
+    val animationScope = rememberCoroutineScope()
+    val pagerState = rememberPagerState(pageCount = { tabs.entries.size })
 
 
     // - Layout
@@ -59,36 +76,37 @@ fun RecordingPager(
             selectedTabIndex = pagerState.currentPage,
             containerColor = MaterialTheme.colorScheme.surfaceContainer
         ) {
-            TabState.entries.forEach { entry ->
+            tabs.toList().forEachIndexed { index, (id, label) ->
                 Tab(
-                    text = { Text(tabLabels[entry] ?: "") },
-                    selected = pagerState.currentPage == entry.ordinal,
-                    onClick = { animationScope.launch { pagerState.animateScrollToPage(entry.ordinal) } }
+                    text = { Text(label) },
+                    selected = pagerState.currentPage == index,
+                    onClick = {
+                        animationScope.launch {
+                            pagerState.animateScrollToPage(index)
+                        }
+                    }
                 )
             }
         }
+
         HorizontalPager(
             state = pagerState,
             beyondViewportPageCount = 1,
         ) { page ->
-            when (TabState.entries[page]) {
-                TabState.SPECTROGRAM -> Box {
+            when (TabId.entries[page]) {
+                TabId.SPECTROGRAM -> Box {
                     SpectrogramPlotView(
-                        modifier = Modifier.padding(end = 16.dp)
-                            .windowInsetsPadding(WindowInsets.navigationBars)
-                            .padding(bottom = 80.dp)
+                        modifier = pagePaddingModifier
                     )
                 }
 
-                TabState.SPECTRUM -> Box {
+                TabId.SPECTRUM -> Box {
                     SpectrumPlotView(
-                        modifier = Modifier.padding(end = 16.dp)
-                            .windowInsetsPadding(WindowInsets.navigationBars)
-                            .padding(bottom = 80.dp)
+                        modifier = pagePaddingModifier
                     )
                 }
 
-                TabState.MAP -> Box {
+                TabId.MAP -> Box {
                     MapView(modifier = Modifier.fillMaxSize())
                 }
             }
@@ -96,7 +114,7 @@ fun RecordingPager(
     }
 }
 
-private enum class TabState {
+private enum class TabId {
     SPECTRUM,
     SPECTROGRAM,
     MAP
