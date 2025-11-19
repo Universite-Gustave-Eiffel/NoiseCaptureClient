@@ -30,8 +30,7 @@ val detailsModule = module {
             windowsSizeClass,
             MapViewModelParameters(
                 focusedMeasurementUuid = measurementId,
-                // TODO: Use a shared constant for sheet peek height screen ratio.
-                visibleAreaPaddingRatio = MapViewModel.VisibleAreaPaddingRatio(bottom = 0.4f),
+                showControls = false,
             )
         )
     }

@@ -115,8 +115,7 @@ private fun HomeScreenCompact(viewModel: HomeScreenViewModel, router: HomeRouter
 private fun HomeScreenLarge(viewModel: HomeScreenViewModel, router: HomeRouter) {
     Column(
         verticalArrangement = Arrangement.spacedBy(24.dp),
-        modifier = Modifier//.verticalScroll(rememberScrollState())
-            .windowInsetsPadding(WindowInsets.navigationBars)
+        modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars)
             .padding(horizontal = 24.dp)
             .padding(top = 24.dp, bottom = 16.dp)
     ) {

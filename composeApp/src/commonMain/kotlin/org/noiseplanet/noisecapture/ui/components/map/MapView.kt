@@ -68,9 +68,8 @@ fun MapView(
 
     // - Layout
 
-    Box {
+    Box(modifier = modifier.background(MaterialTheme.colorScheme.surfaceContainer)) {
         MapUI(
-            modifier = modifier.background(MaterialTheme.colorScheme.surfaceContainer),
             state = viewModel.mapState,
         )
 

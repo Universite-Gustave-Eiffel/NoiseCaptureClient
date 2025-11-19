@@ -17,6 +17,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.compose.viewmodel.koinViewModel
@@ -26,8 +27,9 @@ import org.noiseplanet.noisecapture.util.AdaptiveUtil
 
 
 @Composable
-fun DetailsChartsView(
+fun DetailsView(
     measurementId: String,
+    contentPaddingTop: Dp = 0.dp,
     modifier: Modifier = Modifier,
 ) {
     // - Properties
@@ -40,7 +42,7 @@ fun DetailsChartsView(
 
     // - Layout
 
-    Crossfade(viewState) { viewState ->
+    Crossfade(viewState, modifier = modifier) { viewState ->
         if (viewState is DetailsViewModel.ViewState.ContentReady) {
             CompositionLocalProvider(
                 // Disable overscroll on this view so that scrolling up past the limit starts
@@ -49,12 +51,11 @@ fun DetailsChartsView(
             ) {
                 Box(
                     contentAlignment = Alignment.TopCenter,
-//                    modifier = Modifier.fillMaxSize()
                 ) {
                     Column(
                         verticalArrangement = Arrangement.spacedBy(32.dp),
-                        modifier = modifier.widthIn(max = AdaptiveUtil.MAX_FULL_SCREEN_WIDTH)
-                            .padding(bottom = 32.dp)
+                        modifier = Modifier.widthIn(max = AdaptiveUtil.MAX_FULL_SCREEN_WIDTH)
+                            .padding(bottom = 32.dp, top = contentPaddingTop)
                             .windowInsetsPadding(
                                 WindowInsets.navigationBars.only(WindowInsetsSides.Bottom)
                             )
