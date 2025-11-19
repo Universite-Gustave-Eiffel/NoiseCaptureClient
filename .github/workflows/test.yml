@@ -80,8 +80,8 @@ jobs:
         with:
           cache-disabled: true
 
-      - name: Build and run tests
-        run: ./gradlew :composeApp:clean :composeApp:iosSimulatorArm64Test
+      - name: Build
+        run: ./gradlew :composeApp:clean :composeApp:linkDebugTestIosSimulatorArm64
 
       - name: Run tests
         run: ./gradlew :composeApp:iosSimulatorArm64Test
