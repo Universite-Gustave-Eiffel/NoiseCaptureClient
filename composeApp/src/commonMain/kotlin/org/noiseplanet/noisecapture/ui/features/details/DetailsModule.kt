@@ -9,10 +9,6 @@ import org.noiseplanet.noisecapture.ui.components.map.MapViewModelParameters
 
 val detailsModule = module {
 
-    viewModel { (measurementId: String) ->
-        DetailsViewModel(measurementId)
-    }
-
     viewModel { (filePath: String) ->
         AudioPlayerViewModel(filePath)
     }
