@@ -80,8 +80,8 @@ jobs:
         with:
           cache-disabled: true
 
-      - name: Compile iOS binary
-        run: ./gradlew :composeApp:clean :composeApp:iosSimulatorArm64Binaries
+      - name: Compile iOS test binary
+        run: ./gradlew :composeApp:clean :composeApp:linkDebugTestIosSimulatorArm64
 
       - name: Run tests
         run: ./gradlew :composeApp:cleanIosSimulatorArm64Test :composeApp:iosSimulatorArm64Test
