@@ -4,11 +4,11 @@ on:
   workflow_call:
     inputs:
       androidOnly:
-        required: false
-        default: 'false'
+        required: true
+        type: string
       iosOnly:
-        required: false
-        default: 'false'
+        required: true
+        type: string
 
 jobs:
   android-tests:
