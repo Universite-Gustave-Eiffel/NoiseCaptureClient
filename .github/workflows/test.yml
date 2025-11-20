@@ -1,8 +1,10 @@
 name: Tests
 
+on:
+  workflow_dispatch:
+
 jobs:
   android-tests:
-    if: ${{ !contains(github.event.pull_request.labels.*.name, 'iOS') }}
     runs-on: ubuntu-latest
 
     steps:
@@ -21,9 +23,9 @@ jobs:
             **/build/reports/*
 
   ios-tests:
-    if: ${{ !contains(github.event.pull_request.labels.*.name, 'Android') }}
     runs-on: macos-latest
     timeout-minutes: 60
+
     steps:
       - name: Job set up
         uses: ./.github/actions/job-set-up
