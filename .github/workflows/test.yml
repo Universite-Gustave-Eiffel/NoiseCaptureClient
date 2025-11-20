@@ -59,16 +59,16 @@ jobs:
           path: |
             **/build/reports/*
 
-  iOS:
+  ios-tests:
     if: ${{ inputs.shouldRunKmp == 'true' || inputs.shouldRunIos == 'true' }}
     runs-on: macos-latest
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
+      #      - uses: maxim-lobanov/setup-xcode@v1
+      #        with:
+      #          xcode-version: latest-stable
 
       - name: set up JDK
         uses: actions/setup-java@v3
@@ -76,14 +76,17 @@ jobs:
           distribution: 'zulu'
           java-version: 17
 
-      - uses: gradle/gradle-build-action@v2
-        with:
-          cache-disabled: true
+      - name: Cache Gradle
+        uses: ./.github/actions/gradle-cache
 
-      - name: Build
-        run: ./gradlew :composeApp:clean :composeApp:linkDebugTestIosSimulatorArm64
+      #      - uses: gradle/gradle-build-action@v2
+      #        with:
+      #          cache-disabled: true
 
-      - name: Run tests
+      #      - name: Build
+      #        run: ./gradlew :composeApp:clean :composeApp:linkDebugTestIosSimulatorArm64
+
+      - name: Build and run tests
         run: ./gradlew :composeApp:iosSimulatorArm64Test
 
       - name: Upload reports
