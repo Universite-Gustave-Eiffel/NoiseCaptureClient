@@ -1,18 +1,7 @@
 name: Build binaries
 
-on:
-  workflow_call:
-    inputs:
-      shouldRunKmp:
-        required: true
-        type: string
-      shouldRunAndroid:
-        required: true
-        type: string
-
 jobs:
   android-build:
-    if: ${{ inputs.shouldRunKmp == 'true' || inputs.shouldRunAndroid == 'true' }}
     runs-on: ubuntu-latest
 
     steps:

@@ -20,26 +20,27 @@ jobs:
       - id: setVariables
         name: Set variables
         run: |
-          isFromMain=${{ github.ref == 'refs/heads/main' }}
-          isManual=${{ github.event_name == 'workflow_dispatch' }}
-          hasKmpLabel=${{ contains(github.event.pull_request.labels.*.name, 'KMP') }}
-          shouldRunKmp=false
-          if $isFromMain || $isManual || $hasKmpLabel ; then
-            shouldRunKmp=true
-          fi
-          echo "shouldRunKmp=$shouldRunKmp" >> "$GITHUB_OUTPUT"
-          echo "shouldRunAndroid=${{ contains(github.event.pull_request.labels.*.name, 'Android') }}" >> "$GITHUB_OUTPUT"
-          echo "shouldRunIos=${{ contains(github.event.pull_request.labels.*.name, 'iOS') }}" >> "$GITHUB_OUTPUT"
+          {
+            "iosOnly=${{ contains(github.event.pull_request.labels.*.name, 'iOS') }}"
+            "androidOnly=${{ contains(github.event.pull_request.labels.*.name, 'Android') }}"
+          } >> $GITHUB_OUTPUT
+          
+          {
+            echo "### Workflow variables"
+            echo "| Variable     | Value        |"
+            echo "| ------------ | ------------ |"
+            echo "| iosOnly      | $iosOnly     |"
+            echo "| androidOnly  | $androidOnly |"
+          } >> $GITHUB_STEP_SUMMARY
           
           if [ ${{ github.event_name }} == workflow_dispatch ] || [ ${{ github.event_name }} == push ] || ([ ${{ github.event_name }} == pull_request ] && [ ${{ github.event.pull_request.draft }} == false ]); then
             exit 0
           else
             exit 1
           fi
-    outputs:
-      shouldRunKmp: ${{ steps.setVariables.outputs.shouldRunKmp }}
-      shouldRunAndroid: ${{ steps.setVariables.outputs.shouldRunAndroid }}
-      shouldRunIos: ${{ steps.setVariables.outputs.shouldRunIos }}
+  #    outputs:
+  #      androidOnly: ${{ steps.setVariables.outputs.androidOnly }}
+  #      iosOnly: ${{ steps.setVariables.outputs.iosOnly }}
 
   Detekt:
     needs: Setup
@@ -49,16 +50,14 @@ jobs:
     needs: Detekt
     uses: ./.github/workflows/test.yml
     with:
-      shouldRunKmp: ${{ needs.SetUp.outputs.shouldRunKmp }}
-      shouldRunAndroid: ${{ needs.SetUp.outputs.shouldRunAndroid }}
-      shouldRunIos: ${{ needs.SetUp.outputs.shouldRunIos }}
+      androidOnly: ${{ steps.setVariables.outputs.androidOnly }}
+      iosOnly: ${{ steps.setVariables.outputs.iosOnly }}
 
   Build:
     needs: Detekt
     uses: ./.github/workflows/build.yml
     with:
-      shouldRunKmp: ${{ needs.SetUp.outputs.shouldRunKmp }}
-      shouldRunAndroid: ${{ needs.SetUp.outputs.shouldRunAndroid }}
+      iosOnly: ${{ steps.setVariables.outputs.iosOnly }}
 
   AllowMerge:
     if: always()
@@ -68,9 +67,11 @@ jobs:
       - run: |
           if [ ${{ github.event_name }} == pull_request ] && [ ${{ join(github.event.pull_request.labels.*.name) == '' }} == true ]; then
             exit 1
+          elif [ ${{ (contains(needs.Detekt.result, 'failure')) }} == true ]; then
+            exit 1
           elif [ ${{ (contains(needs.UnitTests.result, 'failure')) }} == true ]; then
             exit 1
-          elif [ ${{ (contains(needs.Detekt.result, 'failure')) }} == true ]; then
+          elif [ ${{ (contains(needs.Build.result, 'failure')) }} == true ]; then
             exit 1
           else
             exit 0

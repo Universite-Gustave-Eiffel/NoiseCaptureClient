@@ -3,19 +3,16 @@ name: Tests
 on:
   workflow_call:
     inputs:
-      shouldRunKmp:
-        required: true
-        type: string
-      shouldRunAndroid:
-        required: true
-        type: string
-      shouldRunIos:
-        required: true
-        type: string
+      androidOnly:
+        required: false
+        default: 'false'
+      iosOnly:
+        required: false
+        default: 'false'
 
 jobs:
   android-tests:
-    if: ${{ inputs.shouldRunKmp == 'true' || inputs.shouldRunAndroid == 'true' }}
+    if: ${{ inputs.iosOnly != 'true' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -34,7 +31,7 @@ jobs:
             **/build/reports/*
 
   ios-tests:
-    if: ${{ inputs.shouldRunKmp == 'true' || inputs.shouldRunIos == 'true' }}
+    if: ${{ inputs.androidOnly != 'true' }}
     runs-on: macos-latest
     timeout-minutes: 60
     steps:
