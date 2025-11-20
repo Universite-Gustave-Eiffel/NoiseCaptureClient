@@ -1,18 +1,8 @@
 name: Tests
 
-on:
-  workflow_call:
-    inputs:
-      androidOnly:
-        required: true
-        type: string
-      iosOnly:
-        required: true
-        type: string
-
 jobs:
   android-tests:
-    if: ${{ inputs.iosOnly != 'true' }}
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'iOS') }}
     runs-on: ubuntu-latest
 
     steps:
@@ -31,7 +21,7 @@ jobs:
             **/build/reports/*
 
   ios-tests:
-    if: ${{ inputs.androidOnly != 'true' }}
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'Android') }}
     runs-on: macos-latest
     timeout-minutes: 60
     steps:
