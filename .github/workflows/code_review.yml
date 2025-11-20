@@ -38,9 +38,9 @@ jobs:
           else
             exit 1
           fi
-  #    outputs:
-  #      androidOnly: ${{ steps.setVariables.outputs.androidOnly }}
-  #      iosOnly: ${{ steps.setVariables.outputs.iosOnly }}
+        outputs:
+          androidOnly: ${{ steps.setVariables.outputs.androidOnly }}
+          iosOnly: ${{ steps.setVariables.outputs.iosOnly }}
 
   Detekt:
     needs: Setup
