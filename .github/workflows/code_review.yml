@@ -11,50 +11,21 @@ on:
       - main
       - dev
   pull_request:
-    types: [ opened, reopened, labeled, unlabeled, ready_for_review, synchronize ]
+    types: [ opened, reopened, ready_for_review, synchronize ]
 
 jobs:
-  #  SetUp:
-  #    runs-on: ubuntu-latest
-  #    steps:
-  #      - id: setVariables
-  #        name: Set variables
-  #        run: |
-  #          {
-  #            iosOnly=${{ contains(github.event.pull_request.labels.*.name, 'iOS') }}
-  #            androidOnly=${{ contains(github.event.pull_request.labels.*.name, 'Android') }}
-  #          } >> $GITHUB_OUTPUT
-  #
-  #          {
-  #            echo "### Workflow variables"
-  #            echo "| Variable     | Value        |"
-  #            echo "| ------------ | ------------ |"
-  #            echo "| iosOnly      | $iosOnly     |"
-  #            echo "| androidOnly  | $androidOnly |"
-  #          } >> $GITHUB_STEP_SUMMARY
-  #
-  #          if [ ${{ github.event_name }} == workflow_dispatch ] || [ ${{ github.event_name }} == push ] || ([ ${{ github.event_name }} == pull_request ] && [ ${{ github.event.pull_request.draft }} == false ]); then
-  #            exit 0
-  #          else
-  #            exit 1
-  #          fi
-  #        outputs:
-  #          androidOnly: ${{ steps.setVariables.outputs.androidOnly }}
-  #          iosOnly: ${{ steps.setVariables.outputs.iosOnly }}
-
-  Detekt:
-    #    needs: Setup
+  lint:
     uses: ./.github/workflows/lint.yml
 
-  UnitTests:
+  test:
     needs: Detekt
     uses: ./.github/workflows/test.yml
 
-  Build:
+  build:
     needs: Detekt
     uses: ./.github/workflows/build.yml
 
-  AllowMerge:
+  summary:
     if: always()
     runs-on: ubuntu-latest
     needs: [ UnitTests, Detekt ]
