@@ -41,16 +41,24 @@ jobs:
       shouldRunAndroid: ${{ steps.setVariables.outputs.shouldRunAndroid }}
       shouldRunIos: ${{ steps.setVariables.outputs.shouldRunIos }}
 
+  Detekt:
+    needs: Setup
+    uses: ./.github/workflows/lint.yml
+
   UnitTests:
-    needs: SetUp
+    needs: Detekt
     uses: ./.github/workflows/test.yml
     with:
       shouldRunKmp: ${{ needs.SetUp.outputs.shouldRunKmp }}
       shouldRunAndroid: ${{ needs.SetUp.outputs.shouldRunAndroid }}
       shouldRunIos: ${{ needs.SetUp.outputs.shouldRunIos }}
 
-  Detekt:
-    uses: ./.github/workflows/lint.yml
+  Build:
+    needs: Detekt
+    uses: ./.github/workflows/build.yml
+    with:
+      shouldRunKmp: ${{ needs.SetUp.outputs.shouldRunKmp }}
+      shouldRunAndroid: ${{ needs.SetUp.outputs.shouldRunAndroid }}
 
   AllowMerge:
     if: always()

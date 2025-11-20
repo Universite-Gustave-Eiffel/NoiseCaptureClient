@@ -1,0 +1,31 @@
+name: Build binaries
+
+on:
+  workflow_call:
+    inputs:
+      shouldRunKmp:
+        required: true
+        type: string
+      shouldRunAndroid:
+        required: true
+        type: string
+
+android-build:
+  if: ${{ inputs.shouldRunKmp == 'true' || inputs.shouldRunAndroid == 'true' }}
+  runs-on: ubuntu-latest
+
+  steps:
+    - name: Job set up
+      uses: ./.github/actions/job-set-up
+
+    - name: Build
+      run:
+        ./gradlew :composeApp:assembleRelease
+
+    - name: Upload APK
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: android-apk
+        path: |
+          **/build/**/apk/**/*.apk

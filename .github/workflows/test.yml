@@ -13,13 +13,12 @@ on:
         required: true
         type: string
 
-  android:
+jobs:
+  android-tests:
     if: ${{ inputs.shouldRunKmp == 'true' || inputs.shouldRunAndroid == 'true' }}
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
-
       - name: Job set up
         uses: ./.github/actions/job-set-up
 
