@@ -1,54 +1,18 @@
 name: Tests
 
-on:
-  workflow_call:
-    inputs:
-      shouldRunKmp:
-        required: true
-        type: string
-      shouldRunAndroid:
-        required: true
-        type: string
-      shouldRunIos:
-        required: true
-        type: string
+on: workflow_call
 
 jobs:
-  Kmp:
-    if: ${{ inputs.shouldRunKmp == 'true'}}
+  android-tests:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Job set up
         uses: ./.github/actions/job-set-up
 
-      - name: Run tests
-        run: ./gradlew :composeApp:cleanTestDebugUnitTest :composeApp:testDebugUnitTest
-
-      - name: Upload reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: shared-reports
-          path: |
-            **/build/reports/*
-  
-  Android:
-    if: ${{ inputs.shouldRunKmp == 'true' || inputs.shouldRunAndroid == 'true' }}
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Job set up
-        uses: ./.github/actions/job-set-up
-
-      - name: Compile Android binary
-        run: ./gradlew :composeApp:clean :composeApp:assembleDebug
-
-      - name: Run tests
+      - name: Build and run tests
         run: ./gradlew :composeApp:cleanTestDebugUnitTest :composeApp:testDebugUnitTest
 
       - name: Upload reports
@@ -59,31 +23,17 @@ jobs:
           path: |
             **/build/reports/*
 
-  iOS:
-    if: ${{ inputs.shouldRunKmp == 'true' || inputs.shouldRunIos == 'true' }}
+  ios-tests:
     runs-on: macos-latest
     timeout-minutes: 60
+
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
+      - name: Job set up
+        uses: ./.github/actions/job-set-up
 
-      - name: set up JDK
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu'
-          java-version: 17
-
-      - uses: gradle/gradle-build-action@v2
-        with:
-          cache-disabled: true
-
-      - name: Compile iOS binary
-        run: ./gradlew :composeApp:clean :composeApp:iosSimulatorArm64Binaries
-
-      - name: Run tests
+      - name: Build and run tests
         run: ./gradlew :composeApp:cleanIosSimulatorArm64Test :composeApp:iosSimulatorArm64Test
 
       - name: Upload reports

@@ -1,0 +1,25 @@
+name: Build binaries
+
+on: workflow_call
+
+jobs:
+  android-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Job set up
+        uses: ./.github/actions/job-set-up
+
+      - name: Build
+        run:
+          ./gradlew :composeApp:assembleRelease
+
+      - name: Upload APK
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: |
+            **/build/**/apk/**/*.apk

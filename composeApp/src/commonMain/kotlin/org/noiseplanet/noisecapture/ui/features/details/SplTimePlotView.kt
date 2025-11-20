@@ -2,8 +2,8 @@ package org.noiseplanet.noisecapture.ui.features.details
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -62,7 +62,7 @@ fun SplTimePlotView(
 
     Column(
         verticalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = modifier.fillMaxWidth().height(400.dp)
+        modifier = modifier.fillMaxWidth().aspectRatio(1.25f)
     ) {
         Text(
             text = stringResource(Res.string.measurement_details_spl_time_plot_title),

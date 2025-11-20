@@ -9,10 +9,6 @@ import org.noiseplanet.noisecapture.ui.components.map.MapViewModelParameters
 
 val detailsModule = module {
 
-    viewModel { (measurementId: String) ->
-        DetailsViewModel(measurementId)
-    }
-
     viewModel { (filePath: String) ->
         AudioPlayerViewModel(filePath)
     }
@@ -30,8 +26,7 @@ val detailsModule = module {
             windowsSizeClass,
             MapViewModelParameters(
                 focusedMeasurementUuid = measurementId,
-                // TODO: Use a shared constant for sheet peek height screen ratio.
-                visibleAreaPaddingRatio = MapViewModel.VisibleAreaPaddingRatio(bottom = 0.4f),
+                showControls = false,
             )
         )
     }
