@@ -21,8 +21,8 @@ jobs:
         name: Set variables
         run: |
           {
-            "iosOnly=${{ contains(github.event.pull_request.labels.*.name, 'iOS') }}"
-            "androidOnly=${{ contains(github.event.pull_request.labels.*.name, 'Android') }}"
+            iosOnly=${{ contains(github.event.pull_request.labels.*.name, 'iOS') }}
+            androidOnly=${{ contains(github.event.pull_request.labels.*.name, 'Android') }}
           } >> $GITHUB_OUTPUT
           
           {
