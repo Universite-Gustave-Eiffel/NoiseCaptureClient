@@ -6,50 +6,39 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
 import io.github.koalaplot.core.ChartLayout
-import io.github.koalaplot.core.line.AreaBaseline
-import io.github.koalaplot.core.line.AreaPlot2
-import io.github.koalaplot.core.style.AreaStyle
-import io.github.koalaplot.core.style.LineStyle
+import io.github.koalaplot.core.bar.DefaultBar
+import io.github.koalaplot.core.bar.DefaultBarPosition
+import io.github.koalaplot.core.bar.DefaultVerticalBarPlotEntry
+import io.github.koalaplot.core.bar.VerticalBarPlot
 import io.github.koalaplot.core.util.ExperimentalKoalaPlotApi
+import io.github.koalaplot.core.xygraph.CategoryAxisModel
 import io.github.koalaplot.core.xygraph.DoubleLinearAxisModel
-import io.github.koalaplot.core.xygraph.LongLinearAxisModel
-import io.github.koalaplot.core.xygraph.Point
 import io.github.koalaplot.core.xygraph.XYGraph
+import io.github.koalaplot.core.xygraph.rememberAxisStyle
 import noisecapture.composeapp.generated.resources.Res
-import noisecapture.composeapp.generated.resources.measurement_details_spl_time_plot_description
-import noisecapture.composeapp.generated.resources.measurement_details_spl_time_plot_title
+import noisecapture.composeapp.generated.resources.measurement_details_avg_spl_per_freq_plot_description
+import noisecapture.composeapp.generated.resources.measurement_details_avg_spl_per_freq_plot_title
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.ui.components.plot.PlotAxisLabel
 import org.noiseplanet.noisecapture.ui.components.plot.PlotGridLineStyle
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
-import org.noiseplanet.noisecapture.util.VuMeterOptions
-import kotlin.time.Duration.Companion.milliseconds
+import org.noiseplanet.noisecapture.util.toFrequencyString
 
 
 @OptIn(ExperimentalKoalaPlotApi::class)
 @Composable
-fun SplTimePlotView(
-    leqOverTime: Map<Long, Double>,
+fun AverageLevelPerFreqView(
+    avgLevelPerFreq: Map<Int, Double>,
     modifier: Modifier = Modifier,
 ) {
-    // - Properties
-
-    val startTimestamp: Long = leqOverTime.keys.min()
-    val endTimestamp: Long = leqOverTime.keys.max()
-
-    val colorRamp = NoiseLevelColorRamp.clamped(reversed = true)
-        .map { (spl, color) -> Pair(spl.toFloat(), color) }
-        .reversed()
-    val gradientBrush = Brush.verticalGradient(*colorRamp.toTypedArray())
-
-
     // - Layout
 
     Column(
@@ -59,13 +48,13 @@ fun SplTimePlotView(
             .heightIn(max = 200.dp)
     ) {
         Text(
-            text = stringResource(Res.string.measurement_details_spl_time_plot_title),
+            text = stringResource(Res.string.measurement_details_avg_spl_per_freq_plot_title),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface,
         )
 
         Text(
-            text = stringResource(Res.string.measurement_details_spl_time_plot_description),
+            text = stringResource(Res.string.measurement_details_avg_spl_per_freq_plot_description),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
         )
@@ -74,18 +63,21 @@ fun SplTimePlotView(
             modifier = Modifier.padding(top = 16.dp)
         ) {
             XYGraph(
-                xAxisModel = LongLinearAxisModel(
-                    range = startTimestamp..endTimestamp,
-                    minorTickCount = 1,
+                xAxisModel = CategoryAxisModel(
+                    categories = avgLevelPerFreq.keys.toList(),
                 ),
-                xAxisLabels = @Composable {
-                    PlotAxisLabel(
-                        text = "${(it - startTimestamp).milliseconds.inWholeSeconds}s",
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                    )
+                xAxisLabels = @Composable { x ->
+                    if (avgLevelPerFreq.keys.toList().indexOf(x) % 5 == 0) {
+                        PlotAxisLabel(
+                            text = x.toFrequencyString(),
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                            modifier = Modifier.padding(end = 4.dp, top = 4.dp)
+                        )
+                    }
                 },
+                xAxisStyle = rememberAxisStyle(labelRotation = 45),
                 yAxisModel = DoubleLinearAxisModel(
-                    range = VuMeterOptions.DB_MIN..VuMeterOptions.DB_MAX,
+                    range = 0.0..100.0,
                     minorTickCount = 1,
                 ),
                 yAxisLabels = @Composable {
@@ -99,19 +91,21 @@ fun SplTimePlotView(
                 horizontalMinorGridLineStyle = PlotGridLineStyle.minorHorizontal,
                 verticalMinorGridLineStyle = PlotGridLineStyle.minorVertical,
             ) {
-                AreaPlot2(
-                    data = leqOverTime.map { (timestamp, leq) ->
-                        Point(x = timestamp, y = leq)
+
+                VerticalBarPlot(
+                    data = avgLevelPerFreq.toList().map { (freq, level) ->
+                        DefaultVerticalBarPlotEntry(
+                            x = freq,
+                            y = DefaultBarPosition(0.0, level)
+                        )
                     },
-                    lineStyle = LineStyle(
-                        brush = gradientBrush,
-                        strokeWidth = 2.dp
-                    ),
-                    areaBaseline = AreaBaseline.ConstantLine(value = 0.0),
-                    areaStyle = AreaStyle(
-                        brush = gradientBrush,
-                        alpha = 0.5f,
-                    )
+                    bar = { index, _, entry ->
+                        DefaultBar(
+                            brush = SolidColor(NoiseLevelColorRamp.getColorForSPLValue(entry.y.end)),
+                            shape = RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                 )
             }
         }

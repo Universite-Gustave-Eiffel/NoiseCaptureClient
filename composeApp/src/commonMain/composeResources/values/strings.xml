@@ -64,7 +64,10 @@
     <string name="measurement_details_audio_player_description">Listen to the audio that was recorded during your measurement.</string>
 
     <string name="measurement_details_spl_time_plot_title">Noise level over time</string>
-    <string name="measurement_details_spl_time_plot_description">Visualise the evolution of recorder noise level as a function of time.</string>
+    <string name="measurement_details_spl_time_plot_description">Visualise the evolution of recorded noise level as a function of time.</string>
+
+    <string name="measurement_details_avg_spl_per_freq_plot_title">Average noise level</string>
+    <string name="measurement_details_avg_spl_per_freq_plot_description">Represents the average recorded noise level for each frequency band.</string>
 
     <string name="measurement_details_laeq_summary_title">Sound level summary</string>
     <string name="measurement_details_laeq_summary_min">lowest recorded sound level.</string>

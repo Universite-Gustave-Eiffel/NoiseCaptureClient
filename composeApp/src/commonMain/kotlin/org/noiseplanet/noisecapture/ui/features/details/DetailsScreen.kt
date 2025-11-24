@@ -138,7 +138,7 @@ private fun DetailsScreenLarge(
                 focusedMeasurementUuid = viewState.measurement.uuid,
             )
 
-            SplTimePlotView(measurementId = viewState.measurement.uuid)
+            SplTimePlotView(leqOverTime = viewState.measurement.summary?.leqOverTime.orEmpty())
         }
 
         Column(
@@ -207,7 +207,7 @@ private fun DetailsScreenMedium(
             focusedMeasurementUuid = viewState.measurement.uuid,
         )
 
-        SplTimePlotView(measurementId = viewState.measurement.uuid)
+        SplTimePlotView(leqOverTime = viewState.measurement.summary?.leqOverTime.orEmpty())
 
         Row(
             modifier = Modifier.height(IntrinsicSize.Min)
@@ -261,20 +261,28 @@ private fun DetailsScreenCompact(
         viewState.measurement.recordedAudioUrl?.let { audioUrl ->
             AudioPlayerView(audioUrl)
         }
-        
-        LaeqSummaryView(
-            min = viewState.measurement.laeqMetrics.min,
-            la90 = viewState.measurement.summary?.la90 ?: 0.0,
-            la50 = viewState.measurement.summary?.la50 ?: 0.0,
-            la10 = viewState.measurement.summary?.la10 ?: 0.0,
-            max = viewState.measurement.laeqMetrics.max
-        )
 
-        SplTimePlotView(measurementId = viewState.measurement.uuid)
+        viewState.measurement.summary?.let { summary ->
+            LaeqSummaryView(
+                min = viewState.measurement.laeqMetrics.min,
+                la90 = summary.la90,
+                la50 = summary.la50,
+                la10 = summary.la10,
+                max = viewState.measurement.laeqMetrics.max
+            )
 
-        ManageMeasurementView(
-            measurementId = viewState.measurement.uuid,
-        )
+            if (summary.leqOverTime.isNotEmpty()) {
+                SplTimePlotView(leqOverTime = summary.leqOverTime)
+            }
+
+            if (summary.avgLevelPerFreq.isNotEmpty()) {
+                AverageLevelPerFreqView(avgLevelPerFreq = summary.avgLevelPerFreq)
+            }
+
+            ManageMeasurementView(
+                measurementId = viewState.measurement.uuid,
+            )
+        }
     }
 }
 
