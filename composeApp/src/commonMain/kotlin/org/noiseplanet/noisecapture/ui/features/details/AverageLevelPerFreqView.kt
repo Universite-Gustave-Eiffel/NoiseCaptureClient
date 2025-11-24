@@ -75,7 +75,7 @@ fun AverageLevelPerFreqView(
                         )
                     }
                 },
-                xAxisStyle = rememberAxisStyle(labelRotation = 45),
+                xAxisStyle = rememberAxisStyle(labelRotation = 30),
                 yAxisModel = DoubleLinearAxisModel(
                     range = 0.0..100.0,
                     minorTickCount = 1,

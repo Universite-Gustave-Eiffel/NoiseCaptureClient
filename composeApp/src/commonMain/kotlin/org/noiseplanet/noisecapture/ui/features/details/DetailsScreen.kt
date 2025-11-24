@@ -120,13 +120,7 @@ private fun DetailsScreenLarge(
                 AudioPlayerView(audioUrl)
             }
 
-            LaeqSummaryView(
-                min = viewState.measurement.laeqMetrics.min,
-                la90 = viewState.measurement.summary?.la90 ?: 0.0,
-                la50 = viewState.measurement.summary?.la50 ?: 0.0,
-                la10 = viewState.measurement.summary?.la10 ?: 0.0,
-                max = viewState.measurement.laeqMetrics.max
-            )
+            ManageMeasurementView(measurementId = viewState.measurement.uuid)
         }
 
         Column(
@@ -138,14 +132,30 @@ private fun DetailsScreenLarge(
                 focusedMeasurementUuid = viewState.measurement.uuid,
             )
 
-            SplTimePlotView(leqOverTime = viewState.measurement.summary?.leqOverTime.orEmpty())
+            viewState.measurement.summary?.let { summary ->
+                if (summary.leqOverTime.isNotEmpty()) {
+                    SplTimePlotView(leqOverTime = summary.leqOverTime)
+                }
+            }
         }
 
         Column(
             verticalArrangement = Arrangement.spacedBy(32.dp),
             modifier = Modifier.weight(1f),
         ) {
-            ManageMeasurementView(measurementId = viewState.measurement.uuid)
+            LaeqSummaryView(
+                min = viewState.measurement.laeqMetrics.min,
+                la90 = viewState.measurement.summary?.la90 ?: 0.0,
+                la50 = viewState.measurement.summary?.la50 ?: 0.0,
+                la10 = viewState.measurement.summary?.la10 ?: 0.0,
+                max = viewState.measurement.laeqMetrics.max
+            )
+            
+            viewState.measurement.summary?.let { summary ->
+                if (summary.avgLevelPerFreq.isNotEmpty()) {
+                    AverageLevelPerFreqView(avgLevelPerFreq = summary.avgLevelPerFreq)
+                }
+            }
         }
     }
 }
@@ -207,10 +217,28 @@ private fun DetailsScreenMedium(
             focusedMeasurementUuid = viewState.measurement.uuid,
         )
 
-        SplTimePlotView(leqOverTime = viewState.measurement.summary?.leqOverTime.orEmpty())
+        viewState.measurement.summary?.let { summary ->
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                if (summary.leqOverTime.isNotEmpty()) {
+                    SplTimePlotView(
+                        leqOverTime = summary.leqOverTime,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                if (summary.avgLevelPerFreq.isNotEmpty()) {
+                    AverageLevelPerFreqView(
+                        avgLevelPerFreq = summary.avgLevelPerFreq,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
+        }
 
         Row(
-            modifier = Modifier.height(IntrinsicSize.Min)
+            modifier = Modifier.height(IntrinsicSize.Min),
+            horizontalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             Box(
                 modifier = Modifier.weight(1f)
