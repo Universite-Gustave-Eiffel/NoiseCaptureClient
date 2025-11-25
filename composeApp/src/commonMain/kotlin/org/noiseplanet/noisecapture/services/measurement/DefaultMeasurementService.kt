@@ -220,26 +220,46 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
      * TODO: Benchmark this implementation for very large measurements and optimize if needed.
      */
     override suspend fun calculateSummary(measurement: Measurement): Measurement {
+        // Read all sequence fragments to summarize data
+        val allSequenceFragments: List<LeqSequenceFragment> = measurement.leqsSequenceIds
+            .mapNotNull { leqSequenceStorageService.get(it) }
+
         // Get a map of all LAEq values with their associated timestamp
-        val allMeasurementLeq: Map<Long, Double> = measurement.leqsSequenceIds
-            .fold(mapOf<Long, Double>()) { accumulator, sequenceId ->
-                val laeqs = leqSequenceStorageService.get(sequenceId)
-                    ?.let { it.timestamp.zip(it.laeq) }
-                    ?: emptyList()
-                accumulator + laeqs
+        val allMeasurementLaeq: Map<Long, Double> = allSequenceFragments
+            .fold(mapOf<Long, Double>()) { accumulator, sequence ->
+                accumulator + sequence.let { it.timestamp.zip(it.laeq) }
             }.filter { (_, laeq) ->
                 laeq.isInVuMeterRange()
             }
-
         // Get a list of all sorted LAEq values
-        val allMeasurementLeqSorted = allMeasurementLeq.values.sorted()
+        val allMeasurementLeqSorted = allMeasurementLaeq.values.sorted()
+
+        // Do the same for each frequency band to compute the average level
+        val averageLeqPerFrequencyBand: Map<Int, Double> = allSequenceFragments
+            .map { it.leqsPerThirdOctaveBand }
+            .fold(mutableMapOf<Int, List<Double>>()) { accumulator, element ->
+                element.forEach { (key, values) ->
+                    accumulator[key] = accumulator[key].orEmpty() + values
+                }
+                accumulator
+            }
+            .mapValues { (_, leqs) ->
+                val leqsInRange = leqs.filter { it.isInVuMeterRange() }
+
+                if (leqsInRange.isNotEmpty()) {
+                    leqsInRange.dbAverage()
+                } else {
+                    0.0
+                }
+            }
 
         // Calculate LA10/50/90 based on indices in the sorted list.
         val summary = MeasurementSummary(
             la10 = allMeasurementLeqSorted[(allMeasurementLeqSorted.size / 100.0 * 90.0).toInt()],
             la50 = allMeasurementLeqSorted[(allMeasurementLeqSorted.size / 100.0 * 50.0).toInt()],
             la90 = allMeasurementLeqSorted[(allMeasurementLeqSorted.size / 100.0 * 10.0).toInt()],
-            leqOverTime = downsampleLeqSequence(allMeasurementLeq)
+            leqOverTime = downsampleLeqSequence(allMeasurementLaeq),
+            avgLevelPerFreq = averageLeqPerFrequencyBand,
         )
         // Build a new measurement object with the summary property.
         val newValue = measurement.copy(summary = summary)

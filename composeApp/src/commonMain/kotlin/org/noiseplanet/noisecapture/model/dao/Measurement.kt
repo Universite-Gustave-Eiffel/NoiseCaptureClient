@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 /**
  * Current model version, used for potential migrations.
  */
-val Measurement.Companion.VERSION: Int get() = 1
+val Measurement.Companion.VERSION: Int get() = 2
 
 /**
  * Represents a measurement consisting of acoustic indicators recorded at different locations.

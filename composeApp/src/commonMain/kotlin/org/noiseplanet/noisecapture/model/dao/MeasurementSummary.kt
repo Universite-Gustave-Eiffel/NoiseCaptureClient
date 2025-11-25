@@ -15,4 +15,5 @@ data class MeasurementSummary(
     val la50: Double,
     val la90: Double,
     val leqOverTime: Map<Long, Double>,
+    val avgLevelPerFreq: Map<Int, Double>,
 )
