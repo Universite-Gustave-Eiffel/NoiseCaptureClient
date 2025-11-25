@@ -90,6 +90,14 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
         return measurementStorageService.subscribeAll()
     }
 
+    override suspend fun getAllMeasurementIds(): List<String> {
+        return measurementStorageService.getIndex()
+    }
+
+    override fun getAllMeasurementIdsFlow(): Flow<List<String>> {
+        return measurementStorageService.subscribeIndex()
+    }
+
     override suspend fun getMeasurement(uuid: String): Measurement? {
         return measurementStorageService.get(uuid)
     }

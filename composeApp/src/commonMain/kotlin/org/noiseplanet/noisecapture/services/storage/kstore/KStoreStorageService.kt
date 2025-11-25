@@ -55,11 +55,15 @@ open class KStoreStorageService<RecordType : @Serializable Any>(
     // - StorageService
 
     override suspend fun getAll(): List<RecordType> {
-        val recordIds = indexStore.getOrEmpty()
+        val recordIds = getIndex()
 
         return recordIds.mapNotNull { item ->
             get(item)
         }
+    }
+
+    override suspend fun getIndex(): List<String> {
+        return indexStore.get().orEmpty()
     }
 
     override suspend fun get(uuid: String): RecordType? {
@@ -87,11 +91,16 @@ open class KStoreStorageService<RecordType : @Serializable Any>(
     }
 
     override fun subscribeAll(): Flow<List<RecordType>> {
-        return indexStore.updates.map { allIds ->
-            // Will emit a new value every time the index is updated
-            allIds?.mapNotNull { itemId ->
+        return subscribeIndex().map { allIds ->
+            allIds.mapNotNull { itemId ->
                 get(itemId)
-            } ?: emptyList()
+            }
+        }
+    }
+
+    override fun subscribeIndex(): Flow<List<String>> {
+        return indexStore.updates.map { allIds ->
+            allIds.orEmpty()
         }
     }
 

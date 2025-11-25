@@ -47,6 +47,22 @@ interface MeasurementService {
     fun getAllMeasurementsFlow(): Flow<List<Measurement>>
 
     /**
+     * Gets all the ids of stored measurements, assumed to be in a chronological order from oldest
+     * to newest. This is useful for lazy loading measurements.
+     *
+     * @return List of all ids of stored measurements on this device
+     */
+    suspend fun getAllMeasurementIds(): List<String>
+
+    /**
+     * Gets a flow of all the ids of stored measurements, assumed to be in a chronological order
+     * from oldest to newest. Emits a new value everytime a measurement is created or deleted.
+     *
+     * @return A [Flow] of all stored measurement ids.
+     */
+    fun getAllMeasurementIdsFlow(): Flow<List<String>>
+
+    /**
      * Get a single measurement from its unique identifier.
      *
      * > Note: This only returns the base measurement objects but not the underlying leq
