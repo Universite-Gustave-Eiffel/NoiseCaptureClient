@@ -13,6 +13,10 @@ val homeModule = module {
         LastMeasurementsViewModel()
     }
 
+    viewModel { (measurementId: String) ->
+        HomeRecentMeasurementViewModel(measurementId)
+    }
+
     viewModel {
         SoundLevelMeterViewModel(
             showMinMaxSPL = false,

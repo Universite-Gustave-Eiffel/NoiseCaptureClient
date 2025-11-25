@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
-import nl.jacobras.humanreadable.HumanReadable
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.home_open_history_button_title
 import org.koin.core.component.KoinComponent
@@ -35,7 +34,7 @@ class LastMeasurementsViewModel : ViewModel(), KoinComponent {
             val totalDuration: String,
             val durationUnit: String,
             val historyButtonViewModel: NCButtonViewModel,
-            val lastMeasurements: List<Measurement>,
+            val lastMeasurementIds: List<String>,
         ) : ViewState
     }
 
@@ -52,18 +51,18 @@ class LastMeasurementsViewModel : ViewModel(), KoinComponent {
     )
 
     val viewStateFlow: StateFlow<ViewState> = measurementService
-        .getAllMeasurementsFlow()
-        .map { measurements ->
-            val durationMilliseconds = getMeasurementsTotalDuration(measurements)
-            val durationString = HumanReadable.duration(durationMilliseconds)
-            val (durationValue, durationUnit) = durationString.split(" ")
+        .getAllMeasurementIdsFlow()
+        .map { measurementIds ->
+//            val durationMilliseconds = getMeasurementsTotalDuration(measurements)
+//            val durationString = HumanReadable.duration(durationMilliseconds)
+//            val (durationValue, durationUnit) = durationString.split(" ")
 
             ViewState.ContentReady(
-                measurementsCount = measurements.size,
-                totalDuration = durationValue,
-                durationUnit = durationUnit,
+                measurementsCount = measurementIds.size,
+                totalDuration = "0",
+                durationUnit = "seconds",
                 historyButtonViewModel = openHistoryButtonViewModel,
-                lastMeasurements = measurements.sortedByDescending { it.startTimestamp }.take(4)
+                lastMeasurementIds = measurementIds.reversed().take(4)
             )
         }.stateInWhileSubscribed(
             scope = viewModelScope,
