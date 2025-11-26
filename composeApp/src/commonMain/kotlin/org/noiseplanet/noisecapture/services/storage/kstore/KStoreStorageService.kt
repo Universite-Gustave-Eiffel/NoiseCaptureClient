@@ -14,6 +14,7 @@ import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.dao.LeqSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.LocationSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.Measurement
+import org.noiseplanet.noisecapture.model.dao.UserStatistics
 import org.noiseplanet.noisecapture.model.dao.VERSION
 import org.noiseplanet.noisecapture.services.storage.StorageService
 import org.noiseplanet.noisecapture.util.injectLogger
@@ -164,6 +165,11 @@ open class KStoreStorageService<RecordType : @Serializable Any>(
             LocationSequenceFragment::class -> storeForTypedRecord<LocationSequenceFragment>(
                 uuid,
                 modelVersion = LocationSequenceFragment.VERSION
+            )
+
+            UserStatistics::class -> storeForTypedRecord<UserStatistics>(
+                uuid,
+                modelVersion = UserStatistics.VERSION
             )
 
             // Add other types that can be stored here.

@@ -171,14 +171,14 @@ interface MeasurementService {
     /**
      * Deletes the measurement's associated audio record (if any).
      *
-     * @param uuid Measurement unique identifier.
+     * @param measurement Measurement.
      */
-    suspend fun deleteMeasurementAssociatedAudio(uuid: String)
+    suspend fun deleteMeasurementAssociatedAudio(measurement: Measurement)
 
     /**
      * Deletes the measurement with the given id.
      *
-     * @param uuid Measurement unique identifier.
+     * @param measurement Measurement.
      */
-    suspend fun deleteMeasurement(uuid: String)
+    suspend fun deleteMeasurement(measurement: Measurement)
 }
