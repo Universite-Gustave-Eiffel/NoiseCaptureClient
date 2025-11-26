@@ -27,6 +27,7 @@ val detailsModule = module {
             MapViewModelParameters(
                 focusedMeasurementUuid = measurementId,
                 showControls = false,
+                tilesPreloadingPadding = 0, // Since map isn't scrollable, only load necessary tiles.
             )
         )
     }
