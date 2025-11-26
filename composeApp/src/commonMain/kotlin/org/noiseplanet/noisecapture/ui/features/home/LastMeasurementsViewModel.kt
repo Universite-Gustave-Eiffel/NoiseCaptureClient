@@ -11,15 +11,13 @@ import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.home_open_history_button_title
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
+import org.noiseplanet.noisecapture.services.statistics.UserStatisticsService
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonStyle
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
-import kotlin.time.Duration
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
+import kotlin.time.Duration.Companion.milliseconds
 
 
 class LastMeasurementsViewModel : ViewModel(), KoinComponent {
@@ -35,7 +33,7 @@ class LastMeasurementsViewModel : ViewModel(), KoinComponent {
             val totalDuration: String,
             val durationUnit: String,
             val historyButtonViewModel: NCButtonViewModel,
-            val lastMeasurements: List<Measurement>,
+            val lastMeasurementIds: List<String>,
         ) : ViewState
     }
 
@@ -43,6 +41,7 @@ class LastMeasurementsViewModel : ViewModel(), KoinComponent {
     // - Properties
 
     private val measurementService: MeasurementService by inject()
+    private val userStatisticsService: UserStatisticsService by inject()
 
     private val openHistoryButtonViewModel = NCButtonViewModel(
         title = Res.string.home_open_history_button_title,
@@ -52,34 +51,23 @@ class LastMeasurementsViewModel : ViewModel(), KoinComponent {
     )
 
     val viewStateFlow: StateFlow<ViewState> = measurementService
-        .getAllMeasurementsFlow()
-        .map { measurements ->
-            val durationMilliseconds = getMeasurementsTotalDuration(measurements)
-            val durationString = HumanReadable.duration(durationMilliseconds)
+        .getAllMeasurementIdsFlow()
+        .map { measurementIds ->
+            val statistics = userStatisticsService.get()
+            val durationString = HumanReadable.duration(
+                statistics.totalMeasuredDuration.milliseconds
+            )
             val (durationValue, durationUnit) = durationString.split(" ")
 
             ViewState.ContentReady(
-                measurementsCount = measurements.size,
+                measurementsCount = statistics.totalMeasurementsCount,
                 totalDuration = durationValue,
                 durationUnit = durationUnit,
                 historyButtonViewModel = openHistoryButtonViewModel,
-                lastMeasurements = measurements.sortedByDescending { it.startTimestamp }.take(4)
+                lastMeasurementIds = measurementIds.reversed().take(4)
             )
         }.stateInWhileSubscribed(
             scope = viewModelScope,
             initialValue = ViewState.Loading,
         )
-
-
-    // - Private functions
-
-    private fun getMeasurementsTotalDuration(measurements: List<Measurement>): Duration {
-        return if (measurements.isNotEmpty()) {
-            measurements.map { it.duration }
-                .reduce { total, duration -> total + duration }
-                .toDuration(unit = DurationUnit.MILLISECONDS)
-        } else {
-            Duration.ZERO
-        }
-    }
 }

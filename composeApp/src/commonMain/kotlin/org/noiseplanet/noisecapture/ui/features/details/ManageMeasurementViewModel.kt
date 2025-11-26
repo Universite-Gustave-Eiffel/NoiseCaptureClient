@@ -95,7 +95,7 @@ class ManageMeasurementViewModel(
     fun deleteMeasurementAudio() {
         measurement?.let {
             viewModelScope.launch {
-                measurementService.deleteMeasurementAssociatedAudio(it.uuid)
+                measurementService.deleteMeasurementAssociatedAudio(it)
             }
         }
     }
@@ -103,7 +103,7 @@ class ManageMeasurementViewModel(
     fun deleteMeasurement() {
         measurement?.let {
             viewModelScope.launch {
-                measurementService.deleteMeasurement(it.uuid)
+                measurementService.deleteMeasurement(it)
             }
         }
     }

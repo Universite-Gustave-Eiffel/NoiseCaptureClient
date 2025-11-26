@@ -33,6 +33,14 @@ interface StorageService<T : @Serializable Any> {
     suspend fun getAll(): List<T>
 
     /**
+     * Gets all ids of stored entities of this type.
+     * Expected to be in chronological order from oldest to newest
+     *
+     * @return All ids of stored entities found in storage.
+     */
+    suspend fun getIndex(): List<String>
+
+    /**
      * Gets a single entity from its unique identifier
      *
      * @param uuid Unique entity identifier
@@ -79,6 +87,14 @@ interface StorageService<T : @Serializable Any> {
      * @return A [Flow] of lists of all entities.
      */
     fun subscribeAll(): Flow<List<T>>
+
+    /**
+     * Gest a [Flow] of entities ids that is updated every time a new entity is pushed or removed.
+     * Expected to be in chronological order from oldest to newest.
+     *
+     * @return A [Flow] of lists of all entity ids.
+     */
+    fun subscribeIndex(): Flow<List<String>>
 
     /**
      * Gets a [Flow] that is updated everytime the target entity is updated.

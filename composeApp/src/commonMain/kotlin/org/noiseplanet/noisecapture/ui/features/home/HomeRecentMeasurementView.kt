@@ -15,41 +15,57 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import nl.jacobras.humanreadable.HumanReadable
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.home_last_measurement_duration
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
+import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.ui.components.spl.LAeqMetricsView
-import kotlin.time.DurationUnit
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
-import kotlin.time.toDuration
 
 
 @OptIn(ExperimentalTime::class)
 @Composable
 fun HomeRecentMeasurementView(
-    measurement: Measurement,
+    measurementId: String,
     onClick: (Measurement) -> Unit,
     modifier: Modifier = Modifier,
 ) {
 
     // - Properties
 
+    val viewModel: HomeRecentMeasurementViewModel = koinInject {
+        parametersOf(measurementId)
+    }
+    val measurement by viewModel.measurementFlow.collectAsStateWithLifecycle()
+
     val durationPrefix = stringResource(Res.string.home_last_measurement_duration)
-    val startTime = Instant.fromEpochMilliseconds(measurement.startTimestamp)
-    val duration = measurement.duration.toDuration(unit = DurationUnit.MILLISECONDS)
+    val startTime = measurement?.let {
+        HumanReadable.timeAgo(Instant.fromEpochMilliseconds(it.startTimestamp))
+    } ?: "-"
+    val duration = measurement?.let {
+        "${durationPrefix}: ${HumanReadable.duration(it.duration.milliseconds)}"
+    } ?: "-"
 
 
     // - Layout
 
     Column(
         modifier = modifier.clip(shape = MaterialTheme.shapes.medium)
-            .clickable { onClick(measurement) }
+            .clickable {
+                measurement?.let {
+                    onClick(it)
+                }
+            }
             .padding(top = 12.dp, bottom = 12.dp, start = 12.dp)
     ) {
         Row(
@@ -57,7 +73,7 @@ fun HomeRecentMeasurementView(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = HumanReadable.timeAgo(startTime),
+                text = startTime,
                 style = MaterialTheme.typography.titleMedium.copy(
                     color = MaterialTheme.colorScheme.onSurface
                 ),
@@ -70,16 +86,18 @@ fun HomeRecentMeasurementView(
             )
         }
         Text(
-            text = "${durationPrefix}: ${HumanReadable.duration(duration)}",
+            text = duration,
             style = MaterialTheme.typography.titleSmall.copy(
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
             )
         )
 
-        LAeqMetricsView(
-            measurement.laeqMetrics,
-            modifier = Modifier.padding(top = 8.dp)
-                .height(IntrinsicSize.Max)
-        )
+        measurement?.let {
+            LAeqMetricsView(
+                it.laeqMetrics,
+                modifier = Modifier.padding(top = 8.dp)
+                    .height(IntrinsicSize.Max)
+            )
+        }
     }
 }

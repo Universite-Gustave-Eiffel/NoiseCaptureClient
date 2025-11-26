@@ -15,6 +15,7 @@ import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.model.dao.MeasurementSummary
 import org.noiseplanet.noisecapture.model.dao.MutableMeasurement
 import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
+import org.noiseplanet.noisecapture.services.statistics.UserStatisticsService
 import org.noiseplanet.noisecapture.services.storage.StorageService
 import org.noiseplanet.noisecapture.services.storage.injectStorageService
 import org.noiseplanet.noisecapture.util.dbAverage
@@ -67,6 +68,7 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
     private val leqSequenceStorageService: StorageService<LeqSequenceFragment> by injectStorageService()
     private val locationSequenceStorageService: StorageService<LocationSequenceFragment> by injectStorageService()
     private val audioRecordingService: AudioRecordingService by inject()
+    private val userStatisticsService: UserStatisticsService by inject()
 
     private var ongoingMeasurement: MutableMeasurement? = null
 
@@ -88,6 +90,14 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
 
     override fun getAllMeasurementsFlow(): Flow<List<Measurement>> {
         return measurementStorageService.subscribeAll()
+    }
+
+    override suspend fun getAllMeasurementIds(): List<String> {
+        return measurementStorageService.getIndex()
+    }
+
+    override fun getAllMeasurementIdsFlow(): Flow<List<String>> {
+        return measurementStorageService.subscribeIndex()
     }
 
     override suspend fun getMeasurement(uuid: String): Measurement? {
@@ -213,6 +223,12 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
     override suspend fun closeOngoingMeasurement() {
         // End currently ongoing sequence fragments
         onSequenceFragmentEnd()
+        // Add this measurement to user statistics
+        ongoingMeasurement?.let { ongoingMeasurement ->
+            measurementStorageService.get(ongoingMeasurement.uuid)?.let { measurement ->
+                userStatisticsService.addMeasurement(measurement)
+            }
+        }
         ongoingMeasurement = null
     }
 
@@ -268,19 +284,22 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
         return newValue
     }
 
-    override suspend fun deleteMeasurementAssociatedAudio(uuid: String) {
-        val measurement = measurementStorageService.get(uuid) ?: return
+    override suspend fun deleteMeasurementAssociatedAudio(measurement: Measurement) {
         measurement.recordedAudioUrl?.let { audioUrl ->
             // Delete audio file
             audioRecordingService.deleteFileAtUrl(audioUrl)
             // And update measurement with null url
-            measurementStorageService.set(uuid, measurement.copy(recordedAudioUrl = null))
+            measurementStorageService.set(
+                uuid = measurement.uuid,
+                newValue = measurement.copy(recordedAudioUrl = null)
+            )
         }
     }
 
-    override suspend fun deleteMeasurement(uuid: String) {
-        deleteMeasurementAssociatedAudio(uuid)
-        measurementStorageService.delete(uuid)
+    override suspend fun deleteMeasurement(measurement: Measurement) {
+        deleteMeasurementAssociatedAudio(measurement)
+        measurementStorageService.delete(measurement.uuid)
+        userStatisticsService.removeMeasurement(measurement)
     }
 
 

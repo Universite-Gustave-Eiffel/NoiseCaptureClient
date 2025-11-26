@@ -59,6 +59,10 @@ import kotlin.math.pow
  * @param followUserLocation If true, the map will automatically recenter to follow the user
  *                           location. If false, no location updates are required. By default if
  *                           a measurement id is provided, this parameter will be false.
+ * @param tilesPreloadingPadding How many tiles should be preloaded in every directions, in addition
+ *                               to the ones that are visible within the screen bounds. Larger values
+ *                               will give smoother scrolling experience but also greater network and
+ *                               performance usage. Defaults to 2.
  */
 data class MapViewModelParameters(
     val focusedMeasurementUuid: String? = null,
@@ -66,6 +70,7 @@ data class MapViewModelParameters(
     val showControls: Boolean = true,
     val initialZoomLevel: Int = DEFAULT_INITIAL_ZOOM_LEVEL,
     val followUserLocation: Boolean = focusedMeasurementUuid == null,
+    val tilesPreloadingPadding: Int = 2,
 ) {
 
     // - Constants
@@ -190,7 +195,7 @@ class MapViewModel(
                 // Preload the next N tiles in every direction for smoother scrolling.
                 // Greater values provide better map scrolling experience but also increase performance
                 // impact and network usage.
-                preloadingPadding(tileSizePx * 2)
+                preloadingPadding(tileSizePx * parameters.tilesPreloadingPadding)
             }
         ).apply {
             enableRotation()

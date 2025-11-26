@@ -13,6 +13,10 @@ val homeModule = module {
         LastMeasurementsViewModel()
     }
 
+    viewModel { (measurementId: String) ->
+        HomeRecentMeasurementViewModel(measurementId)
+    }
+
     viewModel {
         SoundLevelMeterViewModel(
             showMinMaxSPL = false,
@@ -27,6 +31,7 @@ val homeModule = module {
                 showControls = false,
                 initialZoomLevel = 15, // Show a more zoomed out map to visualize measurements
                 followUserLocation = false,
+                tilesPreloadingPadding = 0, // Since map isn't scrollable, only load necessary tiles.
             )
         )
     }

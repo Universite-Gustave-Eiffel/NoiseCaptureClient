@@ -72,7 +72,7 @@ private fun LastMeasurementsViewContentReady(
 
     // - Layout
 
-    if (viewState.lastMeasurements.isEmpty()) {
+    if (viewState.lastMeasurementIds.isEmpty()) {
         return
     }
 
@@ -122,9 +122,9 @@ private fun LastMeasurementsViewContentReady(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                viewState.lastMeasurements.forEach { measurement ->
+                viewState.lastMeasurementIds.forEach { measurementId ->
                     HomeRecentMeasurementView(
-                        measurement,
+                        measurementId = measurementId,
                         onClick = onClickMeasurement,
                         modifier = Modifier.weight(1f)
                     )
