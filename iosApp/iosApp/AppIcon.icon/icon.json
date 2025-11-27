@@ -1,6 +1,9 @@
 {
   "fill" : {
-    "automatic-gradient" : "srgb:0.25882,0.39608,0.41961,1.00000",
+    "linear-gradient" : [
+      "srgb:0.25882,0.39608,0.41961,1.00000",
+      "srgb:0.13725,0.25490,0.27451,1.00000"
+    ],
     "orientation" : {
       "start" : {
         "x" : 0.5,
@@ -27,16 +30,19 @@
               "value" : {
                 "solid" : "srgb:0.92549,0.98824,1.00000,1.00000"
               }
+            },
+            {
+              "appearance" : "tinted",
+              "value" : "automatic"
             }
           ],
-          "hidden" : false,
-          "image-name" : "Logo_noisecapture_v2_proto 9(2).svg",
-          "name" : "Logo_noisecapture_v2_proto 9(2)",
+          "image-name" : "logo_nc2.svg",
+          "name" : "logo_nc2",
           "position" : {
-            "scale" : 1.1,
+            "scale" : 1.05,
             "translation-in-points" : [
               0,
-              25.534867883439574
+              0
             ]
           }
         }
