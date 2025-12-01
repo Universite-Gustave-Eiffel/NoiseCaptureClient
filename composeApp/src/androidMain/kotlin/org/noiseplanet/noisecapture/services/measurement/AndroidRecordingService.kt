@@ -281,7 +281,7 @@ internal abstract class ForegroundServiceWrapper : KoinComponent, Service() {
             .Builder(this, NotificationHelper.APP_NOTIFICATION_CHANNEL_ID)
             .setContentTitle(getString(Res.string.ongoing_measurement_notification_title))
             .setContentText(getString(Res.string.ongoing_measurement_notification_body))
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_small_notification)
             .setContentIntent(
                 PendingIntent.getActivity(
                     this,
