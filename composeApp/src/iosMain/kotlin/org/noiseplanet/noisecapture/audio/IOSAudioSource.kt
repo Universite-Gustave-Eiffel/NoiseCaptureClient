@@ -22,6 +22,7 @@ import org.noiseplanet.noisecapture.util.injectLogger
 import platform.AVFAudio.AVAudioEngine
 import platform.AVFAudio.AVAudioPCMBuffer
 import platform.AVFAudio.AVAudioSession
+import platform.AVFAudio.AVAudioSessionCategoryOptionDefaultToSpeaker
 import platform.AVFAudio.AVAudioSessionCategoryOptionMixWithOthers
 import platform.AVFAudio.AVAudioSessionCategoryPlayAndRecord
 import platform.AVFAudio.AVAudioSessionInterruptionNotification
@@ -192,7 +193,7 @@ internal class IOSAudioSource : AudioSource, KoinComponent {
             audioSession.setCategory(
                 category = AVAudioSessionCategoryPlayAndRecord,
                 mode = AVAudioSessionModeMeasurement,
-                options = AVAudioSessionCategoryOptionMixWithOthers,
+                options = AVAudioSessionCategoryOptionMixWithOthers or AVAudioSessionCategoryOptionDefaultToSpeaker,
                 error = error.ptr,
             )
             checkNoError(error.value) { "Error while setting AVAudioSession category" }
