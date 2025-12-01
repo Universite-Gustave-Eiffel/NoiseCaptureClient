@@ -69,6 +69,9 @@ class IOSAudioPlayer(filePath: String) : AudioPlayer(filePath), KoinComponent {
             )
             audioPlayer?.prepareToPlay()
 
+            // Set audio player volume to max (doesn't affect system volume)
+            audioPlayer?.volume = 1f
+
             checkNoError(error.value) { "Error while setting up AVAudioPlayer" }
         }
         val audioPlayer = checkNotNull(audioPlayer)
