@@ -117,6 +117,11 @@ class MapViewModel(
         private const val WORKER_COUNT = 16
 
         /**
+         * When centering on a measurement path, ensure a minimum bounding box size
+         */
+        private const val MIN_BBOX_SIZE = 0.00001
+
+        /**
          * Default coordinates for the map if user location isn't enabled.
          * Set to Nantes city center.
          */
@@ -446,25 +451,38 @@ class MapViewModel(
             prevXY = currXY
         }
 
-        // Calculate path bounding box
-        val (xLeft, yTop) = GeoUtil.lonLatToNormalizedWebMercator(
+        // Save bounding box and recenter
+        measurementPathBoundingBox = getPathBoundingBox(pathPoints)
+        recenter()
+    }
+
+    /**
+     * Calculates path bounding box ensuring a minimum size to avoid zooming on map too much
+     */
+    private fun getPathBoundingBox(pathPoints: List<PathPoint>): BoundingBox {
+        // Get actual bounds
+        var (xLeft, yTop) = GeoUtil.lonLatToNormalizedWebMercator(
             latitude = pathPoints.minOf { it.latitude },
             longitude = pathPoints.minOf { it.longitude }
         )
-        val (xRight, yBottom) = GeoUtil.lonLatToNormalizedWebMercator(
+        var (xRight, yBottom) = GeoUtil.lonLatToNormalizedWebMercator(
             latitude = pathPoints.maxOf { it.latitude },
             longitude = pathPoints.maxOf { it.longitude }
         )
 
-        // Save it for future calls to recenter()
-        measurementPathBoundingBox = BoundingBox(
-            xLeft = xLeft,
-            xRight = xRight,
-            yTop = yTop,
-            yBottom = yBottom
-        )
+        // Ensure minimum bbox size
+        val width = xRight - xLeft
+        val height = yBottom - yTop
+        if (width < MIN_BBOX_SIZE) {
+            xLeft -= (MIN_BBOX_SIZE - width) / 2.0
+            xRight += (MIN_BBOX_SIZE - width) / 2.0
+        }
+        if (height < MIN_BBOX_SIZE) {
+            yTop -= (MIN_BBOX_SIZE - height) / 2.0
+            yBottom += (MIN_BBOX_SIZE - height) / 2.0
+        }
 
-        recenter()
+        return BoundingBox(xLeft = xLeft, xRight = xRight, yTop = yTop, yBottom = yBottom)
     }
 
     /**
