@@ -95,6 +95,7 @@ data class MapViewModelParameters(
  * @param windowSizeClass Current device's [WindowSizeClass]. Used for tiles scaling.
  *
  */
+@Suppress("TooManyFunctions")
 class MapViewModel(
     windowSizeClass: WindowSizeClass,
     val parameters: MapViewModelParameters = MapViewModelParameters(),
