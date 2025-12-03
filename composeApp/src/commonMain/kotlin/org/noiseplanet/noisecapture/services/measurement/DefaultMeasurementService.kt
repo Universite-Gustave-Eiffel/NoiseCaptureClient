@@ -23,8 +23,10 @@ import org.noiseplanet.noisecapture.util.injectLogger
 import org.noiseplanet.noisecapture.util.isInVuMeterRange
 import org.noiseplanet.noisecapture.util.roundTo
 import kotlin.concurrent.Volatile
+import kotlin.math.log10
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.pow
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.uuid.ExperimentalUuidApi
@@ -174,8 +176,13 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
         if (record.laeq.isInVuMeterRange()) {
             // Update (or initialize) ongoing measurement's leq metrics
             val laeqMetrics = ongoingMeasurement.laeqMetrics?.let { currentMetrics ->
-                val average = currentMetrics.average +
-                    (record.laeq - currentMetrics.average) / currentMetrics.recordsCount
+                // Calculate new energetic average based on current average and records count
+                val average = 10.0 * log10(
+                    (currentMetrics.recordsCount * 10.0.pow(currentMetrics.average / 10.0)
+                        + 10.0.pow(record.laeq / 10.0))
+                        / (currentMetrics.recordsCount + 1)
+                )
+
                 LAeqMetrics(
                     min = min(record.laeq, currentMetrics.min),
                     average = average.roundTo(1),
