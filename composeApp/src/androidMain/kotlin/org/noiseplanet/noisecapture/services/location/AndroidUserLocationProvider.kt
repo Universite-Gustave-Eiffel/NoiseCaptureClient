@@ -3,7 +3,6 @@ package org.noiseplanet.noisecapture.services.location
 import android.os.Build
 import com.google.android.gms.location.DeviceOrientation
 import com.google.android.gms.location.DeviceOrientationListener
-import com.google.android.gms.location.DeviceOrientationRequest
 import com.google.android.gms.location.LocationListener
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
@@ -11,13 +10,12 @@ import com.google.android.gms.location.Priority
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.zip
+import kotlinx.coroutines.flow.map
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.dao.LocationRecord
 import org.noiseplanet.noisecapture.util.injectLogger
-import org.noiseplanet.noisecapture.util.throttleLatest
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -66,13 +64,14 @@ class AndroidUserLocationProvider :
 
     /**
      * Specifies the desired accuracy/power policy and interval between orientation updates
+     * // TODO: Remove orientation data collection when exploited in app
      */
-    private val orientationRequest by lazy {
-        DeviceOrientationRequest.Builder(
-            DeviceOrientationRequest.OUTPUT_PERIOD_DEFAULT
-        ).build()
-    }
-    private val orientationClient = LocationServices.getFusedOrientationProviderClient(get())
+//    private val orientationRequest by lazy {
+//        DeviceOrientationRequest.Builder(
+//            DeviceOrientationRequest.OUTPUT_PERIOD_DEFAULT
+//        ).build()
+//    }
+//    private val orientationClient = LocationServices.getFusedOrientationProviderClient(get())
 
     /**
      * Executor on which location and orientation requests will run
@@ -83,19 +82,15 @@ class AndroidUserLocationProvider :
     // - UserLocationProvider
 
     override val liveLocation: Flow<LocationRecord>
-        get() = rawOrientationFlow
-            // Device orientation is given every 20ms minimum, so we throttle the values to
-            // match location updates frequency
-            .throttleLatest(TimeUnit.SECONDS.toMillis(LOCATION_REQUEST_INTERVAL_SECONDS))
-            .zip(rawLocationFlow) { orientation, location ->
-                // Zip the results of both flows to get location updates with both
-                // position and orientation.
-                logger.debug("Got new orientation and location: $orientation, $location")
-                val locationRecord = buildLocationFromRawData(location, orientation)
-                lastRecordedLocation = locationRecord
+        get() = rawLocationFlow.map { location ->
+            // Zip the results of both flows to get location updates with both
+            // position and orientation.
+            logger.debug("Got new location: $location")
+            val locationRecord = buildLocationFromRawData(location)
+            lastRecordedLocation = locationRecord
 
-                locationRecord
-            }
+            locationRecord
+        }
 
     override val currentLocation: LocationRecord?
         get() = lastRecordedLocation
@@ -108,11 +103,11 @@ class AndroidUserLocationProvider :
                 executor,
                 this,
             )
-            orientationClient.requestOrientationUpdates(
-                orientationRequest,
-                executor,
-                this,
-            )
+            // orientationClient.requestOrientationUpdates(
+            //     orientationRequest,
+            //    executor,
+            //    this,
+            // )
         } catch (exception: SecurityException) {
             logger.error("The required location permissions were not granted.", exception)
         }
@@ -120,7 +115,7 @@ class AndroidUserLocationProvider :
 
     override fun stopUpdatingLocation() {
         locationClient.removeLocationUpdates(this)
-        orientationClient.removeOrientationUpdates(this)
+        // orientationClient.removeOrientationUpdates(this)
     }
 
 
@@ -134,7 +129,7 @@ class AndroidUserLocationProvider :
     // - DeviceOrientationListener
 
     override fun onDeviceOrientationChanged(rawOrientation: DeviceOrientation) {
-        rawOrientationFlow.tryEmit(rawOrientation)
+//        rawOrientationFlow.tryEmit(rawOrientation)
     }
 
 
@@ -148,12 +143,12 @@ class AndroidUserLocationProvider :
      */
     private fun buildLocationFromRawData(
         rawLocation: RawLocation,
-        rawOrientation: DeviceOrientation,
+        rawOrientation: DeviceOrientation? = null,
     ): LocationRecord {
         val accuracy = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             LocationAccuracy(
                 horizontal = rawLocation.accuracy.toDouble(),
-                orientation = rawOrientation.headingErrorDegrees.toDouble(),
+                orientation = rawOrientation?.headingErrorDegrees?.toDouble() ?: 0.0,
                 // Those parameters are only available since SDK 26 (Android O)
                 speed = rawLocation.speedAccuracyMetersPerSecond.toDouble(),
                 vertical = rawLocation.verticalAccuracyMeters.toDouble(),
@@ -162,7 +157,7 @@ class AndroidUserLocationProvider :
         } else {
             LocationAccuracy(
                 horizontal = rawLocation.accuracy.toDouble(),
-                orientation = rawOrientation.headingDegrees.toDouble(),
+                orientation = rawOrientation?.headingErrorDegrees?.toDouble() ?: 0.0,
             )
         }
 
@@ -173,7 +168,7 @@ class AndroidUserLocationProvider :
             altitude = rawLocation.altitude,
             speed = rawLocation.speed.toDouble(),
             direction = rawLocation.bearing.toDouble(),
-            orientation = rawOrientation.headingDegrees.toDouble(),
+            orientation = rawOrientation?.headingDegrees?.toDouble(),
             horizontalAccuracy = accuracy.horizontal,
             verticalAccuracy = accuracy.vertical,
             orientationAccuracy = accuracy.orientation,

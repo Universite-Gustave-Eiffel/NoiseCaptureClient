@@ -79,12 +79,16 @@ class IOSUserLocationProvider : UserLocationProvider, KoinComponent {
 
     override fun startUpdatingLocation() {
         locationManager.startUpdatingLocation()
-        locationManager.startUpdatingHeading()
+
+        // TODO: Resume heading values collection when exploited in app
+        // locationManager.startUpdatingHeading()
     }
 
     override fun stopUpdatingLocation() {
         locationManager.stopUpdatingLocation()
-        locationManager.stopUpdatingHeading()
+
+        // TODO: Resume heading values collection when exploited in app
+        // locationManager.stopUpdatingHeading()
     }
 
 
