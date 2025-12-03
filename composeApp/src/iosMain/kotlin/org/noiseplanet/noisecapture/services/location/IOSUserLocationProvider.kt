@@ -20,13 +20,14 @@ import platform.CoreLocation.CLLocationManager
 import platform.CoreLocation.CLLocationManagerDelegateProtocol
 import platform.CoreLocation.kCLLocationAccuracyBestForNavigation
 import platform.Foundation.NSError
-import platform.Foundation.timeIntervalSince1970
 import platform.darwin.NSObject
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 /**
  * IOS implementation of location provider
  */
-@OptIn(ExperimentalForeignApi::class)
+@OptIn(ExperimentalForeignApi::class, ExperimentalTime::class)
 class IOSUserLocationProvider : UserLocationProvider, KoinComponent {
 
     // - Constants
@@ -101,13 +102,7 @@ class IOSUserLocationProvider : UserLocationProvider, KoinComponent {
 
         // Create Location object from raw values
         rawLocation.coordinate.useContents {
-            // Our timestamp value for this point will be the latest value between heading
-            // and location objects
-            val timestamp = maxOf(
-                a = rawLocation.timestamp.timeIntervalSince1970,
-                b = rawHeading?.timestamp?.timeIntervalSince1970 ?: 0.0,
-            ).toLong()
-
+            val timestamp = Clock.System.now().toEpochMilliseconds()
             val location = LocationRecord(
                 timestamp = timestamp,
                 lat = latitude,
