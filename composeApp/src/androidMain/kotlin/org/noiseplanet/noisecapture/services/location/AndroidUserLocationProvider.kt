@@ -45,10 +45,10 @@ class AndroidUserLocationProvider :
         replay = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
-    private val rawOrientationFlow = MutableSharedFlow<DeviceOrientation>(
-        replay = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
+//    private val rawOrientationFlow = MutableSharedFlow<DeviceOrientation>(
+//        replay = 1,
+//        onBufferOverflow = BufferOverflow.DROP_OLDEST
+//    )
 
     /**
      * Specifies the desired accuracy/power policy and interval between location updates
