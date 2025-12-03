@@ -267,7 +267,7 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
                 accumulator
             }
             .mapValues { (_, leqs) ->
-                val leqsInRange = leqs.filter { it.isInVuMeterRange() }
+                val leqsInRange = leqs.filter { it > 0.0 }
 
                 if (leqsInRange.isNotEmpty()) {
                     leqsInRange.dbAverage()
