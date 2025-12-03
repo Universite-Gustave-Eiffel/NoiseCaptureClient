@@ -3,6 +3,7 @@ package org.noiseplanet.noisecapture.ui.components.map
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.QuestionMark
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,6 +17,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.map_marker
+import org.jetbrains.compose.resources.painterResource
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.services.location.UserLocationProvider
@@ -161,10 +165,6 @@ class MapViewModel(
      * Might need some tweaking after further testing.
      */
     val tileSizePx = when (windowSizeClass.minWidthDp) {
-        // TODO: Large/Extra large size classes are only introduced in material3:1.2.0-alpha07
-        //       but for now the compose library only forces 1.2.0-alpha05
-        // WindowSizeClass.WIDTH_DP_EXTRA_LARGE_LOWER_BOUND -> 200
-        // WindowSizeClass.WIDTH_DP_LARGE_LOWER_BOUND -> 300
         WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND -> 350
         WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND -> 400
         else -> 600
@@ -411,8 +411,20 @@ class MapViewModel(
             return
         }
 
+        if (pathPoints.size == 1) {
+            val point = pathPoints.firstOrNull() ?: return
+            val (x, y) = GeoUtil.lonLatToNormalizedWebMercator(point.latitude, point.longitude)
+
+            mapState.addMarker(id = "marker", x = x, y = y) {
+                Icon(
+                    contentDescription = "marker",
+                    painter = painterResource(Res.drawable.map_marker),
+                    tint = NoiseLevelColorRamp.getColorForSPLValue(value = point.level),
+                )
+            }
+        }
+
         // Add path data to map
-        // TODO: When only a single point, show colored marker instead of path?
         pathPoints.forEachIndexed { index, point ->
             if (index == 0) {
                 prevXY = GeoUtil.lonLatToNormalizedWebMercator(point.latitude, point.longitude)
