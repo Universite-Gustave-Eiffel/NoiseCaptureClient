@@ -42,13 +42,15 @@ import platform.Foundation.NSError
 import platform.Foundation.NSNotification
 import platform.Foundation.NSTimeInterval
 import platform.posix.uint32_t
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 /**
  * iOS [AudioSource] implementation using [AVAudioEngine]
  *
  * [Swift documentation](https://developer.apple.com/documentation/avfaudio/avaudioengine)
  */
-@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
+@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class, ExperimentalTime::class)
 internal class IOSAudioSource : AudioSource, KoinComponent {
 
     // - Constants
@@ -251,7 +253,7 @@ internal class IOSAudioSource : AudioSource, KoinComponent {
         memScoped {
             val error: ObjCObjectVar<NSError?> = alloc()
             audioSession.setActive(
-                active = true,
+                active = isActive,
                 error = error.ptr
             )
             checkNoError(error.value) {
@@ -325,10 +327,12 @@ internal class IOSAudioSource : AudioSource, KoinComponent {
                 // array and retrieve the element using index
                 channelData.pointed.value?.get(index) ?: 0f
             }
+            val timestamp = Clock.System.now().toEpochMilliseconds()
+
             // Send processed audio samples through Channel
             audioSamplesChannel.trySend(
                 AudioSamples(
-                    audioTime.hostTime.toLong(),
+                    epoch = timestamp,
                     samplesBuffer,
                     audioTime.sampleRate.toInt(),
                 )

@@ -127,10 +127,7 @@ private fun DetailsScreenLarge(
             verticalArrangement = Arrangement.spacedBy(32.dp),
             modifier = Modifier.weight(1f),
         ) {
-            MapView(
-                modifier = Modifier.weight(1f).fillMaxWidth().clip(MaterialTheme.shapes.large),
-                focusedMeasurementUuid = viewState.measurement.uuid,
-            )
+            MapViewOrPlaceHolder(viewState, modifier = Modifier.weight(1f).fillMaxWidth())
 
             viewState.measurement.summary?.let { summary ->
                 if (summary.leqOverTime.isNotEmpty()) {
@@ -150,7 +147,7 @@ private fun DetailsScreenLarge(
                 la10 = viewState.measurement.summary?.la10 ?: 0.0,
                 max = viewState.measurement.laeqMetrics.max
             )
-            
+
             viewState.measurement.summary?.let { summary ->
                 if (summary.avgLevelPerFreq.isNotEmpty()) {
                     AverageLevelPerFreqView(avgLevelPerFreq = summary.avgLevelPerFreq)
@@ -212,10 +209,7 @@ private fun DetailsScreenMedium(
             }
         }
 
-        MapView(
-            modifier = Modifier.aspectRatio(2f).clip(MaterialTheme.shapes.large),
-            focusedMeasurementUuid = viewState.measurement.uuid,
-        )
+        MapViewOrPlaceHolder(viewState, modifier = Modifier.aspectRatio(2f))
 
         viewState.measurement.summary?.let { summary ->
             Row(
@@ -281,10 +275,7 @@ private fun DetailsScreenCompact(
             averageLevel = viewState.measurement.laeqMetrics.average
         )
 
-        MapView(
-            modifier = Modifier.aspectRatio(1.5f).clip(MaterialTheme.shapes.large),
-            focusedMeasurementUuid = viewState.measurement.uuid,
-        )
+        MapViewOrPlaceHolder(viewState, modifier = Modifier.aspectRatio(1.5f))
 
         viewState.measurement.recordedAudioUrl?.let { audioUrl ->
             AudioPlayerView(audioUrl)
@@ -335,5 +326,34 @@ private fun ContentLoadingView() {
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center
         )
+    }
+}
+
+
+/**
+ * Will show the map if measurement has location data, or a placeholder
+ */
+@Composable
+private fun MapViewOrPlaceHolder(
+    viewState: DetailsScreenViewModel.ViewState.ContentReady,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier.clip(shape = MaterialTheme.shapes.large)
+            .background(color = MaterialTheme.colorScheme.surfaceContainer)
+    ) {
+        if (viewState.measurement.locationSequenceIds.isNotEmpty()) {
+            MapView(
+                modifier = Modifier.fillMaxSize(),
+                focusedMeasurementUuid = viewState.measurement.uuid,
+            )
+        } else {
+            Text(
+                text = "No location data available\nfor this measurement.",
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.bodyLarge,
+            )
+        }
     }
 }

@@ -3,6 +3,7 @@ package org.noiseplanet.noisecapture.ui.components.map
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.QuestionMark
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,6 +17,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.map_marker
+import org.jetbrains.compose.resources.painterResource
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.services.location.UserLocationProvider
@@ -91,6 +95,7 @@ data class MapViewModelParameters(
  * @param windowSizeClass Current device's [WindowSizeClass]. Used for tiles scaling.
  *
  */
+@Suppress("TooManyFunctions")
 class MapViewModel(
     windowSizeClass: WindowSizeClass,
     val parameters: MapViewModelParameters = MapViewModelParameters(),
@@ -111,6 +116,11 @@ class MapViewModel(
          * Value recommended by MapCompose for remote tiles is 16: https://github.com/p-lr/MapComposeMP#layers
          */
         private const val WORKER_COUNT = 16
+
+        /**
+         * When centering on a measurement path, ensure a minimum bounding box size
+         */
+        private const val MIN_BBOX_SIZE = 0.00001
 
         /**
          * Default coordinates for the map if user location isn't enabled.
@@ -161,10 +171,6 @@ class MapViewModel(
      * Might need some tweaking after further testing.
      */
     val tileSizePx = when (windowSizeClass.minWidthDp) {
-        // TODO: Large/Extra large size classes are only introduced in material3:1.2.0-alpha07
-        //       but for now the compose library only forces 1.2.0-alpha05
-        // WindowSizeClass.WIDTH_DP_EXTRA_LARGE_LOWER_BOUND -> 200
-        // WindowSizeClass.WIDTH_DP_LARGE_LOWER_BOUND -> 300
         WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND -> 350
         WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND -> 400
         else -> 600
@@ -344,18 +350,14 @@ class MapViewModel(
     /**
      * Creates or updates the blue dot that marks the user's current location.
      */
-    private fun updateUserLocationMarker(x: Double, y: Double, orientation: Double? = null) {
+    private fun updateUserLocationMarker(x: Double, y: Double) {
         if (mapState.hasMarker(id = USER_LOCATION_MARKER_ID)) {
             // If marker is already added to the map, move it to the new location
             mapState.moveMarker(id = USER_LOCATION_MARKER_ID, x = x, y = y)
         } else {
             // Otherwise, create and add marker
             mapState.addMarker(id = USER_LOCATION_MARKER_ID, x = x, y = y) {
-                // TODO: Pass down user facing direction when better implemented.
-                UserLocationMarker(
-                    mapRotationDegrees = mapState.rotation,
-                    orientationDegrees = orientation?.toFloat(),
-                )
+                UserLocationMarker(mapRotationDegrees = mapState.rotation)
             }
         }
     }
@@ -411,8 +413,20 @@ class MapViewModel(
             return
         }
 
+        if (pathPoints.size == 1) {
+            val point = pathPoints.firstOrNull() ?: return
+            val (x, y) = GeoUtil.lonLatToNormalizedWebMercator(point.latitude, point.longitude)
+
+            mapState.addMarker(id = "marker", x = x, y = y) {
+                Icon(
+                    contentDescription = "marker",
+                    painter = painterResource(Res.drawable.map_marker),
+                    tint = NoiseLevelColorRamp.getColorForSPLValue(value = point.level),
+                )
+            }
+        }
+
         // Add path data to map
-        // TODO: When only a single point, show colored marker instead of path?
         pathPoints.forEachIndexed { index, point ->
             if (index == 0) {
                 prevXY = GeoUtil.lonLatToNormalizedWebMercator(point.latitude, point.longitude)
@@ -434,25 +448,38 @@ class MapViewModel(
             prevXY = currXY
         }
 
-        // Calculate path bounding box
-        val (xLeft, yTop) = GeoUtil.lonLatToNormalizedWebMercator(
+        // Save bounding box and recenter
+        measurementPathBoundingBox = getPathBoundingBox(pathPoints)
+        recenter()
+    }
+
+    /**
+     * Calculates path bounding box ensuring a minimum size to avoid zooming on map too much
+     */
+    private fun getPathBoundingBox(pathPoints: List<PathPoint>): BoundingBox {
+        // Get actual bounds
+        var (xLeft, yTop) = GeoUtil.lonLatToNormalizedWebMercator(
             latitude = pathPoints.minOf { it.latitude },
             longitude = pathPoints.minOf { it.longitude }
         )
-        val (xRight, yBottom) = GeoUtil.lonLatToNormalizedWebMercator(
+        var (xRight, yBottom) = GeoUtil.lonLatToNormalizedWebMercator(
             latitude = pathPoints.maxOf { it.latitude },
             longitude = pathPoints.maxOf { it.longitude }
         )
 
-        // Save it for future calls to recenter()
-        measurementPathBoundingBox = BoundingBox(
-            xLeft = xLeft,
-            xRight = xRight,
-            yTop = yTop,
-            yBottom = yBottom
-        )
+        // Ensure minimum bbox size
+        val width = xRight - xLeft
+        val height = yBottom - yTop
+        if (width < MIN_BBOX_SIZE) {
+            xLeft -= (MIN_BBOX_SIZE - width) / 2.0
+            xRight += (MIN_BBOX_SIZE - width) / 2.0
+        }
+        if (height < MIN_BBOX_SIZE) {
+            yTop -= (MIN_BBOX_SIZE - height) / 2.0
+            yBottom += (MIN_BBOX_SIZE - height) / 2.0
+        }
 
-        recenter()
+        return BoundingBox(xLeft = xLeft, xRight = xRight, yTop = yTop, yBottom = yBottom)
     }
 
     /**
