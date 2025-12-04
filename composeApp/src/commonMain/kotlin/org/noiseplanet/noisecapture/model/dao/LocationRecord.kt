@@ -12,8 +12,6 @@ package org.noiseplanet.noisecapture.model.dao
  *                 Not always available from browser, hence optional.
  * @param direction Direction in which the device is traveling, measured in degrees and relative to due north.
  *                  Not always available from browser, hence optional.
- * @param orientation Direction in which the device is facing, measured in degrees and relative to true north.
- *                    May not always be available, hence optional.
  * @param horizontalAccuracy The radius of uncertainty for the location, measured in meters.
  * @param verticalAccuracy The validity of the altitude values, and their estimated uncertainty, measured in meters.
  *                         On Android, only available since SDK 26 (Oreo), hence optional.
@@ -21,8 +19,6 @@ package org.noiseplanet.noisecapture.model.dao
  *                      On Android, only available since SDK 26 (Oreo), hence optional.
  * @param directionAccuracy The accuracy of the direction value, measured in degrees.
  *                          On Android, only available since SDK 26 (Oreo), hence optional.
- * @param orientationAccuracy The maximum deviation (measured in degrees) between the reported heading and
- *                            the true geomagnetic heading. May not always be available, hence optional.
  */
 data class LocationRecord(
     val timestamp: Long,
@@ -32,11 +28,9 @@ data class LocationRecord(
     val speed: Double?,
     val altitude: Double?,
     val direction: Double?,
-    val orientation: Double?,
 
     val horizontalAccuracy: Double,
     val verticalAccuracy: Double? = null,
     val speedAccuracy: Double? = null,
     val directionAccuracy: Double? = null,
-    val orientationAccuracy: Double? = null,
 )

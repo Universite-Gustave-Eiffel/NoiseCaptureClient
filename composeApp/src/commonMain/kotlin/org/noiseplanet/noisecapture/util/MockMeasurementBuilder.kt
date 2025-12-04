@@ -88,12 +88,10 @@ class MockMeasurementBuilder(
                     speed = null,
                     altitude = null,
                     direction = null,
-                    orientation = null,
                     horizontalAccuracy = 100.0,
                     verticalAccuracy = null,
                     speedAccuracy = null,
                     directionAccuracy = null,
-                    orientationAccuracy = null,
                 )
             )
             currentTime += locationSequenceInterval

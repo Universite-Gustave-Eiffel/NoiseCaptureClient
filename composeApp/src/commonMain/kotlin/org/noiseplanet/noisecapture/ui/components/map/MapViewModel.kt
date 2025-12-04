@@ -350,18 +350,14 @@ class MapViewModel(
     /**
      * Creates or updates the blue dot that marks the user's current location.
      */
-    private fun updateUserLocationMarker(x: Double, y: Double, orientation: Double? = null) {
+    private fun updateUserLocationMarker(x: Double, y: Double) {
         if (mapState.hasMarker(id = USER_LOCATION_MARKER_ID)) {
             // If marker is already added to the map, move it to the new location
             mapState.moveMarker(id = USER_LOCATION_MARKER_ID, x = x, y = y)
         } else {
             // Otherwise, create and add marker
             mapState.addMarker(id = USER_LOCATION_MARKER_ID, x = x, y = y) {
-                // TODO: Pass down user facing direction when better implemented.
-                UserLocationMarker(
-                    mapRotationDegrees = mapState.rotation,
-                    orientationDegrees = orientation?.toFloat(),
-                )
+                UserLocationMarker(mapRotationDegrees = mapState.rotation)
             }
         }
     }

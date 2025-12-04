@@ -13,7 +13,6 @@ import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.dao.LocationRecord
 import org.noiseplanet.noisecapture.util.injectLogger
-import platform.CoreLocation.CLHeading
 import platform.CoreLocation.CLLocation
 import platform.CoreLocation.CLLocationAccuracy
 import platform.CoreLocation.CLLocationManager
@@ -50,7 +49,7 @@ class IOSUserLocationProvider : UserLocationProvider, KoinComponent {
     )
     private val logger: Logger by injectLogger()
 
-    private val delegate = CLLocationProviderDelegate(logger, ::onNewLocationOrHeadingData)
+    private val delegate = CLLocationProviderDelegate(logger, ::onNewLocationData)
     private val mainScope = CoroutineScope(Dispatchers.Main)
 
 
@@ -79,31 +78,16 @@ class IOSUserLocationProvider : UserLocationProvider, KoinComponent {
 
     override fun startUpdatingLocation() {
         locationManager.startUpdatingLocation()
-
-        // TODO: Resume heading values collection when exploited in app
-        // locationManager.startUpdatingHeading()
     }
 
     override fun stopUpdatingLocation() {
         locationManager.stopUpdatingLocation()
-
-        // TODO: Resume heading values collection when exploited in app
-        // locationManager.stopUpdatingHeading()
     }
 
 
     // - Private functions
 
-    /**
-     * Called when either location or heading gets a new recorded value.
-     * If only one value is provided, this method will try to fetch the latest location or heading
-     * value available from the location manager.
-     */
-    private fun onNewLocationOrHeadingData(newLocation: CLLocation?, newHeading: CLHeading?) {
-        // Get the latest available location and heading values
-        val rawLocation: CLLocation = newLocation ?: locationManager.location ?: return
-        val rawHeading: CLHeading? = newHeading ?: locationManager.heading
-
+    private fun onNewLocationData(rawLocation: CLLocation) {
         // Create Location object from raw values
         rawLocation.coordinate.useContents {
             val timestamp = Clock.System.now().toEpochMilliseconds()
@@ -114,12 +98,10 @@ class IOSUserLocationProvider : UserLocationProvider, KoinComponent {
                 speed = rawLocation.speed,
                 altitude = rawLocation.altitude,
                 direction = rawLocation.course,
-                orientation = rawHeading?.trueHeading,
                 horizontalAccuracy = rawLocation.horizontalAccuracy,
                 verticalAccuracy = rawLocation.verticalAccuracy,
                 speedAccuracy = rawLocation.speedAccuracy,
                 directionAccuracy = rawLocation.courseAccuracy,
-                orientationAccuracy = rawHeading?.headingAccuracy,
             )
 
             // Emit new location data through mutable shared flow
@@ -134,7 +116,7 @@ class IOSUserLocationProvider : UserLocationProvider, KoinComponent {
  */
 private class CLLocationProviderDelegate(
     private val logger: Logger,
-    private val didReceiveLocationOrHeadingUpdate: (CLLocation?, CLHeading?) -> Unit,
+    private val didReceiveLocationUpdate: (CLLocation) -> Unit,
 ) : NSObject(), CLLocationManagerDelegateProtocol {
 
     // - CLLocationManagerDelegateProtocol
@@ -151,11 +133,7 @@ private class CLLocationProviderDelegate(
             return
         }
 
-        didReceiveLocationOrHeadingUpdate(lastLocation, null)
-    }
-
-    override fun locationManager(manager: CLLocationManager, didUpdateHeading: CLHeading) {
-        didReceiveLocationOrHeadingUpdate(null, didUpdateHeading)
+        didReceiveLocationUpdate(lastLocation)
     }
 
     override fun locationManager(manager: CLLocationManager, didFailWithError: NSError) {
