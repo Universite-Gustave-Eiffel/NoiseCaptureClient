@@ -44,6 +44,7 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.round
+import kotlin.math.roundToInt
 import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -58,7 +59,7 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
 
     companion object {
 
-        private const val RANGE_DB = 100.0
+        private const val RANGE_DB = 90.0
         private const val MIN_DB = 0.0
 
         // TODO: Platform dependant gain?
@@ -72,9 +73,11 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
         val X_TICKS_COUNT: Int = (DISPLAYED_TIME_RANGE / TICK_SPACING_TIME_RANGE).toInt()
 
         val Y_AXIS_TICKS_LOG = intArrayOf(
-            63, 125, 250, 500, 1000, 2000, 4000, 8000, 16000, 24000
+            63, 100, 160, 250, 400, 630, 1000, 1600, 2500, 4000, 6300, 10000, 16000, 24000
         )
-        val Y_AXIS_TICKS_LINEAR = IntArray(24) { it * 1000 + 1000 }
+
+        // In linear mode, show a tick every 4kHz starting from 0 up to 24kHz
+        val Y_AXIS_TICKS_LINEAR = IntArray(7) { it * 4000 }
     }
 
 
@@ -222,7 +225,7 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
         val freqByPixel = spectrogramData.spectrum.size / canvasSize.height.toDouble()
 
         val fMax = sampleRate / 2
-        val fMin = Y_AXIS_TICKS_LOG[0]
+        val fMin = max(1, Y_AXIS_TICKS_LOG[0])
         val r = fMax / fMin.toDouble()
 
         return (0..<canvasSize.height).map { pixel ->
@@ -236,11 +239,11 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
                 freqEnd = min(spectrogramData.spectrum.size, index + 1)
                 lastProcessFrequencyIndex = nextFrequencyIndex
             } else {
-                freqStart = (pixel * freqByPixel).toInt()
+                freqStart = (pixel * freqByPixel).roundToInt()
                 freqEnd = min(
                     (pixel + 1) * freqByPixel,
                     spectrogramData.spectrum.size.toDouble()
-                ).toInt()
+                ).roundToInt()
             }
             var sumVal = 0.0
             for (idFreq in freqStart..<freqEnd) {

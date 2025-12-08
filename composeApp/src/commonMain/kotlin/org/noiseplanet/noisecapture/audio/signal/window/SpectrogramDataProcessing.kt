@@ -41,6 +41,7 @@ class SpectrogramDataProcessing(
         } else {
             1.0
         }
+    private val vRef = (((windowSize * windowSize) / 2.0) * windowCorrectionFactor).toFloat()
 
     var samplesUntilWindow: Int = windowSize
     val hannWindow: FloatArray? =
@@ -145,7 +146,6 @@ class SpectrogramDataProcessing(
     private fun processWindowFloat(window: Window): FloatArray {
         require(window.samples.size == windowSize)
         val fr = (bluestein?.fft(window.samples) ?: realFFTFloat(window.samples))
-        val vRef = (((windowSize * windowSize) / 2.0) * windowCorrectionFactor).toFloat()
         return FloatArray(fr.size / 2) { i: Int ->
             10 * log10((fr[(i * 2) + 1] * fr[(i * 2) + 1]) / vRef)
         }
