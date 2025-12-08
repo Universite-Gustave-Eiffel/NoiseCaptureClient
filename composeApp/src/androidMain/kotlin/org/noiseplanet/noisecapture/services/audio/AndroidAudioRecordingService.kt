@@ -45,7 +45,7 @@ class AndroidAudioRecordingService : AudioRecordingService, KoinComponent {
             setAudioSource(MediaRecorder.AudioSource.MIC)
             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
             setAudioEncoder(MediaRecorder.AudioEncoder.HE_AAC)
-            setAudioSamplingRate(41_000)
+            setAudioSamplingRate(44_100)
             setOutputFile(outputFileUrl)
 
             // Finalise initialisation
