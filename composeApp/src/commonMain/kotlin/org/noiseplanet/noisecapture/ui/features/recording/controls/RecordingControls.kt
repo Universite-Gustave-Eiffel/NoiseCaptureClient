@@ -49,6 +49,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.noiseplanet.noisecapture.ui.theme.NotoSansMono
 import org.noiseplanet.noisecapture.util.shadow.dropShadow
+import org.noiseplanet.noisecapture.util.toHhMmSs
 
 /**
  * Start/Stop and Play/Pause buttons to manage current recording
@@ -145,11 +146,7 @@ fun RecordingControls(
                         Spacer(modifier = Modifier.size(64.dp))
 
                         Text(
-                            text = recordingDuration.toComponents { hours, minutes, seconds, _ ->
-                                hours.toString().padStart(2, '0') + ":" +
-                                    minutes.toString().padStart(2, '0') + ":" +
-                                    seconds.toString().padStart(2, '0')
-                            },
+                            text = recordingDuration.toHhMmSs(),
                             style = MaterialTheme.typography.bodyLarge.copy(
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,

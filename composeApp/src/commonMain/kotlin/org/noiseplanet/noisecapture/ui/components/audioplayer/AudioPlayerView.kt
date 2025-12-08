@@ -29,7 +29,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
 import org.noiseplanet.noisecapture.util.throttleLatest
-import kotlin.math.abs
+import org.noiseplanet.noisecapture.util.toHhMmSs
 import kotlin.time.Duration
 
 
@@ -90,18 +90,7 @@ fun AudioPlayerView(
             Text(
                 // Display remaining time
                 text = "-" + (playerCurrentPosition - viewModel.duration)
-                    .toComponents { hours, minutes, seconds, _ ->
-                        val minutesString = abs(minutes).toString().padStart(2, '0')
-                        val secondsString = abs(seconds).toString().padStart(2, '0')
-
-                        if (hours > 0) {
-                            // Only show hours count when recording is more than 1h long
-                            val hoursString = abs(hours).toString().padStart(2, '0')
-                            "$hoursString:$minutesString:$secondsString"
-                        } else {
-                            "$minutesString:$secondsString"
-                        }
-                    },
+                    .toHhMmSs(hideHoursIfZero = true),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
             )

@@ -30,6 +30,8 @@ import org.noiseplanet.noisecapture.ui.components.plot.PlotAxisLabel
 import org.noiseplanet.noisecapture.ui.components.plot.PlotGridLineStyle
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.VuMeterOptions
+import org.noiseplanet.noisecapture.util.toHhMmSs
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
 
@@ -78,9 +80,12 @@ fun SplTimePlotView(
                     range = startTimestamp..endTimestamp,
                     minorTickCount = 1,
                 ),
-                xAxisLabels = @Composable {
+                xAxisLabels = @Composable { timestamp ->
+                    val sinceStart: Duration = (timestamp - startTimestamp).milliseconds
+                    val hideHours = (endTimestamp - startTimestamp).milliseconds.inWholeHours == 0L
+
                     PlotAxisLabel(
-                        text = "${(it - startTimestamp).milliseconds.inWholeSeconds}s",
+                        text = sinceStart.toHhMmSs(hideHoursIfZero = hideHours),
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                     )
                 },
