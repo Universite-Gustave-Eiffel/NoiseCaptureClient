@@ -282,6 +282,10 @@ private fun DetailsScreenCompact(
         }
 
         viewState.measurement.summary?.let { summary ->
+            if (summary.leqOverTime.isNotEmpty()) {
+                SplTimePlotView(leqOverTime = summary.leqOverTime)
+            }
+
             LaeqSummaryView(
                 min = viewState.measurement.laeqMetrics.min,
                 la90 = summary.la90,
@@ -290,9 +294,7 @@ private fun DetailsScreenCompact(
                 max = viewState.measurement.laeqMetrics.max
             )
 
-            if (summary.leqOverTime.isNotEmpty()) {
-                SplTimePlotView(leqOverTime = summary.leqOverTime)
-            }
+            RnePlotView(rneData = summary.repartitionOfNoiseExposure)
 
             if (summary.avgLevelPerFreq.isNotEmpty()) {
                 AverageLevelPerFreqView(avgLevelPerFreq = summary.avgLevelPerFreq)
