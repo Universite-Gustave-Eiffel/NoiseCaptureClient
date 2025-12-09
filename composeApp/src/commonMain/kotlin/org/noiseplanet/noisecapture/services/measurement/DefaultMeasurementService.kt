@@ -263,11 +263,20 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
             .mapIndexed { index, lowerBound ->
                 val upperBound = NoiseLevelColorRamp.palette.keys
                     .elementAtOrElse(index + 1) { Double.MAX_VALUE }
-                val firstIndex = allMeasurementLeqSorted.indexOfFirst { it >= lowerBound }
-                val lastIndex = allMeasurementLeqSorted.indexOfLast { it < upperBound }
-                val count = lastIndex - firstIndex
 
-                Pair(lowerBound, count.toDouble() / allMeasurementLeqSorted.size.toDouble())
+                // Find the first index where element >= lowerBound
+                val lowerIndex = allMeasurementLeqSorted.binarySearch(lowerBound)
+                val actualLowerIndex = if (lowerIndex < 0) -(lowerIndex + 1) else lowerIndex
+                // Find the first index where element > upperBound
+                val upperIndex = allMeasurementLeqSorted.binarySearch(upperBound)
+                val actualUpperIndex = if (upperIndex < 0) -(upperIndex + 1) else upperIndex + 1
+
+                // Count elements between actualLowerIndex (inclusive) and actualUpperIndex (exclusive)
+                val count = actualUpperIndex - actualLowerIndex
+                Pair(
+                    lowerBound,
+                    if (count <= 0) 0.0 else (count.toDouble() / allMeasurementLeqSorted.size)
+                )
             }.toMap()
 
         // Do the same for each frequency band to compute the average level
