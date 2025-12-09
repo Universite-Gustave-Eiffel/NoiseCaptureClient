@@ -35,6 +35,7 @@ import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.measurement_details_rne_plot_description
 import noisecapture.composeapp.generated.resources.measurement_details_rne_plot_title
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.roundTo
 
@@ -190,4 +191,15 @@ fun RnePlotView(
             }
         }
     }
+}
+
+
+@Preview(showBackground = true)
+@Composable
+private fun RnePlotViewPreview() {
+    RnePlotView(
+        rneData = NoiseLevelColorRamp.palette.keys
+            .zip(MutableList(NoiseLevelColorRamp.palette.keys.size) { 100 / 11.0 })
+            .toMap()
+    )
 }
