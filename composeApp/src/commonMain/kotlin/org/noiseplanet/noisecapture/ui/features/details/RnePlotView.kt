@@ -6,12 +6,16 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -25,11 +29,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import io.github.koalaplot.core.ChartLayout
-import io.github.koalaplot.core.pie.CircularLabelPositionProvider
 import io.github.koalaplot.core.pie.DefaultSlice
 import io.github.koalaplot.core.pie.PieChart
-import io.github.koalaplot.core.pie.PieLabelPlacement
 import io.github.koalaplot.core.util.ExperimentalKoalaPlotApi
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.measurement_details_rne_plot_description
@@ -75,7 +76,7 @@ fun RnePlotView(
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
-            modifier = modifier
+            modifier = modifier.wrapContentWidth()
                 .clickable(onClick = {
                     selectedSliceIndex = index
                 })
@@ -113,14 +114,23 @@ fun RnePlotView(
         )
 
         Row(
-            modifier = Modifier.padding(top = 16.dp),
+            modifier = Modifier.padding(top = 16.dp)
+                .height(IntrinsicSize.Min),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
         ) {
-            ChartLayout(modifier = Modifier.weight(1f).aspectRatio(1f)) {
+            Box(
+                modifier = Modifier.weight(1f)
+                    .aspectRatio(1f)
+                    .height(IntrinsicSize.Min) // Match the row height
+            ) {
                 PieChart(
+                    modifier = Modifier.fillMaxHeight().aspectRatio(1f),
                     values = rneData.values.map { it.toFloat() },
                     holeSize = 0.4f,
+                    label = {},
+                    labelConnector = {},
+                    labelSpacing = 1f,
+                    maxPieDiameter = 200.dp,
                     slice = @Composable { sliceIndex ->
                         val colors = remember { NoiseLevelColorRamp.palette.values.toList() }
                         val borderColors = remember {
@@ -146,10 +156,6 @@ fun RnePlotView(
                             }
                         )
                     },
-                    labelPositionProvider = CircularLabelPositionProvider(
-                        labelSpacing = 1f,
-                        labelPlacement = PieLabelPlacement.InternalOrExternal(),
-                    ),
                     holeContent = {
                         val index = selectedSliceIndex ?: return@PieChart run {
                             Box(
@@ -179,12 +185,20 @@ fun RnePlotView(
                     }
                 )
             }
-            legendData.keys.chunked(6).forEach { chunk ->
-                Column {
-                    chunk.forEach { label ->
-                        legendData[label]?.let { color ->
-                            val index = legendData.keys.indexOf(label)
-                            LegendElement(color, label, index)
+
+            Row(
+                modifier = Modifier.wrapContentWidth()
+                    .fillMaxHeight(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                legendData.keys.chunked(6).forEach { chunk ->
+                    Column {
+                        chunk.forEach { label ->
+                            legendData[label]?.let { color ->
+                                val index = legendData.keys.indexOf(label)
+                                LegendElement(color, label, index)
+                            }
                         }
                     }
                 }
