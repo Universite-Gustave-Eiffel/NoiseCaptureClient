@@ -7,7 +7,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.format
@@ -27,6 +27,8 @@ import org.noiseplanet.noisecapture.services.settings.UserSettingsService
 import org.noiseplanet.noisecapture.util.injectLogger
 import kotlin.concurrent.Volatile
 import kotlin.time.Clock
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
@@ -56,8 +58,10 @@ open class DefaultRecordingService : RecordingService, KoinComponent {
     private val scope = CoroutineScope(Dispatchers.Default)
     private var recordingJob: Job? = null
     private var recordingLimitJob: Job? = null
+    private var timerJob: Job? = null
 
-    private val _isRecordingFlow = MutableStateFlow<Boolean>(value = false)
+    private val _isRecordingFlow = MutableStateFlow(value = false)
+    private val _recordingDurationFlow = MutableStateFlow(value = Duration.ZERO)
 
     // Stores the collected acoustic indicators and location data.
     @Volatile
@@ -73,19 +77,24 @@ open class DefaultRecordingService : RecordingService, KoinComponent {
         get() = _isRecordingFlow.value
 
     override val isRecordingFlow: StateFlow<Boolean>
-        get() = _isRecordingFlow.asStateFlow()
+        get() = _isRecordingFlow
+
+    override val recordingDurationFlow: StateFlow<Duration>
+        get() = _recordingDurationFlow
 
     override var onMeasurementDone: RecordingService.OnMeasurementDoneListener? = null
 
 
     override fun start() {
         logger.debug("Start recording")
-        _isRecordingFlow.tryEmit(true)
 
         // Start live location updates
         userLocationService.startUpdatingLocation()
         // Start listening to measured acoustic indicators and location updates
         createMeasurementAndSubscribe()
+        // Start timer
+        startTimer()
+        _isRecordingFlow.tryEmit(true)
 
         // Start recording audio to an output file, if enabled
         if (settingsService.get(SettingsKey.SettingSaveAudioWithMeasurement)) {
@@ -113,6 +122,14 @@ open class DefaultRecordingService : RecordingService, KoinComponent {
         }
     }
 
+    override fun pause() {
+        liveAudioService.stopListening()
+    }
+
+    override fun resume() {
+        liveAudioService.startListening()
+    }
+
     override fun endAndSave() {
         logger.debug("End recording")
 
@@ -129,6 +146,10 @@ open class DefaultRecordingService : RecordingService, KoinComponent {
 
         // End audio recording
         audioRecordingService.stopRecordingToFile()
+
+        // Stop and reset timer
+        stopTimer()
+        _recordingDurationFlow.tryEmit(Duration.ZERO)
 
         measurementService.ongoingMeasurementUuid?.let { uuid ->
             // Store any uncompleted sequence fragment and store measurement
@@ -160,7 +181,6 @@ open class DefaultRecordingService : RecordingService, KoinComponent {
         // Start listening to the various data sources during the recording session
         recordingJob = scope.launch {
             coroutineScope {
-
                 // Subscribe to location updates
                 launch {
                     userLocationService.liveLocation.collect { location ->
@@ -169,13 +189,44 @@ open class DefaultRecordingService : RecordingService, KoinComponent {
                     }
                 }
 
-                // Subscribe to
+                // Subscribe to noise level updates
                 launch {
                     liveAudioService.getLeqRecordsFlow().collect {
                         measurementService.pushToOngoingMeasurement(it)
                     }
                 }
+
+                // Subscribe to audio service state updates
+                launch {
+                    liveAudioService.isRunningFlow.collect { isRunning ->
+                        if (!isRecording) return@collect
+
+                        // If a recording session is running, when audio source pauses or resumes,
+                        // propagate the state change to the recording timer.
+                        if (isRunning) {
+                            startTimer()
+                        } else {
+                            stopTimer()
+                        }
+                    }
+                }
             }
         }
+    }
+
+    private fun startTimer() {
+        if (timerJob != null) return
+
+        timerJob = scope.launch {
+            while (isActive) {
+                delay(250.milliseconds)
+                _recordingDurationFlow.tryEmit(_recordingDurationFlow.value + 250.milliseconds)
+            }
+        }
+    }
+
+    private fun stopTimer() {
+        timerJob?.cancel()
+        timerJob = null
     }
 }

@@ -76,6 +76,7 @@ fun NavigationManager(
             appBarState.setCurrentScreenViewModel(screenViewModel)
 
             RecordingScreen(
+                viewModel = screenViewModel,
                 router = RecordingRouter(navController, backStackEntry)
             )
         }

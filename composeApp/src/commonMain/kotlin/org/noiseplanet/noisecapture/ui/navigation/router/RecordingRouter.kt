@@ -14,7 +14,7 @@ class RecordingRouter(
 
     // - Public functions
 
-    fun onMeasurementDone(measurementUuid: String) {
+    fun openMeasurementDetails(measurementUuid: String) {
         navController.navigate(
             DetailsRoute(
                 measurementId = measurementUuid,

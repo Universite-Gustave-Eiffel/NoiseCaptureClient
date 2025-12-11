@@ -30,7 +30,6 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,10 +37,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.measurement_start_recording_button_title
@@ -53,46 +48,19 @@ import org.noiseplanet.noisecapture.util.toHhMmSs
 
 /**
  * Start/Stop and Play/Pause buttons to manage current recording
- *
- * @param onMeasurementDone Called when measurement recording ends, with UUID as parameter.
  */
 @Composable
 fun RecordingControls(
-    onMeasurementDone: (String) -> Unit,
+    onStopRecording: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // - Properties
 
-    val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
     val viewModel: RecordingControlsViewModel = koinViewModel()
 
     val isRecording by viewModel.isRecordingFlow.collectAsStateWithLifecycle()
     val isAudioSourceRunning by viewModel.isAudioSourceRunningFlow.collectAsStateWithLifecycle()
     val recordingDuration by viewModel.recordingDurationFlow.collectAsStateWithLifecycle()
-
-
-    // - Lifecycle
-
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            when (event) {
-                Lifecycle.Event.ON_RESUME -> {
-                    viewModel.registerListener(onMeasurementDone)
-                }
-
-                Lifecycle.Event.ON_PAUSE -> {
-                    viewModel.deregisterListener()
-                }
-
-                else -> {}
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
-    }
 
 
     // - Layout
@@ -121,7 +89,7 @@ fun RecordingControls(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         IconButton(
-                            onClick = viewModel::toggleAudioSource,
+                            onClick = viewModel::togglePauseResume,
                             modifier = Modifier.size(50.dp),
                         ) {
                             AnimatedContent(
@@ -165,7 +133,7 @@ fun RecordingControls(
                 ) {
                     Button(
                         colors = ButtonDefaults.textButtonColors(),
-                        onClick = viewModel::toggleRecording,
+                        onClick = viewModel::startRecording,
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Mic,
@@ -188,7 +156,7 @@ fun RecordingControls(
                 exit = fadeOut()
             ) {
                 IconButton(
-                    onClick = viewModel::toggleRecording,
+                    onClick = onStopRecording,
                     colors = IconButtonDefaults.filledIconButtonColors(),
                     modifier = Modifier.padding(start = (50 + 8).dp) // Place stop button after pause button
                         .dropShadow(shape = CircleShape)
