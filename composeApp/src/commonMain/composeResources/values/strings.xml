@@ -76,6 +76,9 @@
     <string name="measurement_details_laeq_summary_la10">10% of recorded levels were above this value.</string>
     <string name="measurement_details_laeq_summary_max">highest recorded sound level.</string>
 
+    <string name="measurement_details_rne_plot_title">Repartition of Noise Exposure (RNE)</string>
+    <string name="measurement_details_rne_plot_description">Represents the percentage of total measurement time where sound level was between the corresponding boundaries.</string>
+
     <string name="measurement_details_manage_title">Manage measurement</string>
     <string name="measurement_details_manage_description">Deleting long measurements can help freeing up disk space if needed. Recorded audio can be deleted separately from the rest of the measurement data. Note that this is only the local copy of the measurement, deleting it won't delete it from our server if you've already synced it. However, the associated audio file is never synced and is only for your personal use.</string>
     <string name="measurement_details_audio_size">Audio file size: </string>

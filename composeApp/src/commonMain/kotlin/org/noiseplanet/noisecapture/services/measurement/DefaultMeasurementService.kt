@@ -18,6 +18,7 @@ import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
 import org.noiseplanet.noisecapture.services.statistics.UserStatisticsService
 import org.noiseplanet.noisecapture.services.storage.StorageService
 import org.noiseplanet.noisecapture.services.storage.injectStorageService
+import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.dbAverage
 import org.noiseplanet.noisecapture.util.injectLogger
 import org.noiseplanet.noisecapture.util.isInVuMeterRange
@@ -257,6 +258,27 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
         // Get a list of all sorted LAEq values
         val allMeasurementLeqSorted = allMeasurementLaeq.values.sorted()
 
+        // Calculate repartition of noise levels for each dB threshold (0-35, 35-40, 40-45, etc)
+        val rne = NoiseLevelColorRamp.palette.keys.sorted()
+            .mapIndexed { index, lowerBound ->
+                val upperBound = NoiseLevelColorRamp.palette.keys
+                    .elementAtOrElse(index + 1) { Double.MAX_VALUE }
+
+                // Find the first index where element >= lowerBound
+                val lowerIndex = allMeasurementLeqSorted.binarySearch(lowerBound)
+                val actualLowerIndex = if (lowerIndex < 0) -(lowerIndex + 1) else lowerIndex
+                // Find the first index where element > upperBound
+                val upperIndex = allMeasurementLeqSorted.binarySearch(upperBound)
+                val actualUpperIndex = if (upperIndex < 0) -(upperIndex + 1) else upperIndex + 1
+
+                // Count elements between actualLowerIndex (inclusive) and actualUpperIndex (exclusive)
+                val count = actualUpperIndex - actualLowerIndex
+                Pair(
+                    lowerBound,
+                    if (count <= 0) 0.0 else (count.toDouble() / allMeasurementLeqSorted.size)
+                )
+            }.toMap()
+
         // Do the same for each frequency band to compute the average level
         val averageLeqPerFrequencyBand: Map<Int, Double> = allSequenceFragments
             .map { it.leqsPerThirdOctaveBand }
@@ -283,6 +305,7 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
             la90 = allMeasurementLeqSorted[(allMeasurementLeqSorted.size / 100.0 * 10.0).toInt()],
             leqOverTime = downsampleLeqSequence(allMeasurementLaeq),
             avgLevelPerFreq = averageLeqPerFrequencyBand,
+            repartitionOfNoiseExposure = rne,
         )
         // Build a new measurement object with the summary property.
         val newValue = measurement.copy(summary = summary)

@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
@@ -100,11 +99,17 @@ fun DetailsScreen(
 private fun DetailsScreenLarge(
     viewState: DetailsScreenViewModel.ViewState.ContentReady,
 ) {
+    // - Properties
+
+    val scrollState = rememberScrollState()
+
+
     // - Layout
 
     Row(
         horizontalArrangement = Arrangement.spacedBy(32.dp),
-        modifier = Modifier.padding(32.dp)
+        modifier = Modifier.verticalScroll(scrollState)
+            .padding(32.dp)
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(32.dp),
@@ -120,26 +125,6 @@ private fun DetailsScreenLarge(
                 AudioPlayerView(audioUrl)
             }
 
-            ManageMeasurementView(measurementId = viewState.measurement.uuid)
-        }
-
-        Column(
-            verticalArrangement = Arrangement.spacedBy(32.dp),
-            modifier = Modifier.weight(1f),
-        ) {
-            MapViewOrPlaceHolder(viewState, modifier = Modifier.weight(1f).fillMaxWidth())
-
-            viewState.measurement.summary?.let { summary ->
-                if (summary.leqOverTime.isNotEmpty()) {
-                    SplTimePlotView(leqOverTime = summary.leqOverTime)
-                }
-            }
-        }
-
-        Column(
-            verticalArrangement = Arrangement.spacedBy(32.dp),
-            modifier = Modifier.weight(1f),
-        ) {
             LaeqSummaryView(
                 min = viewState.measurement.laeqMetrics.min,
                 la90 = viewState.measurement.summary?.la90 ?: 0.0,
@@ -148,9 +133,36 @@ private fun DetailsScreenLarge(
                 max = viewState.measurement.laeqMetrics.max
             )
 
-            viewState.measurement.summary?.let { summary ->
+            ManageMeasurementView(measurementId = viewState.measurement.uuid)
+        }
+
+        val summary = viewState.measurement.summary ?: return
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(32.dp),
+            modifier = Modifier.weight(2f),
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(32.dp),
+            ) {
+                MapViewOrPlaceHolder(viewState, modifier = Modifier.aspectRatio(1.25f).weight(1f))
+
+                RnePlotView(summary.repartitionOfNoiseExposure, modifier = Modifier.weight(1f))
+            }
+
+            Row(horizontalArrangement = Arrangement.spacedBy(32.dp)) {
+                if (summary.leqOverTime.isNotEmpty()) {
+                    SplTimePlotView(
+                        leqOverTime = summary.leqOverTime,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
                 if (summary.avgLevelPerFreq.isNotEmpty()) {
-                    AverageLevelPerFreqView(avgLevelPerFreq = summary.avgLevelPerFreq)
+                    AverageLevelPerFreqView(
+                        avgLevelPerFreq = summary.avgLevelPerFreq,
+                        modifier = Modifier.weight(1f)
+                    )
                 }
             }
         }
@@ -221,12 +233,11 @@ private fun DetailsScreenMedium(
                         modifier = Modifier.weight(1f),
                     )
                 }
-                if (summary.avgLevelPerFreq.isNotEmpty()) {
-                    AverageLevelPerFreqView(
-                        avgLevelPerFreq = summary.avgLevelPerFreq,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
+
+                RnePlotView(
+                    rneData = summary.repartitionOfNoiseExposure,
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
 
@@ -234,14 +245,14 @@ private fun DetailsScreenMedium(
             modifier = Modifier.height(IntrinsicSize.Min),
             horizontalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            Box(
-                modifier = Modifier.weight(1f)
-                    .fillMaxWidth()
-                    .background(
-                        color = MaterialTheme.colorScheme.surfaceContainer,
-                        shape = MaterialTheme.shapes.large
+            viewState.measurement.summary?.let { summary ->
+                if (summary.avgLevelPerFreq.isNotEmpty()) {
+                    AverageLevelPerFreqView(
+                        avgLevelPerFreq = summary.avgLevelPerFreq,
+                        modifier = Modifier.weight(1f),
                     )
-            ) // TODO: Add download options here
+                }
+            }
 
             ManageMeasurementView(
                 measurementId = viewState.measurement.uuid,
@@ -282,6 +293,10 @@ private fun DetailsScreenCompact(
         }
 
         viewState.measurement.summary?.let { summary ->
+            if (summary.leqOverTime.isNotEmpty()) {
+                SplTimePlotView(leqOverTime = summary.leqOverTime)
+            }
+
             LaeqSummaryView(
                 min = viewState.measurement.laeqMetrics.min,
                 la90 = summary.la90,
@@ -290,9 +305,7 @@ private fun DetailsScreenCompact(
                 max = viewState.measurement.laeqMetrics.max
             )
 
-            if (summary.leqOverTime.isNotEmpty()) {
-                SplTimePlotView(leqOverTime = summary.leqOverTime)
-            }
+            RnePlotView(rneData = summary.repartitionOfNoiseExposure)
 
             if (summary.avgLevelPerFreq.isNotEmpty()) {
                 AverageLevelPerFreqView(avgLevelPerFreq = summary.avgLevelPerFreq)
