@@ -15,10 +15,10 @@ import org.noiseplanet.noisecapture.ui.navigation.SettingsRoute
  * Handles navigating to new screens after user takes actions on the home screen.
  */
 class HomeRouter(
-    private val navController: NavHostController,
-    private val backStackEntry: NavBackStackEntry,
+    navController: NavHostController,
+    backStackEntry: NavBackStackEntry,
     val showPermissionPrompt: (Permission) -> Unit,
-) {
+) : Router(navController, backStackEntry) {
 
     // - Public functions
 

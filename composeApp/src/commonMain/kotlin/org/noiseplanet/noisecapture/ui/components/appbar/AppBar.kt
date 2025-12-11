@@ -29,22 +29,20 @@ fun AppBar(
 ) {
     // - Properties
 
+    val screenViewModel = appBarState.viewModel ?: return
+    val actions by screenViewModel.actions.collectAsStateWithLifecycle()
+
     val currentBackStackEntry by appBarState.navController.currentBackStackEntryAsState()
     val previousBackStackEntry = appBarState.navController.previousBackStackEntry
     val currentRoute = currentBackStackEntry?.destination?.route
     val canNavigateUp = currentRoute != null && previousBackStackEntry != null
-
-    val actions by appBarState.actions.collectAsStateWithLifecycle()
-    val title = appBarState.viewModel?.title
 
 
     // - Layout
 
     CenterAlignedTopAppBar(
         title = {
-            title?.let {
-                Text(stringResource(it))
-            }
+            Text(stringResource(screenViewModel.title))
         },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
@@ -56,7 +54,9 @@ fun AppBar(
         navigationIcon = {
             if (canNavigateUp) {
                 IconButton(onClick = {
-                    appBarState.navController.navigateUp()
+                    if (screenViewModel.confirmPopBackStack()) {
+                        appBarState.navController.navigateUp()
+                    }
                 }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
