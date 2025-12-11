@@ -23,3 +23,16 @@ jobs:
           name: android-apk
           path: |
             **/build/**/apk/**/*.apk
+
+  link-apk:
+    runs-on: ubuntu-latest
+    needs: android-build # make sure the artifacts are uploaded first
+
+    permissions:
+      contents: write # for commenting on your commit
+      pull-requests: write # for commenting on your pr
+
+    steps:
+      - uses: beni69/artifact-link@v1
+        with:
+          token: ${{ github.token }}
