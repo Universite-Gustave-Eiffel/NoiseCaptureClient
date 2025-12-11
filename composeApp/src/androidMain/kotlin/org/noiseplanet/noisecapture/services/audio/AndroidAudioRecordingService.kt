@@ -57,16 +57,24 @@ class AndroidAudioRecordingService : AudioRecordingService, KoinComponent {
             logger.debug("MediaRecorder ready")
 
             // Start recording
-            start()
-            recordingStartListener?.onRecordingStart()
-            logger.debug("Started recording!")
+            try {
+                start()
+                recordingStartListener?.onRecordingStart()
+                logger.debug("Started recording!")
+            } catch (error: IllegalStateException) {
+                logger.error("Error while starting audio recording", error)
+            }
         }
     }
 
     override fun stopRecordingToFile() {
         // Stop recording and release recorder
         mediaRecorder?.apply {
-            stop()
+            try {
+                stop()
+            } catch (error: IllegalStateException) {
+                logger.error("Error while stopping audio recording", error)
+            }
             release()
             outputFileUrl?.let {
                 recordingStopListener?.onRecordingStop(it)
