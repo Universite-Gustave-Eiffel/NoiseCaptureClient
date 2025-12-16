@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalComposeUiApi::class)
+
 package org.noiseplanet.noisecapture.ui.features.recording
 
 import androidx.compose.foundation.background
@@ -18,10 +20,21 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.window.core.layout.WindowSizeClass
 import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
@@ -34,6 +47,7 @@ import org.noiseplanet.noisecapture.ui.navigation.router.RecordingRouter
 @OptIn(KoinExperimentalAPI::class)
 @Composable
 fun RecordingScreen(
+    viewModel: RecordingScreenViewModel,
     router: RecordingRouter,
 ) {
 
@@ -46,7 +60,47 @@ fun RecordingScreen(
 
     // - Properties
 
+    val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
     val sizeClass = currentWindowAdaptiveInfo().windowSizeClass
+
+    var showEndRecordingConfirmationDialog by remember { mutableStateOf(false) }
+
+    viewModel.showEndRecordingConfirmationDialog = {
+        showEndRecordingConfirmationDialog = true
+    }
+
+
+    // - Lifecycle
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_RESUME -> {
+                    viewModel.registerMeasurementDoneListener { measurementUuid ->
+                        showEndRecordingConfirmationDialog = false
+
+                        if (viewModel.shouldOpenDetailsOnceDone) {
+                            router.openMeasurementDetails(measurementUuid)
+                        } else {
+                            router.popBackStack()
+                            viewModel.shouldOpenDetailsOnceDone = true
+                        }
+                    }
+                }
+
+                Lifecycle.Event.ON_PAUSE -> {
+                    viewModel.deregisterMeasurementDoneListener()
+                }
+
+                else -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
 
     // - Layout
@@ -54,19 +108,32 @@ fun RecordingScreen(
     Surface(
         color = MaterialTheme.colorScheme.surface,
     ) {
-        if (sizeClass.minWidthDp < WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) {
-            RecordingScreenCompact(router)
-        } else if (sizeClass.minWidthDp < WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND) {
-            RecordingScreenMedium(router)
-        } else {
-            RecordingScreenLarge(router)
+        BackHandler {
+            viewModel.confirmPopBackStack()
         }
+
+        if (sizeClass.minWidthDp < WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) {
+            RecordingScreenCompact(viewModel)
+        } else if (sizeClass.minWidthDp < WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND) {
+            RecordingScreenMedium(viewModel)
+        } else {
+            RecordingScreenLarge(viewModel)
+        }
+    }
+
+    if (showEndRecordingConfirmationDialog) {
+        EndRecordingConfirmationDialog(
+            onDismissRequest = { showEndRecordingConfirmationDialog = false },
+            onConfirm = {
+                viewModel.endCurrentRecording()
+            },
+        )
     }
 }
 
 
 @Composable
-private fun RecordingScreenCompact(router: RecordingRouter) {
+private fun RecordingScreenCompact(viewModel: RecordingScreenViewModel) {
     Box(
         contentAlignment = Alignment.BottomCenter,
         modifier = Modifier.background(color = MaterialTheme.colorScheme.inverseSurface)
@@ -78,7 +145,7 @@ private fun RecordingScreenCompact(router: RecordingRouter) {
             RecordingPager(modifier = Modifier.fillMaxWidth().weight(1f))
         }
         RecordingControls(
-            onMeasurementDone = router::onMeasurementDone,
+            onStopRecording = { viewModel.showEndRecordingConfirmationDialog?.invoke() },
             modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars)
                 .padding(bottom = 8.dp)
         )
@@ -87,7 +154,7 @@ private fun RecordingScreenCompact(router: RecordingRouter) {
 
 
 @Composable
-private fun RecordingScreenMedium(router: RecordingRouter) {
+private fun RecordingScreenMedium(viewModel: RecordingScreenViewModel) {
     Column(
         verticalArrangement = Arrangement.spacedBy(24.dp),
         modifier = Modifier
@@ -115,7 +182,7 @@ private fun RecordingScreenMedium(router: RecordingRouter) {
             MapView(modifier = Modifier.fillMaxSize())
 
             RecordingControls(
-                onMeasurementDone = router::onMeasurementDone,
+                onStopRecording = { viewModel.showEndRecordingConfirmationDialog?.invoke() },
                 modifier = Modifier.padding(16.dp)
             )
         }
@@ -124,7 +191,7 @@ private fun RecordingScreenMedium(router: RecordingRouter) {
 
 
 @Composable
-private fun RecordingScreenLarge(router: RecordingRouter) {
+private fun RecordingScreenLarge(viewModel: RecordingScreenViewModel) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(24.dp),
         modifier = Modifier
@@ -152,7 +219,7 @@ private fun RecordingScreenLarge(router: RecordingRouter) {
             MapView(modifier = Modifier.fillMaxSize())
 
             RecordingControls(
-                onMeasurementDone = router::onMeasurementDone,
+                onStopRecording = { viewModel.showEndRecordingConfirmationDialog?.invoke() },
                 modifier = Modifier.padding(16.dp)
             )
         }

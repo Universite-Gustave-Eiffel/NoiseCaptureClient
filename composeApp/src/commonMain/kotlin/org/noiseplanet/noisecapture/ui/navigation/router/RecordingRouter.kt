@@ -8,13 +8,13 @@ import org.noiseplanet.noisecapture.ui.navigation.DetailsRoute
  * Handles navigating to new screens after user takes actions on the recording screen.
  */
 class RecordingRouter(
-    private val navController: NavHostController,
-    private val backStackEntry: NavBackStackEntry,
-) {
+    navController: NavHostController,
+    backStackEntry: NavBackStackEntry,
+) : Router(navController, backStackEntry) {
 
     // - Public functions
 
-    fun onMeasurementDone(measurementUuid: String) {
+    fun openMeasurementDetails(measurementUuid: String) {
         navController.navigate(
             DetailsRoute(
                 measurementId = measurementUuid,

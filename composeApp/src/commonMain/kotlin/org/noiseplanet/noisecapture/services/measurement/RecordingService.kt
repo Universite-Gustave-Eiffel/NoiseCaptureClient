@@ -1,6 +1,7 @@
 package org.noiseplanet.noisecapture.services.measurement
 
 import kotlinx.coroutines.flow.StateFlow
+import kotlin.time.Duration
 
 
 interface RecordingService {
@@ -29,6 +30,12 @@ interface RecordingService {
     val isRecordingFlow: StateFlow<Boolean>
 
     /**
+     * Emits the duration of the current recording at regular intervals.
+     * Equal to [Duration.ZERO] when no recording is currently ongoing.
+     */
+    val recordingDurationFlow: StateFlow<Duration>
+
+    /**
      * Called when ending a measurement, after it has been stored locally.
      */
     var onMeasurementDone: OnMeasurementDoneListener?
@@ -37,9 +44,19 @@ interface RecordingService {
     // - Public functions
 
     /**
-     * Starts a new recording of acoustic parameters and location updates
+     * Starts a new recording of acoustic parameters and location updates.
      */
     fun start()
+
+    /**
+     * Pause current recording, suspending timer and analysis of incoming audio.
+     */
+    fun pause()
+
+    /**
+     * Resumes current recording, resuming timer and analysis of incoming audio.
+     */
+    fun resume()
 
     /**
      * Ends the current recording and saves the results to the app's storage

@@ -48,6 +48,11 @@
     <string name="measurement_pager_tab_spectrogram">Spectrogram</string>
     <string name="measurement_pager_tab_map">Map</string>
 
+    <string name="measurement_end_confirmation_dialog_title">Confirmation</string>
+    <string name="measurement_end_confirmation_dialog_body">Are you sure you want to end and save the current recording? Note that the recording session can still continue in the background if you leave the app.</string>
+    <string name="measurement_end_confirmation_dialog_confirm">End and save</string>
+    <string name="measurement_end_confirmation_dialog_continue">Cancel</string>
+
 
     <!-- HistoryScreen -->
     <string name="history_title">Measurements history</string>

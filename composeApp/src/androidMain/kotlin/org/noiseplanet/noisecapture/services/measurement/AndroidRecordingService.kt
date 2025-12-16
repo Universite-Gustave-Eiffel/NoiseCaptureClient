@@ -17,6 +17,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -33,6 +34,7 @@ import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.permission.reduce
 import org.noiseplanet.noisecapture.services.permission.PermissionService
 import org.noiseplanet.noisecapture.util.NotificationHelper
+import kotlin.time.Duration
 
 
 /**
@@ -54,9 +56,10 @@ class AndroidRecordingService : RecordingService, KoinComponent {
      * or false if no wrapped service is currently available.
      */
     private val mergedIsRecordingFlow = MutableStateFlow(false)
+    private val mergedRecordingDurationFlow = MutableStateFlow(Duration.ZERO)
 
     private val scope = CoroutineScope(Dispatchers.Default)
-    private var isRecordingRedirectionJob: Job? = null
+    private var recordingStateRedirectionJob: Job? = null
 
     /**
      * Service connection will allow us to retrieve the wrapper instance when the service is started.
@@ -77,10 +80,20 @@ class AndroidRecordingService : RecordingService, KoinComponent {
             wrapper?.innerService?.start()
             wrapper?.innerService?.onMeasurementDone = onMeasurementDone
 
-            isRecordingRedirectionJob = scope.launch {
-                // Redirect the
-                wrapper?.innerService?.isRecordingFlow?.collect {
-                    mergedIsRecordingFlow.tryEmit(it)
+            recordingStateRedirectionJob = scope.launch {
+                wrapper?.innerService?.let { recordingService ->
+                    coroutineScope {
+                        launch {
+                            recordingService.isRecordingFlow.collect {
+                                mergedIsRecordingFlow.tryEmit(it)
+                            }
+                        }
+                        launch {
+                            recordingService.recordingDurationFlow.collect {
+                                mergedRecordingDurationFlow.tryEmit(it)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -90,8 +103,9 @@ class AndroidRecordingService : RecordingService, KoinComponent {
          */
         override fun onServiceDisconnected(name: ComponentName?) {
             wrapper = null
-            isRecordingRedirectionJob?.cancel()
+            recordingStateRedirectionJob?.cancel()
             mergedIsRecordingFlow.tryEmit(false)
+            mergedRecordingDurationFlow.tryEmit(Duration.ZERO)
         }
     }
 
@@ -107,11 +121,22 @@ class AndroidRecordingService : RecordingService, KoinComponent {
     override val isRecordingFlow: StateFlow<Boolean>
         get() = mergedIsRecordingFlow
 
+    override val recordingDurationFlow: StateFlow<Duration>
+        get() = mergedRecordingDurationFlow
+
     override var onMeasurementDone: RecordingService.OnMeasurementDoneListener? = null
 
 
     override fun start() {
         startForegroundServiceWrapper()
+    }
+
+    override fun pause() {
+        wrapper?.innerService?.pause()
+    }
+
+    override fun resume() {
+        wrapper?.innerService?.resume()
     }
 
     override fun endAndSave() {
