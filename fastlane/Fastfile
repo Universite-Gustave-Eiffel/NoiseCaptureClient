@@ -1,0 +1,71 @@
+
+# -------------
+# --   iOS   --
+# -------------
+platform :ios do
+
+    # Run iOS tests via Gradle
+    lane :test do
+        gradle(task: ":composeApp:cleanIosSimulatorArm64Test")
+        gradle(task: ":composeApp:iosSimulatorArm64Test")
+    end
+
+    # Build app for AppStore distribution via xcodebuild
+    # Requires you to have provisioning profiles installed locally
+    private_lane :build_for_release do
+        # Clean kotlin build folder
+        gradle(task: ":composeApp:clean")
+        build_app(
+            project: './iosApp/iosApp.xcodeproj',
+            scheme: 'iosApp',
+            configuration: "Release",
+            output_directory: './build/ios',
+            output_name: 'NoiseCapture.ipa',
+            buildlog_path: './build/ios/logs',          # Point build outputs to ./build
+            destination: 'generic/platform=iOS',        # Build for any iOS device (iPhone/iPad)
+            export_method: 'app-store',                 # Sign for AppStore release
+            clean: true,                                # Clean xcode build folder
+        )
+    end
+
+    # Builds app for release and upload to TestFlight for testing
+    lane :beta do
+        # Ensure that your git status is not dirty
+        ensure_git_status_clean
+        # Build ipa for release
+        build_for_release
+        # Upload to testflight, skipping the "Waiting for processing" step.
+        # This will speed up the deployment but changelog will need to be entered manually
+        # in AppStore Connect.
+        upload_to_testflight(
+            apple_id: '6755039187',
+            ipa: './build/iOS/NoiseCapture.ipa',
+            skip_waiting_for_build_processing: true,
+        )
+    end
+end
+
+
+# -------------
+# -- ANDROID --
+# -------------
+platform :android do
+
+    # Run android tests via gradle
+    lane :test do
+        gradle(task: ":composeApp:cleanAllTests")
+        gradle(task: ":composeApp:testDebugUnitTest")
+    end
+
+    # Assemble debug APK (doesn't require signing)
+    lane :build_debug do
+        gradle(task: ":composeApp:clean")
+        gradle(task: ":composeApp:assembleDebug")
+    end
+
+    # Assemble release APK (with signing, requires you to have the app's keystore on your machine)
+    lane :build_release do
+        gradle(task: ":composeApp:clean")
+        gradle(task: ":composeApp:assembleRelease")
+    end
+end
