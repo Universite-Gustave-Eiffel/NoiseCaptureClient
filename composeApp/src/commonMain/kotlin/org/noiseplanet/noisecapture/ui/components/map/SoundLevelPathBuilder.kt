@@ -36,8 +36,7 @@ class SoundLevelPathBuilder(
         val coords = getSortedLocationSequence(measurementUuid)
         val laeqs = getSortedLaeqSequence(measurementUuid)
 
-        // If we only have a single point (user is stationary), calculate average of all LAEq values,
-        // and return it twice so the path still has first and end points.
+        // If we only have a single point (user is stationary), calculate average of all LAEq values
         if (coords.size == 1) {
             val coord = coords.first()
             val (lat, lon) = coord.value
@@ -48,7 +47,7 @@ class SoundLevelPathBuilder(
                 longitude = lon,
                 level = laeqs.map { (_, value) -> value }.dbAverage()
             )
-            return listOf(point, point)
+            return listOf(point)
         }
 
         val result = mutableListOf<PathPoint>() // Will hold resampled data points

@@ -1,3 +1,4 @@
+import androidx.compose.ui.graphics.ImageBitmapConfig
 import org.noiseplanet.noisecapture.model.dao.UserAgent
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.ui.navigation.RouteId
@@ -20,7 +21,7 @@ interface Platform {
      */
     val requiredPermissions: Map<RouteId, List<Permission>>
         get() = mapOf(
-            RouteIds.MEASUREMENT_RECORDING to listOf(Permission.RECORD_AUDIO)
+            RouteIds.RECORDING to listOf(Permission.RECORD_AUDIO)
         )
 
     /**
@@ -31,9 +32,17 @@ interface Platform {
     val optionalPermissions: Map<RouteId, List<Permission>>
         get() = mapOf(
             RouteIds.HOME to listOf(Permission.RECORD_AUDIO),
-            RouteIds.MEASUREMENT_RECORDING to listOf(
+            RouteIds.RECORDING to listOf(
                 Permission.LOCATION_SERVICE_ON,
                 Permission.LOCATION_BACKGROUND,
             )
         )
+
+    /**
+     * Tells which bitmap configuration is the most optimized (and supported) for the current
+     * device. Defaults to [ImageBitmapConfig.Rgb565] which is the lightest cross-platform
+     * configuration available, but is for instance not supported on iOS simulator.
+     */
+    val bitmapConfig: ImageBitmapConfig
+        get() = ImageBitmapConfig.Rgb565
 }

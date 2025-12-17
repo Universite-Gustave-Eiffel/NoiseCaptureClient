@@ -9,9 +9,11 @@
     <!--  HomeScreen  -->
     <string name="home_slm_hint">Visualise and measure the noise level around you as you navigate your surroundings!</string>
     <string name="home_slm_button_title">Open sound level meter</string>
-    <string name="home_last_measurements_section_header">Last measurements</string>
+    <string name="home_last_measurements_section_header">Your measurements</string>
     <string name="home_last_measurement_duration">Duration</string>
     <string name="home_open_history_button_title">History</string>
+    <string name="home_map_section_header">Community measurements</string>
+    <string name="home_map_browse_button">Browse</string>
 
 
     <!--  Sound level meter  -->
@@ -42,6 +44,14 @@
     <string name="measurement_title">New measurement</string>
     <string name="measurement_start_recording_button_title">Start recording</string>
     <string name="measurement_end_recording_button_title">End recording</string>
+    <string name="measurement_pager_tab_spectrum">Spectrum</string>
+    <string name="measurement_pager_tab_spectrogram">Spectrogram</string>
+    <string name="measurement_pager_tab_map">Map</string>
+
+    <string name="measurement_end_confirmation_dialog_title">Confirmation</string>
+    <string name="measurement_end_confirmation_dialog_body">Are you sure you want to end and save the current recording? Note that the recording session can still continue in the background if you leave the app.</string>
+    <string name="measurement_end_confirmation_dialog_confirm">End and save</string>
+    <string name="measurement_end_confirmation_dialog_continue">Cancel</string>
 
 
     <!-- HistoryScreen -->
@@ -59,7 +69,10 @@
     <string name="measurement_details_audio_player_description">Listen to the audio that was recorded during your measurement.</string>
 
     <string name="measurement_details_spl_time_plot_title">Noise level over time</string>
-    <string name="measurement_details_spl_time_plot_description">Visualise the evolution of recorder noise level as a function of time.</string>
+    <string name="measurement_details_spl_time_plot_description">Visualise the evolution of recorded noise level as a function of time.</string>
+
+    <string name="measurement_details_avg_spl_per_freq_plot_title">Average noise level</string>
+    <string name="measurement_details_avg_spl_per_freq_plot_description">Represents the average recorded noise level for each frequency band.</string>
 
     <string name="measurement_details_laeq_summary_title">Sound level summary</string>
     <string name="measurement_details_laeq_summary_min">lowest recorded sound level.</string>
@@ -67,6 +80,9 @@
     <string name="measurement_details_laeq_summary_la50">50% of recorded levels were above this value.</string>
     <string name="measurement_details_laeq_summary_la10">10% of recorded levels were above this value.</string>
     <string name="measurement_details_laeq_summary_max">highest recorded sound level.</string>
+
+    <string name="measurement_details_rne_plot_title">Repartition of Noise Exposure (RNE)</string>
+    <string name="measurement_details_rne_plot_description">Represents the percentage of total measurement time where sound level was between the corresponding boundaries.</string>
 
     <string name="measurement_details_manage_title">Manage measurement</string>
     <string name="measurement_details_manage_description">Deleting long measurements can help freeing up disk space if needed. Recorded audio can be deleted separately from the rest of the measurement data. Note that this is only the local copy of the measurement, deleting it won't delete it from our server if you've already synced it. However, the associated audio file is never synced and is only for your personal use.</string>
@@ -77,6 +93,10 @@
     <string name="measurement_details_delete_measurement_dialog_title">Are you sure?</string>
     <string name="measurement_details_delete_measurement_dialog_text">This action cannot be undone. Note that this will only the local copy of your measurement, if you've already synced it before, the distant copy will be kept but you won't be able to download it again.</string>
     <string name="measurement_details_delete_measurement_audio_dialog_text">This action cannot be undone. This will not delete the measurement itself but only the audio clip that is attached to it. You won't be able to listen to the measurement audio afterwards but will still be able to see the measurement details.</string>
+
+
+    <!-- CommunityMapScreen -->
+    <string name="community_map_title">Community measurements</string>
 
 
     <!-- Settings -->
@@ -125,6 +145,11 @@
     <string name="settings_section_map">MAP</string>
     <string name="settings_map_measurements_count_title">Shown measurements count</string>
     <string name="settings_map_measurements_count_description">Adjust the maximum number of measurements shown on the map at once (set this to 0 to show all measurements)</string>
+
+
+    <!-- Map -->
+    <string name="map_legend_title">Legend</string>
+    <string name="map_legend_description">The map shows recorded noise levels by steps of 5 decibels.</string>
 
 
     <!-- User acoustics knowledge -->

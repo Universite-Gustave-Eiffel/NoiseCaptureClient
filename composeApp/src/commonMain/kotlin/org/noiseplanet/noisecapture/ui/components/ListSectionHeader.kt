@@ -15,15 +15,15 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun ListSectionHeader(
     title: StringResource,
-    paddingTop: Dp = 16.dp,
+    paddingTop: Dp = 0.dp,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier.fillMaxWidth()) {
         Text(
             text = stringResource(title).uppercase(),
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-            modifier = Modifier.padding(top = paddingTop, bottom = 8.dp, start = 16.dp)
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = paddingTop, bottom = 8.dp)
         )
     }
 }

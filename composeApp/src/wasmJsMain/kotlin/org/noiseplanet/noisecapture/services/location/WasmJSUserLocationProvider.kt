@@ -87,10 +87,7 @@ class WasmJSUserLocationProvider : KoinComponent, UserLocationProvider {
             lon = rawLocation.coords.longitude,
             altitude = rawLocation.coords.altitude,
             speed = rawLocation.coords.speed,
-            // For JS, direction and orientation are represented by the same property
-            // https://developer.mozilla.org/en-US/docs/Web/API/GeolocationCoordinates/heading
             direction = rawLocation.coords.heading,
-            orientation = rawLocation.coords.heading,
             horizontalAccuracy = rawLocation.coords.accuracy,
             verticalAccuracy = rawLocation.coords.altitudeAccuracy,
         )

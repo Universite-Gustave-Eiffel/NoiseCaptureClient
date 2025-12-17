@@ -7,10 +7,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: "checkout"
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - name: "detekt"
-        uses: natiginfo/action-detekt-all@1.23.6
-        with:
-          args: --config "config/detekt.yml" --excludes "**/*Test/**,**/*.kts"
+      - name: "Setup detekt"
+        uses: peter-murray/setup-detekt@v3
+
+      - name: "Run detekt"
+        run: detekt-cli --config "config/detekt.yml" --excludes "**/*Test/**,**/*.kts"

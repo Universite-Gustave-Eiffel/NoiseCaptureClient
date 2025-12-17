@@ -3,11 +3,11 @@ package org.noiseplanet.noisecapture.ui.features.debug
 import androidx.window.core.layout.WindowSizeClass
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
-import org.noiseplanet.noisecapture.ui.components.map.MeasurementsMapViewModel
+import org.noiseplanet.noisecapture.ui.components.map.MapViewModel
 
 val debugModule = module {
 
     viewModel { (windowsSizeClass: WindowSizeClass) ->
-        MeasurementsMapViewModel(windowsSizeClass)
+        MapViewModel(windowsSizeClass)
     }
 }

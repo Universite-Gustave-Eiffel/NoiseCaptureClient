@@ -72,7 +72,14 @@ fun NCButton(
                     onClick,
                     colors = colors.toIconButtonColors(),
                     modifier = finalModifier
-                ) { NCButtonContents(viewModel.icon, null, colors.contentColor) }
+                ) {
+                    NCButtonContents(
+                        viewModel.icon,
+                        viewModel.iconPlacement,
+                        null,
+                        colors.contentColor
+                    )
+                }
 
                 NCButtonStyle.OUTLINED -> OutlinedIconButton(
                     onClick,
@@ -83,7 +90,14 @@ fun NCButton(
                         ),
                     border = BorderStroke(width = 2.dp, color = colors.containerColor),
                     modifier = finalModifier
-                ) { NCButtonContents(viewModel.icon, null, colors.contentColor) }
+                ) {
+                    NCButtonContents(
+                        viewModel.icon,
+                        viewModel.iconPlacement,
+                        null,
+                        colors.contentColor
+                    )
+                }
 
                 NCButtonStyle.TEXT -> IconButton(
                     onClick,
@@ -93,7 +107,14 @@ fun NCButton(
                             disabledContainerColor = Color.Transparent
                         ),
                     modifier = finalModifier
-                ) { NCButtonContents(viewModel.icon, null, colors.contentColor) }
+                ) {
+                    NCButtonContents(
+                        viewModel.icon,
+                        viewModel.iconPlacement,
+                        null,
+                        colors.contentColor
+                    )
+                }
             }
         } else {
             // Otherwise use a regular button
@@ -102,7 +123,14 @@ fun NCButton(
                     onClick,
                     colors = colors.toButtonColors(),
                     modifier = finalModifier,
-                ) { NCButtonContents(viewModel.icon, title, colors.contentColor) }
+                ) {
+                    NCButtonContents(
+                        viewModel.icon,
+                        viewModel.iconPlacement,
+                        title,
+                        colors.contentColor
+                    )
+                }
 
                 NCButtonStyle.OUTLINED -> OutlinedButton(
                     onClick,
@@ -113,7 +141,14 @@ fun NCButton(
                         ),
                     border = BorderStroke(width = 2.dp, color = colors.containerColor),
                     modifier = finalModifier,
-                ) { NCButtonContents(viewModel.icon, title, colors.contentColor) }
+                ) {
+                    NCButtonContents(
+                        viewModel.icon,
+                        viewModel.iconPlacement,
+                        title,
+                        colors.contentColor
+                    )
+                }
 
                 NCButtonStyle.TEXT -> TextButton(
                     onClick,
@@ -123,7 +158,14 @@ fun NCButton(
                             disabledContainerColor = Color.Transparent
                         ),
                     modifier = finalModifier
-                ) { NCButtonContents(viewModel.icon, title, colors.contentColor) }
+                ) {
+                    NCButtonContents(
+                        viewModel.icon,
+                        viewModel.iconPlacement,
+                        title,
+                        colors.contentColor
+                    )
+                }
             }
         }
     }
@@ -133,24 +175,37 @@ fun NCButton(
 @Composable
 private fun NCButtonContents(
     icon: ImageVector?,
+    iconPlacement: NCButtonIconPlacement,
     title: String?,
     contentColor: Color,
 ) {
-    icon?.let {
+    if (icon != null && iconPlacement == NCButtonIconPlacement.START) {
         Icon(
-            imageVector = it,
+            imageVector = icon,
             contentDescription = title,
             tint = contentColor,
             modifier = Modifier.size(18.dp),
         )
-    }
 
-    // If we have both icon and title, add a spacer between the two
-    if (icon != null && title != null) {
-        Spacer(modifier = Modifier.width(8.dp))
+        if (title != null) {
+            Spacer(modifier = Modifier.width(8.dp))
+        }
     }
 
     title?.let {
         Text(it, color = contentColor)
+    }
+
+    if (icon != null && iconPlacement == NCButtonIconPlacement.END) {
+        if (title != null) {
+            Spacer(modifier = Modifier.width(8.dp))
+        }
+
+        Icon(
+            imageVector = icon,
+            contentDescription = title,
+            tint = contentColor,
+            modifier = Modifier.size(18.dp),
+        )
     }
 }

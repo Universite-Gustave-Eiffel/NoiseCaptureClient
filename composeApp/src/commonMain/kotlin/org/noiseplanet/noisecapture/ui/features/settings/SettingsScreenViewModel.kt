@@ -107,6 +107,7 @@ class SettingsScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
                     title = Res.string.settings_measurements_limit_duration_title,
                     description = Res.string.settings_measurements_limit_duration_description,
                     settingKey = SettingsKey.SettingLimitMeasurementDuration,
+                    isFirstInSection = true,
                 ),
                 SettingsItemViewModel(
                     title = Res.string.settings_measurements_max_duration_title,
@@ -129,13 +130,12 @@ class SettingsScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
                     title = Res.string.settings_measurements_spectrogram_mode_title,
                     description = Res.string.settings_measurements_spectrogram_mode_description,
                     settingKey = SettingsKey.SettingSpectrogramScaleMode,
-                    isLastInSection = true
                 ),
                 SettingsEnumItemViewModel(
                     title = Res.string.settings_measurements_windowing_title,
                     description = Res.string.settings_measurements_windowing_description,
                     settingKey = SettingsKey.SettingWindowingMode,
-                    isFirstInSection = true,
+                    isLastInSection = true,
                 ),
             )
         ),

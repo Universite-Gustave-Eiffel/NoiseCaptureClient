@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.ui.features.recording.plot.spectrogram
 
+import Platform
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Canvas
@@ -18,9 +19,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
@@ -45,6 +44,7 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.round
+import kotlin.math.roundToInt
 import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -59,13 +59,13 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
 
     companion object {
 
-        private const val RANGE_DB = 100.0
+        private const val RANGE_DB = 90.0
         private const val MIN_DB = 0.0
 
         // TODO: Platform dependant gain?
         private const val DB_GAIN = AcousticIndicatorsProcessing.ANDROID_GAIN
 
-        private val FRAME_RATE: Duration = (1.0 / 30.0).milliseconds
+        private val FRAME_RATE: Duration = (1.0 / 30.0 * 1_000).milliseconds
 
         // TODO: Make this a user settings property?
         val DISPLAYED_TIME_RANGE: Duration = 20.seconds
@@ -73,9 +73,11 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
         val X_TICKS_COUNT: Int = (DISPLAYED_TIME_RANGE / TICK_SPACING_TIME_RANGE).toInt()
 
         val Y_AXIS_TICKS_LOG = intArrayOf(
-            63, 125, 250, 500, 1000, 2000, 4000, 8000, 16000, 24000
+            63, 100, 160, 250, 400, 630, 1000, 1600, 2500, 4000, 6300, 10000, 16000, 24000
         )
-        val Y_AXIS_TICKS_LINEAR = IntArray(24) { it * 1000 + 1000 }
+
+        // In linear mode, show a tick every 4kHz starting from 0 up to 24kHz
+        val Y_AXIS_TICKS_LINEAR = IntArray(7) { it * 4000 }
     }
 
 
@@ -83,6 +85,7 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
 
     private val liveAudioService: LiveAudioService by inject()
     private val settingsService: UserSettingsService by inject()
+    private val platform: Platform by inject()
     private val logger: Logger by injectLogger()
 
     private var canvasSize: IntSize = IntSize.Zero
@@ -144,30 +147,28 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
         }
 
         spectrogramUpdatesJob = viewModelScope.launch(Dispatchers.Default) {
-            // Listen to spectrum data updates and build spectrogram along the way
-            liveAudioService.getSpectrogramDataFlow()
-                .map {
-                    // For each new spectrogram data, build a pixels strip
-                    getSpectrogramStrip(it)
-                }
-                .combine(fpsFlow) { stripPixels, timestamp ->
-                    // Combine fixed FPS timer with new spectrogram strips updates
-                    Pair(stripPixels, timestamp)
-                }
-                .collect { (stripPixels, timestamp) ->
+            var currentPixelStrip: List<Color>? = null
 
-                    // TODO: This could be further optimized by drawing every strip once and
-                    //       calculating the width based on timestamp comparison, but then the
-                    //       canvas size would change for every new spectrogram data and we would
-                    //       to create a new bitmap everytime, increasing the memory impact.
-                    //       For now the CPU cost tradeoff is acceptable.
+            launch {
+                // Listen to spectrum data updates and build spectrogram along the way
+                liveAudioService.getSpectrogramDataFlow()
+                    .collect {
+                        // For each new spectrogram data, build a pixels strip
+                        currentPixelStrip = getSpectrogramStrip(it)
+                    }
+            }
 
+            launch {
+                fpsFlow.collect { timestamp ->
                     // On every update, draw a new strip
-                    pushToBitmap(
-                        timestamp = timestamp,
-                        stripPixels = stripPixels,
-                    )
+                    currentPixelStrip?.let {
+                        pushToBitmap(
+                            timestamp = timestamp,
+                            stripPixels = it,
+                        )
+                    }
                 }
+            }
         }
     }
 
@@ -224,7 +225,7 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
         val freqByPixel = spectrogramData.spectrum.size / canvasSize.height.toDouble()
 
         val fMax = sampleRate / 2
-        val fMin = Y_AXIS_TICKS_LOG[0]
+        val fMin = max(1, Y_AXIS_TICKS_LOG[0])
         val r = fMax / fMin.toDouble()
 
         return (0..<canvasSize.height).map { pixel ->
@@ -238,11 +239,11 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
                 freqEnd = min(spectrogramData.spectrum.size, index + 1)
                 lastProcessFrequencyIndex = nextFrequencyIndex
             } else {
-                freqStart = (pixel * freqByPixel).toInt()
+                freqStart = (pixel * freqByPixel).roundToInt()
                 freqEnd = min(
                     (pixel + 1) * freqByPixel,
                     spectrogramData.spectrum.size.toDouble()
-                ).toInt()
+                ).roundToInt()
             }
             var sumVal = 0.0
             for (idFreq in freqStart..<freqEnd) {
@@ -265,7 +266,7 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
         timestamp: Long,
         stripPixels: List<Color>,
     ) {
-        if (canvasSize == IntSize.Zero) return
+        if (canvasSize.width == 0 || canvasSize.height == 0) return
 
         // If bitmap was invalidated, create a new one and update Canvas.
         if (currentBitmap == null) {
@@ -323,8 +324,13 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
      * Creates a new image bitmap and fills it with background color
      */
     private fun initializeBitmap() {
-        // Init ImageBitmap and Canvas
-        ImageBitmap(canvasSize.width, canvasSize.height).apply {
+        // Initialize ImageBitmap and Canvas
+        ImageBitmap(
+            width = canvasSize.width,
+            height = canvasSize.height,
+            config = platform.bitmapConfig, // Use platform optimized color coding for faster draw
+            hasAlpha = false // We don't need the alpha chanel, omitting it will make bitmap even lighter
+        ).apply {
             currentBitmap = this
             canvas = Canvas(this)
         }

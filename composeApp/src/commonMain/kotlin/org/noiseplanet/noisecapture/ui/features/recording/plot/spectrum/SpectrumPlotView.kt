@@ -40,7 +40,7 @@ private val WEIGHTED_SPL_BOX_WIDTH = 10.dp
 
 @Composable
 fun SpectrumPlotView(
-    backgroundColor: Color = MaterialTheme.colorScheme.surface,
+    backgroundColor: Color = MaterialTheme.colorScheme.inverseSurface,
     modifier: Modifier = Modifier,
 ) {
     // - Properties
@@ -77,13 +77,14 @@ fun SpectrumPlotView(
             }.toTypedArray()
         )
     }
-    val weightedSplBoxColor = MaterialTheme.colorScheme.onSurface
+    val weightedSplBoxColor = MaterialTheme.colorScheme.surfaceContainer
 
 
     // - Layout
 
     PlotContainer(
         axisSettings = axisSettings,
+        tintColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
         modifier = modifier,
     ) {
         Column(

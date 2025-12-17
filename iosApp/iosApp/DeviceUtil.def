@@ -1,0 +1,4 @@
+language = Objective-C
+headers = DeviceUtil.h
+#below, set the package id for the import
+package = org.noiseplanet.noisecapture

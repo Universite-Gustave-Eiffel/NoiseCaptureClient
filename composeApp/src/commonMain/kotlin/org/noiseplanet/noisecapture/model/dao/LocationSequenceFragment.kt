@@ -34,13 +34,11 @@ data class LocationSequenceFragment(
     val speed: MutableList<Double?> = mutableListOf(),
     val altitude: MutableList<Double?> = mutableListOf(),
     val direction: MutableList<Double?> = mutableListOf(),
-    val orientation: MutableList<Double?> = mutableListOf(),
 
     val horizontalAccuracy: MutableList<Double> = mutableListOf(),
     val verticalAccuracy: MutableList<Double?> = mutableListOf(),
     val speedAccuracy: MutableList<Double?> = mutableListOf(),
     val directionAccuracy: MutableList<Double?> = mutableListOf(),
-    val orientationAccuracy: MutableList<Double?> = mutableListOf(),
 ) : SequenceFragment<LocationRecord> {
 
     override fun push(element: LocationRecord) {
@@ -50,11 +48,9 @@ data class LocationSequenceFragment(
         speed.add(element.speed)
         altitude.add(element.altitude)
         direction.add(element.direction)
-        orientation.add(element.orientation)
         horizontalAccuracy.add(element.horizontalAccuracy)
         verticalAccuracy.add(element.verticalAccuracy)
         speedAccuracy.add(element.speedAccuracy)
         directionAccuracy.add(element.directionAccuracy)
-        orientationAccuracy.add(element.orientationAccuracy)
     }
 }

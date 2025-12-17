@@ -8,6 +8,9 @@ import kotlinx.serialization.Serializable
  * @param la10 10% of the time, sound level was below this value.
  * @param la50 50% of the time, sound level was below this value.
  * @param la90 90% of the time, sound level was below this value.
+ * @param leqOverTime A summary of LAEq values, downsampled to a maximum number of values for a quick overview.
+ * @param avgLevelPerFreq Average noise level per frequency band.
+ * @param repartitionOfNoiseExposure Repartition of Noise Exposure: percentage of recorded levels for each decibel threshold.
  */
 @Serializable
 data class MeasurementSummary(
@@ -15,4 +18,6 @@ data class MeasurementSummary(
     val la50: Double,
     val la90: Double,
     val leqOverTime: Map<Long, Double>,
+    val avgLevelPerFreq: Map<Int, Double>,
+    val repartitionOfNoiseExposure: Map<Double, Double>,
 )

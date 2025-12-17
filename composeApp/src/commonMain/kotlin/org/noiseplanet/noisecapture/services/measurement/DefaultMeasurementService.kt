@@ -15,15 +15,19 @@ import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.model.dao.MeasurementSummary
 import org.noiseplanet.noisecapture.model.dao.MutableMeasurement
 import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
+import org.noiseplanet.noisecapture.services.statistics.UserStatisticsService
 import org.noiseplanet.noisecapture.services.storage.StorageService
 import org.noiseplanet.noisecapture.services.storage.injectStorageService
+import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.dbAverage
 import org.noiseplanet.noisecapture.util.injectLogger
 import org.noiseplanet.noisecapture.util.isInVuMeterRange
 import org.noiseplanet.noisecapture.util.roundTo
 import kotlin.concurrent.Volatile
+import kotlin.math.log10
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.pow
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.uuid.ExperimentalUuidApi
@@ -67,6 +71,7 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
     private val leqSequenceStorageService: StorageService<LeqSequenceFragment> by injectStorageService()
     private val locationSequenceStorageService: StorageService<LocationSequenceFragment> by injectStorageService()
     private val audioRecordingService: AudioRecordingService by inject()
+    private val userStatisticsService: UserStatisticsService by inject()
 
     private var ongoingMeasurement: MutableMeasurement? = null
 
@@ -88,6 +93,14 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
 
     override fun getAllMeasurementsFlow(): Flow<List<Measurement>> {
         return measurementStorageService.subscribeAll()
+    }
+
+    override suspend fun getAllMeasurementIds(): List<String> {
+        return measurementStorageService.getIndex()
+    }
+
+    override fun getAllMeasurementIdsFlow(): Flow<List<String>> {
+        return measurementStorageService.subscribeIndex()
     }
 
     override suspend fun getMeasurement(uuid: String): Measurement? {
@@ -164,8 +177,13 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
         if (record.laeq.isInVuMeterRange()) {
             // Update (or initialize) ongoing measurement's leq metrics
             val laeqMetrics = ongoingMeasurement.laeqMetrics?.let { currentMetrics ->
-                val average = currentMetrics.average +
-                    (record.laeq - currentMetrics.average) / currentMetrics.recordsCount
+                // Calculate new energetic average based on current average and records count
+                val average = 10.0 * log10(
+                    (currentMetrics.recordsCount * 10.0.pow(currentMetrics.average / 10.0)
+                        + 10.0.pow(record.laeq / 10.0))
+                        / (currentMetrics.recordsCount + 1)
+                )
+
                 LAeqMetrics(
                     min = min(record.laeq, currentMetrics.min),
                     average = average.roundTo(1),
@@ -213,6 +231,12 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
     override suspend fun closeOngoingMeasurement() {
         // End currently ongoing sequence fragments
         onSequenceFragmentEnd()
+        // Add this measurement to user statistics
+        ongoingMeasurement?.let { ongoingMeasurement ->
+            measurementStorageService.get(ongoingMeasurement.uuid)?.let { measurement ->
+                userStatisticsService.addMeasurement(measurement)
+            }
+        }
         ongoingMeasurement = null
     }
 
@@ -220,26 +244,68 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
      * TODO: Benchmark this implementation for very large measurements and optimize if needed.
      */
     override suspend fun calculateSummary(measurement: Measurement): Measurement {
+        // Read all sequence fragments to summarize data
+        val allSequenceFragments: List<LeqSequenceFragment> = measurement.leqsSequenceIds
+            .mapNotNull { leqSequenceStorageService.get(it) }
+
         // Get a map of all LAEq values with their associated timestamp
-        val allMeasurementLeq: Map<Long, Double> = measurement.leqsSequenceIds
-            .fold(mapOf<Long, Double>()) { accumulator, sequenceId ->
-                val laeqs = leqSequenceStorageService.get(sequenceId)
-                    ?.let { it.timestamp.zip(it.laeq) }
-                    ?: emptyList()
-                accumulator + laeqs
+        val allMeasurementLaeq: Map<Long, Double> = allSequenceFragments
+            .fold(mapOf<Long, Double>()) { accumulator, sequence ->
+                accumulator + sequence.let { it.timestamp.zip(it.laeq) }
             }.filter { (_, laeq) ->
                 laeq.isInVuMeterRange()
             }
-
         // Get a list of all sorted LAEq values
-        val allMeasurementLeqSorted = allMeasurementLeq.values.sorted()
+        val allMeasurementLeqSorted = allMeasurementLaeq.values.sorted()
+
+        // Calculate repartition of noise levels for each dB threshold (0-35, 35-40, 40-45, etc)
+        val rne = NoiseLevelColorRamp.palette.keys.sorted()
+            .mapIndexed { index, lowerBound ->
+                val upperBound = NoiseLevelColorRamp.palette.keys
+                    .elementAtOrElse(index + 1) { Double.MAX_VALUE }
+
+                // Find the first index where element >= lowerBound
+                val lowerIndex = allMeasurementLeqSorted.binarySearch(lowerBound)
+                val actualLowerIndex = if (lowerIndex < 0) -(lowerIndex + 1) else lowerIndex
+                // Find the first index where element > upperBound
+                val upperIndex = allMeasurementLeqSorted.binarySearch(upperBound)
+                val actualUpperIndex = if (upperIndex < 0) -(upperIndex + 1) else upperIndex + 1
+
+                // Count elements between actualLowerIndex (inclusive) and actualUpperIndex (exclusive)
+                val count = actualUpperIndex - actualLowerIndex
+                Pair(
+                    lowerBound,
+                    if (count <= 0) 0.0 else (count.toDouble() / allMeasurementLeqSorted.size)
+                )
+            }.toMap()
+
+        // Do the same for each frequency band to compute the average level
+        val averageLeqPerFrequencyBand: Map<Int, Double> = allSequenceFragments
+            .map { it.leqsPerThirdOctaveBand }
+            .fold(mutableMapOf<Int, List<Double>>()) { accumulator, element ->
+                element.forEach { (key, values) ->
+                    accumulator[key] = accumulator[key].orEmpty() + values
+                }
+                accumulator
+            }
+            .mapValues { (_, leqs) ->
+                val leqsInRange = leqs.filter { it > 0.0 }
+
+                if (leqsInRange.isNotEmpty()) {
+                    leqsInRange.dbAverage()
+                } else {
+                    0.0
+                }
+            }
 
         // Calculate LA10/50/90 based on indices in the sorted list.
         val summary = MeasurementSummary(
             la10 = allMeasurementLeqSorted[(allMeasurementLeqSorted.size / 100.0 * 90.0).toInt()],
             la50 = allMeasurementLeqSorted[(allMeasurementLeqSorted.size / 100.0 * 50.0).toInt()],
             la90 = allMeasurementLeqSorted[(allMeasurementLeqSorted.size / 100.0 * 10.0).toInt()],
-            leqOverTime = downsampleLeqSequence(allMeasurementLeq)
+            leqOverTime = downsampleLeqSequence(allMeasurementLaeq),
+            avgLevelPerFreq = averageLeqPerFrequencyBand,
+            repartitionOfNoiseExposure = rne,
         )
         // Build a new measurement object with the summary property.
         val newValue = measurement.copy(summary = summary)
@@ -248,19 +314,22 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
         return newValue
     }
 
-    override suspend fun deleteMeasurementAssociatedAudio(uuid: String) {
-        val measurement = measurementStorageService.get(uuid) ?: return
+    override suspend fun deleteMeasurementAssociatedAudio(measurement: Measurement) {
         measurement.recordedAudioUrl?.let { audioUrl ->
             // Delete audio file
             audioRecordingService.deleteFileAtUrl(audioUrl)
             // And update measurement with null url
-            measurementStorageService.set(uuid, measurement.copy(recordedAudioUrl = null))
+            measurementStorageService.set(
+                uuid = measurement.uuid,
+                newValue = measurement.copy(recordedAudioUrl = null)
+            )
         }
     }
 
-    override suspend fun deleteMeasurement(uuid: String) {
-        deleteMeasurementAssociatedAudio(uuid)
-        measurementStorageService.delete(uuid)
+    override suspend fun deleteMeasurement(measurement: Measurement) {
+        deleteMeasurementAssociatedAudio(measurement)
+        measurementStorageService.delete(measurement.uuid)
+        userStatisticsService.removeMeasurement(measurement)
     }
 
 

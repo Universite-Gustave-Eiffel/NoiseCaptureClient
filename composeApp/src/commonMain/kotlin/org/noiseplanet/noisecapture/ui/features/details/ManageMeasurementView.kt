@@ -138,7 +138,7 @@ fun ManageMeasurementView(
             text = deleteConfirmationText,
             onDismissRequest = { showDeleteConfirmationDialog = false },
             onConfirm = {
-                deleteConfirmationAction?.let { it() }
+                deleteConfirmationAction?.invoke()
                 showDeleteConfirmationDialog = false
             }
         )

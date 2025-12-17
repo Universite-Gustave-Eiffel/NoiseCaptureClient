@@ -16,4 +16,14 @@ interface ScreenViewModel {
 
     val actions: StateFlow<List<AppBarButtonViewModel>>
         get() = MutableStateFlow(emptyList())
+
+    /**
+     * Callback triggered when pressing back button.
+     * If it returns `true`, proceed with backstack pop. If `false`, "swallow" back press
+     * and don't remove screen from navigation stack.
+     *
+     * By default, always confirm.
+     */
+    val confirmPopBackStack: () -> Boolean
+        get() = { true }
 }

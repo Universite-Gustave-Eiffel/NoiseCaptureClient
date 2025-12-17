@@ -1,70 +1,70 @@
 # keep sorted please, use Edit -> Sort Lines
 
 [versions]
-agp = "8.11.2"
+agp = "8.13.1"
 android-compileSdk = "36"
 android-minSdk = "24"
 android-targetSdk = "36"
-androidx-activity-compose = "1.11.0"
-androidx-viewmodel-compose = "2.9.5"
+androidx-activity-compose = "1.12.0"
 androidx-navigation = "2.9.1"
 androidx-preference = "1.2.1"
+androidx-viewmodel-compose = "2.9.6"
 build-konfig-gradle-plugin = "0.17.1"
-compose-plugin = "1.9.1"
+compose-plugin = "1.9.3"
 coroutines = "1.10.2"
 detekt = "1.23.8"
 google-play-services-android-location = "21.3.0"
-human-readable = "1.12.0"
-koala-plot = "0.9.1"
+human-readable = "1.12.1"
+koala-plot = "0.10.3"
 koin = "4.1.1"
-kotlin = "2.2.20"
+kotlin = "2.2.21"
 kotlinx-datetime = "0.7.1"
 kotlinx-serialization = "1.9.0"
 kstore = "1.0.0"
-ktor = "3.3.1"
+ktor = "3.3.3"
 maps-compose = "0.10.0"
-material3 = "1.2.0-alpha05"
+material3 = "1.2.0"
 settings-multiplatform = "1.3.0"
 
 [libraries]
-androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
-androidx-backhandler-compose = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "compose-plugin" }
-androidx-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-viewmodel-compose" }
-androidx-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-viewmodel-compose" }
-androidx-navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "androidx-navigation" }
-androidx-preference = { module = "androidx.preference:preference-ktx", version.ref = "androidx-preference" }
-buildkonfig-gradle-plugin = { module = "com.codingfeline.buildkonfig:buildkonfig-gradle-plugin", version.ref = "build-konfig-gradle-plugin" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidx-activity-compose" }
+androidx-backhandler-compose = { group = "org.jetbrains.compose.ui", name = "ui-backhandler", version.ref = "compose-plugin" }
+androidx-navigation-compose = { group = "org.jetbrains.androidx.navigation", name = "navigation-compose", version.ref = "androidx-navigation" }
+androidx-preference = { group = "androidx.preference", name = "preference-ktx", version.ref = "androidx-preference" }
+androidx-runtime-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "androidx-viewmodel-compose" }
+androidx-viewmodel-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "androidx-viewmodel-compose" }
+buildkonfig-gradle-plugin = { group = "com.codingfeline.buildkonfig", name = "buildkonfig-gradle-plugin", version.ref = "build-konfig-gradle-plugin" }
 google-play-services-android-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "google-play-services-android-location" }
-humanreadable = { module = "nl.jacobras:Human-Readable", version.ref = "human-readable" }
-koalaplot-core = { module = "io.github.koalaplot:koalaplot-core", version.ref = "koala-plot" }
-koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
-koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
-koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }
-koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
-kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
-kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
-kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
-kstore = { module = "io.github.xxfast:kstore", version.ref = "kstore" }
-kstore-file = { module = "io.github.xxfast:kstore-file", version.ref = "kstore" }
-kstore-storage = { module = "io.github.xxfast:kstore-storage", version.ref = "kstore" }
-ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+humanreadable = { group = "nl.jacobras", name = "Human-Readable", version.ref = "human-readable" }
+koalaplot-core = { group = "io.github.koalaplot", name = "koalaplot-core", version.ref = "koala-plot" }
+koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
+koin-compose = { group = "io.insert-koin", name = "koin-compose", version.ref = "koin" }
+koin-compose-viewmodel = { group = "io.insert-koin", name = "koin-compose-viewmodel", version.ref = "koin" }
+koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
+kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
+kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinx-datetime" }
+kotlinx-serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+kstore = { group = "io.github.xxfast", name = "kstore", version.ref = "kstore" }
+kstore-file = { group = "io.github.xxfast", name = "kstore-file", version.ref = "kstore" }
+kstore-storage = { group = "io.github.xxfast", name = "kstore-storage", version.ref = "kstore" }
 ktor-client-android = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktor" }
+ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
 ktor-client-darwin = { group = "io.ktor", name = "ktor-client-darwin", version.ref = "ktor" }
-maps-compose = { module = "ovh.plrapps:mapcompose-mp", version.ref = "maps-compose" }
+maps-compose = { group = "ovh.plrapps", name = "mapcompose-mp", version.ref = "maps-compose" }
 material3-adaptive = { group = "org.jetbrains.compose.material3.adaptive", name = "adaptive", version.ref = "material3" }
 material3-adaptive-layout = { group = "org.jetbrains.compose.material3.adaptive", name = "adaptive-layout", version.ref = "material3" }
-settings-multiplatform = { module = "com.russhwolf:multiplatform-settings", version.ref = "settings-multiplatform" }
-settings-multiplatform-serialization = { module = "com.russhwolf:multiplatform-settings-serialization", version.ref = "settings-multiplatform" }
-settings-multiplatform-coroutines = { module = "com.russhwolf:multiplatform-settings-coroutines", version.ref = "settings-multiplatform" }
+settings-multiplatform = { group = "com.russhwolf", name = "multiplatform-settings", version.ref = "settings-multiplatform" }
+settings-multiplatform-coroutines = { group = "com.russhwolf", name = "multiplatform-settings-coroutines", version.ref = "settings-multiplatform" }
+settings-multiplatform-serialization = { group = "com.russhwolf", name = "multiplatform-settings-serialization", version.ref = "settings-multiplatform" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
+buildKonfigGradlePlugin = { id = "com.codingfeline.buildkonfig", version.ref = "build-konfig-gradle-plugin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose-plugin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-buildKonfigGradlePlugin = { id = "com.codingfeline.buildkonfig", version.ref = "build-konfig-gradle-plugin" }

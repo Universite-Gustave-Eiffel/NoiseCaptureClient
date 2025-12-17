@@ -12,10 +12,11 @@ import kotlinx.serialization.Serializable
 object RouteIds {
 
     const val HOME = "home"
-    const val MEASUREMENT_RECORDING = "measurement_recording"
+    const val RECORDING = "recording"
     const val HISTORY = "history"
     const val SETTINGS = "settings"
-    const val MEASUREMENT_DETAILS = "measurement_details"
+    const val DETAILS = "details"
+    const val COMMUNITY_MAP = "community_map"
 
     // Naming this route "DEBUG" breaks compilation on iOS because it gets interpreted as and
     // obj-C macro.
@@ -43,7 +44,7 @@ open class Route(
 class HomeRoute : Route(id = RouteIds.HOME, usesAudioSource = true)
 
 @Serializable
-class MeasurementRecordingRoute : Route(id = RouteIds.MEASUREMENT_RECORDING, usesAudioSource = true)
+class RecordingRoute : Route(id = RouteIds.RECORDING, usesAudioSource = true)
 
 @Serializable
 class HistoryRoute : Route(id = RouteIds.HISTORY)
@@ -52,10 +53,13 @@ class HistoryRoute : Route(id = RouteIds.HISTORY)
 class SettingsRoute : Route(id = RouteIds.SETTINGS)
 
 @Serializable
-class MeasurementDetailsRoute(
+class DetailsRoute(
     val measurementId: String,
     val parentRouteId: String,
-) : Route(id = RouteIds.MEASUREMENT_DETAILS)
+) : Route(id = RouteIds.DETAILS)
+
+@Serializable
+class CommunityMapRoute : Route(id = RouteIds.COMMUNITY_MAP)
 
 @Serializable
 class DebugRoute : Route(id = RouteIds.DEBUG_ROUTE)

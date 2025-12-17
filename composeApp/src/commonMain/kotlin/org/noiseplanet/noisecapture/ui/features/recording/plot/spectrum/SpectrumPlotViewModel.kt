@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.ui.features.recording.plot.spectrum
 
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.StateFlow
@@ -69,6 +70,7 @@ class SpectrumPlotViewModel : ViewModel(), KoinComponent {
                     )
                 },
                 showYTickMarks = false,
+                yAxisLayoutDirection = LayoutDirection.Rtl,
             )
         }
         .stateInWhileSubscribed(

@@ -56,7 +56,7 @@ fun SoundLevelMeterView(
     // - Layout
 
     Box(
-        modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer)
+        modifier = Modifier.background(color = MaterialTheme.colorScheme.surfaceContainer)
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -73,6 +73,7 @@ fun SoundLevelMeterView(
                         style = MaterialTheme.typography.labelLarge.copy(
                             fontWeight = FontWeight.SemiBold
                         ),
+                        color = MaterialTheme.colorScheme.onSurface
                     )
 
                     Text(

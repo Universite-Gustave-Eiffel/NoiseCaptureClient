@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
-import org.noiseplanet.noisecapture.ui.components.map.MeasurementsMapView
+import org.noiseplanet.noisecapture.ui.components.map.MapView
 
 @OptIn(KoinExperimentalAPI::class)
 @Composable
@@ -16,7 +16,7 @@ fun DebugScreen(
 ) {
     // - DI
 
-    rememberKoinModules(unloadOnForgotten = true) {
+    rememberKoinModules {
         listOf(debugModule)
     }
 
@@ -27,6 +27,6 @@ fun DebugScreen(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.surface
     ) {
-        MeasurementsMapView(modifier = Modifier.fillMaxSize())
+        MapView(modifier = Modifier.fillMaxSize())
     }
 }
