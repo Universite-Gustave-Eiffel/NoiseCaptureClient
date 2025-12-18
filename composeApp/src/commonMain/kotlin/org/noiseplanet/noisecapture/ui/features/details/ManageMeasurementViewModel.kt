@@ -6,12 +6,16 @@ import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.MaterialTheme
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.details_delete_button
+import noisecapture.composeapp.generated.resources.details_delete_measurement_audio_dialog_text
+import noisecapture.composeapp.generated.resources.details_delete_measurement_dialog_text
+import noisecapture.composeapp.generated.resources.details_delete_measurement_dialog_title
 import noisecapture.composeapp.generated.resources.details_export_button
 import noisecapture.composeapp.generated.resources.details_menu_delete_audio_description
 import noisecapture.composeapp.generated.resources.details_menu_delete_audio_title
@@ -58,6 +62,11 @@ class ManageMeasurementViewModel(
     private val measurement: Measurement?
         get() = (viewStateFlow.value as? ViewState.ContentReady)?.measurement
 
+    private val _deleteConfirmationDialogViewModelFlow =
+        MutableStateFlow<DeleteConfirmationDialogViewModel?>(null)
+    val deleteConfirmationDialogViewModelFlow: StateFlow<DeleteConfirmationDialogViewModel?> =
+        _deleteConfirmationDialogViewModelFlow
+
     val deleteButtonViewModel = NCButtonViewModel(
         title = Res.string.details_delete_button,
         icon = Icons.Default.Delete,
@@ -69,19 +78,47 @@ class ManageMeasurementViewModel(
         }
     )
 
+    private val deleteAudioConfirmationViewModel = DeleteConfirmationDialogViewModel(
+        title = Res.string.details_delete_measurement_dialog_title,
+        text = Res.string.details_delete_measurement_audio_dialog_text,
+        onDismissRequest = { _deleteConfirmationDialogViewModelFlow.tryEmit(null) },
+        onConfirm = {
+            deleteMeasurementAudio()
+            _deleteConfirmationDialogViewModelFlow.tryEmit(null)
+        }
+    )
+
+    private val deleteMeasurementConfirmationViewModel = DeleteConfirmationDialogViewModel(
+        title = Res.string.details_delete_measurement_dialog_title,
+        text = Res.string.details_delete_measurement_dialog_text,
+        onDismissRequest = { _deleteConfirmationDialogViewModelFlow.tryEmit(null) },
+        onConfirm = {
+            deleteMeasurement()
+            _deleteConfirmationDialogViewModelFlow.tryEmit(null)
+        }
+    )
+
     val deleteMenuItems: List<MenuItem>
         get() = measurement?.let { measurement ->
             val deleteWhole = MenuItem(
                 label = Res.string.details_menu_delete_whole_title,
                 supportingText = Res.string.details_menu_delete_whole_description,
-                onClick = { deleteMeasurement() },
+                onClick = {
+                    _deleteConfirmationDialogViewModelFlow.tryEmit(
+                        deleteMeasurementConfirmationViewModel
+                    )
+                },
             )
             if (measurement.recordedAudioUrl != null) {
                 listOf(
                     MenuItem(
                         label = Res.string.details_menu_delete_audio_title,
                         supportingText = Res.string.details_menu_delete_audio_description,
-                        onClick = { deleteMeasurementAudio() },
+                        onClick = {
+                            _deleteConfirmationDialogViewModelFlow.tryEmit(
+                                deleteAudioConfirmationViewModel
+                            )
+                        },
                     ),
                     deleteWhole,
                 )
@@ -113,7 +150,7 @@ class ManageMeasurementViewModel(
                     MenuItem(
                         label = Res.string.details_menu_export_audio_title,
                         supportingText = Res.string.details_menu_export_audio_description,
-                        onClick = { deleteMeasurementAudio() },
+                        onClick = { downloadAudio() },
                     )
                 ) + alwaysVisibleItems
             } else {
