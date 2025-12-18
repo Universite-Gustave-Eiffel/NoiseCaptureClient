@@ -1,5 +1,8 @@
 package org.noiseplanet.noisecapture.ui.features.details
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.MaterialTheme
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,8 +11,16 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
-import noisecapture.composeapp.generated.resources.measurement_details_delete_measurement_audio_button
-import noisecapture.composeapp.generated.resources.measurement_details_delete_measurement_button
+import noisecapture.composeapp.generated.resources.details_delete_button
+import noisecapture.composeapp.generated.resources.details_export_button
+import noisecapture.composeapp.generated.resources.details_menu_delete_audio_description
+import noisecapture.composeapp.generated.resources.details_menu_delete_audio_title
+import noisecapture.composeapp.generated.resources.details_menu_delete_whole_description
+import noisecapture.composeapp.generated.resources.details_menu_delete_whole_title
+import noisecapture.composeapp.generated.resources.details_menu_export_audio_description
+import noisecapture.composeapp.generated.resources.details_menu_export_audio_title
+import noisecapture.composeapp.generated.resources.details_menu_export_raw_description
+import noisecapture.composeapp.generated.resources.details_menu_export_raw_title
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.model.dao.Measurement
@@ -34,8 +45,6 @@ class ManageMeasurementViewModel(
             val measurement: Measurement,
             val measurementSize: Long?,
             val audioFileSize: Long?,
-            val deleteMeasurementButtonViewModel: NCButtonViewModel,
-            val deleteAudioButtonViewModel: NCButtonViewModel?,
         ) : ViewState
     }
 
@@ -49,18 +58,9 @@ class ManageMeasurementViewModel(
     private val measurement: Measurement?
         get() = (viewStateFlow.value as? ViewState.ContentReady)?.measurement
 
-    private val deleteMeasurementButtonViewModel = NCButtonViewModel(
-        title = Res.string.measurement_details_delete_measurement_button,
-        colors = {
-            NCButtonColors(
-                containerColor = MaterialTheme.colorScheme.error,
-                contentColor = MaterialTheme.colorScheme.onError,
-            )
-        }
-    )
-
-    private val deleteAudioButtonViewModel = NCButtonViewModel(
-        title = Res.string.measurement_details_delete_measurement_audio_button,
+    val deleteButtonViewModel = NCButtonViewModel(
+        title = Res.string.details_delete_button,
+        icon = Icons.Default.Delete,
         colors = {
             NCButtonColors(
                 containerColor = MaterialTheme.colorScheme.errorContainer,
@@ -68,6 +68,58 @@ class ManageMeasurementViewModel(
             )
         }
     )
+
+    val deleteMenuItems: List<MenuItem>
+        get() = measurement?.let { measurement ->
+            val deleteWhole = MenuItem(
+                label = Res.string.details_menu_delete_whole_title,
+                supportingText = Res.string.details_menu_delete_whole_description,
+                onClick = { deleteMeasurement() },
+            )
+            if (measurement.recordedAudioUrl != null) {
+                listOf(
+                    MenuItem(
+                        label = Res.string.details_menu_delete_audio_title,
+                        supportingText = Res.string.details_menu_delete_audio_description,
+                        onClick = { deleteMeasurementAudio() },
+                    ),
+                    deleteWhole,
+                )
+            } else {
+                listOf(deleteWhole)
+            }
+        } ?: emptyList()
+
+    val exportButtonViewModel = NCButtonViewModel(
+        title = Res.string.details_export_button,
+        icon = Icons.Default.Download,
+        colors = {
+            NCButtonColors.Defaults.secondary()
+        }
+    )
+
+    val exportMenuItems: List<MenuItem>
+        get() = measurement?.let { measurement ->
+            val alwaysVisibleItems = listOf(
+                MenuItem(
+                    label = Res.string.details_menu_export_raw_title,
+                    supportingText = Res.string.details_menu_export_raw_description,
+                    onClick = { downloadRawData() },
+                ),
+                // TODO: Add GeoJSON export option
+            )
+            if (measurement.recordedAudioUrl != null) {
+                listOf(
+                    MenuItem(
+                        label = Res.string.details_menu_export_audio_title,
+                        supportingText = Res.string.details_menu_export_audio_description,
+                        onClick = { deleteMeasurementAudio() },
+                    )
+                ) + alwaysVisibleItems
+            } else {
+                alwaysVisibleItems
+            }
+        } ?: emptyList()
 
     val viewStateFlow: StateFlow<ViewState> = measurementFlow
         .filterNotNull()
@@ -77,10 +129,6 @@ class ManageMeasurementViewModel(
                 measurementSize = measurementService.getMeasurementSize(measurement.uuid),
                 audioFileSize = measurement.recordedAudioUrl?.let { audioUrl ->
                     audioRecordingService.getFileSize(audioUrl)
-                },
-                deleteMeasurementButtonViewModel = deleteMeasurementButtonViewModel,
-                deleteAudioButtonViewModel = measurement.recordedAudioUrl?.let {
-                    deleteAudioButtonViewModel
                 },
             )
         }
@@ -106,5 +154,13 @@ class ManageMeasurementViewModel(
                 measurementService.deleteMeasurement(it)
             }
         }
+    }
+
+    fun downloadRawData() {
+        // TODO
+    }
+
+    fun downloadAudio() {
+        // TODO
     }
 }

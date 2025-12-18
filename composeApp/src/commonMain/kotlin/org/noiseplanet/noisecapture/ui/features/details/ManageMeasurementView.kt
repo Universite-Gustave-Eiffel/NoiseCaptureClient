@@ -1,7 +1,9 @@
 package org.noiseplanet.noisecapture.ui.features.details
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -15,19 +17,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import nl.jacobras.humanreadable.HumanReadable
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.cancel
 import noisecapture.composeapp.generated.resources.delete
-import noisecapture.composeapp.generated.resources.measurement_details_audio_size
-import noisecapture.composeapp.generated.resources.measurement_details_delete_measurement_audio_dialog_text
-import noisecapture.composeapp.generated.resources.measurement_details_delete_measurement_dialog_text
-import noisecapture.composeapp.generated.resources.measurement_details_delete_measurement_dialog_title
-import noisecapture.composeapp.generated.resources.measurement_details_manage_description
-import noisecapture.composeapp.generated.resources.measurement_details_manage_title
-import noisecapture.composeapp.generated.resources.measurement_details_total_size
+import noisecapture.composeapp.generated.resources.details_audio_size
+import noisecapture.composeapp.generated.resources.details_delete_measurement_dialog_text
+import noisecapture.composeapp.generated.resources.details_delete_measurement_dialog_title
+import noisecapture.composeapp.generated.resources.details_manage_description
+import noisecapture.composeapp.generated.resources.details_manage_title
+import noisecapture.composeapp.generated.resources.details_total_size
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -52,8 +54,11 @@ fun ManageMeasurementView(
     val viewState by viewModel.viewStateFlow.collectAsStateWithLifecycle()
 
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) }
+    var showExportMenu by remember { mutableStateOf(false) }
+    var showDeleteMenu by remember { mutableStateOf(false) }
+
     var deleteConfirmationText by remember {
-        mutableStateOf(Res.string.measurement_details_delete_measurement_dialog_text)
+        mutableStateOf(Res.string.details_delete_measurement_dialog_text)
     }
     var deleteConfirmationAction: (() -> Unit)? by remember {
         mutableStateOf(null)
@@ -68,64 +73,86 @@ fun ManageMeasurementView(
 
             Column(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = modifier.fillMaxWidth()
+                modifier = modifier.fillMaxWidth().padding(bottom = 32.dp)
             ) {
                 Text(
-                    text = stringResource(Res.string.measurement_details_manage_title),
+                    text = stringResource(Res.string.details_manage_title),
                     style = MaterialTheme.typography.titleMedium,
                 )
 
                 Text(
-                    text = stringResource(Res.string.measurement_details_manage_description),
+                    text = stringResource(Res.string.details_manage_description),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                 )
 
                 state.audioFileSize?.let {
-                    Text(
-                        text = stringResource(Res.string.measurement_details_audio_size) +
-                            HumanReadable.fileSize(it),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                    )
+                    Row {
+                        Text(
+                            text = stringResource(Res.string.details_audio_size),
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                        )
+                        Text(
+                            text = HumanReadable.fileSize(it),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                        )
+                    }
                 }
 
                 state.measurementSize?.let {
-                    Text(
-                        text = stringResource(Res.string.measurement_details_total_size) +
-                            HumanReadable.fileSize(it),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                    )
+                    Row {
+                        Text(
+                            text = stringResource(Res.string.details_total_size),
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                        )
+                        Text(
+                            text = HumanReadable.fileSize(it),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                state.deleteAudioButtonViewModel?.let { buttonViewModel ->
-                    NCButton(
-                        viewModel = buttonViewModel,
-                        onClick = {
-                            deleteConfirmationText =
-                                Res.string.measurement_details_delete_measurement_audio_dialog_text
-                            deleteConfirmationAction = viewModel::deleteMeasurementAudio
-                            showDeleteConfirmationDialog = true
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                            .padding(horizontal = 48.dp)
-                    )
-                }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        NCButton(
+                            viewModel = viewModel.exportButtonViewModel,
+                            onClick = { showExportMenu = true },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
 
-                NCButton(
-                    viewModel = state.deleteMeasurementButtonViewModel,
-                    onClick = {
-                        deleteConfirmationText =
-                            Res.string.measurement_details_delete_measurement_dialog_text
-                        deleteConfirmationAction = viewModel::deleteMeasurement
-                        showDeleteConfirmationDialog = true
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                        .padding(horizontal = 48.dp)
-                )
+                        ManageMeasurementMenu(
+                            expanded = showExportMenu,
+                            onDismissRequest = { showExportMenu = false },
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            items = viewModel.exportMenuItems,
+                        )
+                    }
+
+                    Box(modifier = Modifier.weight(1f)) {
+                        NCButton(
+                            viewModel = viewModel.deleteButtonViewModel,
+                            onClick = { showDeleteMenu = true },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+
+                        ManageMeasurementMenu(
+                            expanded = showDeleteMenu,
+                            onDismissRequest = { showDeleteMenu = false },
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                            items = viewModel.deleteMenuItems,
+                        )
+                    }
+                }
             }
         }
 
@@ -134,7 +161,7 @@ fun ManageMeasurementView(
 
     if (showDeleteConfirmationDialog) {
         DeleteConfirmationDialog(
-            title = Res.string.measurement_details_delete_measurement_dialog_title,
+            title = Res.string.details_delete_measurement_dialog_title,
             text = deleteConfirmationText,
             onDismissRequest = { showDeleteConfirmationDialog = false },
             onConfirm = {
