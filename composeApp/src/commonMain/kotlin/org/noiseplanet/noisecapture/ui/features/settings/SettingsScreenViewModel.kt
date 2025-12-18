@@ -107,7 +107,6 @@ class SettingsScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
                     title = Res.string.settings_measurements_limit_duration_title,
                     description = Res.string.settings_measurements_limit_duration_description,
                     settingKey = SettingsKey.SettingLimitMeasurementDuration,
-                    isFirstInSection = true,
                 ),
                 SettingsItemViewModel(
                     title = Res.string.settings_measurements_max_duration_title,
@@ -135,7 +134,6 @@ class SettingsScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
                     title = Res.string.settings_measurements_windowing_title,
                     description = Res.string.settings_measurements_windowing_description,
                     settingKey = SettingsKey.SettingWindowingMode,
-                    isLastInSection = true,
                 ),
             )
         ),
@@ -145,7 +143,6 @@ class SettingsScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
                     title = Res.string.settings_calibration_gain_correction_title,
                     description = Res.string.settings_calibration_gain_correction_description,
                     settingKey = SettingsKey.SettingSignalGainCorrection,
-                    isFirstInSection = true,
                 ),
                 SettingsItemViewModel(
                     title = Res.string.settings_calibration_countdown_title,
@@ -161,7 +158,6 @@ class SettingsScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
                     title = Res.string.settings_calibration_output_title,
                     description = Res.string.settings_calibration_output_description,
                     settingKey = SettingsKey.SettingTestSignalAudioOutput,
-                    isLastInSection = true
                 ),
             )
         ),
@@ -171,8 +167,6 @@ class SettingsScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
                     title = Res.string.settings_map_measurements_count_title,
                     description = Res.string.settings_map_measurements_count_description,
                     settingKey = SettingsKey.SettingMapMaxMeasurementsCount,
-                    isFirstInSection = true,
-                    isLastInSection = true,
                 ),
             )
         )

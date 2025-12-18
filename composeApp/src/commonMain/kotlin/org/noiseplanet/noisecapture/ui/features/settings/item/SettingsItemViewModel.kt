@@ -18,8 +18,6 @@ import org.noiseplanet.noisecapture.util.ShortNameRepresentable
 open class SettingsItemViewModel<T>(
     val title: StringResource,
     val description: StringResource,
-    val isFirstInSection: Boolean = false,
-    val isLastInSection: Boolean = false,
     val isEnabled: Flow<Boolean> = flow { emit(true) },
     val settingKey: SettingsKey<T>,
 ) : KoinComponent {
@@ -57,15 +55,11 @@ open class SettingsItemViewModel<T>(
 class SettingsEnumItemViewModel<T>(
     title: StringResource,
     description: StringResource,
-    isFirstInSection: Boolean = false,
-    isLastInSection: Boolean = false,
     isEnabled: Flow<Boolean> = flow { emit(true) },
     settingKey: SettingsKey<T>,
 ) : SettingsItemViewModel<T>(
     title = title,
     description = description,
-    isFirstInSection = isFirstInSection,
-    isLastInSection = isLastInSection,
     isEnabled = isEnabled,
     settingKey = settingKey
 ) where T : Enum<T>, T : IterableEnum<T>, T : ShortNameRepresentable {
