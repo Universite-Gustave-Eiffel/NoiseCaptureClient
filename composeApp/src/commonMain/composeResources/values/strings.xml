@@ -60,39 +60,50 @@
 
 
     <!-- MeasurementDetailsScreen -->
-    <string name="measurement_details_title">Measurement details</string>
-    <string name="measurement_details_loading_hint">Calculating measurement statistics... Depending on the duration of your measurement, this can take a while.</string>
+    <string name="details_title">Measurement details</string>
+    <string name="details_loading_hint">Calculating measurement statistics... Depending on the duration of your measurement, this can take a while.</string>
 
-    <string name="measurement_details_average_level">Average dB(A)</string>
+    <string name="details_average_level">Average dB(A)</string>
 
-    <string name="measurement_details_audio_player_title">Recorded audio</string>
-    <string name="measurement_details_audio_player_description">Listen to the audio that was recorded during your measurement.</string>
+    <string name="details_audio_player_title">Recorded audio</string>
+    <string name="details_audio_player_description">Listen to the audio that was recorded during your measurement.</string>
 
-    <string name="measurement_details_spl_time_plot_title">Noise level over time</string>
-    <string name="measurement_details_spl_time_plot_description">Visualise the evolution of recorded noise level as a function of time.</string>
+    <string name="details_spl_time_plot_title">Noise level over time</string>
+    <string name="details_spl_time_plot_description">Visualise the evolution of recorded noise level as a function of time.</string>
 
-    <string name="measurement_details_avg_spl_per_freq_plot_title">Average noise level</string>
-    <string name="measurement_details_avg_spl_per_freq_plot_description">Represents the average recorded noise level for each frequency band.</string>
+    <string name="details_avg_spl_per_freq_plot_title">Average noise level</string>
+    <string name="details_avg_spl_per_freq_plot_description">Represents the average recorded noise level for each frequency band.</string>
 
-    <string name="measurement_details_laeq_summary_title">Sound level summary</string>
-    <string name="measurement_details_laeq_summary_min">lowest recorded sound level.</string>
-    <string name="measurement_details_laeq_summary_la90">90% of recorded levels were above this value.</string>
-    <string name="measurement_details_laeq_summary_la50">50% of recorded levels were above this value.</string>
-    <string name="measurement_details_laeq_summary_la10">10% of recorded levels were above this value.</string>
-    <string name="measurement_details_laeq_summary_max">highest recorded sound level.</string>
+    <string name="details_laeq_summary_title">Sound level summary</string>
+    <string name="details_laeq_summary_min">lowest recorded sound level.</string>
+    <string name="details_laeq_summary_la90">90% of recorded levels were above this value.</string>
+    <string name="details_laeq_summary_la50">50% of recorded levels were above this value.</string>
+    <string name="details_laeq_summary_la10">10% of recorded levels were above this value.</string>
+    <string name="details_laeq_summary_max">highest recorded sound level.</string>
 
-    <string name="measurement_details_rne_plot_title">Repartition of Noise Exposure (RNE)</string>
-    <string name="measurement_details_rne_plot_description">Represents the percentage of total measurement time where sound level was between the corresponding boundaries.</string>
+    <string name="details_rne_plot_title">Repartition of Noise Exposure (RNE)</string>
+    <string name="details_rne_plot_description">Represents the percentage of total measurement time where sound level was between the corresponding boundaries.</string>
 
-    <string name="measurement_details_manage_title">Manage measurement</string>
-    <string name="measurement_details_manage_description">Deleting long measurements can help freeing up disk space if needed. Recorded audio can be deleted separately from the rest of the measurement data. Note that this is only the local copy of the measurement, deleting it won't delete it from our server if you've already synced it. However, the associated audio file is never synced and is only for your personal use.</string>
-    <string name="measurement_details_audio_size">Audio file size: </string>
-    <string name="measurement_details_total_size">Total measurement size: </string>
-    <string name="measurement_details_delete_measurement_button">Delete measurement</string>
-    <string name="measurement_details_delete_measurement_audio_button">Delete recorded audio</string>
-    <string name="measurement_details_delete_measurement_dialog_title">Are you sure?</string>
-    <string name="measurement_details_delete_measurement_dialog_text">This action cannot be undone. Note that this will only the local copy of your measurement, if you've already synced it before, the distant copy will be kept but you won't be able to download it again.</string>
-    <string name="measurement_details_delete_measurement_audio_dialog_text">This action cannot be undone. This will not delete the measurement itself but only the audio clip that is attached to it. You won't be able to listen to the measurement audio afterwards but will still be able to see the measurement details.</string>
+    <string name="details_manage_title">Manage measurement</string>
+    <string name="details_manage_description">Deleting long measurements can help freeing up disk space if needed. Recorded audio can be deleted separately from the rest of the measurement data. Note that this is only the local copy of the measurement, deleting it won't delete it from our server if you've already synced it. However, the associated audio file is never synced and is only for your personal use.</string>
+    <string name="details_audio_size">Audio file size: </string>
+    <string name="details_total_size">Total measurement size: </string>
+    <string name="details_delete_button">Delete</string>
+    <string name="details_export_button">Export</string>
+
+    <string name="details_menu_delete_audio_title">Delete audio only</string>
+    <string name="details_menu_delete_audio_description">Delete the associated audio recording. This will not delete the measured acoustic indicators data.</string>
+    <string name="details_menu_delete_whole_title">Delete whole measurement</string>
+    <string name="details_menu_delete_whole_description">Delete all the data associated to this measurement.</string>
+
+    <string name="details_menu_export_audio_title">Download recorded audio</string>
+    <string name="details_menu_export_audio_description">Get a copy of the associated audio file.</string>
+    <string name="details_menu_export_raw_title">Download raw data</string>
+    <string name="details_menu_export_raw_description">Export all measured acoustic indicators. Refer to the app's documentation for usage instructions.</string>
+
+    <string name="details_delete_measurement_dialog_title">Are you sure?</string>
+    <string name="details_delete_measurement_dialog_text">This action cannot be undone. Note that this will only delete the local copy of your measurement, if you've already synced it before, the distant copy will be kept but you won't be able to download it again.</string>
+    <string name="details_delete_measurement_audio_dialog_text">This action cannot be undone. This will not delete the measurement itself but only the audio clip that is attached to it. You won't be able to listen to the measurement audio afterwards but will still be able to see the measurement details.</string>
 
 
     <!-- CommunityMapScreen -->

@@ -33,8 +33,8 @@ import io.github.koalaplot.core.pie.DefaultSlice
 import io.github.koalaplot.core.pie.PieChart
 import io.github.koalaplot.core.util.ExperimentalKoalaPlotApi
 import noisecapture.composeapp.generated.resources.Res
-import noisecapture.composeapp.generated.resources.measurement_details_rne_plot_description
-import noisecapture.composeapp.generated.resources.measurement_details_rne_plot_title
+import noisecapture.composeapp.generated.resources.details_rne_plot_description
+import noisecapture.composeapp.generated.resources.details_rne_plot_title
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
@@ -102,13 +102,13 @@ fun RnePlotView(
         modifier = modifier.fillMaxWidth()
     ) {
         Text(
-            text = stringResource(Res.string.measurement_details_rne_plot_title),
+            text = stringResource(Res.string.details_rne_plot_title),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface,
         )
 
         Text(
-            text = stringResource(Res.string.measurement_details_rne_plot_description),
+            text = stringResource(Res.string.details_rne_plot_description),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
         )

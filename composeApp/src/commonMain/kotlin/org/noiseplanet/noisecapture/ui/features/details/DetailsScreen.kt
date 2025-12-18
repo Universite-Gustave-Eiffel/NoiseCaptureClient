@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowSizeClass
 import noisecapture.composeapp.generated.resources.Res
-import noisecapture.composeapp.generated.resources.measurement_details_loading_hint
+import noisecapture.composeapp.generated.resources.details_loading_hint
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
@@ -335,7 +335,7 @@ private fun ContentLoadingView() {
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = stringResource(Res.string.measurement_details_loading_hint),
+            text = stringResource(Res.string.details_loading_hint),
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center
         )

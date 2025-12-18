@@ -8,7 +8,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
 import kotlinx.datetime.toLocalDateTime
 import noisecapture.composeapp.generated.resources.Res
-import noisecapture.composeapp.generated.resources.measurement_details_title
+import noisecapture.composeapp.generated.resources.details_title
 import org.jetbrains.compose.resources.StringResource
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -77,7 +77,7 @@ class DetailsScreenViewModel(
     // - ScreenViewModel
 
     override val title: StringResource
-        get() = Res.string.measurement_details_title
+        get() = Res.string.details_title
 
 
     // - Private functions

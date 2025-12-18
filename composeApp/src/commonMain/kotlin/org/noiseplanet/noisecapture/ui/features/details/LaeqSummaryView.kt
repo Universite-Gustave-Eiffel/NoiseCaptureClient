@@ -23,12 +23,12 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import noisecapture.composeapp.generated.resources.Res
-import noisecapture.composeapp.generated.resources.measurement_details_laeq_summary_la10
-import noisecapture.composeapp.generated.resources.measurement_details_laeq_summary_la50
-import noisecapture.composeapp.generated.resources.measurement_details_laeq_summary_la90
-import noisecapture.composeapp.generated.resources.measurement_details_laeq_summary_max
-import noisecapture.composeapp.generated.resources.measurement_details_laeq_summary_min
-import noisecapture.composeapp.generated.resources.measurement_details_laeq_summary_title
+import noisecapture.composeapp.generated.resources.details_laeq_summary_la10
+import noisecapture.composeapp.generated.resources.details_laeq_summary_la50
+import noisecapture.composeapp.generated.resources.details_laeq_summary_la90
+import noisecapture.composeapp.generated.resources.details_laeq_summary_max
+import noisecapture.composeapp.generated.resources.details_laeq_summary_min
+import noisecapture.composeapp.generated.resources.details_laeq_summary_title
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.isInVuMeterRange
@@ -48,7 +48,7 @@ fun LaeqSummaryView(
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            text = stringResource(Res.string.measurement_details_laeq_summary_title),
+            text = stringResource(Res.string.details_laeq_summary_title),
             style = MaterialTheme.typography.titleMedium,
         )
 
@@ -58,23 +58,23 @@ fun LaeqSummaryView(
                 withStyle(style = boldStyle) {
                     append("Min: ")
                 }
-                append(stringResource(Res.string.measurement_details_laeq_summary_min) + "\n")
+                append(stringResource(Res.string.details_laeq_summary_min) + "\n")
                 withStyle(style = boldStyle) {
                     append("LA90: ")
                 }
-                append(stringResource(Res.string.measurement_details_laeq_summary_la90) + "\n")
+                append(stringResource(Res.string.details_laeq_summary_la90) + "\n")
                 withStyle(style = boldStyle) {
                     append("LA50: ")
                 }
-                append(stringResource(Res.string.measurement_details_laeq_summary_la50) + "\n")
+                append(stringResource(Res.string.details_laeq_summary_la50) + "\n")
                 withStyle(style = boldStyle) {
                     append("LA10: ")
                 }
-                append(stringResource(Res.string.measurement_details_laeq_summary_la10) + "\n")
+                append(stringResource(Res.string.details_laeq_summary_la10) + "\n")
                 withStyle(style = boldStyle) {
                     append("Max: ")
                 }
-                append(stringResource(Res.string.measurement_details_laeq_summary_max) + "\n")
+                append(stringResource(Res.string.details_laeq_summary_max) + "\n")
             },
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
