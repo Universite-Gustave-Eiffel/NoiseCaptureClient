@@ -4,8 +4,8 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.serializer
 import org.noiseplanet.noisecapture.model.enums.AcousticsKnowledgeLevel
 import org.noiseplanet.noisecapture.model.enums.CalibrationTestAudioOutput
-import org.noiseplanet.noisecapture.model.enums.MeasurementWindowingMode
 import org.noiseplanet.noisecapture.model.enums.SpectrogramScaleMode
+import org.noiseplanet.noisecapture.model.enums.SpectrogramWindowingMode
 
 /**
  * User settings keys. Each value must be serializable.
@@ -48,9 +48,9 @@ sealed class SettingsKey<T>(val serializer: KSerializer<T>, val defaultValue: T)
     )
 
     // Measurements
-    data object SettingWindowingMode : SettingsKey<MeasurementWindowingMode>(
-        MeasurementWindowingMode.serializer(),
-        defaultValue = MeasurementWindowingMode.HANN,
+    data object SettingWindowingMode : SettingsKey<SpectrogramWindowingMode>(
+        SpectrogramWindowingMode.serializer(),
+        defaultValue = SpectrogramWindowingMode.HANN,
     )
 
     data object SettingLimitMeasurementDuration : SettingsKey<Boolean>(
