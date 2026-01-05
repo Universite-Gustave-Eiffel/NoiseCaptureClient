@@ -58,6 +58,7 @@ open class DefaultRecordingService : RecordingService, KoinComponent {
     private val scope = CoroutineScope(Dispatchers.Default)
     private var recordingJob: Job? = null
     private var recordingLimitJob: Job? = null
+    private var audioRecordingLimitJob: Job? = null
     private var timerJob: Job? = null
 
     private val _isRecordingFlow = MutableStateFlow(value = false)
@@ -111,13 +112,24 @@ open class DefaultRecordingService : RecordingService, KoinComponent {
                     }
                 }
 
-            // Schedule a job that will stop end the recording in N minutes
+            // Schedule a job that will stop end the audio recording in N minutes
             // based on the limit fixed in settings
-            recordingLimitJob = scope.launch {
+            audioRecordingLimitJob = scope.launch {
                 val maxDurationInSeconds =
                     settingsService.get(SettingsKey.SettingLimitSavedAudioDurationMinutes) * 60u
                 delay(maxDurationInSeconds.toLong().seconds.inWholeMilliseconds)
                 audioRecordingService.stopRecordingToFile()
+            }
+
+            // Schedule a job that will stop end the recording in N seconds
+            // based on the limit fixed in settings
+            if (settingsService.get(SettingsKey.SettingLimitMeasurementDuration)) {
+                recordingLimitJob = scope.launch {
+                    val maxDurationInSeconds =
+                        settingsService.get(SettingsKey.SettingMaxMeasurementDuration)
+                    delay(maxDurationInSeconds.toLong().seconds.inWholeMilliseconds)
+                    endAndSave()
+                }
             }
         }
     }
@@ -136,8 +148,10 @@ open class DefaultRecordingService : RecordingService, KoinComponent {
         // Cancel running jobs
         recordingJob?.cancel()
         recordingJob = null
-        recordingLimitJob?.cancel()
-        recordingLimitJob = null
+        audioRecordingLimitJob?.cancel()
+        audioRecordingLimitJob = null
+        recordingJob?.cancel()
+        recordingJob = null
 
         _isRecordingFlow.tryEmit(false)
 
