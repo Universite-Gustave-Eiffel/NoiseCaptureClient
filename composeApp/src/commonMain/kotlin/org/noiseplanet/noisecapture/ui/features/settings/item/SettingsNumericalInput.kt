@@ -48,6 +48,7 @@ import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
  * @param viewModel View model. Must be of type [Int], [Float], or [Double].
  * @param modifier Compose [Modifier]
  */
+@Suppress("CyclomaticComplexMethod")
 @Composable
 fun <T : Any> SettingsNumericalInput(
     viewModel: SettingsItemViewModel<T>,
@@ -56,7 +57,6 @@ fun <T : Any> SettingsNumericalInput(
     // - Properties
 
     val isEnabled by viewModel.isEnabled.collectAsState(true)
-
     var showEditDialog: Boolean by remember { mutableStateOf(false) }
 
 
@@ -64,7 +64,6 @@ fun <T : Any> SettingsNumericalInput(
 
     @Suppress("UNCHECKED_CAST")
     fun getNumericalValue(stringValue: String): T? {
-        // TODO: Add value range validation
         return when (viewModel.settingKey.defaultValue) {
             is Int -> stringValue.toIntOrNull() as T?
             is UInt -> stringValue.toUIntOrNull() as T?
@@ -76,15 +75,17 @@ fun <T : Any> SettingsNumericalInput(
         }
     }
 
+    fun validate(stringValue: String): Boolean {
+        return getNumericalValue(stringValue)
+            ?.let { viewModel.settingKey.validator(it) }
+            ?: false
+    }
+
     fun saveEdit(stringValue: String) {
         getNumericalValue(stringValue)?.let { newValue ->
             viewModel.setValue(newValue)
             showEditDialog = false
         }
-    }
-
-    fun cancelEdit() {
-        showEditDialog = false
     }
 
 
@@ -113,9 +114,9 @@ fun <T : Any> SettingsNumericalInput(
             title = viewModel.title,
             description = viewModel.description,
             initialValue = viewModel.getValue().toString(),
-            validate = { getNumericalValue(it) == null },
+            validate = { validate(it) },
             saveEdit = { saveEdit(it) },
-            cancelEdit = { cancelEdit() }
+            cancelEdit = { showEditDialog = false }
         )
     }
 }
@@ -175,7 +176,7 @@ private fun EditDialog(
                         imeAction = ImeAction.Done,
                     ),
                     keyboardActions = KeyboardActions(onDone = { saveEdit(textFieldValueState.text) }),
-                    isError = validate(textFieldValueState.text),
+                    isError = !validate(textFieldValueState.text),
                     maxLines = 1,
                     modifier = Modifier.focusRequester(focusRequester)
                         .onGloballyPositioned {

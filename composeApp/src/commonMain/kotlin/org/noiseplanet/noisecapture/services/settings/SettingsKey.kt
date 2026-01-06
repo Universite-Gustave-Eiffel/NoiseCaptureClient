@@ -12,8 +12,17 @@ import org.noiseplanet.noisecapture.model.enums.SpectrogramWindowingMode
  *
  * For now [defaultValue] is enforced. If we need nullable setting values in the future
  * we may need to make it optional.
+ *
+ * @param serializer Serializer for the value type
+ * @param defaultValue Default value for this setting key
+ * @param validator Tells if a given value is a valid one for this setting.
+ *                  By default, just returns true.
  */
-sealed class SettingsKey<T>(val serializer: KSerializer<T>, val defaultValue: T) {
+sealed class SettingsKey<T>(
+    val serializer: KSerializer<T>,
+    val defaultValue: T,
+    val validator: (T) -> Boolean = { true },
+) {
 
     // User profile
     data object SettingUserAcousticsKnowledge : SettingsKey<AcousticsKnowledgeLevel>(
@@ -61,6 +70,7 @@ sealed class SettingsKey<T>(val serializer: KSerializer<T>, val defaultValue: T)
     data object SettingMaxMeasurementDuration : SettingsKey<UInt>(
         UInt.serializer(),
         defaultValue = 60u,
+        validator = { it > 0u } // Enforce non zero value
     )
 
     data object SettingSaveAudioWithMeasurement : SettingsKey<Boolean>(
@@ -71,6 +81,7 @@ sealed class SettingsKey<T>(val serializer: KSerializer<T>, val defaultValue: T)
     data object SettingLimitSavedAudioDurationMinutes : SettingsKey<UInt>(
         UInt.serializer(),
         defaultValue = 10u,
+        validator = { it > 0u } // Enforce non zero value
     )
 
     data object SettingSpectrogramScaleMode : SettingsKey<SpectrogramScaleMode>(

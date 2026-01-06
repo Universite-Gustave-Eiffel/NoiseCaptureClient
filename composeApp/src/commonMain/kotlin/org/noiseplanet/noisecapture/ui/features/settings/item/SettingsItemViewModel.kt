@@ -14,7 +14,6 @@ import org.noiseplanet.noisecapture.util.ShortNameRepresentable
 /**
  * Base setting item view model class to use with primitive types.
  */
-@Suppress("LongParameterList")
 open class SettingsItemViewModel<T>(
     val title: StringResource,
     val description: StringResource,
@@ -51,7 +50,6 @@ open class SettingsItemViewModel<T>(
  *
  * The given enum must comply to both [IterableEnum] and [ShortNameRepresentable].
  */
-@Suppress("LongParameterList")
 class SettingsEnumItemViewModel<T>(
     title: StringResource,
     description: StringResource,
