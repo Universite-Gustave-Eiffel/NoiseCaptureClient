@@ -22,14 +22,20 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.cancel
 import noisecapture.composeapp.generated.resources.save
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
@@ -49,48 +55,35 @@ fun <T : Any> SettingsNumericalInput(
 ) {
     // - Properties
 
-    var textFieldValueState by remember {
-        mutableStateOf(viewModel.getValue().toString())
-    }
     val isEnabled by viewModel.isEnabled.collectAsState(true)
 
     var showEditDialog: Boolean by remember { mutableStateOf(false) }
-    val confirmButtonViewModel = NCButtonViewModel(
-        title = Res.string.save,
-        colors = { NCButtonColors.Defaults.secondary() }
-    )
-    val cancelButtonViewModel = NCButtonViewModel(
-        title = Res.string.cancel,
-        style = NCButtonStyle.TEXT,
-        colors = { NCButtonColors.Defaults.text() }
-    )
 
 
     // - Private functions
 
     @Suppress("UNCHECKED_CAST")
-    fun getNumericalValue(): T? {
+    fun getNumericalValue(stringValue: String): T? {
         // TODO: Add value range validation
         return when (viewModel.settingKey.defaultValue) {
-            is Int -> textFieldValueState.toIntOrNull() as T?
-            is UInt -> textFieldValueState.toUIntOrNull() as T?
-            is Long -> textFieldValueState.toLongOrNull() as T?
-            is ULong -> textFieldValueState.toULongOrNull() as T?
-            is Double -> textFieldValueState.toDoubleOrNull() as T?
-            is Float -> textFieldValueState.toFloatOrNull() as T?
+            is Int -> stringValue.toIntOrNull() as T?
+            is UInt -> stringValue.toUIntOrNull() as T?
+            is Long -> stringValue.toLongOrNull() as T?
+            is ULong -> stringValue.toULongOrNull() as T?
+            is Double -> stringValue.toDoubleOrNull() as T?
+            is Float -> stringValue.toFloatOrNull() as T?
             else -> null
         }
     }
 
-    fun saveEdit() {
-        getNumericalValue()?.let { newValue ->
+    fun saveEdit(stringValue: String) {
+        getNumericalValue(stringValue)?.let { newValue ->
             viewModel.setValue(newValue)
             showEditDialog = false
         }
     }
 
     fun cancelEdit() {
-        textFieldValueState = viewModel.getValue().toString()
         showEditDialog = false
     }
 
@@ -99,9 +92,7 @@ fun <T : Any> SettingsNumericalInput(
 
     Box(
         modifier = modifier.width(IntrinsicSize.Min)
-            .clickable {
-                showEditDialog = true
-            }
+            .clickable { showEditDialog = true }
             .padding(vertical = 16.dp)
     ) {
         Text(
@@ -118,43 +109,98 @@ fun <T : Any> SettingsNumericalInput(
     }
 
     if (showEditDialog) {
-        AlertDialog(
-            title = {
-                Text(text = stringResource(viewModel.title))
-            },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Text(text = stringResource(viewModel.description))
-
-                    TextField(
-                        value = textFieldValueState,
-                        onValueChange = { newValue ->
-                            textFieldValueState = newValue
-                        },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Decimal,
-                            imeAction = ImeAction.Done,
-                        ),
-                        keyboardActions = KeyboardActions(onDone = { saveEdit() }),
-                        isError = getNumericalValue() == null,
-                        maxLines = 1,
-                    )
-                }
-            },
-            onDismissRequest = { cancelEdit() },
-            confirmButton = {
-                NCButton(
-                    viewModel = confirmButtonViewModel,
-                    onClick = { saveEdit() }
-                )
-            },
-            dismissButton = {
-                NCButton(
-                    viewModel = cancelButtonViewModel,
-                    onClick = { cancelEdit() }
-                )
-            },
-            modifier = Modifier.imePadding()
+        EditDialog(
+            title = viewModel.title,
+            description = viewModel.description,
+            initialValue = viewModel.getValue().toString(),
+            validate = { getNumericalValue(it) == null },
+            saveEdit = { saveEdit(it) },
+            cancelEdit = { cancelEdit() }
         )
     }
+}
+
+
+@Composable
+private fun EditDialog(
+    title: StringResource,
+    description: StringResource,
+    initialValue: String,
+    validate: (String) -> Boolean,
+    saveEdit: (String) -> Unit,
+    cancelEdit: () -> Unit,
+) {
+    // - Properties
+
+    val focusRequester = remember { FocusRequester() }
+    var initialFocusRequested by remember { mutableStateOf(false) }
+
+    var textFieldValueState by remember {
+        mutableStateOf(
+            TextFieldValue(
+                text = initialValue,
+                selection = TextRange(initialValue.length)
+            )
+        )
+    }
+
+    val confirmButtonViewModel = NCButtonViewModel(
+        title = Res.string.save,
+        colors = { NCButtonColors.Defaults.secondary() }
+    )
+    val cancelButtonViewModel = NCButtonViewModel(
+        title = Res.string.cancel,
+        style = NCButtonStyle.TEXT,
+        colors = { NCButtonColors.Defaults.text() }
+    )
+
+
+    // - Layout
+
+    AlertDialog(
+        title = {
+            Text(text = stringResource(title))
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Text(text = stringResource(description))
+
+                TextField(
+                    value = textFieldValueState,
+                    onValueChange = { newValue ->
+                        textFieldValueState = newValue
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Decimal,
+                        imeAction = ImeAction.Done,
+                    ),
+                    keyboardActions = KeyboardActions(onDone = { saveEdit(textFieldValueState.text) }),
+                    isError = validate(textFieldValueState.text),
+                    maxLines = 1,
+                    modifier = Modifier.focusRequester(focusRequester)
+                        .onGloballyPositioned {
+                            if (!initialFocusRequested) {
+                                // Show keyboard automatically when opening the popup.
+                                focusRequester.requestFocus()
+                                initialFocusRequested = true
+                            }
+                        }
+                )
+            }
+        },
+        onDismissRequest = { cancelEdit() },
+        confirmButton = {
+            NCButton(
+                viewModel = confirmButtonViewModel,
+                onClick = { saveEdit(textFieldValueState.text) }
+            )
+        },
+        dismissButton = {
+            NCButton(
+                viewModel = cancelButtonViewModel,
+                onClick = { cancelEdit() }
+            )
+        },
+        modifier = Modifier.imePadding()
+    )
 }
