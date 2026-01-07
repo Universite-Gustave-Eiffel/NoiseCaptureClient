@@ -5,6 +5,6 @@ import androidx.compose.ui.platform.Clipboard
 import androidx.compose.ui.platform.toClipEntry
 
 actual suspend fun Clipboard.setClipEntry(text: String) {
-    ClipData.newPlainText("NoiseCapture", text).toClipEntry()
-    setClipEntry(text)
+    val entry = ClipData.newPlainText("NoiseCapture", text).toClipEntry()
+    setClipEntry(entry)
 }
