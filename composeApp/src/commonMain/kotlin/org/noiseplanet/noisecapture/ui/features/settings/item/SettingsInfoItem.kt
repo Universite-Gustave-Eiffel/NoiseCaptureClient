@@ -28,7 +28,7 @@ import noisecapture.composeapp.generated.resources.settings_info_app_title
 import noisecapture.composeapp.generated.resources.settings_info_app_version
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
-import org.noiseplanet.noisecapture.util.clipEntry
+import org.noiseplanet.noisecapture.util.setClipEntry
 
 @Composable
 fun SettingsInfoItem(
@@ -81,7 +81,7 @@ fun SettingsInfoItem(
         IconButton(
             onClick = {
                 coroutineScope.launch {
-                    clipboard.setClipEntry(clipEntry(info))
+                    clipboard.setClipEntry(info)
                 }
             }
         ) {
