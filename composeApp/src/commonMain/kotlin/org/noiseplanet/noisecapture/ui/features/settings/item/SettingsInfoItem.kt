@@ -13,10 +13,14 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.Clipboard
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.settings_info_app_device
 import noisecapture.composeapp.generated.resources.settings_info_app_platform
@@ -24,6 +28,7 @@ import noisecapture.composeapp.generated.resources.settings_info_app_title
 import noisecapture.composeapp.generated.resources.settings_info_app_version
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
+import org.noiseplanet.noisecapture.util.clipEntry
 
 @Composable
 fun SettingsInfoItem(
@@ -32,6 +37,9 @@ fun SettingsInfoItem(
     // - Properties
 
     val userAgent = koinInject<Platform>().userAgent
+
+    val coroutineScope = rememberCoroutineScope()
+    val clipboard: Clipboard = LocalClipboard.current
 
     val version = "${userAgent.versionName} (${userAgent.versionCode})"
     val platform = "${userAgent.osName} - ${userAgent.osVersion}"
@@ -72,7 +80,9 @@ fun SettingsInfoItem(
 
         IconButton(
             onClick = {
-                // TODO: Save info to clipboard
+                coroutineScope.launch {
+                    clipboard.setClipEntry(clipEntry(info))
+                }
             }
         ) {
             Icon(
