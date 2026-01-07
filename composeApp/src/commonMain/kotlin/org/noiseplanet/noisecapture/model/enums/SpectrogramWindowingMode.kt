@@ -12,7 +12,7 @@ import org.noiseplanet.noisecapture.util.ShortNameRepresentable
 import kotlin.enums.EnumEntries
 
 @Serializable
-enum class MeasurementWindowingMode : IterableEnum<MeasurementWindowingMode>,
+enum class SpectrogramWindowingMode : IterableEnum<SpectrogramWindowingMode>,
                                       ShortNameRepresentable {
 
     HANN {
@@ -31,5 +31,5 @@ enum class MeasurementWindowingMode : IterableEnum<MeasurementWindowingMode>,
             Res.string.measurement_windowing_mode_rect_title
     };
 
-    override fun entries(): EnumEntries<MeasurementWindowingMode> = entries
+    override fun entries(): EnumEntries<SpectrogramWindowingMode> = entries
 }

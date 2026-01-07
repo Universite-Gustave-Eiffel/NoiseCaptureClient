@@ -27,7 +27,6 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
  *
  * @return A new `Modifier` with the drop shadow effect applied.
  */
-@Suppress("LongParameterList")
 @Composable
 fun Modifier.dropShadow(
     shape: Shape,

@@ -78,7 +78,17 @@ class AndroidRecordingService : RecordingService, KoinComponent {
             wrapper = localBinder.getService()
 
             wrapper?.innerService?.start()
-            wrapper?.innerService?.onMeasurementDone = onMeasurementDone
+
+            // Override inner service's OnMeasurementDoneListener so that it also stops the
+            // foreground service when the stop signal comes from within RecordingService
+            // (i.e. when recording limit has been reached)
+            wrapper?.innerService?.onMeasurementDone =
+                object : RecordingService.OnMeasurementDoneListener {
+                    override fun onDone(measurementUuid: String) {
+                        wrapper?.stopForegroundService()
+                        onMeasurementDone?.onDone(measurementUuid)
+                    }
+                }
 
             recordingStateRedirectionJob = scope.launch {
                 wrapper?.innerService?.let { recordingService ->
