@@ -2,11 +2,8 @@ package org.noiseplanet.noisecapture.ui.features.recording
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
@@ -29,6 +26,8 @@ import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.ui.components.map.MapView
 import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrogram.SpectrogramPlotView
 import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrum.SpectrumPlotView
+import org.noiseplanet.noisecapture.util.navigationBarInsetsTop
+import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 
 /**
  * A horizontal pager on the measurement recording screens that allows user to switch between
@@ -56,8 +55,9 @@ fun RecordingPager(
         )
     }
     val pagePaddingModifier = if (isCompact) {
-        Modifier.padding(end = 16.dp, bottom = 80.dp)
-            .windowInsetsPadding(WindowInsets.navigationBars)
+        Modifier.navigationBarInsetsTop()
+            .paddingBottomWithInsets(80.dp) // 64dp for recording controls + 16dp of spacing
+            .padding(end = 16.dp)
     } else {
         Modifier.padding(end = 16.dp, bottom = 16.dp)
     }
@@ -76,7 +76,7 @@ fun RecordingPager(
             selectedTabIndex = pagerState.currentPage,
             containerColor = MaterialTheme.colorScheme.surfaceContainer
         ) {
-            tabs.toList().forEachIndexed { index, (id, label) ->
+            tabs.toList().forEachIndexed { index, (_, label) ->
                 Tab(
                     text = { Text(label) },
                     selected = pagerState.currentPage == index,

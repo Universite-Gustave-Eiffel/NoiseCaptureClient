@@ -75,7 +75,7 @@ fun SettingsScreen(
                 contentPadding = PaddingValues(
                     start = 16.dp,
                     end = 16.dp,
-                    bottom = navBarBottomPadding + 16.dp,
+                    bottom = navBarBottomPadding + 24.dp,
                 ),
                 modifier = Modifier.widthIn(max = AdaptiveUtil.MAX_FULL_SCREEN_WIDTH)
                     .fillMaxHeight()
