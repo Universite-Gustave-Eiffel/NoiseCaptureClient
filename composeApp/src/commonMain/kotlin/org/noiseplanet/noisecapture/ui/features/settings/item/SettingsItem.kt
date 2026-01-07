@@ -70,7 +70,7 @@ fun <T : Any> SettingsItem(
                 Text(
                     stringResource(viewModel.description),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
                     overflow = TextOverflow.Ellipsis,
                 )
             }
