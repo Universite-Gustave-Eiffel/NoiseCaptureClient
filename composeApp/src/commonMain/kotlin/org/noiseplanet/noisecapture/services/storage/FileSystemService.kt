@@ -34,6 +34,6 @@ interface FileSystemService {
         val rootDir = getAudioFilesDirectoryUri() ?: return null
 
         // Append file name to enclosing directory path (after removing any trailing slashes)
-        return "${rootDir.replaceFirst("/*$", "")}/$fileName"
+        return "${rootDir.replace(Regex("/*$"), "")}/$fileName"
     }
 }

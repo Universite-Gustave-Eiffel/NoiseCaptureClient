@@ -8,8 +8,9 @@ import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.value
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.log.Logger
-import org.noiseplanet.noisecapture.util.NSFileManagerUtils
+import org.noiseplanet.noisecapture.services.storage.FileSystemService
 import org.noiseplanet.noisecapture.util.checkNoError
 import org.noiseplanet.noisecapture.util.injectLogger
 import platform.AVFAudio.AVAudioQuality
@@ -22,8 +23,6 @@ import platform.AVFAudio.AVSampleRateKey
 import platform.CoreAudioTypes.AudioFormatID
 import platform.CoreAudioTypes.kAudioFormatMPEG4AAC
 import platform.Foundation.NSError
-import platform.Foundation.NSFileManager
-import platform.Foundation.NSFileSize
 import platform.Foundation.NSURL
 
 
@@ -47,6 +46,7 @@ class IOSAudioRecordingService : AudioRecordingService, KoinComponent {
     // - Properties
 
     private val logger: Logger by injectLogger()
+    private val fileSystemService: FileSystemService by inject()
 
     private var audioRecorder: AVAudioRecorder? = null
 
@@ -60,10 +60,12 @@ class IOSAudioRecordingService : AudioRecordingService, KoinComponent {
         logger.debug("Start recording to $outputFileName")
 
         // Get an URL pointing to the output file
-        val fileUrl = getFileUrl("$outputFileName.m4a")
-        checkNotNull(fileUrl) { "Could not create URL for file with name $outputFileName" }
+        val fileUri = fileSystemService.getAudioFileAbsolutePath("$outputFileName.m4a")?.let {
+            NSURL.URLWithString(it)
+        }
+        checkNotNull(fileUri) { "Could not create URL for file with name $outputFileName" }
 
-        logger.debug("Output file URL: ${fileUrl.absoluteString}")
+        logger.debug("Output file URL: $fileUri")
 
         // Audio recorder settings specifying compression strategy and properties
         val settings: Map<Any?, *> = mapOf(
@@ -78,7 +80,7 @@ class IOSAudioRecordingService : AudioRecordingService, KoinComponent {
             val error: ObjCObjectVar<NSError?> = alloc()
 
             audioRecorder = AVAudioRecorder(
-                uRL = fileUrl,
+                uRL = fileUri,
                 settings = settings,
                 error = error.ptr
             )
@@ -103,41 +105,5 @@ class IOSAudioRecordingService : AudioRecordingService, KoinComponent {
 
         // Drop recorder reference
         audioRecorder = null
-    }
-
-    override suspend fun getFileSize(audioUrl: String): Long? {
-        // On iOS, audio URL is just the file name to avoid emulator sandboxing restrictions.
-        val fileUrl = getFileUrl(audioUrl) ?: return null
-        val filePath = fileUrl.path ?: return null
-
-        memScoped {
-            val error: ObjCObjectVar<NSError?> = alloc()
-            val attributes =
-                NSFileManager.defaultManager.attributesOfItemAtPath(filePath, error.ptr)
-            checkNoError(error.value) { "Could not get size of file at URL $fileUrl" }
-
-            return attributes?.get(NSFileSize) as? Long
-        }
-    }
-
-    override fun deleteFileAtUrl(audioUrl: String) {
-        // On iOS, audio URL is just the file name to avoid emulator sandboxing restrictions.
-        val fileUrl = getFileUrl(audioUrl) ?: return
-
-        memScoped {
-            val error: ObjCObjectVar<NSError?> = alloc()
-            NSFileManager.defaultManager.removeItemAtURL(fileUrl, error.ptr)
-
-            checkNoError(error.value) { "Error while deleting file at URL $fileUrl" }
-        }
-    }
-
-
-    // - Private functions
-
-    private fun getFileUrl(fileName: String): NSURL? {
-        val documentsUrl = NSFileManagerUtils.getDocumentsDirectory() ?: return null
-
-        return documentsUrl.URLByAppendingPathComponent(fileName)
     }
 }

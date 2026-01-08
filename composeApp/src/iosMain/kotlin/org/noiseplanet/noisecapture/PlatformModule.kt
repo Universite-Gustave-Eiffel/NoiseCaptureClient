@@ -16,6 +16,8 @@ import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
 import org.noiseplanet.noisecapture.services.audio.IOSAudioRecordingService
 import org.noiseplanet.noisecapture.services.location.IOSUserLocationProvider
 import org.noiseplanet.noisecapture.services.location.UserLocationProvider
+import org.noiseplanet.noisecapture.services.storage.FileSystemService
+import org.noiseplanet.noisecapture.services.storage.IOSFileSystemService
 import platform.Foundation.NSBundle
 
 /**
@@ -49,6 +51,10 @@ val platformModule: Module = module {
 
     single<AudioRecordingService> {
         IOSAudioRecordingService()
+    }
+
+    single<FileSystemService> {
+        IOSFileSystemService()
     }
 
     factory<AudioPlayer> { (filePath: String) ->
