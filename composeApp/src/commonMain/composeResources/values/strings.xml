@@ -157,6 +157,13 @@
     <string name="settings_map_measurements_count_title">Shown measurements count</string>
     <string name="settings_map_measurements_count_description">Adjust the maximum number of measurements shown on the map at once (set this to 0 to show all measurements)</string>
 
+    <string name="settings_section_information">INFORMATION</string>
+    <string name="settings_info_app_title">App information</string>
+    <string name="settings_info_app_version">Version:</string>
+    <string name="settings_info_app_platform">Platform:</string>
+    <string name="settings_info_app_device">Device:</string>
+    <string name="settings_info_app_copy">Copy</string>
+
 
     <!-- Map -->
     <string name="map_legend_title">Legend</string>
@@ -211,4 +218,5 @@
     <string name="na">N/A</string>
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
 </resources>

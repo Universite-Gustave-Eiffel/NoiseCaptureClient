@@ -14,12 +14,9 @@ import org.noiseplanet.noisecapture.util.ShortNameRepresentable
 /**
  * Base setting item view model class to use with primitive types.
  */
-@Suppress("LongParameterList")
 open class SettingsItemViewModel<T>(
     val title: StringResource,
     val description: StringResource,
-    val isFirstInSection: Boolean = false,
-    val isLastInSection: Boolean = false,
     val isEnabled: Flow<Boolean> = flow { emit(true) },
     val settingKey: SettingsKey<T>,
 ) : KoinComponent {
@@ -53,19 +50,14 @@ open class SettingsItemViewModel<T>(
  *
  * The given enum must comply to both [IterableEnum] and [ShortNameRepresentable].
  */
-@Suppress("LongParameterList")
 class SettingsEnumItemViewModel<T>(
     title: StringResource,
     description: StringResource,
-    isFirstInSection: Boolean = false,
-    isLastInSection: Boolean = false,
     isEnabled: Flow<Boolean> = flow { emit(true) },
     settingKey: SettingsKey<T>,
 ) : SettingsItemViewModel<T>(
     title = title,
     description = description,
-    isFirstInSection = isFirstInSection,
-    isLastInSection = isLastInSection,
     isEnabled = isEnabled,
     settingKey = settingKey
 ) where T : Enum<T>, T : IterableEnum<T>, T : ShortNameRepresentable {

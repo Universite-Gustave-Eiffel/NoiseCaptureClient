@@ -9,11 +9,12 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -25,9 +26,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
+import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.settings_section_information
 import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.ui.components.ListSectionHeader
+import org.noiseplanet.noisecapture.ui.features.settings.item.SettingsInfoItem
 import org.noiseplanet.noisecapture.ui.features.settings.item.SettingsItem
 import org.noiseplanet.noisecapture.util.AdaptiveUtil
 
@@ -92,9 +96,26 @@ fun SettingsScreen(
                         )
                     }
 
-                    items(sectionItems) { viewModel ->
-                        SettingsItem(viewModel)
+                    itemsIndexed(sectionItems) { index, viewModel ->
+                        SettingsItem(
+                            viewModel = viewModel,
+                            isFirstInSection = index == 0,
+                            isLastInSection = index == (sectionItems.size - 1),
+                        )
                     }
+                }
+
+                stickyHeader {
+                    ListSectionHeader(
+                        title = Res.string.settings_section_information,
+                        paddingTop = 16.dp,
+                        modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer)
+                            .padding(start = 16.dp)
+                    )
+                }
+
+                item {
+                    SettingsInfoItem(modifier = Modifier.fillMaxWidth())
                 }
             }
         }
