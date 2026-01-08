@@ -22,5 +22,10 @@ captures
 **/xcshareddata/WorkspaceSettings.xcsettings
 gradle.xml
 
-# Store the old files in a temporary folder until refactor is complete
-backup/
+# fastlane reports and generated readme
+fastlane/*.xml
+
+# iOS builds
+*.ipa
+*.app
+*.app.dSYM
