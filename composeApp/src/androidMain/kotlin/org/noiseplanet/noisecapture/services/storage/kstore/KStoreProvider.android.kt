@@ -84,7 +84,7 @@ internal actual class KStoreProvider : KoinComponent {
 
     private fun getFileHandle(fileName: String): File {
         // Build complete file path
-        val filePath = Path("${context.filesDir}/$fileName")
+        val filePath = Path("${context.getExternalFilesDir(null)}/$fileName")
         return File(filePath.toString())
     }
 }
