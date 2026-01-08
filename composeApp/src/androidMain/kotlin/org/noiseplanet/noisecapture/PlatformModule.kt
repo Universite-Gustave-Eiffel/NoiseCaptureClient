@@ -19,6 +19,8 @@ import org.noiseplanet.noisecapture.services.location.AndroidUserLocationProvide
 import org.noiseplanet.noisecapture.services.location.UserLocationProvider
 import org.noiseplanet.noisecapture.services.measurement.AndroidRecordingService
 import org.noiseplanet.noisecapture.services.measurement.RecordingService
+import org.noiseplanet.noisecapture.services.storage.AndroidFileSystemService
+import org.noiseplanet.noisecapture.services.storage.FileSystemService
 
 /**
  * Registers koin components specific to this platform
@@ -57,6 +59,10 @@ val platformModule: Module = module {
      */
     single<RecordingService> {
         AndroidRecordingService()
+    }
+
+    single<FileSystemService> {
+        AndroidFileSystemService()
     }
 
     factory<AudioPlayer> { (filePath: String) ->
