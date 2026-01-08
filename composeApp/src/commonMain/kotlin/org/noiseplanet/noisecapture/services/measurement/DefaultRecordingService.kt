@@ -106,9 +106,9 @@ open class DefaultRecordingService : RecordingService, KoinComponent {
             // Set listener to get output file URL
             audioRecordingService.recordingStopListener =
                 object : AudioRecordingService.RecordingStopListener {
-                    override fun onRecordingStop(fileUrl: String) {
-                        logger.debug("Recorded audio URL: $fileUrl")
-                        measurementService.setOngoingMeasurementRecordedAudioUrl(fileUrl)
+                    override fun onRecordingStop(fileName: String) {
+                        logger.debug("Recorded audio file name: $fileName")
+                        measurementService.setOngoingMeasurementRecordedAudioName(fileName)
                     }
                 }
 

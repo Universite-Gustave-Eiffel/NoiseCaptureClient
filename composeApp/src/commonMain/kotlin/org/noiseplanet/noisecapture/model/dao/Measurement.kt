@@ -17,7 +17,7 @@ val Measurement.Companion.VERSION: Int get() = 3
  * @param userAgent Context of measurement (platform, device, app version)
  * @param locationSequenceIds Unique identifiers of location sequence fragments for this measurement.
  * @param leqsSequenceIds Unique identifiers of leq sequence fragments for this measurement.
- * @param recordedAudioUrl If audio recording is enabled, URL of the local audio recording.
+ * @param recordedAudioFileName If audio recording is enabled, name of the local audio recording.
  */
 @Serializable
 data class Measurement(
@@ -34,7 +34,7 @@ data class Measurement(
     val laeqMetrics: LAeqMetrics,
 
     val summary: MeasurementSummary? = null,
-    val recordedAudioUrl: String? = null,
+    val recordedAudioFileName: String? = null,
 )
 
 /**
@@ -46,8 +46,8 @@ data class Measurement(
  *                     Set only when measurement ends.
  * @param locationSequenceIds Unique identifiers of location sequence fragments for this measurement.
  * @param leqsSequenceIds Unique identifiers of leq sequence fragments for this measurement.
- * @param recordedAudioUrl If audio recording is enabled, URL of the local audio recording.
- *                         Set only when measurement ends
+ * @param recordedAudioFileName If audio recording is enabled, name of the local audio recording.
+ *                              Set only when measurement ends
  */
 data class MutableMeasurement(
     val uuid: String,
@@ -59,5 +59,5 @@ data class MutableMeasurement(
     val leqsSequenceIds: MutableList<String> = mutableListOf(),
     var laeqMetrics: LAeqMetrics? = null,
 
-    var recordedAudioUrl: String? = null,
+    var recordedAudioFileName: String? = null,
 )

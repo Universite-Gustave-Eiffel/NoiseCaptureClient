@@ -14,9 +14,9 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
+import org.noiseplanet.noisecapture.services.storage.FileSystemService
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 import org.noiseplanet.noisecapture.util.DateUtil
-import org.noiseplanet.noisecapture.util.injectLogger
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
@@ -35,6 +35,7 @@ class DetailsScreenViewModel(
             val measurement: Measurement,
             val startTimeString: String,
             val durationString: String,
+            val audioFilePath: String?,
         ) : ViewState
 
         data object Loading : ViewState
@@ -44,9 +45,9 @@ class DetailsScreenViewModel(
 
     // - Properties
 
-    val logger by injectLogger()
-
+    private val fileSystemService: FileSystemService by inject()
     private val measurementService: MeasurementService by inject()
+
     private val measurementFlow = measurementService.getMeasurementFlow(measurementId)
         .map { measurement ->
             // If measurement has no summary yet, we need to calculate it.
@@ -65,6 +66,7 @@ class DetailsScreenViewModel(
                     measurement = it,
                     startTimeString = getMeasurementStartTimeString(measurement),
                     durationString = getMeasurementDurationString(measurement),
+                    audioFilePath = getMeasurementAudioFilePath(measurement)
                 )
             } ?: ViewState.NoMeasurement
         }
@@ -96,6 +98,12 @@ class DetailsScreenViewModel(
 
         return duration.toComponents { hours, minutes, seconds, _ ->
             "${hours}h ${minutes}m ${seconds}s"
+        }
+    }
+
+    private fun getMeasurementAudioFilePath(measurement: Measurement): String? {
+        return measurement.recordedAudioFileName?.let {
+            fileSystemService.getAudioFileAbsolutePath(it)
         }
     }
 }

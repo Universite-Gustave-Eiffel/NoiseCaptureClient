@@ -146,11 +146,11 @@ interface MeasurementService {
     suspend fun pushToOngoingMeasurement(record: LocationRecord)
 
     /**
-     * Sets the recorded audio URL of the ongoing measurement.
+     * Sets the name of recorded audio for the ongoing measurement.
      *
-     * @param url Recorded audio file URL in local storage.
+     * @param fileName Recorded audio file name.
      */
-    fun setOngoingMeasurementRecordedAudioUrl(url: String)
+    fun setOngoingMeasurementRecordedAudioName(fileName: String)
 
     /**
      * Closes the ongoing measurement, saving every remaining data to local storage.

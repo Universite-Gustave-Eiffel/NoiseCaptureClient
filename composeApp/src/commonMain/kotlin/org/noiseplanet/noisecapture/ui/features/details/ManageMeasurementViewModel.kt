@@ -30,6 +30,7 @@ import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
+import org.noiseplanet.noisecapture.services.storage.FileSystemService
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
@@ -57,6 +58,7 @@ class ManageMeasurementViewModel(
 
     private val measurementService: MeasurementService by inject()
     private val audioRecordingService: AudioRecordingService by inject()
+    private val fileSystemService: FileSystemService by inject()
 
     private val measurementFlow = measurementService.getMeasurementFlow(measurementId)
     private val measurement: Measurement?
@@ -109,7 +111,7 @@ class ManageMeasurementViewModel(
                     )
                 },
             )
-            if (measurement.recordedAudioUrl != null) {
+            if (measurement.recordedAudioFileName != null) {
                 listOf(
                     MenuItem(
                         label = Res.string.details_menu_delete_audio_title,
@@ -145,7 +147,7 @@ class ManageMeasurementViewModel(
                 ),
                 // TODO: Add GeoJSON export option
             )
-            if (measurement.recordedAudioUrl != null) {
+            if (measurement.recordedAudioFileName != null) {
                 listOf(
                     MenuItem(
                         label = Res.string.details_menu_export_audio_title,
@@ -164,9 +166,9 @@ class ManageMeasurementViewModel(
             ViewState.ContentReady(
                 measurement,
                 measurementSize = measurementService.getMeasurementSize(measurement.uuid),
-                audioFileSize = measurement.recordedAudioUrl?.let { audioUrl ->
-                    audioRecordingService.getFileSize(audioUrl)
-                },
+                audioFileSize = measurement.recordedAudioFileName
+                    ?.let { fileSystemService.getAudioFileAbsolutePath(it) }
+                    ?.let { fileSystemService.getFileSize(it) },
             )
         }
         .stateInWhileSubscribed(

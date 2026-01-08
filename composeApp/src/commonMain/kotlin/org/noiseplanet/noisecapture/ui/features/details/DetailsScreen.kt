@@ -121,7 +121,7 @@ private fun DetailsScreenLarge(
                 averageLevel = viewState.measurement.laeqMetrics.average
             )
 
-            viewState.measurement.recordedAudioUrl?.let { audioUrl ->
+            viewState.audioFilePath?.let { audioUrl ->
                 AudioPlayerView(audioUrl)
             }
 
@@ -201,7 +201,7 @@ private fun DetailsScreenMedium(
                     averageLevel = viewState.measurement.laeqMetrics.average
                 )
 
-                viewState.measurement.recordedAudioUrl?.let { audioUrl ->
+                viewState.audioFilePath?.let { audioUrl ->
                     AudioPlayerView(audioUrl)
                 }
             }
@@ -288,7 +288,7 @@ private fun DetailsScreenCompact(
 
         MapViewOrPlaceHolder(viewState, modifier = Modifier.aspectRatio(1.5f))
 
-        viewState.measurement.recordedAudioUrl?.let { audioUrl ->
+        viewState.audioFilePath?.let { audioUrl ->
             AudioPlayerView(audioUrl)
         }
 
