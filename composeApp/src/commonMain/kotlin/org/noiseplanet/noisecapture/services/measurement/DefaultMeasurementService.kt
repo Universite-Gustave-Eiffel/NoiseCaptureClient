@@ -121,8 +121,7 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
             .fold(0L) { accumulator, sequenceId ->
                 accumulator + (locationSequenceStorageService.getSize(sequenceId) ?: 0L)
             }
-        val audioSize = measurement.recordedAudioFileName
-            ?.let { fileSystemService.getAudioFileAbsolutePath(it) }
+        val audioSize = measurement.recordedAudioUrl
             ?.let { fileSystemService.getFileSize(it) }
             ?: 0L
 
@@ -183,8 +182,8 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
                 // Calculate new energetic average based on current average and records count
                 val average = 10.0 * log10(
                     (currentMetrics.recordsCount * 10.0.pow(currentMetrics.average / 10.0)
-                        + 10.0.pow(record.laeq / 10.0))
-                        / (currentMetrics.recordsCount + 1)
+                            + 10.0.pow(record.laeq / 10.0))
+                            / (currentMetrics.recordsCount + 1)
                 )
 
                 LAeqMetrics(
@@ -228,7 +227,7 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
     }
 
     override fun setOngoingMeasurementRecordedAudioName(fileName: String) {
-        ongoingMeasurement?.recordedAudioFileName = fileName
+        ongoingMeasurement?.recordedAudioUrl = fileName
     }
 
     override suspend fun closeOngoingMeasurement() {
@@ -318,17 +317,15 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
     }
 
     override suspend fun deleteMeasurementAssociatedAudio(measurement: Measurement) {
-        measurement.recordedAudioFileName
-            ?.let { fileSystemService.getAudioFileAbsolutePath(it) }
-            ?.let { fileUri ->
-                // Delete audio file
-                fileSystemService.deleteFile(fileUri)
-                // And update measurement with null url
-                measurementStorageService.set(
-                    uuid = measurement.uuid,
-                    newValue = measurement.copy(recordedAudioFileName = null)
-                )
-            }
+        measurement.recordedAudioUrl?.let { fileUri ->
+            // Delete audio file
+            fileSystemService.deleteFile(fileUri)
+            // And update measurement with null url
+            measurementStorageService.set(
+                uuid = measurement.uuid,
+                newValue = measurement.copy(recordedAudioUrl = null)
+            )
+        }
     }
 
     override suspend fun deleteMeasurement(measurement: Measurement) {
@@ -380,7 +377,7 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
             userAgent = platform.userAgent,
             locationSequenceIds = ongoingMeasurement.locationSequenceIds,
             leqsSequenceIds = ongoingMeasurement.leqsSequenceIds,
-            recordedAudioFileName = ongoingMeasurement.recordedAudioFileName,
+            recordedAudioUrl = ongoingMeasurement.recordedAudioUrl,
             laeqMetrics = leqMetrics,
         )
         measurementStorageService.set(measurement.uuid, measurement)

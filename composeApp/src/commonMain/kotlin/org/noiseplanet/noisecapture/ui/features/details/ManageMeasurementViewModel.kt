@@ -111,7 +111,7 @@ class ManageMeasurementViewModel(
                     )
                 },
             )
-            if (measurement.recordedAudioFileName != null) {
+            if (measurement.recordedAudioUrl != null) {
                 listOf(
                     MenuItem(
                         label = Res.string.details_menu_delete_audio_title,
@@ -147,7 +147,7 @@ class ManageMeasurementViewModel(
                 ),
                 // TODO: Add GeoJSON export option
             )
-            if (measurement.recordedAudioFileName != null) {
+            if (measurement.recordedAudioUrl != null) {
                 listOf(
                     MenuItem(
                         label = Res.string.details_menu_export_audio_title,
@@ -166,9 +166,9 @@ class ManageMeasurementViewModel(
             ViewState.ContentReady(
                 measurement,
                 measurementSize = measurementService.getMeasurementSize(measurement.uuid),
-                audioFileSize = measurement.recordedAudioFileName
-                    ?.let { fileSystemService.getAudioFileAbsolutePath(it) }
-                    ?.let { fileSystemService.getFileSize(it) },
+                audioFileSize = measurement.recordedAudioUrl?.let {
+                    fileSystemService.getFileSize(it)
+                },
             )
         }
         .stateInWhileSubscribed(

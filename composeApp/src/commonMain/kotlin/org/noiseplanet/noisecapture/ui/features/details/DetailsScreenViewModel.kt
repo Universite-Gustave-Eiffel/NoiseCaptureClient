@@ -35,7 +35,6 @@ class DetailsScreenViewModel(
             val measurement: Measurement,
             val startTimeString: String,
             val durationString: String,
-            val audioFilePath: String?,
         ) : ViewState
 
         data object Loading : ViewState
@@ -66,7 +65,6 @@ class DetailsScreenViewModel(
                     measurement = it,
                     startTimeString = getMeasurementStartTimeString(measurement),
                     durationString = getMeasurementDurationString(measurement),
-                    audioFilePath = getMeasurementAudioFilePath(measurement)
                 )
             } ?: ViewState.NoMeasurement
         }
@@ -98,12 +96,6 @@ class DetailsScreenViewModel(
 
         return duration.toComponents { hours, minutes, seconds, _ ->
             "${hours}h ${minutes}m ${seconds}s"
-        }
-    }
-
-    private fun getMeasurementAudioFilePath(measurement: Measurement): String? {
-        return measurement.recordedAudioFileName?.let {
-            fileSystemService.getAudioFileAbsolutePath(it)
         }
     }
 }

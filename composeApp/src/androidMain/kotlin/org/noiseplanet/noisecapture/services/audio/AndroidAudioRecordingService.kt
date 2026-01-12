@@ -1,6 +1,5 @@
 package org.noiseplanet.noisecapture.services.audio
 
-import android.content.Context
 import android.media.MediaRecorder
 import android.os.Build
 import org.koin.core.component.KoinComponent
@@ -18,7 +17,6 @@ class AndroidAudioRecordingService : AudioRecordingService, KoinComponent {
     // - Properties
 
     private val logger: Logger by injectLogger()
-    private val context: Context by inject()
     private val fileSystemService: FileSystemService by inject()
 
     private var mediaRecorder: MediaRecorder? = null
@@ -33,9 +31,8 @@ class AndroidAudioRecordingService : AudioRecordingService, KoinComponent {
     override fun startRecordingToFile(outputFileName: String) {
         logger.debug("Recording to $outputFileName")
 
-        val audioDir = fileSystemService.getAudioFilesDirectoryUri() ?: return
-        val outputFileUri = "$audioDir/$outputFileName.mp3"
-        outputFile = File(outputFileUri)
+        val path = fileSystemService.getAbsolutePath("recordings/$outputFileName.mp3") ?: return
+        outputFile = File(path)
 
         // Initialize media recorder for given output file name
         mediaRecorder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -48,7 +45,7 @@ class AndroidAudioRecordingService : AudioRecordingService, KoinComponent {
             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
             setAudioEncoder(MediaRecorder.AudioEncoder.HE_AAC)
             setAudioSamplingRate(44_100)
-            setOutputFile(outputFileUri)
+            setOutputFile(outputFile)
 
             // Finalise initialisation
             try {

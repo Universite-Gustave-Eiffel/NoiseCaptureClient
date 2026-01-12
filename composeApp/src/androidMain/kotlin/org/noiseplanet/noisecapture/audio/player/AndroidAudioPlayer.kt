@@ -7,6 +7,7 @@ import android.net.Uri
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.log.Logger
+import org.noiseplanet.noisecapture.services.storage.FileSystemService
 import org.noiseplanet.noisecapture.util.injectLogger
 import java.io.File
 import kotlin.time.Duration
@@ -24,6 +25,7 @@ class AndroidAudioPlayer(
 
     private val logger: Logger by injectLogger()
     private val context: Context by inject()
+    private val fileSystemService: FileSystemService by inject()
 
     private var mediaPlayer: MediaPlayer? = null
 
@@ -40,7 +42,8 @@ class AndroidAudioPlayer(
 
     override suspend fun prepare() {
         // Initialise media player and get clip duration.
-        val file = File(filePath)
+        val absolutePath = fileSystemService.getAbsolutePath(filePath) ?: return
+        val file = File(absolutePath)
         val uri = Uri.fromFile(file)
 
         mediaPlayer = MediaPlayer().apply {

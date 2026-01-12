@@ -11,29 +11,26 @@ interface FileSystemService {
     fun getFileSize(fileUri: String): Long?
 
     /**
-     * Deletes the file at the given URI.
+     * Deletes the file at the given URI, relatively to the root directory.
      *
      * @param fileUri File URI.
      */
     fun deleteFile(fileUri: String)
 
     /**
-     * Returns the absolute path to the directory containing audio recordings.
-     *
-     * @return Absolute path to the directory containing audio recordings.
+     * Returns the URI to the root directory of application files, depending on the current platform.
      */
-    fun getAudioFilesDirectoryUri(): String?
+    fun getRootDirectory(): String?
 
     /**
-     * Returns the absolute path for the given audio file, depending on the current platform.
+     * From a given relative file path on the filesystem, returns the absolute path depending
+     * on the current platform.
      *
-     * @param fileName Audio file name.
-     * @return Absolute file URI, or null in case of error.
+     * @param relativePath Relative path from root directory.
+     * @return Absolute path (including path to root directory).
      */
-    fun getAudioFileAbsolutePath(fileName: String): String? {
-        val rootDir = getAudioFilesDirectoryUri() ?: return null
-
-        // Append file name to enclosing directory path (after removing any trailing slashes)
-        return "${rootDir.replace(Regex("/*$"), "")}/$fileName"
+    fun getAbsolutePath(relativePath: String): String? {
+        val rootDir = getRootDirectory() ?: return null
+        return "${rootDir.replace(Regex("/*$"), "")}/$relativePath"
     }
 }
