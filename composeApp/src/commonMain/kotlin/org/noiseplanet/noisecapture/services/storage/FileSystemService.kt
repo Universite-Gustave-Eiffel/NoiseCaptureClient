@@ -8,14 +8,14 @@ interface FileSystemService {
      * @param fileUri File URI.
      * @return File size in bytes, null if not found.
      */
-    fun getFileSize(fileUri: String): Long?
+    suspend fun getFileSize(fileUri: String): Long?
 
     /**
      * Deletes the file at the given URI, relatively to the root directory.
      *
      * @param fileUri File URI.
      */
-    fun deleteFile(fileUri: String)
+    suspend fun deleteFile(fileUri: String)
 
     /**
      * Returns the URI to the root directory of application files, depending on the current platform.

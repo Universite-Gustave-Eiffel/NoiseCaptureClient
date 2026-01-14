@@ -61,7 +61,7 @@ class IOSAudioRecordingService : AudioRecordingService, KoinComponent {
         logger.debug("Start recording to $outputFileName")
 
         // Get an URL pointing to the output file
-        val relativeUrl = "recordings/$outputFileName.m4a"
+        val relativeUrl = "measurement/audio/$outputFileName.m4a"
         val fileUri = fileSystemService.getAbsolutePath(relativeUrl)?.let {
             NSURL.URLWithString(it)
         }

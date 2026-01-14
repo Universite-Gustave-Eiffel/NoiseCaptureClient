@@ -14,7 +14,7 @@ class AndroidFileSystemService : FileSystemService, KoinComponent {
 
     // - Public functions
 
-    override fun getFileSize(fileUri: String): Long? {
+    override suspend fun getFileSize(fileUri: String): Long? {
         val absolutePath = getAbsolutePath(fileUri) ?: return null
         val file = File(absolutePath)
         if (file.exists()) {
@@ -23,7 +23,7 @@ class AndroidFileSystemService : FileSystemService, KoinComponent {
         return null
     }
 
-    override fun deleteFile(fileUri: String) {
+    override suspend fun deleteFile(fileUri: String) {
         val absolutePath = getAbsolutePath(fileUri) ?: return
         val file = File(absolutePath)
         if (file.exists()) {

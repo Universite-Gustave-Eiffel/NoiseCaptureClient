@@ -31,7 +31,7 @@ class AndroidAudioRecordingService : AudioRecordingService, KoinComponent {
     override fun startRecordingToFile(outputFileName: String) {
         logger.debug("Recording to $outputFileName")
 
-        val relativePath = "recordings/$outputFileName.mp3"
+        val relativePath = "measurement/audio/$outputFileName.mp3"
         val absolutePath = fileSystemService.getAbsolutePath(relativePath) ?: return
         // Create parent directories if needed
         File(absolutePath).parentFile?.mkdirs()

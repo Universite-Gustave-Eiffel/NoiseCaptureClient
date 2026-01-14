@@ -19,7 +19,7 @@ import platform.Foundation.NSUserDomainMask
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 class IOSFileSystemService : FileSystemService {
 
-    override fun getFileSize(fileUri: String): Long? {
+    override suspend fun getFileSize(fileUri: String): Long? {
         val filePath = NSURL.URLWithString(fileUri)?.path ?: return null
 
         return runCatching {
@@ -34,7 +34,7 @@ class IOSFileSystemService : FileSystemService {
         }.getOrNull()
     }
 
-    override fun deleteFile(fileUri: String) {
+    override suspend fun deleteFile(fileUri: String) {
         val absoluteUrl = getAbsolutePath(fileUri) ?: return
         val fileUrl = NSURL.URLWithString(absoluteUrl) ?: return
 
