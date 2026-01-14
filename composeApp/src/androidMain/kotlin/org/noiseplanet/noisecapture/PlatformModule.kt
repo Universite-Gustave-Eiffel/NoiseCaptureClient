@@ -65,6 +65,10 @@ val platformModule: Module = module {
         AndroidFileSystemService()
     }
 
+    single {
+        FilePickerEventBus()
+    }
+
     factory<AudioPlayer> { (filePath: String) ->
         AndroidAudioPlayer(filePath)
     }

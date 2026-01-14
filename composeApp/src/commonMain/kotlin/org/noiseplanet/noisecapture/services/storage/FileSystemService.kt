@@ -18,6 +18,13 @@ interface FileSystemService {
     suspend fun deleteFile(fileUri: String)
 
     /**
+     * Opens download dialog for the given file, based on the current platform.
+     *
+     * @param fileUri File URI, relative to the root directory.
+     */
+    suspend fun downloadFile(fileUri: String)
+
+    /**
      * Returns the URI to the root directory of application files, depending on the current platform.
      */
     fun getRootDirectory(): String?

@@ -28,7 +28,6 @@ import noisecapture.composeapp.generated.resources.details_menu_export_raw_title
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.model.dao.Measurement
-import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.services.storage.FileSystemService
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
@@ -57,7 +56,6 @@ class ManageMeasurementViewModel(
     // - Properties
 
     private val measurementService: MeasurementService by inject()
-    private val audioRecordingService: AudioRecordingService by inject()
     private val fileSystemService: FileSystemService by inject()
 
     private val measurementFlow = measurementService.getMeasurementFlow(measurementId)
@@ -200,6 +198,10 @@ class ManageMeasurementViewModel(
     }
 
     fun downloadAudio() {
-        // TODO
+        measurement?.recordedAudioUrl?.let {
+            viewModelScope.launch {
+                fileSystemService.downloadFile(it)
+            }
+        }
     }
 }
