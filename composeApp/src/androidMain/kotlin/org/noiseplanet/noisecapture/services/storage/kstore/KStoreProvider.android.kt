@@ -1,6 +1,5 @@
 package org.noiseplanet.noisecapture.services.storage.kstore
 
-import android.content.Context
 import io.github.xxfast.kstore.DefaultJson
 import io.github.xxfast.kstore.KStore
 import io.github.xxfast.kstore.file.extensions.VersionedCodec
@@ -11,6 +10,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.noiseplanet.noisecapture.services.storage.FileSystemService
 import java.io.File
 
 
@@ -22,7 +22,7 @@ internal actual class KStoreProvider : KoinComponent {
 
     // - Properties
 
-    val context: Context by inject()
+    private val fileSystemService: FileSystemService by inject()
 
 
     // - KStoreProvider
@@ -43,7 +43,9 @@ internal actual class KStoreProvider : KoinComponent {
         noinline migration: Migration<T>,
         enableCache: Boolean,
     ): KStore<T> {
-        val file = getFileHandle(fileName)
+        val absolutePath = fileSystemService.getAbsolutePath(fileName)
+        checkNotNull(absolutePath) { "Couldn't get absolute path for $fileName" }
+        val file = File(absolutePath)
         // Create enclosing directory if it doesn't exist
         file.parentFile?.mkdirs()
 
@@ -70,21 +72,6 @@ internal actual class KStoreProvider : KoinComponent {
      * @return File size in bytes, null if not found.
      */
     actual suspend fun sizeOf(fileName: String): Long? {
-        val file = getFileHandle(fileName)
-
-        return if (!file.exists()) {
-            null
-        } else {
-            file.length()
-        }
-    }
-
-
-    // - Private functions
-
-    private fun getFileHandle(fileName: String): File {
-        // Build complete file path
-        val filePath = Path("${context.filesDir}/$fileName")
-        return File(filePath.toString())
+        return fileSystemService.getFileSize(fileName)
     }
 }
