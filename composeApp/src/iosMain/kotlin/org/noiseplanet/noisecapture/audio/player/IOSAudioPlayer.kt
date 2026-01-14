@@ -8,8 +8,10 @@ import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.value
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.koin.core.time.inMs
 import org.noiseplanet.noisecapture.log.Logger
+import org.noiseplanet.noisecapture.services.storage.FileSystemService
 import org.noiseplanet.noisecapture.util.checkNoError
 import org.noiseplanet.noisecapture.util.injectLogger
 import platform.AVFAudio.AVAudioPlayer
@@ -33,6 +35,7 @@ class IOSAudioPlayer(filePath: String) : AudioPlayer(filePath), KoinComponent {
     // - Properties
 
     private val logger: Logger by injectLogger()
+    private val fileSystemService: FileSystemService by inject()
 
     private var audioPlayer: AVAudioPlayer? = null
     private val delegate = AVAudioPlayerDelegate(
@@ -51,7 +54,8 @@ class IOSAudioPlayer(filePath: String) : AudioPlayer(filePath), KoinComponent {
     // - AudioPlayer
 
     override suspend fun prepare() {
-        val url = NSURL.URLWithString(filePath)
+        val absolutePath = fileSystemService.getAbsolutePath(filePath) ?: return
+        val url = NSURL.URLWithString(absolutePath)
         checkNotNull(url) { "Invalid audio file URL: $filePath" }
         check(url.path?.let { NSFileManager.defaultManager.fileExistsAtPath(it) } == true) {
             "File not found at path $filePath"

@@ -49,6 +49,7 @@ class IOSAudioRecordingService : AudioRecordingService, KoinComponent {
     private val fileSystemService: FileSystemService by inject()
 
     private var audioRecorder: AVAudioRecorder? = null
+    private var recordingUrl: String? = null
 
 
     // - AudioRecordingService
@@ -60,7 +61,8 @@ class IOSAudioRecordingService : AudioRecordingService, KoinComponent {
         logger.debug("Start recording to $outputFileName")
 
         // Get an URL pointing to the output file
-        val fileUri = fileSystemService.getAudioFileAbsolutePath("$outputFileName.m4a")?.let {
+        val relativeUrl = "recordings/$outputFileName.m4a"
+        val fileUri = fileSystemService.getAbsolutePath(relativeUrl)?.let {
             NSURL.URLWithString(it)
         }
         checkNotNull(fileUri) { "Could not create URL for file with name $outputFileName" }
@@ -90,6 +92,7 @@ class IOSAudioRecordingService : AudioRecordingService, KoinComponent {
         // Launch audio recording
         logger.debug("Starting recording...")
         audioRecorder?.record()
+        recordingUrl = relativeUrl
         logger.debug("Recording started!")
         recordingStartListener?.onRecordingStart()
     }
@@ -99,7 +102,7 @@ class IOSAudioRecordingService : AudioRecordingService, KoinComponent {
         logger.debug("Stopping recording...")
         audioRecorder?.stop()
         logger.debug("Recording stopped")
-        audioRecorder?.url?.lastPathComponent?.let {
+        recordingUrl?.let {
             recordingStopListener?.onRecordingStop(it)
         }
 
