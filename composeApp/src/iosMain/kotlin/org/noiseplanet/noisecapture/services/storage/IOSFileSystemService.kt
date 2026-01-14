@@ -7,12 +7,13 @@ import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.value
-import org.noiseplanet.noisecapture.util.NSFileManagerUtils
 import org.noiseplanet.noisecapture.util.checkNoError
+import platform.Foundation.NSApplicationSupportDirectory
 import platform.Foundation.NSError
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSFileSize
 import platform.Foundation.NSURL
+import platform.Foundation.NSUserDomainMask
 
 
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
@@ -34,7 +35,8 @@ class IOSFileSystemService : FileSystemService {
     }
 
     override fun deleteFile(fileUri: String) {
-        val fileUrl = NSURL.URLWithString(fileUri) ?: return
+        val absoluteUrl = getAbsolutePath(fileUri) ?: return
+        val fileUrl = NSURL.URLWithString(absoluteUrl) ?: return
 
         memScoped {
             val error: ObjCObjectVar<NSError?> = alloc()
@@ -44,7 +46,15 @@ class IOSFileSystemService : FileSystemService {
         }
     }
 
-    override fun getAudioFilesDirectoryUri(): String? {
-        return NSFileManagerUtils.getDocumentsDirectory()?.absoluteString
+    /**
+     * Get a URL to the ApplicationSupport directory, i.e. the app's internal storage directory.
+     */
+    override fun getRootDirectory(): String? {
+        val urls = NSFileManager.defaultManager.URLsForDirectory(
+            directory = NSApplicationSupportDirectory,
+            inDomains = NSUserDomainMask
+        )
+        val url = urls.firstOrNull() as? NSURL? ?: return null
+        return url.absoluteString
     }
 }

@@ -65,6 +65,10 @@ class AndroidAudioPlayer(
                 logger.debug("Audio clip has reached the end")
                 onCompleteListener?.onComplete()
             }
+            setOnErrorListener { _, what, extra ->
+                logger.error("MediaPlayer error. what: $what, extra: $extra")
+                false
+            }
             try {
                 setDataSource(context, uri)
                 prepareAsync()

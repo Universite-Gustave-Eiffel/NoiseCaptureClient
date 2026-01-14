@@ -45,7 +45,7 @@ internal actual class KStoreProvider : KoinComponent {
     ): KStore<T> {
         val file = getFileHandle(fileName)
         // Create enclosing directory if it doesn't exist
-        file.parent?.let { File(it).mkdirs() }
+        file.parentFile?.mkdirs()
 
         // Return KStore handle
         return storeOf(

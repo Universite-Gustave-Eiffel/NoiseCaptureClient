@@ -31,8 +31,10 @@ class AndroidAudioRecordingService : AudioRecordingService, KoinComponent {
     override fun startRecordingToFile(outputFileName: String) {
         logger.debug("Recording to $outputFileName")
 
-        val path = fileSystemService.getAbsolutePath("recordings/$outputFileName.mp3") ?: return
-        outputFile = File(path)
+        val relativePath = "recordings/$outputFileName.mp3"
+        val absolutePath = fileSystemService.getAbsolutePath(relativePath) ?: return
+        // Create parent directories if needed
+        File(absolutePath).parentFile?.mkdirs()
 
         // Initialize media recorder for given output file name
         mediaRecorder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -45,7 +47,7 @@ class AndroidAudioRecordingService : AudioRecordingService, KoinComponent {
             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
             setAudioEncoder(MediaRecorder.AudioEncoder.HE_AAC)
             setAudioSamplingRate(44_100)
-            setOutputFile(outputFile)
+            setOutputFile(absolutePath)
 
             // Finalise initialisation
             try {
@@ -58,6 +60,8 @@ class AndroidAudioRecordingService : AudioRecordingService, KoinComponent {
             // Start recording
             try {
                 start()
+                // Remember file relative path for when recording ends
+                outputFile = File(relativePath)
                 recordingStartListener?.onRecordingStart()
                 logger.debug("Started recording!")
             } catch (error: IllegalStateException) {
@@ -76,11 +80,12 @@ class AndroidAudioRecordingService : AudioRecordingService, KoinComponent {
             }
             release()
             outputFile?.let {
-                recordingStopListener?.onRecordingStop(it.name)
+                recordingStopListener?.onRecordingStop(it.path)
             }
         }
         // Drop reference
         mediaRecorder = null
+        outputFile = null
         logger.debug("Stopped recording")
     }
 }
