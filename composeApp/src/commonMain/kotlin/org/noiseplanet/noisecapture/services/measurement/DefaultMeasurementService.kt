@@ -316,6 +316,10 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
         return newValue
     }
 
+    override suspend fun downloadRawMeasurement(uuid: String) {
+        measurementStorageService.download(uuid)
+    }
+
     override suspend fun deleteMeasurementAssociatedAudio(measurement: Measurement) {
         measurement.recordedAudioUrl?.let { fileUri ->
             // Delete audio file
@@ -329,8 +333,19 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
     }
 
     override suspend fun deleteMeasurement(measurement: Measurement) {
+        // Delete any associated audio file
         deleteMeasurementAssociatedAudio(measurement)
+        // Delete all attached LEq sequence fragments
+        measurement.leqsSequenceIds.forEach {
+            leqSequenceStorageService.delete(it)
+        }
+        // Delete all attached location sequence fragments
+        measurement.locationSequenceIds.forEach {
+            locationSequenceStorageService.delete(it)
+        }
+        // Delete measurement itself
         measurementStorageService.delete(measurement.uuid)
+        // Remove it from user statistics
         userStatisticsService.removeMeasurement(measurement)
     }
 

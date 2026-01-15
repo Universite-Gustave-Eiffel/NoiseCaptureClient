@@ -25,6 +25,14 @@ interface FileSystemService {
     suspend fun downloadFile(fileUri: String)
 
     /**
+     * Zips the files at the given URIs into an archive in cache space, then lets the user download
+     * this archive through platform dependant [downloadFile] function.
+     *
+     * @param fileUris URIs of the files to download, relative to the root directory.
+     */
+    suspend fun downloadFiles(fileUris: List<String>)
+
+    /**
      * Returns the URI to the root directory of application files, depending on the current platform.
      */
     fun getRootDirectory(): String?

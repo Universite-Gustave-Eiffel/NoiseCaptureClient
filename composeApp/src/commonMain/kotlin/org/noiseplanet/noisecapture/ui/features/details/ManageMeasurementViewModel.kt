@@ -194,7 +194,11 @@ class ManageMeasurementViewModel(
     }
 
     fun downloadRawData() {
-        // TODO
+        measurement?.let {
+            viewModelScope.launch {
+                measurementService.downloadRawMeasurement(it.uuid)
+            }
+        }
     }
 
     fun downloadAudio() {

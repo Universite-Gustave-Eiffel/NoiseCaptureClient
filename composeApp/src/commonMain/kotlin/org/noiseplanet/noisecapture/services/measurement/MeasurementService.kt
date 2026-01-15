@@ -169,6 +169,14 @@ interface MeasurementService {
     suspend fun calculateSummary(measurement: Measurement): Measurement
 
     /**
+     * Offers to the end user to download the raw measurement data with the given ID as a zip archive.
+     * Download flow might differ from platform to platform.
+     *
+     * @param uuid Measurement unique identifier.
+     */
+    suspend fun downloadRawMeasurement(uuid: String)
+
+    /**
      * Deletes the measurement's associated audio record (if any).
      *
      * @param measurement Measurement.
