@@ -94,6 +94,8 @@
     <string name="measurement_details_delete_measurement_dialog_text">This action cannot be undone. Note that this will only the local copy of your measurement, if you've already synced it before, the distant copy will be kept but you won't be able to download it again.</string>
     <string name="measurement_details_delete_measurement_audio_dialog_text">This action cannot be undone. This will not delete the measurement itself but only the audio clip that is attached to it. You won't be able to listen to the measurement audio afterwards but will still be able to see the measurement details.</string>
 
+    <string name="measurement_no_description_placeholder">No description.</string>
+
 
     <!-- CommunityMapScreen -->
     <string name="community_map_title">Community measurements</string>

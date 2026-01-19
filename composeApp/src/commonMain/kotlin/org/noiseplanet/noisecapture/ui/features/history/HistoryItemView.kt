@@ -26,6 +26,9 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
 import kotlinx.datetime.toLocalDateTime
 import nl.jacobras.humanreadable.HumanReadable
+import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.measurement_no_description_placeholder
+import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.ui.components.spl.LAeqMetricsView
 import org.noiseplanet.noisecapture.util.DateUtil
@@ -89,7 +92,7 @@ fun HistoryItemView(
 
             Text(
                 // TODO: Get description from measurement
-                text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod",
+                text = stringResource(Res.string.measurement_no_description_placeholder),
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.bodySmall,
