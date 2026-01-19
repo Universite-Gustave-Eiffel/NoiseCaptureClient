@@ -7,11 +7,13 @@ import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.value
+import kotlinx.io.files.Path
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.services.storage.FileSystemService
 import org.noiseplanet.noisecapture.util.checkNoError
+import org.noiseplanet.noisecapture.util.createDirectoriesAtPath
 import org.noiseplanet.noisecapture.util.injectLogger
 import platform.AVFAudio.AVAudioQuality
 import platform.AVFAudio.AVAudioQualityMedium
@@ -23,6 +25,7 @@ import platform.AVFAudio.AVSampleRateKey
 import platform.CoreAudioTypes.AudioFormatID
 import platform.CoreAudioTypes.kAudioFormatMPEG4AAC
 import platform.Foundation.NSError
+import platform.Foundation.NSFileManager
 import platform.Foundation.NSURL
 
 
@@ -61,13 +64,16 @@ class IOSAudioRecordingService : AudioRecordingService, KoinComponent {
         logger.debug("Start recording to $outputFileName")
 
         // Get an URL pointing to the output file
-        val relativeUrl = "measurement/audio/$outputFileName.m4a"
-        val fileUri = fileSystemService.getAbsolutePath(relativeUrl)?.let {
-            NSURL.URLWithString(it)
-        }
+        val relativePath = "measurement/audio/$outputFileName.m4a"
+        val absolutePath = fileSystemService.getAbsolutePath(relativePath)
+        val fileUri = absolutePath?.let { NSURL.URLWithString(it) }
         checkNotNull(fileUri) { "Could not create URL for file with name $outputFileName" }
-
         logger.debug("Output file URL: $fileUri")
+
+        // Create enclosing directories if needed
+        Path(absolutePath).parent?.let {
+            NSFileManager.defaultManager.createDirectoriesAtPath(it.toString())
+        }
 
         // Audio recorder settings specifying compression strategy and properties
         val settings: Map<Any?, *> = mapOf(
@@ -92,7 +98,7 @@ class IOSAudioRecordingService : AudioRecordingService, KoinComponent {
         // Launch audio recording
         logger.debug("Starting recording...")
         audioRecorder?.record()
-        recordingUrl = relativeUrl
+        recordingUrl = relativePath
         logger.debug("Recording started!")
         recordingStartListener?.onRecordingStart()
     }

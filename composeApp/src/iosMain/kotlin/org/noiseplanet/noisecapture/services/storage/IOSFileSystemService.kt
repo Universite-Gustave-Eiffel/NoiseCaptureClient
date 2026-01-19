@@ -2,48 +2,64 @@ package org.noiseplanet.noisecapture.services.storage
 
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.ObjCObjectVar
-import kotlinx.cinterop.alloc
-import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
-import kotlinx.cinterop.value
-import org.noiseplanet.noisecapture.util.checkNoError
+import org.koin.core.component.KoinComponent
+import org.noiseplanet.noisecapture.util.injectLogger
+import org.noiseplanet.noisecapture.util.runCatchingNSError
 import platform.Foundation.NSApplicationSupportDirectory
-import platform.Foundation.NSError
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSFileSize
 import platform.Foundation.NSURL
 import platform.Foundation.NSUserDomainMask
+import platform.UIKit.UIDocumentInteractionController
 
 
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
-class IOSFileSystemService : FileSystemService {
+class IOSFileSystemService : FileSystemService, KoinComponent {
+
+    // - Properties
+
+    private val logger by injectLogger()
+
+
+    // - FileSystemService
 
     override suspend fun getFileSize(fileUri: String): Long? {
-        val filePath = NSURL.URLWithString(fileUri)?.path ?: return null
+        val filePath = getAbsolutePath(fileUri) ?: return null
 
-        return runCatching {
-            memScoped {
-                val error: ObjCObjectVar<NSError?> = alloc()
-                val attributes = NSFileManager.defaultManager
-                    .attributesOfItemAtPath(filePath, error.ptr)
-
-                checkNoError(error.value) { "Could not get size of file at URL $filePath" }
-                return attributes?.get(NSFileSize) as? Long
-            }
+        return runCatchingNSError { nsError ->
+            NSFileManager.defaultManager.attributesOfItemAtPath(filePath, nsError.ptr)
+        }.map {
+            it?.get(NSFileSize) as? Long
+        }.onFailure {
+            logger.error("Could not get size of file at path $filePath")
         }.getOrNull()
     }
 
     override suspend fun deleteFile(fileUri: String) {
+        val absolutePath = getAbsolutePath(fileUri) ?: return
+
+        runCatchingNSError { nsError ->
+            NSFileManager.defaultManager.removeItemAtPath(absolutePath, nsError.ptr)
+        }.onFailure {
+            logger.error("Error while deleting file at path $absolutePath")
+        }
+    }
+
+    override suspend fun downloadFile(fileUri: String) {
         val absoluteUrl = getAbsolutePath(fileUri) ?: return
         val fileUrl = NSURL.URLWithString(absoluteUrl) ?: return
 
-        memScoped {
-            val error: ObjCObjectVar<NSError?> = alloc()
-            NSFileManager.defaultManager.removeItemAtURL(fileUrl, error.ptr)
+        // Create and configure document interaction controller
+        val viewController = UIDocumentInteractionController.interactionControllerWithURL(fileUrl)
+        // TODO: Get file type identifier dynamically
+        viewController.UTI = "public.data"
+        viewController.name = fileUrl.lastPathComponent
+        viewController.presentPreviewAnimated(animated = true)
+    }
 
-            checkNoError(error.value) { "Error while deleting file at URL $fileUrl" }
-        }
+    override suspend fun downloadFiles(fileUris: List<String>) {
+        TODO("Not yet implemented")
     }
 
     /**
@@ -55,6 +71,6 @@ class IOSFileSystemService : FileSystemService {
             inDomains = NSUserDomainMask
         )
         val url = urls.firstOrNull() as? NSURL? ?: return null
-        return url.absoluteString
+        return url.path
     }
 }

@@ -6,11 +6,6 @@ import io.github.xxfast.kstore.file.extensions.VersionedCodec
 import io.github.xxfast.kstore.storeOf
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.ObjCObjectVar
-import kotlinx.cinterop.alloc
-import kotlinx.cinterop.memScoped
-import kotlinx.cinterop.ptr
-import kotlinx.cinterop.value
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.files.Path
 import kotlinx.serialization.Serializable
@@ -18,8 +13,7 @@ import kotlinx.serialization.serializer
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.services.storage.FileSystemService
-import org.noiseplanet.noisecapture.util.checkNoError
-import platform.Foundation.NSError
+import org.noiseplanet.noisecapture.util.createDirectoriesAtPath
 import platform.Foundation.NSFileManager
 
 /**
@@ -56,19 +50,7 @@ internal actual class KStoreProvider : KoinComponent {
         checkNotNull(filePath) { "Could not get documents directory URL" }
 
         // Create enclosing directories if they doesn't exist
-        memScoped {
-            val error: ObjCObjectVar<NSError?> = alloc()
-
-            NSFileManager.defaultManager.createDirectoryAtPath(
-                path = filePath.parent.toString(),
-                attributes = null,
-                withIntermediateDirectories = true,
-                error = error.ptr
-            )
-            checkNoError(error.value) {
-                "Error while creating intermediate directories at path ${filePath.parent}"
-            }
-        }
+        NSFileManager.defaultManager.createDirectoriesAtPath(filePath.parent.toString())
 
         // Return KStore handle
         return storeOf(

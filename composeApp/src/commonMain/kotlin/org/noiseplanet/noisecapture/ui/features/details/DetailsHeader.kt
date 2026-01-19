@@ -67,7 +67,7 @@ fun DetailsChartsHeader(
                 lineHeight = 40.sp,
             )
             Text(
-                text = stringResource(Res.string.measurement_details_average_level),
+                text = stringResource(Res.string.details_average_level),
                 style = MaterialTheme.typography.labelSmall,
                 color = averageLevelColorTint,
             )
@@ -95,27 +95,6 @@ fun DetailsChartsHeader(
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
-            )
-        }
-
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.clip(RoundedCornerShape(size = 16.dp))
-                .background(averageLevelColorBackground)
-                .padding(20.dp)
-        ) {
-            Text(
-                text = averageLevel.roundTo(1).toString(),
-                style = MaterialTheme.typography.headlineLarge,
-                color = averageLevelColorTint,
-                fontWeight = FontWeight.Black,
-                fontSize = 36.sp,
-                lineHeight = 40.sp,
-            )
-            Text(
-                text = stringResource(Res.string.details_average_level),
-                style = MaterialTheme.typography.labelSmall,
-                color = averageLevelColorTint,
             )
         }
     }
