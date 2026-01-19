@@ -2,21 +2,16 @@ package org.noiseplanet.noisecapture.audio.player
 
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.ObjCObjectVar
-import kotlinx.cinterop.alloc
-import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
-import kotlinx.cinterop.value
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.time.inMs
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.services.storage.FileSystemService
-import org.noiseplanet.noisecapture.util.checkNoError
 import org.noiseplanet.noisecapture.util.injectLogger
+import org.noiseplanet.noisecapture.util.runCatchingNSError
 import platform.AVFAudio.AVAudioPlayer
 import platform.AVFAudio.AVAudioPlayerDelegateProtocol
-import platform.Foundation.NSError
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSTimeInterval
 import platform.Foundation.NSURL
@@ -55,32 +50,28 @@ class IOSAudioPlayer(filePath: String) : AudioPlayer(filePath), KoinComponent {
 
     override suspend fun prepare() {
         val absolutePath = fileSystemService.getAbsolutePath(filePath) ?: return
-        val url = NSURL.URLWithString(absolutePath)
-        checkNotNull(url) { "Invalid audio file URL: $filePath" }
-        check(url.path?.let { NSFileManager.defaultManager.fileExistsAtPath(it) } == true) {
-            "File not found at path $filePath"
-        }
+        val url = NSURL.URLWithString(absolutePath) ?: return
 
-        memScoped {
-            val error: ObjCObjectVar<NSError?> = alloc()
-
+        audioPlayer = runCatching {
+            check(url.path?.let { NSFileManager.defaultManager.fileExistsAtPath(it) } == true) {
+                "File not found at path $filePath"
+            }
+        }.runCatchingNSError { nsError ->
             // Setup audio player
-            audioPlayer = AVAudioPlayer(
+            AVAudioPlayer(
                 contentsOfURL = url,
-                error = error.ptr,
+                error = nsError.ptr,
             )
-            audioPlayer?.prepareToPlay()
-
+        }.onSuccess { audioPlayer ->
+            audioPlayer.prepareToPlay()
             // Set audio player volume to max (doesn't affect system volume)
-            audioPlayer?.volume = 1f
-
-            checkNoError(error.value) { "Error while setting up AVAudioPlayer" }
-        }
-        val audioPlayer = checkNotNull(audioPlayer)
-        audioPlayer.delegate = delegate
-        duration = audioPlayer.duration.toDuration(unit = DurationUnit.SECONDS)
-
-        onPreparedListener?.onPrepared()
+            audioPlayer.volume = 3f
+            audioPlayer.delegate = delegate
+            duration = audioPlayer.duration.toDuration(unit = DurationUnit.SECONDS)
+            onPreparedListener?.onPrepared()
+        }.onFailure {
+            logger.error("Error while setting up AVAudioPlayer", it)
+        }.getOrNull()
     }
 
     override fun play() {

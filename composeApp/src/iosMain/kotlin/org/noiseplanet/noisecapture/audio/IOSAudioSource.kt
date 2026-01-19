@@ -2,10 +2,7 @@ package org.noiseplanet.noisecapture.audio
 
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.ObjCObjectVar
-import kotlinx.cinterop.alloc
 import kotlinx.cinterop.get
-import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.pointed
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.value
@@ -17,8 +14,8 @@ import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.enums.MicrophoneLocation
 import org.noiseplanet.noisecapture.util.NSNotificationListener
-import org.noiseplanet.noisecapture.util.checkNoError
 import org.noiseplanet.noisecapture.util.injectLogger
+import org.noiseplanet.noisecapture.util.runCatchingNSError
 import platform.AVFAudio.AVAudioEngine
 import platform.AVFAudio.AVAudioPCMBuffer
 import platform.AVFAudio.AVAudioSession
@@ -38,7 +35,6 @@ import platform.AVFAudio.sampleRate
 import platform.AVFAudio.setActive
 import platform.AVFAudio.setPreferredIOBufferDuration
 import platform.AVFAudio.setPreferredSampleRate
-import platform.Foundation.NSError
 import platform.Foundation.NSNotification
 import platform.Foundation.NSTimeInterval
 import platform.posix.uint32_t
@@ -127,11 +123,12 @@ internal class IOSAudioSource : AudioSource, KoinComponent {
 
             AudioSourceState.READY, AudioSourceState.PAUSED -> {
                 logger.debug("Starting audio source")
-                memScoped {
-                    val error: ObjCObjectVar<NSError?> = alloc()
-                    audioEngine?.startAndReturnError(error.ptr)
-                    checkNoError(error.value) { "Error while starting AVAudioEngine" }
+                runCatchingNSError { nsError ->
+                    audioEngine?.startAndReturnError(nsError.ptr)
+                }.onSuccess {
                     state = AudioSourceState.RUNNING
+                }.onFailure {
+                    logger.error("Error while starting AVAudioEngine", it)
                 }
             }
         }
@@ -189,29 +186,26 @@ internal class IOSAudioSource : AudioSource, KoinComponent {
     private fun setupAudioSession() {
         logger.debug("Initializing AVAudioSession...")
 
-        memScoped {
-            val error: ObjCObjectVar<NSError?> = alloc()
-
+        runCatchingNSError { nsError ->
             audioSession.setCategory(
                 category = AVAudioSessionCategoryPlayAndRecord,
                 mode = AVAudioSessionModeMeasurement,
                 options = AVAudioSessionCategoryOptionMixWithOthers or AVAudioSessionCategoryOptionDefaultToSpeaker,
-                error = error.ptr,
+                error = nsError.ptr,
             )
-            checkNoError(error.value) { "Error while setting AVAudioSession category" }
 
             val sampleRate = audioSession.sampleRate
-            audioSession.setPreferredSampleRate(sampleRate, error.ptr)
-            checkNoError(error.value) { "Error while setting AVAudioSession sample rate" }
+            audioSession.setPreferredSampleRate(sampleRate, nsError.ptr)
 
             val bufferDuration: NSTimeInterval =
                 1.0 / sampleRate * SAMPLES_BUFFER_SIZE.toDouble()
-            audioSession.setPreferredIOBufferDuration(bufferDuration, error.ptr)
-            checkNoError(error.value) { "Error while setting AVAudioSession buffer size" }
+            audioSession.setPreferredIOBufferDuration(bufferDuration, nsError.ptr)
+        }.onFailure {
+            logger.error("Error while setting up audio session", it)
+        }.onSuccess {
+            setAudioSessionActive(true)
+            logger.debug("AVAudioSession initialized")
         }
-        setAudioSessionActive(true)
-
-        logger.debug("AVAudioSession initialized")
     }
 
     /**
@@ -250,19 +244,20 @@ internal class IOSAudioSource : AudioSource, KoinComponent {
      * @throws IllegalStateException if an error occurred while starting or stopping audio source
      */
     private fun setAudioSessionActive(isActive: Boolean) {
-        memScoped {
-            val error: ObjCObjectVar<NSError?> = alloc()
+        runCatchingNSError { nsError ->
             audioSession.setActive(
                 active = isActive,
-                error = error.ptr
+                error = nsError.ptr
             )
-            checkNoError(error.value) {
+        }.onFailure {
+            logger.error(
                 if (isActive) {
                     "Error while starting AVAudioSession"
                 } else {
                     "Error while stopping AVAudioSession"
-                }
-            }
+                },
+                it
+            )
         }
     }
 

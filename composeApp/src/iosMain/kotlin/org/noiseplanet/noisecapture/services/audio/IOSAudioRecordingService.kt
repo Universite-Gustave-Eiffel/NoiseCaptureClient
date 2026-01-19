@@ -2,19 +2,15 @@ package org.noiseplanet.noisecapture.services.audio
 
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.ObjCObjectVar
-import kotlinx.cinterop.alloc
-import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
-import kotlinx.cinterop.value
 import kotlinx.io.files.Path
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.services.storage.FileSystemService
-import org.noiseplanet.noisecapture.util.checkNoError
 import org.noiseplanet.noisecapture.util.createDirectoriesAtPath
 import org.noiseplanet.noisecapture.util.injectLogger
+import org.noiseplanet.noisecapture.util.runCatchingNSError
 import platform.AVFAudio.AVAudioQuality
 import platform.AVFAudio.AVAudioQualityMedium
 import platform.AVFAudio.AVAudioRecorder
@@ -24,7 +20,6 @@ import platform.AVFAudio.AVNumberOfChannelsKey
 import platform.AVFAudio.AVSampleRateKey
 import platform.CoreAudioTypes.AudioFormatID
 import platform.CoreAudioTypes.kAudioFormatMPEG4AAC
-import platform.Foundation.NSError
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSURL
 
@@ -84,23 +79,22 @@ class IOSAudioRecordingService : AudioRecordingService, KoinComponent {
         )
 
         // Initialize AVAudioRecorder instance with our settings and file URL
-        memScoped {
-            val error: ObjCObjectVar<NSError?> = alloc()
-
-            audioRecorder = AVAudioRecorder(
+        audioRecorder = runCatchingNSError { nsError ->
+            AVAudioRecorder(
                 uRL = fileUri,
                 settings = settings,
-                error = error.ptr
+                error = nsError.ptr
             )
-            checkNoError(error.value) { "Error while setting up AVAudioRecorder" }
-        }
-
-        // Launch audio recording
-        logger.debug("Starting recording...")
-        audioRecorder?.record()
-        recordingUrl = relativePath
-        logger.debug("Recording started!")
-        recordingStartListener?.onRecordingStart()
+        }.onSuccess { audioRecorder ->
+            // Launch audio recording
+            logger.debug("Starting recording...")
+            audioRecorder.record()
+            recordingUrl = relativePath
+            logger.debug("Recording started!")
+            recordingStartListener?.onRecordingStart()
+        }.onFailure {
+            logger.error("Error while setting up AVAudioRecorder", it)
+        }.getOrNull()
     }
 
     override fun stopRecordingToFile() {

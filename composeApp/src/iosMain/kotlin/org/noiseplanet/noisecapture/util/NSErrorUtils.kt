@@ -46,7 +46,7 @@ internal fun <T, R> T.runCatchingNSError(
             val result = block(error)
 
             // Check for error and throw exception if not null
-            check(error.value == null)
+            check(error.value == null) { error.value?.localizedDescription ?: "Unknown error" }
 
             // Return result on success
             result
