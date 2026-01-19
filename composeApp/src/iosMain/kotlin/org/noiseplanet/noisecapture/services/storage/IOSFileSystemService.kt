@@ -4,6 +4,7 @@ import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ptr
 import org.koin.core.component.KoinComponent
+import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.util.injectLogger
 import org.noiseplanet.noisecapture.util.runCatchingNSError
 import platform.Foundation.NSApplicationSupportDirectory
@@ -11,7 +12,10 @@ import platform.Foundation.NSFileManager
 import platform.Foundation.NSFileSize
 import platform.Foundation.NSURL
 import platform.Foundation.NSUserDomainMask
+import platform.UIKit.UIApplication
 import platform.UIKit.UIDocumentInteractionController
+import platform.UIKit.UIDocumentInteractionControllerDelegateProtocol
+import platform.darwin.NSObject
 
 
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
@@ -19,7 +23,15 @@ class IOSFileSystemService : FileSystemService, KoinComponent {
 
     // - Properties
 
-    private val logger by injectLogger()
+    private val logger: Logger by injectLogger()
+
+    private var documentInteractionController: UIDocumentInteractionController? = null
+    private val documentInteractionControllerDelegate = UIDocumentInteractionControllerDelegate(
+        onDismiss = {
+            // Drop reference to interaction controller
+            documentInteractionController = null
+        }
+    )
 
 
     // - FileSystemService
@@ -48,14 +60,24 @@ class IOSFileSystemService : FileSystemService, KoinComponent {
 
     override suspend fun downloadFile(fileUri: String) {
         val absoluteUrl = getAbsolutePath(fileUri) ?: return
-        val fileUrl = NSURL.URLWithString(absoluteUrl) ?: return
+        val fileUrl = NSURL.fileURLWithPath(absoluteUrl)
 
         // Create and configure document interaction controller
-        val viewController = UIDocumentInteractionController.interactionControllerWithURL(fileUrl)
+        documentInteractionController = UIDocumentInteractionController
+            .interactionControllerWithURL(fileUrl)
+
         // TODO: Get file type identifier dynamically
-        viewController.UTI = "public.data"
-        viewController.name = fileUrl.lastPathComponent
-        viewController.presentPreviewAnimated(animated = true)
+        documentInteractionController?.UTI = "public.data"
+        documentInteractionController?.name = fileUrl.lastPathComponent
+        documentInteractionController?.delegate = documentInteractionControllerDelegate
+
+        UIApplication.sharedApplication.keyWindow?.rootViewController?.view?.let { view ->
+            documentInteractionController?.presentOptionsMenuFromRect(
+                rect = view.bounds,
+                inView = view,
+                animated = true,
+            )
+        }
     }
 
     override suspend fun downloadFiles(fileUris: List<String>) {
@@ -72,5 +94,17 @@ class IOSFileSystemService : FileSystemService, KoinComponent {
         )
         val url = urls.firstOrNull() as? NSURL? ?: return null
         return url.path
+    }
+}
+
+
+private class UIDocumentInteractionControllerDelegate(
+    private val onDismiss: () -> Unit,
+) : NSObject(), UIDocumentInteractionControllerDelegateProtocol {
+
+    override fun documentInteractionControllerDidDismissOptionsMenu(
+        controller: UIDocumentInteractionController,
+    ) {
+        onDismiss()
     }
 }
