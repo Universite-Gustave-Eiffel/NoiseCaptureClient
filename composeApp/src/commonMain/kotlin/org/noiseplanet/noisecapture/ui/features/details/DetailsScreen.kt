@@ -8,16 +8,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
@@ -42,6 +37,7 @@ import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.ui.components.audioplayer.AudioPlayerView
 import org.noiseplanet.noisecapture.ui.components.map.MapView
 import org.noiseplanet.noisecapture.ui.navigation.router.DetailsRouter
+import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 
 
 @OptIn(KoinExperimentalAPI::class)
@@ -184,8 +180,7 @@ private fun DetailsScreenMedium(
     Column(
         verticalArrangement = Arrangement.spacedBy(24.dp),
         modifier = Modifier.verticalScroll(scrollState)
-            .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
-            .padding(24.dp)
+            .paddingBottomWithInsets(24.dp)
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(24.dp),
@@ -276,8 +271,9 @@ private fun DetailsScreenCompact(
 
     Column(
         modifier = Modifier.verticalScroll(scrollState)
-            .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
-            .padding(16.dp),
+            .padding(horizontal = 16.dp)
+            .padding(top = 16.dp)
+            .paddingBottomWithInsets(withNavBar = 16.dp, withoutNavBar = 24.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         DetailsChartsHeader(
