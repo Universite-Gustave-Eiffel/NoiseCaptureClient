@@ -84,6 +84,6 @@ class MeasurementStorageService : KStoreStorageService<Measurement>(
         measurementFiles.add(getFileNameForRecord(measurement.uuid))
 
         // Then zip and download
-        fileSystemService.downloadFiles(measurementFiles)
+        fileSystemService.downloadFiles(measurementFiles, archiveName = "${uuid}_raw_export")
     }
 }

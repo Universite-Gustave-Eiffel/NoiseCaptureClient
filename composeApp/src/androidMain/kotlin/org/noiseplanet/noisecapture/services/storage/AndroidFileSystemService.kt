@@ -48,9 +48,9 @@ class AndroidFileSystemService : FileSystemService, KoinComponent {
         filePickerEventBus.emitEvent(file)
     }
 
-    override suspend fun downloadFiles(fileUris: List<String>) {
+    override suspend fun downloadFiles(fileUris: List<String>, archiveName: String) {
         val cacheDir = context.cacheDir
-        val zipFile = File(cacheDir, "archive.zip")
+        val zipFile = File(cacheDir, "$archiveName.zip")
 
         // Create a zip file in the cache directory
         withContext(Dispatchers.IO) {

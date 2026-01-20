@@ -72,8 +72,8 @@ class IOSFileSystemService : FileSystemService, KoinComponent {
         downloadFileAtUrl(fileUrl)
     }
 
-    override suspend fun downloadFiles(fileUris: List<String>) {
-        val zipUrl = createZipInTmp(zipFileName = "archive", filePathsToZip = fileUris) ?: return
+    override suspend fun downloadFiles(fileUris: List<String>, archiveName: String) {
+        val zipUrl = createZipInTmp(zipFileName = archiveName, filePathsToZip = fileUris) ?: return
 
         downloadFileAtUrl(zipUrl)
     }

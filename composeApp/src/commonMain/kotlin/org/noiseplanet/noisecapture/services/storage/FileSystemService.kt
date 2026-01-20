@@ -29,8 +29,9 @@ interface FileSystemService {
      * this archive through platform dependant [downloadFile] function.
      *
      * @param fileUris URIs of the files to download, relative to the root directory.
+     * @param archiveName Name of the output archive. Defaults to "NoiseCapture_Export".
      */
-    suspend fun downloadFiles(fileUris: List<String>)
+    suspend fun downloadFiles(fileUris: List<String>, archiveName: String = "NoiseCapture_Export")
 
     /**
      * Returns the URI to the root directory of application files, depending on the current platform.
