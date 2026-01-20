@@ -142,6 +142,7 @@ kotlin {
 
         wasmJsMain.dependencies {
             implementation(libs.kstore.storage)
+            implementation(npm("@zip.js/zip.js", "2.8.15"))
         }
 
         commonTest.dependencies {

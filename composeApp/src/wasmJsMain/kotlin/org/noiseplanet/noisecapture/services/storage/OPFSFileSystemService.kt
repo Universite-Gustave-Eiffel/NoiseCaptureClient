@@ -2,6 +2,7 @@ package org.noiseplanet.noisecapture.services.storage
 
 import kotlinx.browser.document
 import kotlinx.coroutines.await
+import org.noiseplanet.noisecapture.interop.ZipJs
 import org.noiseplanet.noisecapture.interop.storage.FileSystemWritableFileStream
 import org.noiseplanet.noisecapture.util.OPFSHelper
 import org.w3c.dom.HTMLAnchorElement
@@ -39,19 +40,31 @@ class OPFSFileSystemService : FileSystemService {
         val (fileHandle, _) = OPFSHelper.getFileHandle(fileUri) ?: return
         val file: File = fileHandle.getFile().await()
 
-        // Create download URL
-        val url = URL.createObjectURL(file)
+        // Download it
+        downloadBlob(file, file.name)
+    }
 
-        // Create anchor element and trigger the download
-        val anchor = document.createElement("a") as HTMLAnchorElement
-        anchor.href = url
-        anchor.download = file.name
-        document.body?.appendChild(anchor)
-        anchor.click()
+    /**
+     * Download files using Zip.js library: https://jsr.io/@zip-js/zip-js
+     */
+    override suspend fun downloadFiles(fileUris: List<String>, archiveName: String) {
+        val writer = ZipJs.BlobWriter("applications/zip")
+        val zipWriter = ZipJs.ZipWriter(writer)
 
-        // Clean up
-        document.body?.removeChild(anchor)
-        URL.revokeObjectURL(url)
+        // Add each file to the zip archive
+        fileUris.forEach { fileUri ->
+            val (fileHandle, _) = OPFSHelper.getFileHandle(fileUri) ?: return
+            val file = fileHandle.getFile().await<File>()
+            val reader = ZipJs.BlobReader(file)
+            zipWriter.add(fileUri, reader).await<JsAny>()
+        }
+        zipWriter.close().await<JsAny>()
+
+        // Get zipped data as blob
+        val blob = writer.getData().await<Blob>()
+
+        // Download zip file
+        downloadBlob(blob, "$archiveName.zip")
     }
 
     /**
@@ -68,5 +81,27 @@ class OPFSFileSystemService : FileSystemService {
         stream.write(blob).await<Unit>()
         // Close stream
         stream.close().await<Unit>()
+    }
+
+
+    // - Private functions
+
+    /**
+     * Downloads the given blob to the user's Downloads folder, with the given filename.
+     */
+    private fun downloadBlob(blob: Blob, fileName: String) {
+        // Create download URL
+        val url = URL.createObjectURL(blob)
+
+        // Create anchor element and trigger the download
+        val anchor = document.createElement("a") as HTMLAnchorElement
+        anchor.href = url
+        anchor.download = fileName
+        document.body?.appendChild(anchor)
+        anchor.click()
+
+        // Clean up
+        document.body?.removeChild(anchor)
+        URL.revokeObjectURL(url)
     }
 }
