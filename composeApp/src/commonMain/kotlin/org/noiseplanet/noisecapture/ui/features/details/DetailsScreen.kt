@@ -273,7 +273,7 @@ private fun DetailsScreenCompact(
         modifier = Modifier.verticalScroll(scrollState)
             .padding(horizontal = 16.dp)
             .padding(top = 16.dp)
-            .paddingBottomWithInsets(withNavBar = 16.dp, withoutNavBar = 24.dp),
+            .paddingBottomWithInsets(withNavBar = 0.dp, withoutNavBar = 24.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         DetailsChartsHeader(
