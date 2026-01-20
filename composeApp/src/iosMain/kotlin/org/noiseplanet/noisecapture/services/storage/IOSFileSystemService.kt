@@ -11,6 +11,7 @@ import platform.Foundation.NSApplicationSupportDirectory
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSFileSize
 import platform.Foundation.NSURL
+import platform.Foundation.NSURLTypeIdentifierKey
 import platform.Foundation.NSUserDomainMask
 import platform.UIKit.UIApplication
 import platform.UIKit.UIDocumentInteractionController
@@ -66,8 +67,14 @@ class IOSFileSystemService : FileSystemService, KoinComponent {
         documentInteractionController = UIDocumentInteractionController
             .interactionControllerWithURL(fileUrl)
 
-        // TODO: Get file type identifier dynamically
-        documentInteractionController?.UTI = "public.data"
+        // Get resource type identifier from URL, or default to "public.data"
+        val uti = runCatchingNSError { nsError ->
+            fileUrl.resourceValuesForKeys(listOf(NSURLTypeIdentifierKey), nsError.ptr)
+                ?.get(NSURLTypeIdentifierKey) as? String?
+                ?: "public.data"
+        }.getOrNull()
+
+        documentInteractionController?.UTI = uti
         documentInteractionController?.name = fileUrl.lastPathComponent
         documentInteractionController?.delegate = documentInteractionControllerDelegate
 
