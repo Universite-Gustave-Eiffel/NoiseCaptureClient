@@ -8,18 +8,23 @@ import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.util.injectLogger
 import org.noiseplanet.noisecapture.util.runCatchingNSError
 import platform.Foundation.NSApplicationSupportDirectory
+import platform.Foundation.NSFileCoordinator
+import platform.Foundation.NSFileCoordinatorReadingForUploading
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSFileSize
 import platform.Foundation.NSURL
 import platform.Foundation.NSURLTypeIdentifierKey
 import platform.Foundation.NSUserDomainMask
+import platform.Foundation.temporaryDirectory
 import platform.UIKit.UIApplication
 import platform.UIKit.UIDocumentInteractionController
 import platform.UIKit.UIDocumentInteractionControllerDelegateProtocol
 import platform.darwin.NSObject
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 
-@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
+@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class, ExperimentalTime::class)
 class IOSFileSystemService : FileSystemService, KoinComponent {
 
     // - Properties
@@ -33,6 +38,7 @@ class IOSFileSystemService : FileSystemService, KoinComponent {
             documentInteractionController = null
         }
     )
+    private val fileManager: NSFileManager = NSFileManager.defaultManager
 
 
     // - FileSystemService
@@ -41,7 +47,7 @@ class IOSFileSystemService : FileSystemService, KoinComponent {
         val filePath = getAbsolutePath(fileUri) ?: return null
 
         return runCatchingNSError { nsError ->
-            NSFileManager.defaultManager.attributesOfItemAtPath(filePath, nsError.ptr)
+            fileManager.attributesOfItemAtPath(filePath, nsError.ptr)
         }.map {
             it?.get(NSFileSize) as? Long
         }.onFailure {
@@ -63,6 +69,36 @@ class IOSFileSystemService : FileSystemService, KoinComponent {
         val absoluteUrl = getAbsolutePath(fileUri) ?: return
         val fileUrl = NSURL.fileURLWithPath(absoluteUrl)
 
+        downloadFileAtUrl(fileUrl)
+    }
+
+    override suspend fun downloadFiles(fileUris: List<String>) {
+        val zipUrl = createZipInTmp(zipFileName = "archive", filePathsToZip = fileUris) ?: return
+
+        downloadFileAtUrl(zipUrl)
+    }
+
+    /**
+     * Get a URL to the ApplicationSupport directory, i.e. the app's internal storage directory.
+     */
+    override fun getRootDirectory(): String? {
+        val urls = fileManager.URLsForDirectory(
+            directory = NSApplicationSupportDirectory,
+            inDomains = NSUserDomainMask
+        )
+        val url = urls.firstOrNull() as? NSURL? ?: return null
+        return url.path
+    }
+
+
+    // - Private functions
+
+    /**
+     * Downloads the file at the given URL through [UIDocumentInteractionController].
+     *
+     * @param fileUrl [NSURL] pointing to the file to download.
+     */
+    private fun downloadFileAtUrl(fileUrl: NSURL) {
         // Create and configure document interaction controller
         documentInteractionController = UIDocumentInteractionController
             .interactionControllerWithURL(fileUrl)
@@ -87,20 +123,76 @@ class IOSFileSystemService : FileSystemService, KoinComponent {
         }
     }
 
-    override suspend fun downloadFiles(fileUris: List<String>) {
-        TODO("Not yet implemented")
-    }
-
     /**
-     * Get a URL to the ApplicationSupport directory, i.e. the app's internal storage directory.
+     * Creates a zip archive from the files at the given paths in temporary storage.
+     *
+     * @param zipFileName Archive file name.
+     * @param zipExtension Archive extension, defaults to "zip".
+     * @param filePathsToZip List of files to zip into archive.
+     *
+     * @return URL to the zip file in temporary directory or null if a failure occurs during compression.
      */
-    override fun getRootDirectory(): String? {
-        val urls = NSFileManager.defaultManager.URLsForDirectory(
-            directory = NSApplicationSupportDirectory,
-            inDomains = NSUserDomainMask
-        )
-        val url = urls.firstOrNull() as? NSURL? ?: return null
-        return url.path
+    @OptIn(ExperimentalTime::class, ExperimentalForeignApi::class)
+    private fun createZipInTmp(
+        zipFileName: String,
+        zipExtension: String = "zip",
+        filePathsToZip: List<String>,
+    ): NSURL? {
+        // Get the URL to the directory in temporary storage we will copy our files to.
+        val timestamp = Clock.System.now().toEpochMilliseconds().toString()
+        val directoryToZipUrl = fileManager.temporaryDirectory
+            .URLByAppendingPathComponent(timestamp) // To avoid possible name clash, use unique timestamp
+            ?.URLByAppendingPathComponent(zipFileName)
+            ?: return null
+
+        // Create temporary directory
+        runCatchingNSError { nsError ->
+            fileManager.createDirectoryAtURL(
+                directoryToZipUrl,
+                withIntermediateDirectories = true,
+                attributes = null,
+                error = nsError.ptr
+            )
+        }.onFailure {
+            logger.error("Couldn't create temporary directory at path $directoryToZipUrl", it)
+            return null
+        }
+
+        // Copy files to download in temporary directory
+        filePathsToZip.forEach { filePath ->
+            val absolutePath = getAbsolutePath(filePath) ?: return null
+            val srcUrl = NSURL.fileURLWithPath(absolutePath)
+            val toUrl = srcUrl.lastPathComponent?.let {
+                directoryToZipUrl.URLByAppendingPathComponent(it)
+            } ?: return null
+
+            runCatchingNSError { nsError ->
+                fileManager.copyItemAtURL(srcURL = srcUrl, toURL = toUrl, error = nsError.ptr)
+            }.onFailure {
+                logger.error("Couldn't copy file to zip directory. src: $srcUrl, dest: $toUrl", it)
+                return null
+            }
+        }
+
+        val zipUrl = directoryToZipUrl.URLByAppendingPathExtension(zipExtension) ?: return null
+        val coordinator = NSFileCoordinator()
+
+        runCatchingNSError { nsError ->
+            coordinator.coordinateReadingItemAtURL(
+                url = directoryToZipUrl,
+                options = NSFileCoordinatorReadingForUploading,
+                error = nsError.ptr,
+            ) { zipAccessUrl ->
+                checkNotNull(zipAccessUrl) { "Could not create zip access URL" }
+                fileManager.moveItemAtURL(
+                    srcURL = zipAccessUrl, toURL = zipUrl, error = nsError.ptr
+                )
+            }
+        }.onFailure {
+            logger.error("Error while creating zip file from $directoryToZipUrl to $zipUrl")
+            return null
+        }
+        return zipUrl
     }
 }
 

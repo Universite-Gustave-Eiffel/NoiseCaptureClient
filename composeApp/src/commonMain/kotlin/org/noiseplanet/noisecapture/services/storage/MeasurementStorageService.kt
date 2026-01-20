@@ -60,9 +60,9 @@ class MeasurementStorageService : KStoreStorageService<Measurement>(
 
         // We need to access KStore specific methods for these services
         val leqKStoreService = leqSequenceStorageService
-                as? KStoreStorageService<LeqSequenceFragment> ?: return
+            as? KStoreStorageService<LeqSequenceFragment> ?: return
         val locationKStoreService = locationSequenceStorageService
-                as? KStoreStorageService<LocationSequenceFragment> ?: return
+            as? KStoreStorageService<LocationSequenceFragment> ?: return
 
         // Will hold paths to all files related to this measurement
         val measurementFiles = mutableListOf<String>()
@@ -80,6 +80,9 @@ class MeasurementStorageService : KStoreStorageService<Measurement>(
         )
         // And top level measurement file
         measurementFiles.add(getFileNameForRecord(measurement.uuid))
+
+        // TODO: Add audio file
+        // TODO: Create archive name from measurement id
 
         // Then zip and download
         fileSystemService.downloadFiles(measurementFiles)
