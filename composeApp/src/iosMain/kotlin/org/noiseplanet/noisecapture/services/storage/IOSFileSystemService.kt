@@ -162,9 +162,19 @@ class IOSFileSystemService : FileSystemService, KoinComponent {
         filePathsToZip.forEach { filePath ->
             val absolutePath = getAbsolutePath(filePath) ?: return null
             val srcUrl = NSURL.fileURLWithPath(absolutePath)
-            val toUrl = srcUrl.lastPathComponent?.let {
-                directoryToZipUrl.URLByAppendingPathComponent(it)
-            } ?: return null
+            val toUrl = directoryToZipUrl.URLByAppendingPathComponent(filePath) ?: return null
+
+            // Create intermediary directories if needed
+            toUrl.URLByDeletingLastPathComponent?.let {
+                runCatchingNSError { nsError ->
+                    fileManager.createDirectoryAtURL(
+                        url = it,
+                        attributes = null,
+                        withIntermediateDirectories = true,
+                        error = nsError.ptr,
+                    )
+                }
+            }
 
             runCatchingNSError { nsError ->
                 fileManager.copyItemAtURL(srcURL = srcUrl, toURL = toUrl, error = nsError.ptr)
