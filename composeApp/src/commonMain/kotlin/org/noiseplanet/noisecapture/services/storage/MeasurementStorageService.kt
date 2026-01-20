@@ -78,11 +78,10 @@ class MeasurementStorageService : KStoreStorageService<Measurement>(
                 locationKStoreService.getFileNameForRecord(it)
             }
         )
+        // Add associated audio file, if any
+        measurement.recordedAudioUrl?.let { measurementFiles.add(it) }
         // And top level measurement file
         measurementFiles.add(getFileNameForRecord(measurement.uuid))
-
-        // TODO: Add audio file
-        // TODO: Create archive name from measurement id
 
         // Then zip and download
         fileSystemService.downloadFiles(measurementFiles)
