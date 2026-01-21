@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -23,10 +24,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.home_last_measurements_section_header
+import noisecapture.composeapp.generated.resources.home_statistics_recordings_count
+import noisecapture.composeapp.generated.resources.home_statistics_title
+import noisecapture.composeapp.generated.resources.home_statistics_total
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.ui.components.ListSectionHeader
@@ -62,6 +68,7 @@ fun LastMeasurementsView(
 }
 
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun LastMeasurementsViewContentReady(
     viewState: LastMeasurementsViewModel.ViewState.ContentReady,
@@ -97,14 +104,20 @@ private fun LastMeasurementsViewContentReady(
                     .padding(16.dp)
             ) {
                 Text(
-                    text = "Statistics",
+                    text = stringResource(Res.string.home_statistics_title),
                     style = MaterialTheme.typography.titleMedium.copy(
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     ),
                 )
 
-                StatisticsElement(viewState.measurementsCount.toString(), "recordings")
-                StatisticsElement(viewState.totalDuration, "${viewState.durationUnit} total")
+                StatisticsElement(
+                    viewState.measurementsCount.toString(),
+                    stringResource(Res.string.home_statistics_recordings_count)
+                )
+                StatisticsElement(
+                    viewState.totalDuration,
+                    "${viewState.durationUnit} ${stringResource(Res.string.home_statistics_total)}"
+                )
 
                 Spacer(modifier = Modifier.weight(1f))
 
@@ -173,6 +186,8 @@ private fun StatisticsElement(
         Text(
             text = label,
             style = statisticsLabelStyle,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
             modifier = Modifier.alignByBaseline()
         )
     }
