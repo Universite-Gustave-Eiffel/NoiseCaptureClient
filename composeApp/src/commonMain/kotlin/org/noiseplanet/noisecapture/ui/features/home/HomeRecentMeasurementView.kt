@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
@@ -67,9 +68,11 @@ fun HomeRecentMeasurementView(
                 }
             }
             .padding(top = 12.dp, bottom = 12.dp, start = 12.dp)
+            .height(IntrinsicSize.Min)
     ) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
@@ -95,7 +98,7 @@ fun HomeRecentMeasurementView(
         measurement?.let {
             LAeqMetricsView(
                 it.laeqMetrics,
-                modifier = Modifier.padding(top = 8.dp)
+                modifier = Modifier.padding(top = 4.dp)
                     .height(IntrinsicSize.Max)
             )
         }

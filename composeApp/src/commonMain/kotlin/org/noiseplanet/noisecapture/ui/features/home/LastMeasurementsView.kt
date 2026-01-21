@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -83,14 +82,14 @@ private fun LastMeasurementsViewContentReady(
         return
     }
 
-    Column(modifier = modifier.fillMaxHeight().animateContentSize()) {
+    Column(modifier = modifier.animateContentSize()) {
         ListSectionHeader(
             title = Res.string.home_last_measurements_section_header,
         )
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
-            modifier = Modifier.height(IntrinsicSize.Min)
+            modifier = Modifier.height(IntrinsicSize.Max)
                 .fillMaxWidth()
         ) {
             Column(
@@ -100,7 +99,6 @@ private fun LastMeasurementsViewContentReady(
                         color = MaterialTheme.colorScheme.surfaceContainer,
                         shape = MaterialTheme.shapes.medium,
                     )
-                    .fillMaxHeight()
                     .padding(16.dp)
             ) {
                 Text(
@@ -131,15 +129,14 @@ private fun LastMeasurementsViewContentReady(
             FlowRow(
                 maxItemsInEachRow = 2,
                 maxLines = 2,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalArrangement = Arrangement.SpaceBetween
             ) {
                 viewState.lastMeasurementIds.forEach { measurementId ->
                     HomeRecentMeasurementView(
                         measurementId = measurementId,
                         onClick = onClickMeasurement,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     )
                 }
             }
