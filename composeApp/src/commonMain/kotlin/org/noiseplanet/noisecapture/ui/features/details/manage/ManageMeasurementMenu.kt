@@ -1,9 +1,7 @@
 package org.noiseplanet.noisecapture.ui.features.details.manage
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material3.DropdownMenu
@@ -12,7 +10,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -25,6 +22,7 @@ fun ManageMeasurementMenu(
     onDismissRequest: () -> Unit,
     containerColor: Color,
     items: List<ManageMeasurementMenuItem>,
+    modifier: Modifier = Modifier,
 ) {
     DropdownMenu(
         expanded = expanded,
@@ -33,8 +31,7 @@ fun ManageMeasurementMenu(
         tonalElevation = 0.dp,
         shadowElevation = 0.dp,
         shape = MaterialTheme.shapes.medium,
-        modifier = Modifier.wrapContentSize(Alignment.TopEnd)
-            .fillMaxWidth(fraction = 0.8f)
+        modifier = modifier,
     ) {
         for (item in items) {
             DropdownMenuItem(
