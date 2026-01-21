@@ -63,10 +63,11 @@ class SpectrumPlotViewModel : ViewModel(), KoinComponent {
                         label = "${tickValue.toInt()} dB"
                     )
                 },
-                yTicks = frequencies.map { freq ->
+                yTicks = frequencies.mapIndexed { index, freq ->
+                    // Only show labels on 1 out of 3 frequency bands
                     AxisTick(
                         value = freq.toDouble(),
-                        label = freq.toFrequencyString(),
+                        label = if ((index + 2) % 3 == 0) freq.toFrequencyString() else "",
                     )
                 },
                 showYTickMarks = false,
