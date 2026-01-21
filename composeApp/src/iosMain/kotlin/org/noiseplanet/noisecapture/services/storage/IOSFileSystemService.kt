@@ -159,10 +159,7 @@ class IOSFileSystemService : FileSystemService, KoinComponent {
         // Create temporary directory
         runCatchingNSError { nsError ->
             fileManager.createDirectoryAtURL(
-                directoryToZipUrl,
-                withIntermediateDirectories = true,
-                attributes = null,
-                error = nsError.ptr
+                directoryToZipUrl, withIntermediateDirectories = true, null, nsError.ptr
             )
         }.onFailure {
             logger.error("Couldn't create temporary directory at path $directoryToZipUrl", it)
@@ -205,14 +202,20 @@ class IOSFileSystemService : FileSystemService, KoinComponent {
                 error = nsError.ptr,
             ) { zipAccessUrl ->
                 checkNotNull(zipAccessUrl) { "Could not create zip access URL" }
-                fileManager.moveItemAtURL(
-                    srcURL = zipAccessUrl, toURL = zipUrl, error = nsError.ptr
-                )
+                fileManager.moveItemAtURL(srcURL = zipAccessUrl, toURL = zipUrl, nsError.ptr)
             }
         }.onFailure {
-            logger.error("Error while creating zip file from $directoryToZipUrl to $zipUrl")
+            logger.error("Error while creating zip file from $directoryToZipUrl to $zipUrl", it)
             return null
         }
+
+        // Clear copied files from cache
+        runCatchingNSError { nsError ->
+            fileManager.removeItemAtURL(URL = directoryToZipUrl, error = nsError.ptr)
+        }.onFailure {
+            logger.warning("Error while cleaning up copied files at $directoryToZipUrl.", it)
+        }
+
         return zipUrl
     }
 }
