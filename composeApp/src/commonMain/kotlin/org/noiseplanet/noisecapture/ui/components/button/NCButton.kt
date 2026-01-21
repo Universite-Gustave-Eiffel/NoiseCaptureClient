@@ -29,7 +29,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.util.conditional
-import org.noiseplanet.noisecapture.util.shadow.dropShadow
+import org.noiseplanet.noisecapture.util.ncDropShadow
 
 
 /**
@@ -53,7 +53,7 @@ fun NCButton(
 
     val finalModifier = modifier.conditional(
         predicate = viewModel.hasDropShadow,
-        ifTrue = { dropShadow(shape = shape, isPressed = isPressed) }
+        ifTrue = { ncDropShadow(shape = shape, isPressed = isPressed) }
     )
 
 

@@ -17,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import org.noiseplanet.noisecapture.util.shadow.dropShadow
+import org.noiseplanet.noisecapture.util.ncDropShadow
 
 
 /**
@@ -62,7 +62,7 @@ fun CardView(
 
     Box(
         modifier = cardModifier
-            .dropShadow(shape = shape, isPressed = isPressed)
+            .ncDropShadow(shape = shape, isPressed = isPressed)
             .background(backgroundColor, shape)
             .clip(shape)
             .padding(12.dp),

@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
@@ -37,8 +37,8 @@ import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
+import org.noiseplanet.noisecapture.util.ncDropShadow
 import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
-import org.noiseplanet.noisecapture.util.shadow.dropShadow
 import ovh.plrapps.mapcompose.ui.MapUI
 
 
@@ -174,6 +174,6 @@ fun MapView(
 
 @Composable
 private fun Modifier.mapControl() = this
-    .dropShadow(shape = RoundedCornerShape(100))
-    .clip(shape = RoundedCornerShape(percent = 100))
+    .ncDropShadow(shape = CircleShape)
+    .clip(shape = CircleShape)
     .background(MaterialTheme.colorScheme.surfaceContainer)
