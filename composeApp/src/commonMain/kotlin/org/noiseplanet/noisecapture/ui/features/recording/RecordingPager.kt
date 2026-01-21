@@ -6,16 +6,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.window.core.layout.WindowSizeClass
 import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
@@ -78,7 +80,17 @@ fun RecordingPager(
         ) {
             tabs.toList().forEachIndexed { index, (_, label) ->
                 Tab(
-                    text = { Text(label) },
+                    text = {
+                        BasicText(
+                            text = label,
+                            maxLines = 1,
+                            autoSize = TextAutoSize.StepBased(
+                                minFontSize = 12.sp,
+                                maxFontSize = 16.sp,
+                                stepSize = 0.25.sp,
+                            )
+                        )
+                    },
                     selected = pagerState.currentPage == index,
                     onClick = {
                         animationScope.launch {
