@@ -32,12 +32,7 @@ class IOSFileSystemService : FileSystemService, KoinComponent {
     private val logger: Logger by injectLogger()
 
     private var documentInteractionController: UIDocumentInteractionController? = null
-    private val documentInteractionControllerDelegate = UIDocumentInteractionControllerDelegate(
-        onDismiss = {
-            // Drop reference to interaction controller
-            documentInteractionController = null
-        }
-    )
+    private var documentInteractionDelegate: UIDocumentInteractionControllerDelegate? = null
     private val fileManager: NSFileManager = NSFileManager.defaultManager
 
 
@@ -59,7 +54,7 @@ class IOSFileSystemService : FileSystemService, KoinComponent {
         val absolutePath = getAbsolutePath(fileUri) ?: return
 
         runCatchingNSError { nsError ->
-            NSFileManager.defaultManager.removeItemAtPath(absolutePath, nsError.ptr)
+            fileManager.removeItemAtPath(absolutePath, nsError.ptr)
         }.onFailure {
             logger.error("Error while deleting file at path $absolutePath")
         }
@@ -75,7 +70,7 @@ class IOSFileSystemService : FileSystemService, KoinComponent {
     override suspend fun downloadFiles(fileUris: List<String>, archiveName: String) {
         val zipUrl = createZipInTmp(zipFileName = archiveName, filePathsToZip = fileUris) ?: return
 
-        downloadFileAtUrl(zipUrl)
+        downloadFileAtUrl(zipUrl, deleteAfterUse = true)
     }
 
     /**
@@ -97,11 +92,27 @@ class IOSFileSystemService : FileSystemService, KoinComponent {
      * Downloads the file at the given URL through [UIDocumentInteractionController].
      *
      * @param fileUrl [NSURL] pointing to the file to download.
+     * @param deleteAfterUse If true, delete the file once picker is dismissed
      */
-    private fun downloadFileAtUrl(fileUrl: NSURL) {
+    private fun downloadFileAtUrl(fileUrl: NSURL, deleteAfterUse: Boolean = false) {
         // Create and configure document interaction controller
         documentInteractionController = UIDocumentInteractionController
             .interactionControllerWithURL(fileUrl)
+
+        documentInteractionDelegate = UIDocumentInteractionControllerDelegate(
+            onDismiss = {
+                // Drop reference to interaction controller
+                documentInteractionController = null
+                // If needed, delete the file
+                if (deleteAfterUse) {
+                    runCatchingNSError { nsError ->
+                        fileManager.removeItemAtURL(fileUrl, nsError.ptr)
+                    }.onFailure {
+                        logger.error("Error while deleting file at url $fileUrl")
+                    }
+                }
+            }
+        )
 
         // Get resource type identifier from URL, or default to "public.data"
         val uti = runCatchingNSError { nsError ->
@@ -112,7 +123,7 @@ class IOSFileSystemService : FileSystemService, KoinComponent {
 
         documentInteractionController?.UTI = uti
         documentInteractionController?.name = fileUrl.lastPathComponent
-        documentInteractionController?.delegate = documentInteractionControllerDelegate
+        documentInteractionController?.delegate = documentInteractionDelegate
 
         UIApplication.sharedApplication.keyWindow?.rootViewController?.view?.let { view ->
             documentInteractionController?.presentOptionsMenuFromRect(
