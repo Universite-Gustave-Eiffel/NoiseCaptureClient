@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.ui.features.details
+package org.noiseplanet.noisecapture.ui.features.details.manage
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box

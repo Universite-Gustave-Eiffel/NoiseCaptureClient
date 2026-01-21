@@ -11,6 +11,7 @@ import kotlinx.serialization.json.JsonElement
  *
  * @param T Type of entity to be stored.
  */
+@Suppress("TooManyFunctions")
 interface StorageService<T : @Serializable Any> {
 
     companion object {

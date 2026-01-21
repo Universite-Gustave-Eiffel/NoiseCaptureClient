@@ -14,7 +14,6 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
-import org.noiseplanet.noisecapture.services.storage.FileSystemService
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 import org.noiseplanet.noisecapture.util.DateUtil
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
@@ -44,7 +43,6 @@ class DetailsScreenViewModel(
 
     // - Properties
 
-    private val fileSystemService: FileSystemService by inject()
     private val measurementService: MeasurementService by inject()
 
     private val measurementFlow = measurementService.getMeasurementFlow(measurementId)

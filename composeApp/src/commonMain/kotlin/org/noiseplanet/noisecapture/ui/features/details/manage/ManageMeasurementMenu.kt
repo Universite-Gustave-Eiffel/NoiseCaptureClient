@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.ui.features.details
+package org.noiseplanet.noisecapture.ui.features.details.manage
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,15 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-
-
-data class MenuItem(
-    val label: StringResource,
-    val supportingText: StringResource?,
-    val onClick: () -> Unit,
-)
 
 
 @Composable
@@ -32,7 +24,7 @@ fun ManageMeasurementMenu(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
     containerColor: Color,
-    items: List<MenuItem>,
+    items: List<ManageMeasurementMenuItem>,
 ) {
     DropdownMenu(
         expanded = expanded,

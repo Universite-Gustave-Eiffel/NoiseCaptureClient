@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.ui.features.details
+package org.noiseplanet.noisecapture.ui.features.details.manage
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
@@ -7,20 +7,11 @@ import androidx.compose.runtime.Composable
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.cancel
 import noisecapture.composeapp.generated.resources.delete
-import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonStyle
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
-
-
-data class DeleteConfirmationDialogViewModel(
-    val title: StringResource,
-    val text: StringResource,
-    val onDismissRequest: () -> Unit,
-    val onConfirm: () -> Unit,
-)
 
 
 @Composable

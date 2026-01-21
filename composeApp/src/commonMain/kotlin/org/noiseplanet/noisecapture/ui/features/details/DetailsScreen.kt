@@ -36,6 +36,7 @@ import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.ui.components.audioplayer.AudioPlayerView
 import org.noiseplanet.noisecapture.ui.components.map.MapView
+import org.noiseplanet.noisecapture.ui.features.details.manage.ManageMeasurementView
 import org.noiseplanet.noisecapture.ui.navigation.router.DetailsRouter
 import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 
@@ -180,7 +181,7 @@ private fun DetailsScreenMedium(
     Column(
         verticalArrangement = Arrangement.spacedBy(24.dp),
         modifier = Modifier.verticalScroll(scrollState)
-            .paddingBottomWithInsets(24.dp)
+            .padding(32.dp)
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(24.dp),

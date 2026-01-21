@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.ui.features.details
+package org.noiseplanet.noisecapture.ui.features.details.manage
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -98,9 +98,9 @@ class ManageMeasurementViewModel(
         }
     )
 
-    val deleteMenuItems: List<MenuItem>
+    val deleteMenuItems: List<ManageMeasurementMenuItem>
         get() = measurement?.let { measurement ->
-            val deleteWhole = MenuItem(
+            val deleteWhole = ManageMeasurementMenuItem(
                 label = Res.string.details_menu_delete_whole_title,
                 supportingText = Res.string.details_menu_delete_whole_description,
                 onClick = {
@@ -111,7 +111,7 @@ class ManageMeasurementViewModel(
             )
             if (measurement.recordedAudioUrl != null) {
                 listOf(
-                    MenuItem(
+                    ManageMeasurementMenuItem(
                         label = Res.string.details_menu_delete_audio_title,
                         supportingText = Res.string.details_menu_delete_audio_description,
                         onClick = {
@@ -135,10 +135,10 @@ class ManageMeasurementViewModel(
         }
     )
 
-    val exportMenuItems: List<MenuItem>
+    val exportMenuItems: List<ManageMeasurementMenuItem>
         get() = measurement?.let { measurement ->
             val alwaysVisibleItems = listOf(
-                MenuItem(
+                ManageMeasurementMenuItem(
                     label = Res.string.details_menu_export_raw_title,
                     supportingText = Res.string.details_menu_export_raw_description,
                     onClick = { downloadRawData() },
@@ -147,7 +147,7 @@ class ManageMeasurementViewModel(
             )
             if (measurement.recordedAudioUrl != null) {
                 listOf(
-                    MenuItem(
+                    ManageMeasurementMenuItem(
                         label = Res.string.details_menu_export_audio_title,
                         supportingText = Res.string.details_menu_export_audio_description,
                         onClick = { downloadAudio() },

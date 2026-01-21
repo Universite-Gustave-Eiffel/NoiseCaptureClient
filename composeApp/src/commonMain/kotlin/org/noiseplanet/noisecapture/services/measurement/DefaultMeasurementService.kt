@@ -14,7 +14,6 @@ import org.noiseplanet.noisecapture.model.dao.LocationSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.model.dao.MeasurementSummary
 import org.noiseplanet.noisecapture.model.dao.MutableMeasurement
-import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
 import org.noiseplanet.noisecapture.services.statistics.UserStatisticsService
 import org.noiseplanet.noisecapture.services.storage.FileSystemService
 import org.noiseplanet.noisecapture.services.storage.StorageService
@@ -71,7 +70,6 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
     private val measurementStorageService: StorageService<Measurement> by injectStorageService()
     private val leqSequenceStorageService: StorageService<LeqSequenceFragment> by injectStorageService()
     private val locationSequenceStorageService: StorageService<LocationSequenceFragment> by injectStorageService()
-    private val audioRecordingService: AudioRecordingService by inject()
     private val userStatisticsService: UserStatisticsService by inject()
     private val fileSystemService: FileSystemService by inject()
 
@@ -182,8 +180,8 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
                 // Calculate new energetic average based on current average and records count
                 val average = 10.0 * log10(
                     (currentMetrics.recordsCount * 10.0.pow(currentMetrics.average / 10.0)
-                            + 10.0.pow(record.laeq / 10.0))
-                            / (currentMetrics.recordsCount + 1)
+                        + 10.0.pow(record.laeq / 10.0))
+                        / (currentMetrics.recordsCount + 1)
                 )
 
                 LAeqMetrics(
