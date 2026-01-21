@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.noiseplanet.noisecapture.FilePickerEvent
 import org.noiseplanet.noisecapture.FilePickerEventBus
 import java.io.File
 import java.io.FileInputStream
@@ -45,7 +46,7 @@ class AndroidFileSystemService : FileSystemService, KoinComponent {
         val file = File(absolutePath)
 
         // Notify activity that a new file is ready to be downloaded through event bus
-        filePickerEventBus.emitEvent(file)
+        filePickerEventBus.emitEvent(FilePickerEvent(file))
     }
 
     override suspend fun downloadFiles(fileUris: List<String>, archiveName: String) {
@@ -71,10 +72,7 @@ class AndroidFileSystemService : FileSystemService, KoinComponent {
         }
 
         // Notify activity that a new file is ready to be downloaded through event bus
-        filePickerEventBus.emitEvent(zipFile)
-
-        // TODO: Figure out how to delete file only when it has been downloaded or dismissed
-        // zipFile.delete()
+        filePickerEventBus.emitEvent(FilePickerEvent(zipFile, deleteAfterUse = true))
     }
 
     override fun getRootDirectory(): String {

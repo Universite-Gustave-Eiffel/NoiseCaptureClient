@@ -23,7 +23,6 @@ import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.permission.delegate.PermissionDelegate
 import org.noiseplanet.noisecapture.permission.toPermission
 import org.noiseplanet.noisecapture.services.permission.PermissionService
-import java.io.File
 
 /**
  * Android app entry point
@@ -62,7 +61,7 @@ class MainActivity : ComponentActivity() {
             // Lock orientation on phones only (i.e. devices with compact width or height)
             val sizeClas = currentWindowAdaptiveInfo().windowSizeClass
             val isCompact = sizeClas.minWidthDp < WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND ||
-                    sizeClas.minHeightDp < WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND
+                sizeClas.minHeightDp < WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND
 
             if (isCompact) {
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
@@ -100,8 +99,8 @@ class MainActivity : ComponentActivity() {
      * Listen for new file picker events and launch file picker intent on new events.
      */
     private fun subscribeToFilePickerEventBus() {
-        // Hold reference to pending download file
-        var pendingFile: File? = null
+        // Hold reference to pending file
+        var pendingEvent: FilePickerEvent? = null
 
         // Prepare file picker intent launcher
         filePickerIntentLauncher = registerForActivityResult(
@@ -112,24 +111,30 @@ class MainActivity : ComponentActivity() {
                     contentResolver.openOutputStream(uri)?.use { outputStream ->
                         // Output stream is open, read bytes from local storage and write
                         // to destination URI
-                        pendingFile?.let { outputStream.write(it.readBytes()) }
+                        pendingEvent?.let { outputStream.write(it.file.readBytes()) }
                     }
                 }
             }
+            // If needed, delete the file once the picker is dismissed
+            pendingEvent?.apply {
+                if (deleteAfterUse) {
+                    file.delete()
+                }
+            }
             // Drop reference
-            pendingFile = null
+            pendingEvent = null
         }
 
         // Listen to file picker events coming from event bus
         scope.launch {
-            filePickerEventBus.events.collect { file ->
+            filePickerEventBus.events.collect { event ->
                 // Prepare intent with file path, and launch file picker
                 val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
                     addCategory(Intent.CATEGORY_OPENABLE)
                     type = "*/*"
-                    putExtra(Intent.EXTRA_TITLE, file.name)
+                    putExtra(Intent.EXTRA_TITLE, event.file.name)
                 }
-                pendingFile = file
+                pendingEvent = event
                 filePickerIntentLauncher?.launch(intent)
             }
         }

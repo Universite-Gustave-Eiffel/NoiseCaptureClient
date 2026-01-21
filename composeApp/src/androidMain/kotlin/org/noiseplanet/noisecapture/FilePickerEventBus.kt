@@ -9,7 +9,7 @@ class FilePickerEventBus {
 
     // - Properties
 
-    private val _events = MutableSharedFlow<File>()
+    private val _events = MutableSharedFlow<FilePickerEvent>()
     val events = _events.asSharedFlow()
 
 
@@ -18,7 +18,19 @@ class FilePickerEventBus {
     /**
      * Notify subscribers that a new file picker event is available.
      */
-    suspend fun emitEvent(file: File) {
-        _events.emit(file)
+    suspend fun emitEvent(event: FilePickerEvent) {
+        _events.emit(event)
     }
 }
+
+
+/**
+ * Properties of a file picker event
+ *
+ * @param file File to be saved or shared
+ * @param deleteAfterUse If true, the file should be deleted after the picker is dismissed
+ */
+data class FilePickerEvent(
+    val file: File,
+    val deleteAfterUse: Boolean = false,
+)
