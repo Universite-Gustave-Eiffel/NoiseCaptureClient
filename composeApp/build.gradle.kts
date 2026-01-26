@@ -77,12 +77,14 @@ kotlin {
 
         commonMain.dependencies {
             implementation(libs.compose.runtime)
-//            implementation(compose.foundation)
-//            implementation(compose.material3)
-//            implementation(compose.materialIconsExtended)
-//            implementation(compose.ui)
-//            implementation(compose.components.resources)
-//            implementation(compose.components.uiToolingPreview)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.material3)
+            implementation(libs.compose.material3.adaptive)
+            implementation(libs.compose.material3.adaptive.layout)
+            implementation(libs.compose.material.icons.extended)
+            implementation(libs.compose.ui)
+            implementation(libs.compose.components.resources)
+            implementation(libs.compose.ui.tooling.preview)
 
             implementation(libs.androidx.navigation.compose)
             implementation(libs.androidx.viewmodel.compose)
@@ -103,16 +105,12 @@ kotlin {
             implementation(libs.humanreadable)
             implementation(libs.maps.compose)
 
-            implementation(libs.material3.adaptive)
-            implementation(libs.material3.adaptive.layout)
-
             implementation(libs.settings.multiplatform)
             implementation(libs.settings.multiplatform.serialization)
             implementation(libs.settings.multiplatform.coroutines)
         }
 
         androidMain.dependencies {
-            implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.preference)
             implementation(libs.koin.android)
@@ -134,7 +132,7 @@ kotlin {
         commonTest.dependencies {
             implementation(kotlin("test"))
             implementation(libs.kotlinx.coroutines.test)
-            implementation(compose.components.resources)
+            implementation(libs.compose.components.resources)
         }
     }
 }
@@ -171,6 +169,6 @@ android {
         compose = true
     }
     dependencies {
-        debugImplementation(compose.uiTooling)
+        debugImplementation(libs.compose.ui.tooling)
     }
 }
