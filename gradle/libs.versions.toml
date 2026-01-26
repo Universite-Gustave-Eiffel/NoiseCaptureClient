@@ -27,7 +27,7 @@ kotlinx-datetime = "0.7.1"
 kotlinx-serialization = "1.10.0"
 kstore = "1.0.0"
 ktor = "3.4.0"
-maps-compose = "0.10.0" # TODO: Upgrade once skiko error is resolved
+maps-compose = "0.12.0"
 settings-multiplatform = "1.3.0"
 zipjs = "2.8.15"
 
