@@ -1,18 +1,14 @@
-package org.noiseplanet.noisecapture.util.shadow
+package org.noiseplanet.noisecapture.util
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateOffsetAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.drawOutline
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 
 /**
  * Adds a drop shadow effect to the composable.
@@ -28,9 +24,10 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
  * @return A new `Modifier` with the drop shadow effect applied.
  */
 @Composable
-fun Modifier.dropShadow(
+fun Modifier.ncDropShadow(
     shape: Shape,
-    color: Color = Color.Black.copy(0.10f),
+    color: Color = Color.Black,
+    alpha: Float = 0.1f,
     blur: Float = 12f,
     offset: Offset = Offset(x = 0f, y = 2f),
     spread: Float = 0f,
@@ -53,22 +50,11 @@ fun Modifier.dropShadow(
 
     // - Draw
 
-    return this.drawBehind {
-        val shadowSize = Size(size.width + spread, size.height + spread)
-        val shadowOutline = shape.createOutline(shadowSize, layoutDirection, this)
-
-        val paint = Paint()
-        paint.color = color
-
-        if (animatedBlur > 0f) {
-            paint.asFrameworkPaint().setBlurMaskFilter(animatedBlur)
-        }
-
-        drawIntoCanvas { canvas ->
-            canvas.save()
-            canvas.translate(animatedOffset.x, animatedOffset.y)
-            canvas.drawOutline(shadowOutline, paint)
-            canvas.restore()
-        }
+    return this.dropShadow(shape) {
+        this@dropShadow.color = color
+        this@dropShadow.alpha = alpha
+        this@dropShadow.offset = animatedOffset
+        this@dropShadow.radius = animatedBlur
+        this@dropShadow.spread = spread
     }
 }
