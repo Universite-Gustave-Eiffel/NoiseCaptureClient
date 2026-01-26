@@ -7,6 +7,9 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
+import kotlin.math.min
 
 private val lightColorScheme = lightColorScheme(
     primary = PrimaryLight,
@@ -86,20 +89,29 @@ private val darkColorScheme = darkColorScheme(
     surfaceDim = SurfaceDimDark,
 )
 
-private val NCRippleConfiguration = RippleConfiguration(color = OnSurfaceVariantLight)
-
 
 @Composable
 fun AppTheme(
     darkTheme: Boolean = false, // TODO: Enable dark theme when color scheme will be consistent
     content: @Composable() () -> Unit,
 ) {
+    val rippleConfiguration = RippleConfiguration(color = OnSurfaceVariantLight)
+
+    // Limit device font scaling to 130% to avoid layout breaks while keeping accessibility
+    val density = Density(
+        density = LocalDensity.current.density,
+        fontScale = min(LocalDensity.current.fontScale, 1.3f)
+    )
+
     val colorScheme = when {
         darkTheme -> darkColorScheme
         else -> lightColorScheme
     }
 
-    CompositionLocalProvider(LocalRippleConfiguration provides NCRippleConfiguration) {
+    CompositionLocalProvider(
+        LocalRippleConfiguration provides rippleConfiguration,
+        LocalDensity provides density
+    ) {
         MaterialTheme(
             colorScheme = colorScheme,
             typography = notoSansTypography(),

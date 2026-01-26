@@ -15,6 +15,11 @@
     <string name="home_map_section_header">Community measurements</string>
     <string name="home_map_browse_button">Browse</string>
 
+    <string name="home_statistics_title">Statistics</string>
+    <!-- TODO: Use localisation that supports plurals -->
+    <string name="home_statistics_recordings_count">recordings</string>
+    <string name="home_statistics_total">total</string>
+
 
     <!--  Sound level meter  -->
     <string name="sound_level_meter_current_dba">Current dB(A)</string>
