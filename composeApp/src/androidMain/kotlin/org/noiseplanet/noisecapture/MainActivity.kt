@@ -3,13 +3,19 @@ package org.noiseplanet.noisecapture
 import App
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.window.core.layout.WindowSizeClass
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.koin.android.ext.android.get
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -27,6 +33,11 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var permissionService: PermissionService
     private lateinit var logger: Logger
+
+    private lateinit var filePickerEventBus: FilePickerEventBus
+    private var filePickerIntentLauncher: ActivityResultLauncher<Intent>? = null
+
+    private val scope = CoroutineScope(Dispatchers.Main)
 
 
     // - Lifecycle
@@ -61,6 +72,9 @@ class MainActivity : ComponentActivity() {
 
         permissionService = get()
         logger = get()
+        filePickerEventBus = get()
+
+        subscribeToFilePickerEventBus()
     }
 
     override fun onRequestPermissionsResult(
@@ -76,5 +90,53 @@ class MainActivity : ComponentActivity() {
         val permission = permissions.toList().filterNotNull().toPermission() ?: return
         val delegate: PermissionDelegate = get(named(permission.name))
         delegate.checkPermissionState()
+    }
+
+
+    // - Private functions
+
+    /**
+     * Listen for new file picker events and launch file picker intent on new events.
+     */
+    private fun subscribeToFilePickerEventBus() {
+        // Hold reference to pending file
+        var pendingEvent: FilePickerEvent? = null
+
+        // Prepare file picker intent launcher
+        filePickerIntentLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == RESULT_OK) {
+                result.data?.data?.let { uri ->
+                    contentResolver.openOutputStream(uri)?.use { outputStream ->
+                        // Output stream is open, read bytes from local storage and write
+                        // to destination URI
+                        pendingEvent?.let { outputStream.write(it.file.readBytes()) }
+                    }
+                }
+            }
+            // If needed, delete the file once the picker is dismissed
+            pendingEvent?.apply {
+                if (deleteAfterUse) {
+                    file.delete()
+                }
+            }
+            // Drop reference
+            pendingEvent = null
+        }
+
+        // Listen to file picker events coming from event bus
+        scope.launch {
+            filePickerEventBus.events.collect { event ->
+                // Prepare intent with file path, and launch file picker
+                val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    type = "*/*"
+                    putExtra(Intent.EXTRA_TITLE, event.file.name)
+                }
+                pendingEvent = event
+                filePickerIntentLauncher?.launch(intent)
+            }
+        }
     }
 }

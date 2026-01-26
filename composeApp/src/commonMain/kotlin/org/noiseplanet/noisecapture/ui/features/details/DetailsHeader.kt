@@ -21,7 +21,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import noisecapture.composeapp.generated.resources.Res
-import noisecapture.composeapp.generated.resources.measurement_details_average_level
+import noisecapture.composeapp.generated.resources.details_average_level
 import noisecapture.composeapp.generated.resources.measurement_no_description_placeholder
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
@@ -67,7 +67,7 @@ fun DetailsChartsHeader(
                 lineHeight = 40.sp,
             )
             Text(
-                text = stringResource(Res.string.measurement_details_average_level),
+                text = stringResource(Res.string.details_average_level),
                 style = MaterialTheme.typography.labelSmall,
                 color = averageLevelColorTint,
             )

@@ -6,6 +6,7 @@ import org.koin.dsl.module
 import org.noiseplanet.noisecapture.ui.components.audioplayer.AudioPlayerViewModel
 import org.noiseplanet.noisecapture.ui.components.map.MapViewModel
 import org.noiseplanet.noisecapture.ui.components.map.MapViewModelParameters
+import org.noiseplanet.noisecapture.ui.features.details.manage.ManageMeasurementViewModel
 
 val detailsModule = module {
 

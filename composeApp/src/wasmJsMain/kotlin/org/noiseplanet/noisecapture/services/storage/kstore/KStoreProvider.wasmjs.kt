@@ -1,13 +1,12 @@
 package org.noiseplanet.noisecapture.services.storage.kstore
 
 import io.github.xxfast.kstore.KStore
-import kotlinx.coroutines.await
 import kotlinx.serialization.Serializable
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.log.Logger
-import org.noiseplanet.noisecapture.util.OPFSHelper
+import org.noiseplanet.noisecapture.services.storage.FileSystemService
 import org.noiseplanet.noisecapture.util.injectLogger
-import org.w3c.files.File
 
 /**
  * WasmJs KStore provider using key/value localstorage and JSON encoding/decoding
@@ -19,6 +18,7 @@ internal actual class KStoreProvider : KoinComponent {
     // - Properties
 
     private val logger: Logger by injectLogger()
+    private val fileSystemService: FileSystemService by inject()
 
 
     // - KStoreProvider
@@ -60,9 +60,6 @@ internal actual class KStoreProvider : KoinComponent {
      * @return File size in bytes, null if not found.
      */
     actual suspend fun sizeOf(fileName: String): Long? {
-        val (fileHandle, _) = OPFSHelper.getFileHandle(fileName) ?: return null
-        val file: File = fileHandle.getFile().await()
-
-        return file.size.toInt().toLong()
+        return fileSystemService.getFileSize(fileName)
     }
 }

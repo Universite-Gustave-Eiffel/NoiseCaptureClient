@@ -24,8 +24,8 @@ import io.github.koalaplot.core.xygraph.DoubleLinearAxisModel
 import io.github.koalaplot.core.xygraph.XYGraph
 import io.github.koalaplot.core.xygraph.rememberAxisStyle
 import noisecapture.composeapp.generated.resources.Res
-import noisecapture.composeapp.generated.resources.measurement_details_avg_spl_per_freq_plot_description
-import noisecapture.composeapp.generated.resources.measurement_details_avg_spl_per_freq_plot_title
+import noisecapture.composeapp.generated.resources.details_avg_spl_per_freq_plot_description
+import noisecapture.composeapp.generated.resources.details_avg_spl_per_freq_plot_title
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.ui.components.plot.PlotAxisLabel
 import org.noiseplanet.noisecapture.ui.components.plot.PlotGridLineStyle
@@ -48,13 +48,13 @@ fun AverageLevelPerFreqView(
             .heightIn(max = 200.dp)
     ) {
         Text(
-            text = stringResource(Res.string.measurement_details_avg_spl_per_freq_plot_title),
+            text = stringResource(Res.string.details_avg_spl_per_freq_plot_title),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface,
         )
 
         Text(
-            text = stringResource(Res.string.measurement_details_avg_spl_per_freq_plot_description),
+            text = stringResource(Res.string.details_avg_spl_per_freq_plot_description),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
         )

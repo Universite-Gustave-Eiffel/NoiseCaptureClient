@@ -30,12 +30,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowSizeClass
 import noisecapture.composeapp.generated.resources.Res
-import noisecapture.composeapp.generated.resources.measurement_details_loading_hint
+import noisecapture.composeapp.generated.resources.details_loading_hint
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.ui.components.audioplayer.AudioPlayerView
 import org.noiseplanet.noisecapture.ui.components.map.MapView
+import org.noiseplanet.noisecapture.ui.features.details.manage.ManageMeasurementView
 import org.noiseplanet.noisecapture.ui.navigation.router.DetailsRouter
 import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 
@@ -180,7 +181,7 @@ private fun DetailsScreenMedium(
     Column(
         verticalArrangement = Arrangement.spacedBy(24.dp),
         modifier = Modifier.verticalScroll(scrollState)
-            .paddingBottomWithInsets(24.dp)
+            .padding(32.dp)
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(24.dp),
@@ -273,7 +274,7 @@ private fun DetailsScreenCompact(
         modifier = Modifier.verticalScroll(scrollState)
             .padding(horizontal = 16.dp)
             .padding(top = 16.dp)
-            .paddingBottomWithInsets(withNavBar = 16.dp, withoutNavBar = 24.dp),
+            .paddingBottomWithInsets(withNavBar = 8.dp, withoutNavBar = 24.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         DetailsChartsHeader(
@@ -331,7 +332,7 @@ private fun ContentLoadingView() {
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = stringResource(Res.string.measurement_details_loading_hint),
+            text = stringResource(Res.string.details_loading_hint),
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center
         )

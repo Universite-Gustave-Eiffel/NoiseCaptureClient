@@ -4,12 +4,10 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.dao.LeqSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.LocationSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.services.storage.kstore.KStoreStorageService
-import org.noiseplanet.noisecapture.util.injectLogger
 
 
 class MeasurementStorageService : KStoreStorageService<Measurement>(
@@ -17,8 +15,6 @@ class MeasurementStorageService : KStoreStorageService<Measurement>(
     type = Measurement::class,
 ) {
     // - Properties
-
-    private val logger: Logger by injectLogger()
 
     private val locationSequenceStorageService: StorageService<LocationSequenceFragment> by injectStorageService()
     private val leqSequenceStorageService: StorageService<LeqSequenceFragment> by injectStorageService()
@@ -44,34 +40,50 @@ class MeasurementStorageService : KStoreStorageService<Measurement>(
         }
         storedData?.jsonObject?.get("locationSequenceIds")?.jsonArray?.forEach { locationSequenceId ->
             logger.warning("Deleting location sequence fragment $locationSequenceId...")
-            leqSequenceStorageService.delete(locationSequenceId.jsonPrimitive.content)
+            locationSequenceStorageService.delete(locationSequenceId.jsonPrimitive.content)
         }
 
         logger.warning("Deleting measurement object...")
-        super.delete(uuid)
+        delete(uuid)
         logger.warning("Done cleaning up measurement with id: $uuid")
 
         return null
     }
 
     /**
-     * Override delete method to also delete associated sequence fragments.
-     *
-     * TODO: Perhaps this should move to MeasurementService...
+     * Since a measurement is composed of multiple files (root measurement file + Leq and location
+     * sequences fragments), we need to gather the paths to all of these sub files and download
+     * them all at once as zip using [FileSystemService.downloadFiles].
      */
-    override suspend fun delete(uuid: String) {
+    override suspend fun download(uuid: String) {
         val measurement = get(uuid) ?: return
 
-        // Delete all attached LEq sequence fragments
-        measurement.leqsSequenceIds.forEach {
-            leqSequenceStorageService.delete(it)
-        }
-        // Delete all attached location sequence fragments
-        measurement.locationSequenceIds.forEach {
-            locationSequenceStorageService.delete(it)
-        }
+        // We need to access KStore specific methods for these services
+        val leqKStoreService = leqSequenceStorageService
+            as? KStoreStorageService<LeqSequenceFragment> ?: return
+        val locationKStoreService = locationSequenceStorageService
+            as? KStoreStorageService<LocationSequenceFragment> ?: return
 
-        // Lastly, delete the measurement itself
-        super.delete(uuid)
+        // Will hold paths to all files related to this measurement
+        val measurementFiles = mutableListOf<String>()
+
+        // Add all leq and location sequence fragments
+        measurementFiles.addAll(
+            measurement.leqsSequenceIds.map {
+                leqKStoreService.getFileNameForRecord(it)
+            }
+        )
+        measurementFiles.addAll(
+            measurement.locationSequenceIds.map {
+                locationKStoreService.getFileNameForRecord(it)
+            }
+        )
+        // Add associated audio file, if any
+        measurement.recordedAudioUrl?.let { measurementFiles.add(it) }
+        // And top level measurement file
+        measurementFiles.add(getFileNameForRecord(measurement.uuid))
+
+        // Then zip and download
+        fileSystemService.downloadFiles(measurementFiles, archiveName = "${uuid}_raw_export")
     }
 }
