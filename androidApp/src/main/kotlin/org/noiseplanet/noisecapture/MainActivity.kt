@@ -1,6 +1,7 @@
 package org.noiseplanet.noisecapture
 
 import App
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -23,10 +24,13 @@ import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.permission.delegate.PermissionDelegate
 import org.noiseplanet.noisecapture.permission.toPermission
 import org.noiseplanet.noisecapture.services.permission.PermissionService
+import org.noiseplanet.noisecapture.util.AndroidNotificationProvider
+import org.noiseplanet.noisecapture.util.NotificationProvider
 
 /**
  * Android app entry point
  */
+@SuppressLint("SourceLockedOrientationActivity")
 class MainActivity : ComponentActivity() {
 
     // - Properties
@@ -52,6 +56,7 @@ class MainActivity : ComponentActivity() {
                 module {
                     single<Context> { applicationContext }
                     single<Activity> { this@MainActivity }
+                    single<NotificationProvider> { AndroidNotificationProvider() }
                 },
                 platformModule
             )
@@ -61,7 +66,7 @@ class MainActivity : ComponentActivity() {
             // Lock orientation on phones only (i.e. devices with compact width or height)
             val sizeClas = currentWindowAdaptiveInfo().windowSizeClass
             val isCompact = sizeClas.minWidthDp < WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND ||
-                sizeClas.minHeightDp < WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND
+                    sizeClas.minHeightDp < WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND
 
             if (isCompact) {
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT

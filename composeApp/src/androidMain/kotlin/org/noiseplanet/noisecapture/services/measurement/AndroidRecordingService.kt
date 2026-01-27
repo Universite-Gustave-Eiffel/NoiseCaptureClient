@@ -1,7 +1,6 @@
 package org.noiseplanet.noisecapture.services.measurement
 
 import android.app.Notification
-import android.app.PendingIntent
 import android.app.Service
 import android.content.ComponentName
 import android.content.Context
@@ -11,7 +10,6 @@ import android.content.pm.ServiceInfo
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
-import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,13 +25,11 @@ import noisecapture.composeapp.generated.resources.ongoing_measurement_notificat
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.noiseplanet.noisecapture.MainActivity
-import org.noiseplanet.noisecapture.R
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.permission.reduce
 import org.noiseplanet.noisecapture.services.permission.PermissionService
-import org.noiseplanet.noisecapture.util.NotificationHelper
+import org.noiseplanet.noisecapture.util.NotificationProvider
 import kotlin.time.Duration
 
 
@@ -221,6 +217,8 @@ internal abstract class ForegroundServiceWrapper : KoinComponent, Service() {
     private val job = SupervisorJob()
     private val coroutineScope = CoroutineScope(Dispatchers.IO + job)
 
+    private val notificationProvider: NotificationProvider by inject()
+
     // Build inner service instance
     val innerService = DefaultRecordingService()
 
@@ -282,15 +280,25 @@ internal abstract class ForegroundServiceWrapper : KoinComponent, Service() {
     private fun startAsForegroundService() {
         // Create the notification channel for newer Android versions
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationHelper.createAppNotificationChannel(this)
+            notificationProvider.createAppNotificationChannel()
         }
 
         coroutineScope.launch {
+            val notification = notificationProvider.buildNotification(
+                contentTitle = getString(Res.string.ongoing_measurement_notification_title),
+                contentText = getString(Res.string.ongoing_measurement_notification_body),
+                requestCode = NOTIFICATION_REQUEST_CODE,
+                flags = Notification.FLAG_FOREGROUND_SERVICE
+                    .or(Notification.FLAG_ONGOING_EVENT)
+                    .or(Notification.FLAG_NO_CLEAR),
+                ongoing = true,
+            )
+
             // Promote this service to foreground service
             ServiceCompat.startForeground(
                 this@ForegroundServiceWrapper,
                 FOREGROUND_SERVICE_ID,
-                buildNotification(),
+                notification,
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                     ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST
                 } else {
@@ -298,47 +306,6 @@ internal abstract class ForegroundServiceWrapper : KoinComponent, Service() {
                 }
             )
         }
-    }
-
-    /**
-     * Builds the notification that will show the service as active to the user.
-     *
-     * TODO: Add pause/resume controls to the notification?
-     */
-    private suspend fun buildNotification(): Notification {
-        // Prepare notification intent to resume app when clicking the notification
-        val notificationIntent = Intent(this, MainActivity::class.java)
-        notificationIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            .or(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-
-        // Create the notification using notification builder
-        val notification = NotificationCompat
-            .Builder(this, NotificationHelper.APP_NOTIFICATION_CHANNEL_ID)
-            .setContentTitle(getString(Res.string.ongoing_measurement_notification_title))
-            .setContentText(getString(Res.string.ongoing_measurement_notification_body))
-            .setSmallIcon(R.drawable.ic_small_notification)
-            .setContentIntent(
-                PendingIntent.getActivity(
-                    this,
-                    NOTIFICATION_REQUEST_CODE,
-                    notificationIntent,
-                    PendingIntent.FLAG_IMMUTABLE,
-                )
-            )
-            // This will only prevent notification from being dismissed for Android version prior
-            // to Android 14. Since this version, all notifications can be dismissed. It doesn't
-            // stop the ongoing service however.
-            // https://developer.android.com/about/versions/14/behavior-changes-all#non-dismissable-notifications
-            .setOngoing(true)
-            .build()
-
-        // Set notification intent flags to only resume the app instead of starting a new activity
-        notification.flags = Notification.FLAG_FOREGROUND_SERVICE
-            .or(Notification.FLAG_ONGOING_EVENT)
-            .or(Notification.FLAG_NO_CLEAR)
-
-        // Return the created notification
-        return notification
     }
 }
 

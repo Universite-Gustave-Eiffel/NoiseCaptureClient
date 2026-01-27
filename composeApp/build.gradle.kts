@@ -11,28 +11,23 @@ buildscript {
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.jetbrainsCompose)
-    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.composeCompiler)
     alias(libs.plugins.serialization)
     alias(libs.plugins.buildKonfigGradlePlugin)
 }
 
-class App {
-
-    val packageName: String by project
-    val versionName: String by project
-    val versionCode: String by project
-}
-
-val app = App()
+val appPackageName: String by project
+val appVersionCode: String by project
+val appVersionName: String by project
 
 buildkonfig {
-    packageName = app.packageName
+    packageName = appPackageName
 
     defaultConfigs {
-        buildConfigField(Type.STRING, name = "versionName", value = app.versionName, const = true)
-        buildConfigField(Type.INT, name = "versionCode", value = app.versionCode)
+        buildConfigField(Type.STRING, name = "versionName", value = appVersionName, const = true)
+        buildConfigField(Type.INT, name = "versionCode", value = appVersionCode)
     }
 }
 
@@ -43,9 +38,21 @@ kotlin {
         binaries.executable()
     }
 
-    androidTarget {
+    androidLibrary {
+        namespace = "org.noiseplanet.noisecapture.library"
+        compileSdk = libs.versions.android.compileSdk.get().toInt()
+        minSdk = libs.versions.android.minSdk.get().toInt()
+
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
+        }
+
+        androidResources {
+            enable = true
+        }
+
+        withHostTest {
+            isIncludeAndroidResources = true
         }
     }
 
@@ -76,13 +83,15 @@ kotlin {
         }
 
         commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.materialIconsExtended)
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.material3)
+            implementation(libs.compose.material3.adaptive)
+            implementation(libs.compose.material3.adaptive.layout)
+            implementation(libs.compose.material.icons.extended)
+            implementation(libs.compose.ui)
+            implementation(libs.compose.components.resources)
+            implementation(libs.compose.ui.tooling.preview)
 
             implementation(libs.androidx.navigation.compose)
             implementation(libs.androidx.viewmodel.compose)
@@ -103,19 +112,13 @@ kotlin {
             implementation(libs.humanreadable)
             implementation(libs.maps.compose)
 
-            implementation(libs.material3.adaptive)
-            implementation(libs.material3.adaptive.layout)
-
             implementation(libs.settings.multiplatform)
             implementation(libs.settings.multiplatform.serialization)
             implementation(libs.settings.multiplatform.coroutines)
         }
 
         androidMain.dependencies {
-            implementation(compose.preview)
-            implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.preference)
-            implementation(libs.koin.android)
             implementation(libs.google.play.services.android.location)
             implementation(libs.kstore.file)
             implementation(libs.ktor.client.android)
@@ -131,46 +134,16 @@ kotlin {
             implementation(npm("@zip.js/zip.js", libs.versions.zipjs.get()))
         }
 
-        commonTest.dependencies {
-            implementation(kotlin("test"))
-            implementation(libs.kotlinx.coroutines.test)
-            implementation(compose.components.resources)
+        commonTest {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.compose.components.resources)
+            }
         }
     }
 }
 
-android {
-    namespace = app.packageName
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-
-    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
-    sourceSets["main"].res.srcDirs("src/androidMain/res")
-
-    defaultConfig {
-        applicationId = "org.noiseplanet.noisecapturekmp"
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = app.versionCode.toInt()
-        versionName = app.versionName
-    }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-    buildTypes {
-        getByName("release") {
-            isMinifyEnabled = false
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    buildFeatures {
-        compose = true
-    }
-    dependencies {
-        debugImplementation(compose.uiTooling)
-    }
+dependencies {
+    androidRuntimeClasspath(libs.compose.ui.tooling)
 }
