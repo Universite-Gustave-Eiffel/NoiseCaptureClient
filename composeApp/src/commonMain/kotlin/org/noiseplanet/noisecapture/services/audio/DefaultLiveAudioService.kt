@@ -23,9 +23,12 @@ import org.noiseplanet.noisecapture.audio.signal.window.SpectrogramData
 import org.noiseplanet.noisecapture.audio.signal.window.SpectrogramDataProcessing
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.dao.LeqRecord
+import org.noiseplanet.noisecapture.model.enums.SpectrogramWindowingMode
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.services.permission.PermissionService
+import org.noiseplanet.noisecapture.services.settings.SettingsKey
+import org.noiseplanet.noisecapture.services.settings.UserSettingsService
 import org.noiseplanet.noisecapture.util.injectLogger
 import kotlin.time.Duration
 
@@ -49,6 +52,7 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
     private val logger: Logger by injectLogger()
     private val audioSource: AudioSource by inject()
     private val permissionService: PermissionService by inject()
+    private val settingsService: UserSettingsService by inject()
 
     private var startOnReady: Boolean = false
 
@@ -101,10 +105,12 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
                     //       always run in background when we don't need it.
                     if (spectrogramDataProcessing?.sampleRate != audioSamples.sampleRate) {
                         logger.debug("Processing spectrum data with sample rate of ${audioSamples.sampleRate}")
+                        val windowingMode = settingsService.get(SettingsKey.SettingWindowingMode)
                         spectrogramDataProcessing = SpectrogramDataProcessing(
                             sampleRate = audioSamples.sampleRate,
                             windowSize = FFT_SIZE,
-                            windowHop = FFT_HOP
+                            windowHop = FFT_HOP,
+                            applyHannWindow = windowingMode == SpectrogramWindowingMode.HANN
                         )
                     }
                     spectrogramDataProcessing?.pushSamples(audioSamples.epoch, audioSamples.samples)

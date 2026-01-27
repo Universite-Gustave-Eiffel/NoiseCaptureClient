@@ -14,7 +14,7 @@ jobs:
 
       - name: Build
         run:
-          ./gradlew :composeApp:assembleDebug
+          ./gradlew :androidApp:assembleDebug
 
       - name: Upload APK
         if: always()

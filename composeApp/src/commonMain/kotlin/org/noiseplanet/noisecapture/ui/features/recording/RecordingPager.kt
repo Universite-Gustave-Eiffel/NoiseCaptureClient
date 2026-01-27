@@ -2,23 +2,22 @@ package org.noiseplanet.noisecapture.ui.features.recording
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.window.core.layout.WindowSizeClass
 import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
@@ -29,6 +28,8 @@ import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.ui.components.map.MapView
 import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrogram.SpectrogramPlotView
 import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrum.SpectrumPlotView
+import org.noiseplanet.noisecapture.util.navigationBarInsetsTop
+import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 
 /**
  * A horizontal pager on the measurement recording screens that allows user to switch between
@@ -56,8 +57,9 @@ fun RecordingPager(
         )
     }
     val pagePaddingModifier = if (isCompact) {
-        Modifier.padding(end = 16.dp, bottom = 80.dp)
-            .windowInsetsPadding(WindowInsets.navigationBars)
+        Modifier.navigationBarInsetsTop()
+            .paddingBottomWithInsets(80.dp) // 64dp for recording controls + 16dp of spacing
+            .padding(end = 16.dp)
     } else {
         Modifier.padding(end = 16.dp, bottom = 16.dp)
     }
@@ -76,9 +78,19 @@ fun RecordingPager(
             selectedTabIndex = pagerState.currentPage,
             containerColor = MaterialTheme.colorScheme.surfaceContainer
         ) {
-            tabs.toList().forEachIndexed { index, (id, label) ->
+            tabs.toList().forEachIndexed { index, (_, label) ->
                 Tab(
-                    text = { Text(label) },
+                    text = {
+                        BasicText(
+                            text = label,
+                            maxLines = 1,
+                            autoSize = TextAutoSize.StepBased(
+                                minFontSize = 12.sp,
+                                maxFontSize = 16.sp,
+                                stepSize = 0.25.sp,
+                            )
+                        )
+                    },
                     selected = pagerState.currentPage == index,
                     onClick = {
                         animationScope.launch {

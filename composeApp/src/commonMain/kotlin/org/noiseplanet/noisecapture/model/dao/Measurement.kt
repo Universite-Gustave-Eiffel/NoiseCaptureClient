@@ -47,7 +47,7 @@ data class Measurement(
  * @param locationSequenceIds Unique identifiers of location sequence fragments for this measurement.
  * @param leqsSequenceIds Unique identifiers of leq sequence fragments for this measurement.
  * @param recordedAudioUrl If audio recording is enabled, URL of the local audio recording.
- *                         Set only when measurement ends
+ *                         Set only when measurement ends.
  */
 data class MutableMeasurement(
     val uuid: String,

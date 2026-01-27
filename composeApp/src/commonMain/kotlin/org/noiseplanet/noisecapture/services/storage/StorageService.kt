@@ -11,6 +11,7 @@ import kotlinx.serialization.json.JsonElement
  *
  * @param T Type of entity to be stored.
  */
+@Suppress("TooManyFunctions")
 interface StorageService<T : @Serializable Any> {
 
     companion object {
@@ -121,4 +122,12 @@ interface StorageService<T : @Serializable Any> {
      * @param uuid Unique entity identifier
      */
     suspend fun delete(uuid: String)
+
+    /**
+     * Offers to the end user to download the entity with the given ID.
+     * Download flow and potentially export format might differ from platform to platform.
+     *
+     * @param uuid Unique identity identifier
+     */
+    suspend fun download(uuid: String)
 }

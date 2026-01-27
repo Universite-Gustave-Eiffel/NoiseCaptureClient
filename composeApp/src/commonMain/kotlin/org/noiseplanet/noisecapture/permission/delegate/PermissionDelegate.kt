@@ -9,7 +9,7 @@ import org.noiseplanet.noisecapture.permission.PermissionState
  * Describes the expected behaviour of platform specific delegates.
  * Each platform should provide a delegate implementation for each permission used in the app.
  */
-internal interface PermissionDelegate {
+interface PermissionDelegate {
 
     // - Properties
 

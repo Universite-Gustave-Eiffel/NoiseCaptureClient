@@ -28,14 +28,16 @@ import org.noiseplanet.noisecapture.util.IterableEnum
 @Composable
 fun <T : Any> SettingsItem(
     viewModel: SettingsItemViewModel<T>,
+    isFirstInSection: Boolean = false,
+    isLastInSection: Boolean = false,
 ) {
     val shape = MaterialTheme.shapes.medium
         .let {
-            if (viewModel.isFirstInSection) it else {
+            if (isFirstInSection) it else {
                 it.copy(topStart = CornerSize(0.dp), topEnd = CornerSize(0.dp))
             }
         }.let {
-            if (viewModel.isLastInSection) it else {
+            if (isLastInSection) it else {
                 it.copy(bottomStart = CornerSize(0.dp), bottomEnd = CornerSize(0.dp))
             }
         }
@@ -52,8 +54,8 @@ fun <T : Any> SettingsItem(
             modifier = Modifier.fillMaxWidth()
                 .alpha(if (isEnabled) 1.0f else 0.3f)
                 .padding(
-                    top = if (viewModel.isFirstInSection) 16.dp else 12.dp,
-                    bottom = if (viewModel.isLastInSection) 16.dp else 12.dp,
+                    top = if (isFirstInSection) 16.dp else 12.dp,
+                    bottom = if (isLastInSection) 16.dp else 12.dp,
                 )
         ) {
             Column(
@@ -68,7 +70,7 @@ fun <T : Any> SettingsItem(
                 Text(
                     stringResource(viewModel.description),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
                     overflow = TextOverflow.Ellipsis,
                 )
             }
@@ -98,7 +100,7 @@ fun <T : Any> SettingsItem(
             }
         }
 
-        if (!viewModel.isLastInSection) {
+        if (!isLastInSection) {
             HorizontalDivider(
                 thickness = 1.dp,
                 color = MaterialTheme.colorScheme.background

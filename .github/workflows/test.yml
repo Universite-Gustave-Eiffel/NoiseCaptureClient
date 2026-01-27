@@ -13,7 +13,7 @@ jobs:
         uses: ./.github/actions/job-set-up
 
       - name: Build and run tests
-        run: ./gradlew :composeApp:cleanTestDebugUnitTest :composeApp:testDebugUnitTest
+        run: ./gradlew :composeApp:cleanAllTest :composeApp:testAndroidHostTest
 
       - name: Upload reports
         if: always()

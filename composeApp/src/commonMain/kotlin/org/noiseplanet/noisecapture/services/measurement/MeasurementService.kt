@@ -146,11 +146,11 @@ interface MeasurementService {
     suspend fun pushToOngoingMeasurement(record: LocationRecord)
 
     /**
-     * Sets the recorded audio URL of the ongoing measurement.
+     * Sets the name of recorded audio for the ongoing measurement.
      *
-     * @param url Recorded audio file URL in local storage.
+     * @param fileName Recorded audio file name.
      */
-    fun setOngoingMeasurementRecordedAudioUrl(url: String)
+    fun setOngoingMeasurementRecordedAudioName(fileName: String)
 
     /**
      * Closes the ongoing measurement, saving every remaining data to local storage.
@@ -167,6 +167,14 @@ interface MeasurementService {
      * @return Updated measurement with summary property.
      */
     suspend fun calculateSummary(measurement: Measurement): Measurement
+
+    /**
+     * Offers to the end user to download the raw measurement data with the given ID as a zip archive.
+     * Download flow might differ from platform to platform.
+     *
+     * @param uuid Measurement unique identifier.
+     */
+    suspend fun downloadRawMeasurement(uuid: String)
 
     /**
      * Deletes the measurement's associated audio record (if any).

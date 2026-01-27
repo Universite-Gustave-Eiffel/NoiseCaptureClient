@@ -1,12 +1,12 @@
 package org.noiseplanet.noisecapture.services.audio
 
-import android.content.Context
 import android.media.MediaRecorder
 import android.os.Build
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.log.Logger
+import org.noiseplanet.noisecapture.services.storage.FileSystemService
 import org.noiseplanet.noisecapture.util.injectLogger
 import java.io.File
 import java.io.IOException
@@ -17,10 +17,10 @@ class AndroidAudioRecordingService : AudioRecordingService, KoinComponent {
     // - Properties
 
     private val logger: Logger by injectLogger()
-    private val context: Context by inject()
+    private val fileSystemService: FileSystemService by inject()
 
     private var mediaRecorder: MediaRecorder? = null
-    private var outputFileUrl: String? = null
+    private var outputFile: File? = null
 
 
     // - AudioRecordingService
@@ -31,9 +31,10 @@ class AndroidAudioRecordingService : AudioRecordingService, KoinComponent {
     override fun startRecordingToFile(outputFileName: String) {
         logger.debug("Recording to $outputFileName")
 
-        val filesDir = context.getExternalFilesDir(null)
-        outputFileUrl = "${filesDir?.absolutePath}/$outputFileName.mp3"
-        logger.debug("Files dir: $filesDir")
+        val relativePath = "measurement/audio/$outputFileName.mp3"
+        val absolutePath = fileSystemService.getAbsolutePath(relativePath) ?: return
+        // Create parent directories if needed
+        File(absolutePath).parentFile?.mkdirs()
 
         // Initialize media recorder for given output file name
         mediaRecorder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -46,7 +47,7 @@ class AndroidAudioRecordingService : AudioRecordingService, KoinComponent {
             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
             setAudioEncoder(MediaRecorder.AudioEncoder.HE_AAC)
             setAudioSamplingRate(44_100)
-            setOutputFile(outputFileUrl)
+            setOutputFile(absolutePath)
 
             // Finalise initialisation
             try {
@@ -59,6 +60,8 @@ class AndroidAudioRecordingService : AudioRecordingService, KoinComponent {
             // Start recording
             try {
                 start()
+                // Remember file relative path for when recording ends
+                outputFile = File(relativePath)
                 recordingStartListener?.onRecordingStart()
                 logger.debug("Started recording!")
             } catch (error: IllegalStateException) {
@@ -76,27 +79,13 @@ class AndroidAudioRecordingService : AudioRecordingService, KoinComponent {
                 logger.error("Error while stopping audio recording", error)
             }
             release()
-            outputFileUrl?.let {
-                recordingStopListener?.onRecordingStop(it)
+            outputFile?.let {
+                recordingStopListener?.onRecordingStop(it.path)
             }
         }
         // Drop reference
         mediaRecorder = null
+        outputFile = null
         logger.debug("Stopped recording")
-    }
-
-    override suspend fun getFileSize(audioUrl: String): Long? {
-        val file = File(audioUrl)
-        if (file.exists()) {
-            return file.length()
-        }
-        return null
-    }
-
-    override fun deleteFileAtUrl(audioUrl: String) {
-        val file = File(audioUrl)
-        if (file.exists()) {
-            file.delete()
-        }
     }
 }

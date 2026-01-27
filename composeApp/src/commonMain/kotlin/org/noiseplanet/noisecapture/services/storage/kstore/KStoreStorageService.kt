@@ -10,12 +10,14 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.dao.LeqSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.LocationSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.model.dao.UserStatistics
 import org.noiseplanet.noisecapture.model.dao.VERSION
+import org.noiseplanet.noisecapture.services.storage.FileSystemService
 import org.noiseplanet.noisecapture.services.storage.StorageService
 import org.noiseplanet.noisecapture.util.injectLogger
 import kotlin.reflect.KClass
@@ -39,7 +41,8 @@ open class KStoreStorageService<RecordType : @Serializable Any>(
 
     // - Properties
 
-    private val logger: Logger by injectLogger()
+    protected val logger: Logger by injectLogger()
+    protected val fileSystemService: FileSystemService by inject()
 
     private val storeProvider = KStoreProvider()
     private val indexStore: KStore<List<String>> = storeProvider.storeOf(
@@ -138,6 +141,18 @@ open class KStoreStorageService<RecordType : @Serializable Any>(
         store.delete()
     }
 
+    override suspend fun download(uuid: String) {
+        val fileName = getFileNameForRecord(uuid)
+        fileSystemService.downloadFile(fileName)
+    }
+
+
+    // - Public functions
+
+    fun getFileNameForRecord(uuid: String): String {
+        return "$prefix/$uuid.json"
+    }
+
 
     // - Private functions
 
@@ -200,9 +215,5 @@ open class KStoreStorageService<RecordType : @Serializable Any>(
                 ) as T?
             }
         )
-    }
-
-    private fun getFileNameForRecord(uuid: String): String {
-        return "$prefix/$uuid.json"
     }
 }

@@ -1,7 +1,6 @@
 package org.noiseplanet.noisecapture.signal
 
 import IgnoreAndroid
-import IgnoreIos
 import kotlinx.coroutines.test.runTest
 import noisecapture.composeapp.generated.resources.Res
 import org.jetbrains.compose.resources.ExperimentalResourceApi
@@ -1458,9 +1457,8 @@ class SpectrumChannelTest {
      *       - Find an alternative way to inject the raw data into the test case than trying to
      *         access the test device file system.
      */
-    @IgnoreIos
-    @IgnoreAndroid
     @OptIn(ExperimentalResourceApi::class)
+    @IgnoreAndroid
     @Test
     fun testSpeak() = runTest {
         val expectedBA = -33.761

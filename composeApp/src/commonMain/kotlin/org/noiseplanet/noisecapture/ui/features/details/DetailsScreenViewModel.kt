@@ -8,7 +8,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
 import kotlinx.datetime.toLocalDateTime
 import noisecapture.composeapp.generated.resources.Res
-import noisecapture.composeapp.generated.resources.measurement_details_title
+import noisecapture.composeapp.generated.resources.details_title
 import org.jetbrains.compose.resources.StringResource
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -16,7 +16,6 @@ import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 import org.noiseplanet.noisecapture.util.DateUtil
-import org.noiseplanet.noisecapture.util.injectLogger
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
@@ -44,9 +43,8 @@ class DetailsScreenViewModel(
 
     // - Properties
 
-    val logger by injectLogger()
-
     private val measurementService: MeasurementService by inject()
+
     private val measurementFlow = measurementService.getMeasurementFlow(measurementId)
         .map { measurement ->
             // If measurement has no summary yet, we need to calculate it.
@@ -77,7 +75,7 @@ class DetailsScreenViewModel(
     // - ScreenViewModel
 
     override val title: StringResource
-        get() = Res.string.measurement_details_title
+        get() = Res.string.details_title
 
 
     // - Private functions

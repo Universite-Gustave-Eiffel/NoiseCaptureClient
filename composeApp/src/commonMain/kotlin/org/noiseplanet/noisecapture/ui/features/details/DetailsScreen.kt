@@ -8,16 +8,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
@@ -35,13 +30,15 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowSizeClass
 import noisecapture.composeapp.generated.resources.Res
-import noisecapture.composeapp.generated.resources.measurement_details_loading_hint
+import noisecapture.composeapp.generated.resources.details_loading_hint
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.ui.components.audioplayer.AudioPlayerView
 import org.noiseplanet.noisecapture.ui.components.map.MapView
+import org.noiseplanet.noisecapture.ui.features.details.manage.ManageMeasurementView
 import org.noiseplanet.noisecapture.ui.navigation.router.DetailsRouter
+import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 
 
 @OptIn(KoinExperimentalAPI::class)
@@ -184,8 +181,7 @@ private fun DetailsScreenMedium(
     Column(
         verticalArrangement = Arrangement.spacedBy(24.dp),
         modifier = Modifier.verticalScroll(scrollState)
-            .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
-            .padding(24.dp)
+            .padding(32.dp)
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(24.dp),
@@ -276,8 +272,9 @@ private fun DetailsScreenCompact(
 
     Column(
         modifier = Modifier.verticalScroll(scrollState)
-            .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
-            .padding(16.dp),
+            .padding(horizontal = 16.dp)
+            .padding(top = 16.dp)
+            .paddingBottomWithInsets(withNavBar = 8.dp, withoutNavBar = 24.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         DetailsChartsHeader(
@@ -335,7 +332,7 @@ private fun ContentLoadingView() {
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = stringResource(Res.string.measurement_details_loading_hint),
+            text = stringResource(Res.string.details_loading_hint),
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center
         )

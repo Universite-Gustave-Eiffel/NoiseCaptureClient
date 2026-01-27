@@ -7,15 +7,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -42,6 +37,8 @@ import org.noiseplanet.noisecapture.ui.components.map.MapView
 import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterView
 import org.noiseplanet.noisecapture.ui.features.recording.controls.RecordingControls
 import org.noiseplanet.noisecapture.ui.navigation.router.RecordingRouter
+import org.noiseplanet.noisecapture.util.navigationBarInsetsTop
+import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 
 
 @OptIn(KoinExperimentalAPI::class)
@@ -146,8 +143,8 @@ private fun RecordingScreenCompact(viewModel: RecordingScreenViewModel) {
         }
         RecordingControls(
             onStopRecording = { viewModel.showEndRecordingConfirmationDialog?.invoke() },
-            modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars)
-                .padding(bottom = 8.dp)
+            modifier = Modifier.navigationBarInsetsTop()
+                .paddingBottomWithInsets(withNavBar = 8.dp, withoutNavBar = 16.dp)
         )
     }
 }
@@ -159,10 +156,8 @@ private fun RecordingScreenMedium(viewModel: RecordingScreenViewModel) {
         verticalArrangement = Arrangement.spacedBy(24.dp),
         modifier = Modifier
             .padding(horizontal = 24.dp)
-            .padding(top = 24.dp, bottom = 16.dp)
-            .windowInsetsPadding(
-                WindowInsets.navigationBars.only(WindowInsetsSides.Bottom)
-            ),
+            .padding(top = 24.dp)
+            .paddingBottomWithInsets(withNavBar = 16.dp, withoutNavBar = 24.dp),
     ) {
         Column(
             modifier = Modifier.weight(3f)
@@ -196,10 +191,8 @@ private fun RecordingScreenLarge(viewModel: RecordingScreenViewModel) {
         horizontalArrangement = Arrangement.spacedBy(24.dp),
         modifier = Modifier
             .padding(horizontal = 24.dp)
-            .padding(top = 24.dp, bottom = 16.dp)
-            .windowInsetsPadding(
-                WindowInsets.navigationBars.only(WindowInsetsSides.Bottom)
-            ),
+            .padding(top = 24.dp)
+            .paddingBottomWithInsets(withNavBar = 16.dp, withoutNavBar = 24.dp),
     ) {
         Column(
             modifier = Modifier.weight(1f)

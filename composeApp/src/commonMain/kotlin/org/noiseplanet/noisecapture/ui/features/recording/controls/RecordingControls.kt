@@ -43,7 +43,7 @@ import noisecapture.composeapp.generated.resources.measurement_start_recording_b
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.noiseplanet.noisecapture.ui.theme.NotoSansMono
-import org.noiseplanet.noisecapture.util.shadow.dropShadow
+import org.noiseplanet.noisecapture.util.ncDropShadow
 import org.noiseplanet.noisecapture.util.toHhMmSs
 
 /**
@@ -75,7 +75,7 @@ fun RecordingControls(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.padding(vertical = 7.dp)
                     .height(50.dp)
-                    .dropShadow(shape = CircleShape)
+                    .ncDropShadow(shape = CircleShape)
                     .background(MaterialTheme.colorScheme.secondaryContainer, shape = CircleShape)
                     .animateContentSize()
             ) {
@@ -159,7 +159,7 @@ fun RecordingControls(
                     onClick = onStopRecording,
                     colors = IconButtonDefaults.filledIconButtonColors(),
                     modifier = Modifier.padding(start = (50 + 8).dp) // Place stop button after pause button
-                        .dropShadow(shape = CircleShape)
+                        .ncDropShadow(shape = CircleShape)
                         .size(64.dp)
                 ) {
                     Icon(

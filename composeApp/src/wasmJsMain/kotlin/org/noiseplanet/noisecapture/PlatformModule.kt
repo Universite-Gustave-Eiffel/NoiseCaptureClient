@@ -12,11 +12,11 @@ import org.noiseplanet.noisecapture.audio.player.AudioPlayer
 import org.noiseplanet.noisecapture.audio.player.JSAudioPlayer
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
-import org.noiseplanet.noisecapture.services.audio.AudioStorageService
 import org.noiseplanet.noisecapture.services.audio.JSAudioRecordingService
-import org.noiseplanet.noisecapture.services.audio.OPFSAudioStorageService
 import org.noiseplanet.noisecapture.services.location.UserLocationProvider
 import org.noiseplanet.noisecapture.services.location.WasmJSUserLocationProvider
+import org.noiseplanet.noisecapture.services.storage.FileSystemService
+import org.noiseplanet.noisecapture.services.storage.OPFSFileSystemService
 
 val platformModule: Module = module {
 
@@ -45,8 +45,8 @@ val platformModule: Module = module {
         JSAudioRecordingService()
     }
 
-    single<AudioStorageService> {
-        OPFSAudioStorageService()
+    single<FileSystemService> {
+        OPFSFileSystemService()
     }
 
     factory<AudioPlayer> { (filePath: String) ->
