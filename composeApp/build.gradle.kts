@@ -50,6 +50,10 @@ kotlin {
         androidResources {
             enable = true
         }
+
+        withHostTest {
+            isIncludeAndroidResources = true
+        }
     }
 
     listOf(
@@ -130,10 +134,12 @@ kotlin {
             implementation(npm("@zip.js/zip.js", libs.versions.zipjs.get()))
         }
 
-        commonTest.dependencies {
-            implementation(kotlin("test"))
-            implementation(libs.kotlinx.coroutines.test)
-            implementation(libs.compose.components.resources)
+        commonTest {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.compose.components.resources)
+            }
         }
     }
 }
