@@ -1,7 +1,6 @@
 package org.noiseplanet.noisecapture.services.measurement
 
 import android.app.Notification
-import android.app.PendingIntent
 import android.app.Service
 import android.content.ComponentName
 import android.content.Context
@@ -27,8 +26,6 @@ import noisecapture.composeapp.generated.resources.ongoing_measurement_notificat
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.noiseplanet.noisecapture.MainActivity
-import org.noiseplanet.noisecapture.R
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.permission.reduce
@@ -304,27 +301,29 @@ internal abstract class ForegroundServiceWrapper : KoinComponent, Service() {
      * Builds the notification that will show the service as active to the user.
      *
      * TODO: Add pause/resume controls to the notification?
+     *
+     * TODO: Use event bus and build notifications from MainActivity
      */
     private suspend fun buildNotification(): Notification {
         // Prepare notification intent to resume app when clicking the notification
-        val notificationIntent = Intent(this, MainActivity::class.java)
-        notificationIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            .or(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+//        val notificationIntent = Intent(this, MainActivity::class.java)
+//        notificationIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+//            .or(Intent.FLAG_ACTIVITY_SINGLE_TOP)
 
         // Create the notification using notification builder
         val notification = NotificationCompat
             .Builder(this, NotificationHelper.APP_NOTIFICATION_CHANNEL_ID)
             .setContentTitle(getString(Res.string.ongoing_measurement_notification_title))
             .setContentText(getString(Res.string.ongoing_measurement_notification_body))
-            .setSmallIcon(R.drawable.ic_small_notification)
-            .setContentIntent(
-                PendingIntent.getActivity(
-                    this,
-                    NOTIFICATION_REQUEST_CODE,
-                    notificationIntent,
-                    PendingIntent.FLAG_IMMUTABLE,
-                )
-            )
+//            .setSmallIcon(R.drawable.ic_small_notification)
+//            .setContentIntent(
+//                PendingIntent.getActivity(
+//                    this,
+//                    NOTIFICATION_REQUEST_CODE,
+//                    notificationIntent,
+//                    PendingIntent.FLAG_IMMUTABLE,
+//                )
+//            )
             // This will only prevent notification from being dismissed for Android version prior
             // to Android 14. Since this version, all notifications can be dismissed. It doesn't
             // stop the ongoing service however.
