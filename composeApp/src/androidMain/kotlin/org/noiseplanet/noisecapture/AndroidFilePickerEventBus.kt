@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import java.io.File
 
 
-class FilePickerEventBus {
+class AndroidFilePickerEventBus {
 
     // - Properties
 

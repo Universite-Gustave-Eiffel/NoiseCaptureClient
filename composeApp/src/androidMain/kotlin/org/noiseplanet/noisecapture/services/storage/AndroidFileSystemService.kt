@@ -5,8 +5,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.noiseplanet.noisecapture.AndroidFilePickerEventBus
 import org.noiseplanet.noisecapture.FilePickerEvent
-import org.noiseplanet.noisecapture.FilePickerEventBus
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -18,7 +18,7 @@ class AndroidFileSystemService : FileSystemService, KoinComponent {
     // - Properties
 
     private val context: Context by inject()
-    private val filePickerEventBus: FilePickerEventBus by inject()
+    private val filePickerEventBus: AndroidFilePickerEventBus by inject()
 
 
     // - Public functions
