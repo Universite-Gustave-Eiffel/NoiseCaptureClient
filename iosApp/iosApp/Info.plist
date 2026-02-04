@@ -23,13 +23,13 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>TODO: Explain foreground and background location usage needs</string>
+	<string>To be able to match recorded audio levels with map coordinates, we need access to your live location during the time you’re making a measurement.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>TODO: Explain background location usage needs</string>
+	<string>To be able to match recorded audio levels with map coordinates, we need access to your live location during the time you’re making a measurement.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>TODO: Explain foreground location usage needs</string>
+	<string>To be able to match recorded audio levels with map coordinates, we need access to your live location during the time you’re making a measurement.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>TODO: Explain microphone usage needs</string>
+	<string>Listening to incoming audio requires you to grant permission for NoiseCapture to use your device’s microphone.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
