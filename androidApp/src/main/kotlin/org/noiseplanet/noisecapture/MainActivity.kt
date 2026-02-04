@@ -38,7 +38,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var permissionService: PermissionService
     private lateinit var logger: Logger
 
-    private lateinit var filePickerEventBus: FilePickerEventBus
+    private lateinit var filePickerEventBus: AndroidFilePickerEventBus
     private var filePickerIntentLauncher: ActivityResultLauncher<Intent>? = null
 
     private val scope = CoroutineScope(Dispatchers.Main)

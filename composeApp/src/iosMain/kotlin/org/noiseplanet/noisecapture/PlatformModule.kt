@@ -18,6 +18,7 @@ import org.noiseplanet.noisecapture.services.location.IOSUserLocationProvider
 import org.noiseplanet.noisecapture.services.location.UserLocationProvider
 import org.noiseplanet.noisecapture.services.storage.FileSystemService
 import org.noiseplanet.noisecapture.services.storage.IOSFileSystemService
+import org.noiseplanet.noisecapture.util.IOSFilePickerEventBus
 import platform.Foundation.NSBundle
 
 /**
@@ -55,6 +56,10 @@ val platformModule: Module = module {
 
     single<FileSystemService> {
         IOSFileSystemService()
+    }
+
+    single<IOSFilePickerEventBus> {
+        IOSFilePickerEventBus()
     }
 
     factory<AudioPlayer> { (filePath: String) ->
