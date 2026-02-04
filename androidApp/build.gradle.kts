@@ -21,12 +21,13 @@ kotlin {
         implementation(libs.koin.android)
     }
 
+    val appNamespace: String by project
     val appPackageName: String by project
     val appVersionCode: String by project
     val appVersionName: String by project
 
     android {
-        namespace = "org.noiseplanet.noisecapture"
+        namespace = appNamespace
         compileSdk = libs.versions.android.compileSdk.get().toInt()
 
         defaultConfig {

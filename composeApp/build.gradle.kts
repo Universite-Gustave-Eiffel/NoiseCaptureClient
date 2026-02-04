@@ -18,12 +18,12 @@ plugins {
     alias(libs.plugins.buildKonfigGradlePlugin)
 }
 
-val appPackageName: String by project
+val appNamespace: String by project
 val appVersionCode: String by project
 val appVersionName: String by project
 
 buildkonfig {
-    packageName = appPackageName
+    packageName = appNamespace
 
     defaultConfigs {
         buildConfigField(Type.STRING, name = "versionName", value = appVersionName, const = true)

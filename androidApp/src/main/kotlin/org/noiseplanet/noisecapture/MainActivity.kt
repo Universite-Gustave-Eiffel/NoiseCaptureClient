@@ -66,7 +66,7 @@ class MainActivity : ComponentActivity() {
             // Lock orientation on phones only (i.e. devices with compact width or height)
             val sizeClas = currentWindowAdaptiveInfo().windowSizeClass
             val isCompact = sizeClas.minWidthDp < WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND ||
-                    sizeClas.minHeightDp < WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND
+                sizeClas.minHeightDp < WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND
 
             if (isCompact) {
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
