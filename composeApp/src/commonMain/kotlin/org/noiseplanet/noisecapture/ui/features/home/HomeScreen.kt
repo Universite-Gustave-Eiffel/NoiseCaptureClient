@@ -73,6 +73,7 @@ private fun HomeScreenCompact(viewModel: HomeScreenViewModel, router: HomeRouter
     val topPadding =
         if (sizeClass.minWidthDp >= WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) 32.dp else 0.dp
 
+
     // - Layout
 
     Column(
@@ -90,6 +91,10 @@ private fun HomeScreenCompact(viewModel: HomeScreenViewModel, router: HomeRouter
             modifier = Modifier.padding(horizontal = horizontalPadding)
         )
 
+        HomeMicrophoneSetupView(
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+
         HomeMapView(
             router = router,
             modifier = Modifier.fillMaxWidth()
@@ -102,8 +107,6 @@ private fun HomeScreenCompact(viewModel: HomeScreenViewModel, router: HomeRouter
             onClickOpenHistoryButton = router::onClickOpenHistoryButton,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
-
-        // TODO: Add device calibration section
 
         // TODO: Add more info section
     }

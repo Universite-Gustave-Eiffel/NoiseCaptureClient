@@ -14,6 +14,12 @@
     <string name="home_open_history_button_title">History</string>
     <string name="home_map_section_header">Community measurements</string>
     <string name="home_map_browse_button">Browse</string>
+    <string name="home_mic_setup_section_header">Microphone setup</string>
+    <string name="home_mic_setup_current_gain">Current gain</string>
+    <string name="home_mic_setup_last_calibrated">Your microphone was last calibrated on</string>
+    <string name="home_mic_not_calibrated">For your measurements to be accurate, it is important that you calibrate your microphone.</string>
+    <string name="home_mic_setup_calibrate_button">Calibrate</string>
+    <string name="home_mic_setup_recalibrate_button">Recalibrate</string>
 
     <string name="home_statistics_title">Statistics</string>
     <!-- TODO: Use localisation that supports plurals -->
@@ -220,6 +226,15 @@
     <!-- Ongoing measurement notification -->
     <string name="ongoing_measurement_notification_title">Currently recording audio</string>
     <string name="ongoing_measurement_notification_body">The NoiseCapture app is currently recording surrounding audio to analyse acoustic parameters. Don't kill the app if you want the recording session to keep going.</string>
+
+
+    <!-- Microphone type -->
+    <string name="microphone_type_builtin">Internal built-in microphone</string>
+    <string name="microphone_type_wired_aux">External wired microphone (Aux)</string>
+    <string name="microphone_type_wired_usb">External wired microphone (USB)</string>
+    <string name="microphone_type_bluetooth">External bluetooth microphone</string>
+    <string name="microphone_type_unknown">Unknown microphone</string>
+
 
     <!-- Misc -->
     <string name="na">N/A</string>
