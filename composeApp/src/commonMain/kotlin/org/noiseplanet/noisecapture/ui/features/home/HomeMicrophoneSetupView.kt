@@ -37,6 +37,7 @@ import noisecapture.composeapp.generated.resources.home_mic_setup_section_header
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.noiseplanet.noisecapture.audio.mic.MicrophoneInfo
+import org.noiseplanet.noisecapture.audio.mic.MicrophoneType
 import org.noiseplanet.noisecapture.ui.components.ListSectionHeader
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
@@ -58,6 +59,8 @@ fun HomeMicrophoneSetupView(
 
     // - Layout
 
+    // TODO: If permission isn't granted, show a placeholder message
+
     Column(modifier = modifier) {
         ListSectionHeader(
             title = Res.string.home_mic_setup_section_header,
@@ -65,31 +68,40 @@ fun HomeMicrophoneSetupView(
         )
 
         Column {
-            Box {
-                Row(
-                    modifier = Modifier
-                        .clip(
-                            MaterialTheme.shapes.large.copy(
-                                bottomStart = ZeroCornerSize,
-                                bottomEnd = ZeroCornerSize,
-                            )
+            Box(
+                modifier = Modifier
+                    .clip(
+                        MaterialTheme.shapes.large.copy(
+                            bottomStart = ZeroCornerSize,
+                            bottomEnd = ZeroCornerSize,
                         )
-                        .background(MaterialTheme.colorScheme.surfaceContainer)
-                        .clickable { showMicrophoneSelectMenu = true }
-                        .padding(12.dp)
-                ) {
-                    Text(
-                        text = activeDevice?.type?.displayName?.let { stringResource(it) } ?: "",
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.weight(1f),
                     )
-
-                    Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurface,
-                    )
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
+                    .clickable { showMicrophoneSelectMenu = true }
+            ) {
+                activeDevice?.getTitleAndDescription()?.let { (title, description) ->
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = title,
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.weight(1f),
+                            )
+                            Icon(
+                                imageVector = Icons.Default.ArrowDropDown,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
+                        Text(
+                            text = description,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
 
                 MicrophoneSelectMenu(
@@ -166,11 +178,20 @@ private fun MicrophoneSelectMenu(
         for (item in items) {
             DropdownMenuItem(
                 text = {
-                    Text(
-                        text = stringResource(item.type.displayName),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
+                    val (title, description) = item.getTitleAndDescription()
+
+                    Column(modifier = Modifier.padding(vertical = 12.dp)) {
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Text(
+                            text = description,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 },
                 onClick = {
                     onSelectMicrophone(item)
@@ -183,5 +204,16 @@ private fun MicrophoneSelectMenu(
                 },
             )
         }
+    }
+}
+
+
+@Composable
+private fun MicrophoneInfo.getTitleAndDescription(): Pair<String, String> {
+    // If device type is unknown, display device name as title instead
+    return if (type != MicrophoneType.UNKNOWN) {
+        Pair(stringResource(type.displayName), label)
+    } else {
+        Pair(label, stringResource(type.displayName))
     }
 }

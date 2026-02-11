@@ -1,5 +1,9 @@
 package org.noiseplanet.noisecapture.audio.mic
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.util.NSNotificationListener
 import org.noiseplanet.noisecapture.util.toMicrophoneInfo
@@ -23,6 +27,8 @@ class IOSMicrophoneProvider : MicrophoneProvider(), KoinComponent {
         callback = { handleRouteChange(it) }
     )
 
+    private val scope = CoroutineScope(Dispatchers.IO)
+
 
     // - Lifecycle
 
@@ -33,14 +39,14 @@ class IOSMicrophoneProvider : MicrophoneProvider(), KoinComponent {
 
     // - Protected functions
 
-    override fun getCurrentlyAvailableInputs(): List<MicrophoneInfo> {
+    override suspend fun getCurrentlyAvailableInputs(): List<MicrophoneInfo> {
         return audioSession.availableInputs
             ?.mapNotNull { it as? AVAudioSessionPortDescription }
             ?.map { it.toMicrophoneInfo() }
             .orEmpty()
     }
 
-    override fun getDefaultInput(): MicrophoneInfo? {
+    override suspend fun getDefaultInput(): MicrophoneInfo? {
         val currentInput = audioSession.currentRoute.inputs.firstOrNull() ?: return null
 
         return (currentInput as? AVAudioSessionPortDescription)?.toMicrophoneInfo()
@@ -54,6 +60,6 @@ class IOSMicrophoneProvider : MicrophoneProvider(), KoinComponent {
         val reason = userInfo[AVAudioSessionRouteChangeReasonKey] ?: return
 
         logger.debug("AVAudioSession route changed: $reason")
-        refresh()
+        scope.launch { refresh() }
     }
 }

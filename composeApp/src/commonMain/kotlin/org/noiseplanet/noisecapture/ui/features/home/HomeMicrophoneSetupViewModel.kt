@@ -1,6 +1,10 @@
 package org.noiseplanet.noisecapture.ui.features.home
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.home_mic_setup_calibrate_button
 import org.koin.core.component.KoinComponent
@@ -27,6 +31,10 @@ class HomeMicrophoneSetupViewModel : ViewModel(), KoinComponent {
     // - Public functions
 
     fun selectMicrophone(microphoneInfo: MicrophoneInfo) {
-        microphoneProvider.setPreferredInput(microphoneInfo)
+        viewModelScope.launch {
+            withContext(Dispatchers.Default) {
+                microphoneProvider.setPreferredInput(microphoneInfo)
+            }
+        }
     }
 }

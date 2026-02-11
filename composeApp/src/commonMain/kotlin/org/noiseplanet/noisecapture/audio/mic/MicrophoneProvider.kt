@@ -45,7 +45,7 @@ abstract class MicrophoneProvider : KoinComponent {
      *
      * @param targetDevice Target microphone to be used as input source.
      */
-    fun setPreferredInput(targetDevice: MicrophoneInfo) {
+    suspend fun setPreferredInput(targetDevice: MicrophoneInfo) {
         if (targetDevice.id !in _availableInputs.value.map { it.id }) {
             logger.warning("Trying to select unavailable input source: $targetDevice")
             return
@@ -60,15 +60,15 @@ abstract class MicrophoneProvider : KoinComponent {
     /**
      * Scans and parses currently available input sources.
      */
-    protected abstract fun getCurrentlyAvailableInputs(): List<MicrophoneInfo>
+    protected abstract suspend fun getCurrentlyAvailableInputs(): List<MicrophoneInfo>
 
-    protected abstract fun getDefaultInput(): MicrophoneInfo?
+    protected abstract suspend fun getDefaultInput(): MicrophoneInfo?
 
     /**
      * Refreshes the currently available input sources, current active device and user selected
      * device if needed.
      */
-    protected fun refresh() {
+    protected suspend fun refresh() {
         // Refresh the list of available devices
         val currentDevices = getCurrentlyAvailableInputs()
         _availableInputs.tryEmit(currentDevices)

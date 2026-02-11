@@ -1,7 +1,6 @@
 package org.noiseplanet.noisecapture.ui.features.home
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -148,7 +147,9 @@ private fun HomeScreenLarge(viewModel: HomeScreenViewModel, router: HomeRouter) 
                 modifier = Modifier.weight(1f).fillMaxHeight()
             )
 
-            Box(modifier = Modifier.weight(1f))
+            HomeMicrophoneSetupView(
+                modifier = Modifier.weight(1f)
+            )
         }
 
         // TODO: Add device calibration section

@@ -14,14 +14,14 @@ import org.jetbrains.compose.resources.StringResource
  *
  * @param id Unique device identifier. Provided by the system, might not be consistent if external
  *           microphone is unplugged, then plugged again.
- * @param name Microphone name, provided by the system. For wired Aux/USB devices, the name might
+ * @param label Microphone name, provided by the system. For wired Aux/USB devices, the name might
  *             be the same regardless of the actually plugged microphone.
  * @param type Microphone type (builtin, wired, bluetooth, ...). We expect only one microphone of
  *             each type to be available at the same time.
  */
 data class MicrophoneInfo(
     val id: String,
-    val name: String,
+    val label: String,
     val type: MicrophoneType,
 )
 

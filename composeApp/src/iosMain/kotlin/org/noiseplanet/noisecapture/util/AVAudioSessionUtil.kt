@@ -39,7 +39,7 @@ fun AVAudioSession.getInput(id: String): AVAudioSessionPortDescription? {
 fun AVAudioSessionPortDescription.toMicrophoneInfo(): MicrophoneInfo {
     return MicrophoneInfo(
         id = UID,
-        name = portName,
+        label = portName,
         type = portType.toMicrophoneType()
     )
 }

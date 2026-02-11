@@ -8,6 +8,8 @@ import org.koin.core.module.Module
 import org.koin.dsl.module
 import org.noiseplanet.noisecapture.audio.AudioSource
 import org.noiseplanet.noisecapture.audio.JsAudioSource
+import org.noiseplanet.noisecapture.audio.mic.JSMicrophoneProvider
+import org.noiseplanet.noisecapture.audio.mic.MicrophoneProvider
 import org.noiseplanet.noisecapture.audio.player.AudioPlayer
 import org.noiseplanet.noisecapture.audio.player.JSAudioPlayer
 import org.noiseplanet.noisecapture.log.Logger
@@ -51,5 +53,9 @@ val platformModule: Module = module {
 
     factory<AudioPlayer> { (filePath: String) ->
         JSAudioPlayer(filePath)
+    }
+
+    single<MicrophoneProvider> {
+        JSMicrophoneProvider()
     }
 }

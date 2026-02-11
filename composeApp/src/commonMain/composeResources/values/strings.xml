@@ -229,11 +229,11 @@
 
 
     <!-- Microphone type -->
-    <string name="microphone_type_builtin">Internal built-in microphone</string>
-    <string name="microphone_type_wired_aux">External wired microphone (Aux)</string>
-    <string name="microphone_type_wired_usb">External wired microphone (USB)</string>
-    <string name="microphone_type_bluetooth">External bluetooth microphone</string>
-    <string name="microphone_type_unknown">Unknown microphone</string>
+    <string name="microphone_type_builtin">Internal microphone</string>
+    <string name="microphone_type_wired_aux">Wired microphone (Aux)</string>
+    <string name="microphone_type_wired_usb">Wired microphone (USB)</string>
+    <string name="microphone_type_bluetooth">Bluetooth microphone</string>
+    <string name="microphone_type_unknown">Audio input</string>
 
 
     <!-- Misc -->
