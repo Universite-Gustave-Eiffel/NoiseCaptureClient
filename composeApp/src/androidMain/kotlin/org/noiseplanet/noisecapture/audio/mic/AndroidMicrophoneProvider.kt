@@ -5,16 +5,13 @@ import android.media.AudioDeviceCallback
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.os.Build
-import androidx.annotation.RequiresApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.util.injectLogger
-
-
-private typealias AndroidMicrophoneInfo = android.media.MicrophoneInfo
+import org.noiseplanet.noisecapture.util.toMicrophoneInfo
 
 
 class AndroidMicrophoneProvider : MicrophoneProvider, KoinComponent {
@@ -132,54 +129,5 @@ class AndroidMicrophoneProvider : MicrophoneProvider, KoinComponent {
         // and keep only one input source per type (one builtin, one aux, one usb and one bluetooth)
         return devices.filterNot { it.type == MicrophoneType.UNKNOWN }
             .distinctBy { it.type }
-    }
-}
-
-
-/**
- * Maps [android.media.MicrophoneInfo] to [MicrophoneInfo]
- */
-@RequiresApi(Build.VERSION_CODES.P)
-private fun AndroidMicrophoneInfo.toMicrophoneInfo(): MicrophoneInfo {
-    return MicrophoneInfo(
-        id = id.toString(),
-        name = description,
-        type = type.toMicrophoneType(),
-    )
-}
-
-/**
- * Maps [AudioDeviceInfo] to [MicrophoneInfo]
- */
-private fun AudioDeviceInfo.toMicrophoneInfo(): MicrophoneInfo {
-    return MicrophoneInfo(
-        id = id.toString(),
-        name = productName.toString(),
-        type = type.toMicrophoneType(),
-    )
-}
-
-/**
- * Maps raw device type integer to common [MicrophoneType] enum.
- */
-private fun Int.toMicrophoneType(): MicrophoneType {
-    return when (this) {
-        AudioDeviceInfo.TYPE_BUILTIN_MIC,
-            -> MicrophoneType.BUILTIN
-
-        AudioDeviceInfo.TYPE_WIRED_HEADSET,
-            -> MicrophoneType.WIRED_AUX
-
-        AudioDeviceInfo.TYPE_USB_HEADSET,
-        AudioDeviceInfo.TYPE_USB_DEVICE,
-        AudioDeviceInfo.TYPE_USB_ACCESSORY,
-            -> MicrophoneType.WIRED_USB
-
-        AudioDeviceInfo.TYPE_BLE_HEADSET,
-        AudioDeviceInfo.TYPE_BLUETOOTH_A2DP,
-        AudioDeviceInfo.TYPE_BLUETOOTH_SCO,
-            -> MicrophoneType.BLUETOOTH
-
-        else -> MicrophoneType.UNKNOWN
     }
 }

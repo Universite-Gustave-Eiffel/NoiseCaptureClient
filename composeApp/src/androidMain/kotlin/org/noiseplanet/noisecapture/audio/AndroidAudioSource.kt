@@ -90,7 +90,6 @@ internal class AndroidAudioSource : AudioSource, KoinComponent {
                 // and broadcast it through the channel.
                 audioRecorder = AudioRecorder(
                     audioSamplesChannel,
-                    logger,
                     microphoneProvider.activeDevice.value?.id?.toIntOrNull()
                 )
                 // Start recording audio in a dedicated thread and update state to notify UI

@@ -13,18 +13,23 @@ import kotlinx.coroutines.channels.Channel
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.noiseplanet.noisecapture.log.Logger
+import org.noiseplanet.noisecapture.util.getInputDevice
+import org.noiseplanet.noisecapture.util.injectLogger
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Processes audio coming through input microphone and broadcasts it through the given
  * [audioSamplesChannel]. Should be ran in a background thread.
  *
+ * @param audioSamplesChannel Channel through which audio samples will be broadcast
+ * @param targetAudioDeviceId Optional identifier of the target [android.media.AudioDeviceInfo] to
+ *                            be used as input microphone (if available).
+ *
  * TODO: What happens if the user revokes permission while the app is in the background?
  */
 @SuppressLint("MissingPermission")
 class AudioRecorder(
     private val audioSamplesChannel: Channel<AudioSamples>,
-    private val logger: Logger,
     private val targetAudioDeviceId: Int?,
 ) : Runnable, KoinComponent {
 
@@ -38,6 +43,7 @@ class AudioRecorder(
 
     // - Properties
 
+    private val logger: Logger by injectLogger()
     private val context: Context = get()
     private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
@@ -98,11 +104,11 @@ class AudioRecorder(
 
         // If provided target device ID is found in available input devices,
         // use it as input microphone
-        audioManager.getDevices(AudioManager.GET_DEVICES_INPUTS)
-            .firstOrNull { it.id == targetAudioDeviceId }
-            .let { audioDeviceInfo ->
-                audioRecord.setPreferredDevice(audioDeviceInfo)
-            }
+        targetAudioDeviceId?.let {
+            audioManager.getInputDevice(it)
+        }?.let { audioDeviceInfo ->
+            audioRecord.setPreferredDevice(audioDeviceInfo)
+        }
 
         this.sampleRate = sampleRate
     }
