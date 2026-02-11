@@ -48,7 +48,7 @@ class AndroidAudioRecordingService : AudioRecordingService, KoinComponent {
             MediaRecorder()
         }.apply {
             // Configure MediaRecorder instance
-            setAudioSource(MediaRecorder.AudioSource.MIC)
+            setAudioSource(MediaRecorder.AudioSource.VOICE_RECOGNITION)
             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
             setAudioEncoder(MediaRecorder.AudioEncoder.HE_AAC)
             setAudioSamplingRate(44_100)
