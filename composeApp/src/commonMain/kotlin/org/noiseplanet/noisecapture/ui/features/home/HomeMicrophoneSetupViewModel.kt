@@ -16,8 +16,8 @@ class HomeMicrophoneSetupViewModel : ViewModel(), KoinComponent {
 
     private val microphoneProvider: MicrophoneProvider by inject()
 
-    val availableDevices = microphoneProvider.availableDevices
-    val activeDevice = microphoneProvider.activeDevice
+    val availableDevices = microphoneProvider.availableInputs
+    val activeDevice = microphoneProvider.preferredInput
 
     val calibrationButtonViewModel = NCButtonViewModel(
         title = Res.string.home_mic_setup_calibrate_button,
@@ -27,6 +27,6 @@ class HomeMicrophoneSetupViewModel : ViewModel(), KoinComponent {
     // - Public functions
 
     fun selectMicrophone(microphoneInfo: MicrophoneInfo) {
-        microphoneProvider.selectDevice(microphoneInfo)
+        microphoneProvider.setPreferredInput(microphoneInfo)
     }
 }

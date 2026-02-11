@@ -50,9 +50,9 @@ internal class AndroidAudioSource : AudioSource, KoinComponent {
     // - Lifecycle
 
     init {
-        // Subscribe to active microphone updates
+        // Subscribe to preferred input updates
         scope.launch {
-            microphoneProvider.activeDevice.mapNotNull { it }
+            microphoneProvider.preferredInput.mapNotNull { it }
                 .distinctUntilChanged { old, new ->
                     old.id == new.id
                 }.collect {
@@ -90,7 +90,7 @@ internal class AndroidAudioSource : AudioSource, KoinComponent {
                 // and broadcast it through the channel.
                 audioRecorder = AudioRecorder(
                     audioSamplesChannel,
-                    microphoneProvider.activeDevice.value?.id?.toIntOrNull()
+                    microphoneProvider.preferredInput.value?.id?.toIntOrNull()
                 )
                 // Start recording audio in a dedicated thread and update state to notify UI
                 audioThread = Thread(audioRecorder)

@@ -6,14 +6,22 @@ import kotlinx.cinterop.get
 import kotlinx.cinterop.pointed
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.value
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import org.noiseplanet.noisecapture.audio.mic.MicrophoneProvider
 import org.noiseplanet.noisecapture.log.Logger
-import org.noiseplanet.noisecapture.model.enums.MicrophoneLocation
 import org.noiseplanet.noisecapture.util.NSNotificationListener
+import org.noiseplanet.noisecapture.util.getInput
 import org.noiseplanet.noisecapture.util.injectLogger
 import org.noiseplanet.noisecapture.util.runCatchingNSError
 import platform.AVFAudio.AVAudioEngine
@@ -75,10 +83,10 @@ internal class IOSAudioSource : AudioSource, KoinComponent {
         callback = { handleSessionInterruptionNotification(it) }
     )
 
+    private val microphoneProvider: MicrophoneProvider by inject()
     private val logger: Logger by injectLogger()
 
-
-    // - AudioSource
+    private val scope = CoroutineScope(Dispatchers.IO)
 
     override var state: AudioSourceState = AudioSourceState.UNINITIALIZED
         set(value) {
@@ -88,6 +96,24 @@ internal class IOSAudioSource : AudioSource, KoinComponent {
 
     override val audioSamples: Flow<AudioSamples> = audioSamplesChannel.receiveAsFlow()
     override val stateFlow: Flow<AudioSourceState> = stateChannel.receiveAsFlow()
+
+
+    // - Lifecycle
+
+    init {
+        // Subscribe to preferred input updates
+        scope.launch {
+            microphoneProvider.preferredInput.mapNotNull { it }
+                .distinctUntilChanged { old, new ->
+                    old.id == new.id
+                }.collect {
+                    onSelectedMicrophoneChange()
+                }
+        }
+    }
+
+
+    // - Public functions
 
     override fun setup() {
         if (state != AudioSourceState.UNINITIALIZED) {
@@ -171,10 +197,6 @@ internal class IOSAudioSource : AudioSource, KoinComponent {
         state = AudioSourceState.UNINITIALIZED
     }
 
-    override fun getMicrophoneLocation(): MicrophoneLocation {
-        return MicrophoneLocation.LOCATION_UNKNOWN
-    }
-
 
     // - Private functions
 
@@ -194,12 +216,26 @@ internal class IOSAudioSource : AudioSource, KoinComponent {
                 error = nsError.ptr,
             )
 
+            // Disable potential vibrations, haptics or notification sounds while recording
+            audioSession.setAllowHapticsAndSystemSoundsDuringRecording(false, nsError.ptr)
+            // Disable system interruption of recording (we want to do this ourselves
+            // when judged necessary in order to cleanly stop the eventual ongoing measurement)
+            audioSession.setPrefersNoInterruptionsFromSystemAlerts(false, nsError.ptr)
+
             val sampleRate = audioSession.sampleRate
             audioSession.setPreferredSampleRate(sampleRate, nsError.ptr)
 
             val bufferDuration: NSTimeInterval =
                 1.0 / sampleRate * SAMPLES_BUFFER_SIZE.toDouble()
             audioSession.setPreferredIOBufferDuration(bufferDuration, nsError.ptr)
+
+            runCatchingNSError { nsError ->
+                // Set preferred input source (if any)
+                microphoneProvider.preferredInput.value
+                    ?.let { audioSession.getInput(it.id) }
+                    ?.let { audioSession.setPreferredInput(it, nsError.ptr) }
+            }
+
         }.onFailure {
             logger.error("Error while setting up audio session", it)
         }.onSuccess {
@@ -230,6 +266,13 @@ internal class IOSAudioSource : AudioSource, KoinComponent {
                 logger.warning("Wrong buffer data received from AVAudioEngine. Skipping.", e)
             }
         }
+
+        // Make sure voice processing and automatic gain staging are disabled
+        runCatchingNSError { nsError ->
+            inputNode.voiceProcessingAGCEnabled = false
+            inputNode.setVoiceProcessingEnabled(false, nsError.ptr)
+        }
+
         logger.debug("AVAudioEngine is now ready to receive incoming audio samples")
 
         // Keep a reference to audio engine to be able to stop it afterwards
@@ -275,7 +318,6 @@ internal class IOSAudioSource : AudioSource, KoinComponent {
         when (typeValue.toULong()) {
             AVAudioSessionInterruptionTypeBegan -> {
                 logger.debug("Received audio interruption notification")
-                // TODO: Trigger delegate callback to update UI?
 
                 val reason = userInfo[AVAudioSessionInterruptionReasonKey] as? Long ?: return
                 logger.debug("Reason: $reason")
@@ -284,7 +326,6 @@ internal class IOSAudioSource : AudioSource, KoinComponent {
 
             AVAudioSessionInterruptionTypeEnded -> {
                 logger.debug("Received end of audio interruption notification")
-                // TODO: Trigger delegate callback to update UI?
 
                 val options = userInfo[AVAudioSessionInterruptionOptionKey] as? Long ?: return
                 if (options.toULong() == AVAudioSessionInterruptionOptionShouldResume) {
@@ -332,6 +373,23 @@ internal class IOSAudioSource : AudioSource, KoinComponent {
                     audioTime.sampleRate.toInt(),
                 )
             )
+        }
+    }
+
+    private fun onSelectedMicrophoneChange() {
+        when (state) {
+            AudioSourceState.READY, AudioSourceState.PAUSED -> {
+                release()
+                setup()
+            }
+
+            AudioSourceState.RUNNING -> {
+                release()
+                setup()
+                start()
+            }
+
+            AudioSourceState.UNINITIALIZED -> return
         }
     }
 }

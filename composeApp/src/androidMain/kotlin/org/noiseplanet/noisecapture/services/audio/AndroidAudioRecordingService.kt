@@ -58,7 +58,7 @@ class AndroidAudioRecordingService : AudioRecordingService, KoinComponent {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
-                microphoneProvider.activeDevice.value?.id?.toIntOrNull()?.let { deviceId ->
+                microphoneProvider.preferredInput.value?.id?.toIntOrNull()?.let { deviceId ->
                     val deviceInfo = audioManager.getInputDevice(deviceId)
                     setPreferredDevice(deviceInfo)
                 }
