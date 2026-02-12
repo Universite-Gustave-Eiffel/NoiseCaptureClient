@@ -53,6 +53,13 @@ class AndroidMicrophoneProvider : MicrophoneProvider(), KoinComponent {
         val devices = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             // For recent android versions, use the new MicrophoneInfo API
             audioManager.microphones.sortedBy { it.id }
+                .filter {
+                    // In devices with API > 31, a new REMOTE_SUBMIX type is introduced, but we don't
+                    // want it to be available as input source
+                    // https://developer.android.com/reference/android/media/AudioDeviceInfo#TYPE_REMOTE_SUBMIX
+                    !(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                        && it.type == AudioDeviceInfo.TYPE_REMOTE_SUBMIX)
+                }
                 .map { it.toMicrophoneInfo() }
         } else {
             // For older android versions, use AudioDeviceInfo
@@ -61,10 +68,8 @@ class AndroidMicrophoneProvider : MicrophoneProvider(), KoinComponent {
                 .map { it.toMicrophoneInfo() }
         }
 
-        // Filter out input devices that didn't match any supported input types
-        // and keep only one input source per type (one builtin, one aux, one usb and one bluetooth)
-        return devices.filterNot { it.type == MicrophoneType.UNKNOWN }
-            .distinctBy { it.type }
+        // Keep only one input source per type (one builtin, one aux, one usb and one bluetooth)
+        return devices.distinctBy { it.type }
     }
 
     override suspend fun getDefaultInput(): MicrophoneInfo? {
