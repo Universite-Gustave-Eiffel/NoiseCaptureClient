@@ -5,6 +5,9 @@ import android.media.AudioDeviceCallback
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.os.Build
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.util.toMicrophoneInfo
@@ -17,6 +20,8 @@ class AndroidMicrophoneProvider : MicrophoneProvider(), KoinComponent {
     private val context: Context by inject()
     private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
+    private val scope = CoroutineScope(Dispatchers.IO)
+
 
     // - Lifecycle
 
@@ -25,17 +30,17 @@ class AndroidMicrophoneProvider : MicrophoneProvider(), KoinComponent {
             object : AudioDeviceCallback() {
                 override fun onAudioDevicesAdded(addedDevices: Array<out AudioDeviceInfo?>?) {
                     logger.debug("Added audio devices: $addedDevices")
-                    refresh()
+                    scope.launch { refresh() }
                 }
 
                 override fun onAudioDevicesRemoved(removedDevices: Array<out AudioDeviceInfo?>?) {
                     logger.debug("Removed audio devices: $removedDevices")
-                    refresh()
+                    scope.launch { refresh() }
                 }
             },
             null
         )
-        refresh()
+        scope.launch { refresh() }
     }
 
 
@@ -44,7 +49,7 @@ class AndroidMicrophoneProvider : MicrophoneProvider(), KoinComponent {
     /**
      * Gets a list of all the currently available input sources.
      */
-    override fun getCurrentlyAvailableInputs(): List<MicrophoneInfo> {
+    override suspend fun getCurrentlyAvailableInputs(): List<MicrophoneInfo> {
         val devices = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             // For recent android versions, use the new MicrophoneInfo API
             audioManager.microphones.sortedBy { it.id }
@@ -62,7 +67,7 @@ class AndroidMicrophoneProvider : MicrophoneProvider(), KoinComponent {
             .distinctBy { it.type }
     }
 
-    override fun getDefaultInput(): MicrophoneInfo? {
+    override suspend fun getDefaultInput(): MicrophoneInfo? {
         // Android assigns incremental IDs to external microphones, based on the order they
         // were plugged into the smartphone. So by default, we pick the last added microphone
         // as input source
