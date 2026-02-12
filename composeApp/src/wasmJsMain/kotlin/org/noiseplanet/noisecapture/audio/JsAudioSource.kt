@@ -3,17 +3,24 @@
 package org.noiseplanet.noisecapture.audio
 
 import kotlinx.browser.window
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.await
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 import org.khronos.webgl.get
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import org.noiseplanet.noisecapture.audio.mic.MicrophoneProvider
 import org.noiseplanet.noisecapture.interop.AudioContext
 import org.noiseplanet.noisecapture.interop.AudioNode
 import org.noiseplanet.noisecapture.interop.ScriptProcessorNode
 import org.noiseplanet.noisecapture.log.Logger
-import org.noiseplanet.noisecapture.model.enums.MicrophoneLocation
 import org.noiseplanet.noisecapture.util.injectLogger
 import org.w3c.dom.mediacapture.MediaStreamConstraints
 import org.w3c.dom.mediacapture.MediaTrackConstraints
@@ -41,6 +48,7 @@ internal class JsAudioSource : AudioSource, KoinComponent {
     // - Properties
 
     private val logger: Logger by injectLogger()
+    private val microphoneProvider: MicrophoneProvider by inject()
 
     private var audioContext: AudioContext? = null
     private var micNode: AudioNode? = null
@@ -53,8 +61,7 @@ internal class JsAudioSource : AudioSource, KoinComponent {
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
 
-
-    // - AudioSource
+    private val scope = CoroutineScope(Dispatchers.Default)
 
     override var state: AudioSourceState = AudioSourceState.UNINITIALIZED
         set(value) {
@@ -66,22 +73,47 @@ internal class JsAudioSource : AudioSource, KoinComponent {
     override val stateFlow: Flow<AudioSourceState> = stateChannel.receiveAsFlow()
 
 
-    override fun setup() {
+    // - Lifecycle
+
+    init {
+        // Subscribe to preferred input updates
+        scope.launch {
+            microphoneProvider.preferredInput.mapNotNull { it }
+                .distinctUntilChanged { old, new ->
+                    old.id == new.id
+                }.collect {
+                    onSelectedMicrophoneChange()
+                }
+        }
+    }
+
+
+    // - Public functions
+
+    override suspend fun setup() {
         if (state != AudioSourceState.UNINITIALIZED) {
             logger.debug("Audio source is already initialized, skipping setup.")
             return
         }
         logger.debug("Setup JSAudioSource...")
 
+        // Setup audio track constraints (asking for no AGC, noise suppression, etc)
+        val audioConstraints = MediaTrackConstraints(
+            advanced = JsArray(), // Useless but required otherwise the constraints object fails to parse
+            autoGainControl = false.toJsBoolean(),
+            noiseSuppression = false.toJsBoolean(),
+            echoCancellation = false.toJsBoolean(),
+        )
+
+        // If a preferred input source is available, add it as an additional constraint
+        // Note: Depending on the browser, it may trigger an additional microphone permission popup.
+        microphoneProvider.preferredInput.value?.let {
+            logger.debug("Selected device: ${it.label} (ID: ${it.id})")
+            audioConstraints.deviceId = it.id.toJsString()
+        }
+
         window.navigator.mediaDevices.getUserMedia(
-            MediaStreamConstraints(
-                audio = MediaTrackConstraints(
-                    advanced = JsArray(),
-                    autoGainControl = false.toJsBoolean(),
-                    noiseSuppression = false.toJsBoolean(),
-                    echoCancellation = false.toJsBoolean(),
-                )
-            )
+            MediaStreamConstraints(audio = audioConstraints)
         ).then(onFulfilled = { mediaStream ->
             audioContext = AudioContext()
 
@@ -118,7 +150,7 @@ internal class JsAudioSource : AudioSource, KoinComponent {
         }).catch { error ->
             logger.error("Error while setting up audio source: $error")
             error
-        }
+        }.await<JsAny>()
     }
 
     override fun start() {
@@ -190,6 +222,28 @@ internal class JsAudioSource : AudioSource, KoinComponent {
         state = AudioSourceState.UNINITIALIZED
     }
 
-    override fun getMicrophoneLocation(): MicrophoneLocation =
-        MicrophoneLocation.LOCATION_UNKNOWN
+
+    // - Private functions
+
+    private fun onSelectedMicrophoneChange() {
+        when (state) {
+            // If audio source is setup but not running, setup again
+            AudioSourceState.READY, AudioSourceState.PAUSED -> {
+                release()
+                scope.launch { setup() }
+            }
+
+            // If audio source is setup and running, setup again then start
+            AudioSourceState.RUNNING -> {
+                release()
+                scope.launch {
+                    setup()
+                    start()
+                }
+            }
+
+            // Otherwise, do nothing
+            AudioSourceState.UNINITIALIZED -> return
+        }
+    }
 }

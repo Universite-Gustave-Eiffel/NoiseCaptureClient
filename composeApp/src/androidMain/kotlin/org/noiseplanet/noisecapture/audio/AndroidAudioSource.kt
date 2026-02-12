@@ -64,7 +64,7 @@ internal class AndroidAudioSource : AudioSource, KoinComponent {
 
     // - Public functions
 
-    override fun setup() {
+    override suspend fun setup() {
         if (state != AudioSourceState.UNINITIALIZED) {
             logger.debug("Audio source is already initialized, skipping setup.")
             return

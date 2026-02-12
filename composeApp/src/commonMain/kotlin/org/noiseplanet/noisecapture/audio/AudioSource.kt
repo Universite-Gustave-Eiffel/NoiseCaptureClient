@@ -28,7 +28,7 @@ interface AudioSource {
      * Initializes the required components to start recording audio.
      * To start recording, call [AudioSource.start]
      */
-    fun setup()
+    suspend fun setup()
 
     /**
      * Starts recording audio from an initialized audio source.

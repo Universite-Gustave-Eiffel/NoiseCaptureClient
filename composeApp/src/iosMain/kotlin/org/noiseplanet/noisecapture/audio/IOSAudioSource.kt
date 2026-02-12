@@ -115,7 +115,7 @@ internal class IOSAudioSource : AudioSource, KoinComponent {
 
     // - Public functions
 
-    override fun setup() {
+    override suspend fun setup() {
         if (state != AudioSourceState.UNINITIALIZED) {
             logger.debug("Audio source is already initialized, skipping setup.")
             return
@@ -378,17 +378,22 @@ internal class IOSAudioSource : AudioSource, KoinComponent {
 
     private fun onSelectedMicrophoneChange() {
         when (state) {
+            // If audio source is setup but not running, setup again
             AudioSourceState.READY, AudioSourceState.PAUSED -> {
                 release()
-                setup()
+                scope.launch { setup() }
             }
 
+            // If audio source is setup and running, setup again then start
             AudioSourceState.RUNNING -> {
                 release()
-                setup()
-                start()
+                scope.launch {
+                    setup()
+                    start()
+                }
             }
 
+            // Otherwise, do nothing
             AudioSourceState.UNINITIALIZED -> return
         }
     }

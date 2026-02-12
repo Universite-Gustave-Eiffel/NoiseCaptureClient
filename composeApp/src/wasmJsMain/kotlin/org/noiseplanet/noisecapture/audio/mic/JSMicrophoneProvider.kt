@@ -62,10 +62,6 @@ class JSMicrophoneProvider : MicrophoneProvider(), KoinComponent {
         return window.navigator.mediaDevices.enumerateDevices()
             .await<JsArray<MediaDeviceInfo>>()
             .toList()
-            .map {
-                logger.warning("MediaDevice: $it")
-                it
-            }
             .filter { it.kind == MediaDeviceKind.AUDIOINPUT }
             .map {
                 MicrophoneInfo(
