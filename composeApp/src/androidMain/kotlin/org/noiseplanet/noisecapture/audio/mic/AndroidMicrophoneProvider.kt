@@ -29,7 +29,7 @@ class AndroidMicrophoneProvider : MicrophoneProvider(), KoinComponent {
         audioManager.registerAudioDeviceCallback(
             object : AudioDeviceCallback() {
                 override fun onAudioDevicesAdded(addedDevices: Array<out AudioDeviceInfo?>?) {
-                    logger.debug("Added audio devices: $addedDevices")
+                    logger.debug("Added audio devices: ${addedDevices?.map { it?.id }}")
                     scope.launch { refresh() }
                 }
 
@@ -60,12 +60,23 @@ class AndroidMicrophoneProvider : MicrophoneProvider(), KoinComponent {
                     !(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
                         && it.type == AudioDeviceInfo.TYPE_REMOTE_SUBMIX)
                 }
-                .map { it.toMicrophoneInfo() }
+                .map {
+                    logger.debug(
+                        " > Available input: { id: ${it.id}, type: ${it.type}, " +
+                            "description: ${it.description}, address: ${it.address} }"
+                    )
+                    it.toMicrophoneInfo()
+                }
         } else {
             // For older android versions, use AudioDeviceInfo
             audioManager.getDevices(AudioManager.GET_DEVICES_INPUTS)
                 .sortedBy { it.id }
-                .map { it.toMicrophoneInfo() }
+                .map {
+                    logger.debug(
+                        " > Available input: { id: ${it.id}, type: ${it.type}, description: ${it.productName}}"
+                    )
+                    it.toMicrophoneInfo()
+                }
         }
 
         // Keep only one input source per type (one builtin, one aux, one usb and one bluetooth)
