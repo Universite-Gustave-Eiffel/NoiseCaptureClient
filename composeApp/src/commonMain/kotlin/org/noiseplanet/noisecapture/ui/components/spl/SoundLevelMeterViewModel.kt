@@ -48,12 +48,12 @@ class SoundLevelMeterViewModel(
     private val measurementService: MeasurementService by inject()
     private val permissionService: PermissionService by inject()
 
-    val playPauseButtonViewModelFlow: StateFlow<NCButtonViewModel> = liveAudioService.isRunningFlow
+    val playPauseButtonViewModelFlow: StateFlow<NCButtonViewModel> = liveAudioService.isRunning
         .map { isRunning ->
             getPlayPauseButtonViewModel(isRunning)
         }.stateInWhileSubscribed(
             scope = viewModelScope,
-            initialValue = getPlayPauseButtonViewModel(liveAudioService.isRunning),
+            initialValue = getPlayPauseButtonViewModel(liveAudioService.isRunning.value),
         )
 
     val vuMeterTicks: IntArray = IntArray(size = VU_METER_TICKS_COUNT) { index ->
@@ -82,7 +82,7 @@ class SoundLevelMeterViewModel(
     // - Public functions
 
     fun toggleAudioSource(showPermissionPrompt: (Permission) -> Unit) {
-        if (liveAudioService.isRunning) {
+        if (liveAudioService.isRunning.value) {
             liveAudioService.stopListening()
         } else {
             val audioPermissionState = permissionService.getPermissionState(Permission.RECORD_AUDIO)

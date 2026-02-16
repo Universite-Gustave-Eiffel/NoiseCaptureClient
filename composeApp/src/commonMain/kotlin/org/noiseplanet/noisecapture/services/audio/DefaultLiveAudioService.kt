@@ -7,17 +7,16 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.audio.AcousticIndicatorsProcessing
 import org.noiseplanet.noisecapture.audio.AudioSource
-import org.noiseplanet.noisecapture.audio.AudioSourceState
 import org.noiseplanet.noisecapture.audio.signal.LevelDisplayWeightedDecay
 import org.noiseplanet.noisecapture.audio.signal.window.SpectrogramData
 import org.noiseplanet.noisecapture.audio.signal.window.SpectrogramDataProcessing
@@ -68,26 +67,21 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
         replay = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
-    private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-
-    private val _isRunningFlow = MutableStateFlow(false)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
 
     // - LiveAudioService
 
-    override val isRunningFlow: StateFlow<Boolean> = _isRunningFlow.asStateFlow()
-    override val isRunning: Boolean
-        get() = _isRunningFlow.value
+    override val isRunning: StateFlow<Boolean> = audioSource.state
+        .map { it == AudioSource.State.RUNNING }
+        .stateIn(scope, initialValue = false, started = SharingStarted.Eagerly)
 
-    override val audioSourceState: AudioSourceState
-        get() = audioSource.state
-    override val audioSourceStateFlow: Flow<AudioSourceState>
-        get() = audioSource.stateFlow
+    override val audioSourceState: StateFlow<AudioSource.State> = audioSource.state
 
 
     override fun setupAudioSource() {
         // Create a job that will process incoming audio samples in a background thread
-        audioJob = coroutineScope.launch {
+        audioJob = scope.launch {
             audioSource.audioSamples
                 .collect { audioSamples ->
                     // Process acoustic indicators
@@ -121,7 +115,7 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
         }
 
         // Setup audio source whenever microphone permission is granted.
-        coroutineScope.launch {
+        scope.launch {
             permissionService.getPermissionStateFlow(Permission.RECORD_AUDIO)
                 .map { it == PermissionState.GRANTED }
                 .collect { isPermissionGranted ->
@@ -132,11 +126,10 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
         }
 
         // Listen to audio source state to start it whenever it is ready
-        coroutineScope.launch {
-            audioSourceStateFlow.collect { state ->
-                if (state == AudioSourceState.READY && startOnReady) {
+        scope.launch {
+            audioSourceState.collect { state ->
+                if (state == AudioSource.State.READY && startOnReady) {
                     audioSource.start()
-                    _isRunningFlow.tryEmit(audioSourceState == AudioSourceState.RUNNING)
                 }
             }
         }
@@ -146,16 +139,14 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
         // Cancel processing job
         audioJob?.cancel()
         // Release audio source
-        audioSource.release()
-        _isRunningFlow.tryEmit(false)
+        scope.launch { audioSource.release() }
     }
 
     override fun startListening() {
-        if (audioSourceState == AudioSourceState.UNINITIALIZED) {
+        if (audioSourceState.value == AudioSource.State.UNINITIALIZED) {
             startOnReady = true
         } else {
             audioSource.start()
-            _isRunningFlow.tryEmit(audioSourceState == AudioSourceState.RUNNING)
         }
     }
 
@@ -163,7 +154,6 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
         // Pause audio source, or cancel delayed start if needed
         audioSource.pause()
         startOnReady = false
-        _isRunningFlow.tryEmit(false)
     }
 
     override fun getLeqRecordsFlow(): Flow<LeqRecord> {

@@ -212,7 +212,7 @@ open class DefaultRecordingService : RecordingService, KoinComponent {
 
                 // Subscribe to audio service state updates
                 launch {
-                    liveAudioService.isRunningFlow.collect { isRunning ->
+                    liveAudioService.isRunning.collect { isRunning ->
                         if (!isRecording) return@collect
 
                         // If a recording session is running, when audio source pauses or resumes,
