@@ -123,6 +123,7 @@ internal class JsAudioSource : AudioSource(), KoinComponent {
     }
 
     override fun pauseInternal() {
+        micNode?.disconnect()
         scriptProcessorNode?.disconnect()
     }
 
