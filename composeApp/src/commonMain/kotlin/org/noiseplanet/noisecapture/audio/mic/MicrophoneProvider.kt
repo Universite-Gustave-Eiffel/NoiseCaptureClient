@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.StateFlow
 import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.util.injectLogger
+import kotlin.jvm.JvmStatic
 
 
 /**
@@ -12,6 +13,19 @@ import org.noiseplanet.noisecapture.util.injectLogger
  * manually select their preferred microphone.
  */
 abstract class MicrophoneProvider : KoinComponent {
+
+    // - Constants
+
+    companion object {
+
+        @JvmStatic
+        protected val DEFAULT_MICROPHONE = MicrophoneInfo(
+            id = "builtin",
+            label = "Microphone",
+            type = MicrophoneType.BUILTIN
+        )
+    }
+
 
     // - Properties
 
@@ -80,7 +94,7 @@ abstract class MicrophoneProvider : KoinComponent {
         }
 
         // Get default input based on platform implementation
-        val defaultInput = getDefaultInput()
+        val defaultInput = getDefaultInput() ?: DEFAULT_MICROPHONE
 
         userSelectedDevice?.id?.let { selectedDeviceId ->
             // If user manually selected an input device and it is not available anymore, switch to

@@ -29,12 +29,12 @@ class AndroidMicrophoneProvider : MicrophoneProvider(), KoinComponent {
         audioManager.registerAudioDeviceCallback(
             object : AudioDeviceCallback() {
                 override fun onAudioDevicesAdded(addedDevices: Array<out AudioDeviceInfo?>?) {
-                    logger.debug("Added audio devices: ${addedDevices?.map { it?.id }}")
+                    logger.debug("Added audio devices: ${addedDevices?.map { "${it?.id}: ${it?.productName}" }}")
                     scope.launch { refresh() }
                 }
 
                 override fun onAudioDevicesRemoved(removedDevices: Array<out AudioDeviceInfo?>?) {
-                    logger.debug("Removed audio devices: $removedDevices")
+                    logger.debug("Removed audio devices: ${removedDevices?.map { "${it?.id}: ${it?.productName}" }}")
                     scope.launch { refresh() }
                 }
             },
@@ -60,27 +60,19 @@ class AndroidMicrophoneProvider : MicrophoneProvider(), KoinComponent {
                     !(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
                         && it.type == AudioDeviceInfo.TYPE_REMOTE_SUBMIX)
                 }
-                .map {
-                    logger.debug(
-                        " > Available input: { id: ${it.id}, type: ${it.type}, " +
-                            "description: ${it.description}, address: ${it.address} }"
-                    )
-                    it.toMicrophoneInfo()
-                }
+                .map { it.toMicrophoneInfo() }
         } else {
             // For older android versions, use AudioDeviceInfo
             audioManager.getDevices(AudioManager.GET_DEVICES_INPUTS)
                 .sortedBy { it.id }
-                .map {
-                    logger.debug(
-                        " > Available input: { id: ${it.id}, type: ${it.type}, description: ${it.productName}}"
-                    )
-                    it.toMicrophoneInfo()
-                }
+                .map { it.toMicrophoneInfo() }
         }
 
         // Keep only one input source per type (one builtin, one aux, one usb and one bluetooth)
+        // Filter out all unknown input sources, if list is empty, provide a default microphone
         return devices.distinctBy { it.type }
+            .filterNot { it.type == MicrophoneType.UNKNOWN }
+            .ifEmpty { listOf(DEFAULT_MICROPHONE) }
     }
 
     override suspend fun getDefaultInput(): MicrophoneInfo? {

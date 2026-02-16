@@ -70,6 +70,7 @@ class JSMicrophoneProvider : MicrophoneProvider(), KoinComponent {
                     type = MicrophoneType.UNKNOWN
                 )
             }
+            .ifEmpty { listOf(DEFAULT_MICROPHONE) }
     }
 
     override suspend fun getDefaultInput(): MicrophoneInfo? {

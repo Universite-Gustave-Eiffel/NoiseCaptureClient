@@ -34,6 +34,7 @@ class IOSMicrophoneProvider : MicrophoneProvider(), KoinComponent {
 
     init {
         inputsChangeListener.startListening()
+        scope.launch { refresh() }
     }
 
 
@@ -43,13 +44,21 @@ class IOSMicrophoneProvider : MicrophoneProvider(), KoinComponent {
         return audioSession.availableInputs
             ?.mapNotNull { it as? AVAudioSessionPortDescription }
             ?.map { it.toMicrophoneInfo() }
+            ?.filterNot { it.type == MicrophoneType.UNKNOWN }
             .orEmpty()
+            .ifEmpty {
+                // If no compatible device is available, return a default builtin input source
+                listOf(DEFAULT_MICROPHONE)
+            }
     }
 
     override suspend fun getDefaultInput(): MicrophoneInfo? {
-        val currentInput = audioSession.currentRoute.inputs.firstOrNull() ?: return null
-
-        return (currentInput as? AVAudioSessionPortDescription)?.toMicrophoneInfo()
+        // If available, return AVAudioSession's current route, otherwise default to
+        // last available input source
+        return audioSession.currentRoute.inputs.firstOrNull()
+            ?.let { it as? AVAudioSessionPortDescription }
+            ?.toMicrophoneInfo()
+            ?: availableInputs.value.lastOrNull()
     }
 
 
