@@ -35,4 +35,8 @@ val homeModule = module {
             )
         )
     }
+
+    viewModel {
+        HomeMicrophoneSetupViewModel()
+    }
 }

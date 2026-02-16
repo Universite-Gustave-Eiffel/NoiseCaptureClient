@@ -10,6 +10,8 @@ import org.koin.core.module.Module
 import org.koin.dsl.module
 import org.noiseplanet.noisecapture.audio.AndroidAudioSource
 import org.noiseplanet.noisecapture.audio.AudioSource
+import org.noiseplanet.noisecapture.audio.mic.AndroidMicrophoneProvider
+import org.noiseplanet.noisecapture.audio.mic.MicrophoneProvider
 import org.noiseplanet.noisecapture.audio.player.AndroidAudioPlayer
 import org.noiseplanet.noisecapture.audio.player.AudioPlayer
 import org.noiseplanet.noisecapture.log.Logger
@@ -67,6 +69,10 @@ val platformModule: Module = module {
 
     single {
         AndroidFilePickerEventBus()
+    }
+
+    single<MicrophoneProvider> {
+        AndroidMicrophoneProvider()
     }
 
     factory<AudioPlayer> { (filePath: String) ->

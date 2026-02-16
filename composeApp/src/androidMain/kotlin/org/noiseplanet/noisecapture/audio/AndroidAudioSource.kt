@@ -1,12 +1,18 @@
 package org.noiseplanet.noisecapture.audio
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import org.noiseplanet.noisecapture.audio.mic.MicrophoneProvider
 import org.noiseplanet.noisecapture.log.Logger
-import org.noiseplanet.noisecapture.model.enums.MicrophoneLocation
 import org.noiseplanet.noisecapture.util.injectLogger
 
 /**
@@ -26,10 +32,10 @@ internal class AndroidAudioSource : AudioSource, KoinComponent {
     private var audioRecorder: AudioRecorder? = null
     private var audioThread: Thread? = null
 
+    private val scope = CoroutineScope(Dispatchers.IO)
+
+    private val microphoneProvider: MicrophoneProvider by inject()
     private val logger: Logger by injectLogger()
-
-
-    // - AudioSource
 
     override var state: AudioSourceState = AudioSourceState.UNINITIALIZED
         set(value) {
@@ -41,14 +47,28 @@ internal class AndroidAudioSource : AudioSource, KoinComponent {
     override val stateFlow: Flow<AudioSourceState> = stateChannel.receiveAsFlow()
 
 
-    override fun setup() {
+    // - Lifecycle
+
+    init {
+        // Subscribe to preferred input updates
+        scope.launch {
+            microphoneProvider.preferredInput.mapNotNull { it }
+                .distinctUntilChanged { old, new ->
+                    old.id == new.id
+                }.collect {
+                    onSelectedMicrophoneChange()
+                }
+        }
+    }
+
+
+    // - Public functions
+
+    override suspend fun setup() {
         if (state != AudioSourceState.UNINITIALIZED) {
             logger.debug("Audio source is already initialized, skipping setup.")
             return
         }
-        // Create a recorder that will process raw incoming audio into audio samples
-        // and broadcast it through the channel.
-        audioRecorder = AudioRecorder(audioSamplesChannel, logger)
         state = AudioSourceState.READY
     }
 
@@ -66,6 +86,12 @@ internal class AndroidAudioSource : AudioSource, KoinComponent {
 
             AudioSourceState.READY, AudioSourceState.PAUSED -> {
                 logger.debug("Starting audio source.")
+                // Create a recorder that will process raw incoming audio into audio samples
+                // and broadcast it through the channel.
+                audioRecorder = AudioRecorder(
+                    audioSamplesChannel,
+                    microphoneProvider.preferredInput.value?.id?.toIntOrNull()
+                )
                 // Start recording audio in a dedicated thread and update state to notify UI
                 audioThread = Thread(audioRecorder)
                 audioThread?.start()
@@ -86,6 +112,8 @@ internal class AndroidAudioSource : AudioSource, KoinComponent {
                 // Stops recording and update state to notify UI
                 audioRecorder?.stopRecording()
                 audioThread?.join()
+                audioThread = null
+                audioRecorder = null
                 state = AudioSourceState.PAUSED
             }
 
@@ -103,12 +131,22 @@ internal class AndroidAudioSource : AudioSource, KoinComponent {
         }
 
         pause()
-        audioThread = null
-        audioRecorder = null
         state = AudioSourceState.UNINITIALIZED
     }
 
-    override fun getMicrophoneLocation(): MicrophoneLocation {
-        return MicrophoneLocation.LOCATION_UNKNOWN
+
+    // - Private functions
+
+    /**
+     * Called when [MicrophoneProvider]'s active device is updated, either due to manual user input
+     * or system notification.
+     */
+    private fun onSelectedMicrophoneChange() {
+        if (state == AudioSourceState.RUNNING) {
+            // If audio source is already setup and running, pause and start it again so
+            // it updates the active microphone
+            pause()
+            start()
+        }
     }
 }

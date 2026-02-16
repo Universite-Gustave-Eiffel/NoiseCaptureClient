@@ -75,7 +75,6 @@ private fun LastMeasurementsViewContentReady(
     onClickOpenHistoryButton: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-
     // - Layout
 
     if (viewState.lastMeasurementIds.isEmpty()) {
@@ -85,6 +84,7 @@ private fun LastMeasurementsViewContentReady(
     Column(modifier = modifier.animateContentSize()) {
         ListSectionHeader(
             title = Res.string.home_last_measurements_section_header,
+            modifier = Modifier.padding(start = 12.dp),
         )
 
         Row(
@@ -99,7 +99,7 @@ private fun LastMeasurementsViewContentReady(
                         color = MaterialTheme.colorScheme.surfaceContainer,
                         shape = MaterialTheme.shapes.medium,
                     )
-                    .padding(16.dp)
+                    .padding(12.dp)
             ) {
                 Text(
                     text = stringResource(Res.string.home_statistics_title),

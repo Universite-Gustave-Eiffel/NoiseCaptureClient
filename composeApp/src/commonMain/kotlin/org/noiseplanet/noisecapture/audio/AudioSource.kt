@@ -1,7 +1,6 @@
 package org.noiseplanet.noisecapture.audio
 
 import kotlinx.coroutines.flow.Flow
-import org.noiseplanet.noisecapture.model.enums.MicrophoneLocation
 
 /**
  * Common interface to access Audio samples from device microphone.
@@ -29,7 +28,7 @@ interface AudioSource {
      * Initializes the required components to start recording audio.
      * To start recording, call [AudioSource.start]
      */
-    fun setup()
+    suspend fun setup()
 
     /**
      * Starts recording audio from an initialized audio source.
@@ -49,14 +48,6 @@ interface AudioSource {
      * [AudioSource.start]
      */
     fun release()
-
-    /**
-     * Fetches the location of the currently used microphone.
-     * See [MicrophoneLocation] for more details about the possible cases.
-     *
-     * @return Currently in use microphone location
-     */
-    fun getMicrophoneLocation(): MicrophoneLocation
 }
 
 /**
@@ -86,10 +77,3 @@ enum class AudioSourceState {
      */
     PAUSED,
 }
-
-/**
- * Thrown when user tries to start recording on an uninitialized audio source.
- */
-object UninitializedException : IllegalStateException(
-    "Audio source must be initialized before recording audio"
-)

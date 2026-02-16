@@ -14,10 +14,14 @@ import org.noiseplanet.noisecapture.util.runCatchingNSError
 import platform.AVFAudio.AVAudioQuality
 import platform.AVFAudio.AVAudioQualityMedium
 import platform.AVFAudio.AVAudioRecorder
+import platform.AVFAudio.AVAudioSession
+import platform.AVFAudio.AVAudioSessionChannelDescription
+import platform.AVFAudio.AVAudioSessionPortDescription
 import platform.AVFAudio.AVEncoderAudioQualityKey
 import platform.AVFAudio.AVFormatIDKey
 import platform.AVFAudio.AVNumberOfChannelsKey
 import platform.AVFAudio.AVSampleRateKey
+import platform.AVFAudio.currentRoute
 import platform.CoreAudioTypes.AudioFormatID
 import platform.CoreAudioTypes.kAudioFormatMPEG4AAC
 import platform.Foundation.NSFileManager
@@ -46,6 +50,7 @@ class IOSAudioRecordingService : AudioRecordingService, KoinComponent {
     private val logger: Logger by injectLogger()
     private val fileSystemService: FileSystemService by inject()
 
+    private val audioSession = AVAudioSession.sharedInstance()
     private var audioRecorder: AVAudioRecorder? = null
     private var recordingUrl: String? = null
 
@@ -84,7 +89,15 @@ class IOSAudioRecordingService : AudioRecordingService, KoinComponent {
                 uRL = fileUri,
                 settings = settings,
                 error = nsError.ptr
-            )
+            ).apply {
+                // Set preferred input if possible
+                // https://developer.apple.com/documentation/avfaudio/routing-audio-to-specific-devices-in-multidevice-sessions#Route-high-level-audio-an-audio-player-or-recorder
+                audioSession.currentRoute.inputs.map { it as? AVAudioSessionPortDescription }
+                    .firstOrNull()?.channels
+                    ?.map { it as? AVAudioSessionChannelDescription }
+                    ?.firstOrNull()
+                    ?.let { setChannelAssignments(listOf(it)) }
+            }
         }.onSuccess { audioRecorder ->
             // Launch audio recording
             logger.debug("Starting recording...")
