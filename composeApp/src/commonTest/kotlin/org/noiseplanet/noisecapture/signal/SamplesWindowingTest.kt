@@ -116,4 +116,21 @@ class SamplesWindowingTest {
             windows[1].samples.toList()
         )
     }
+
+    @Test
+    fun testWindowTimestamps() {
+        val windows = mutableListOf<Window>()
+        val samples = FloatArray(1_500) { Random.nextFloat() }
+
+        val windowing = SamplesWindowing(windowSize = 1_000)
+
+        windows += windowing.pushSamples(AudioSamples(1_500, samples, 1_000))
+        windows += windowing.pushSamples(AudioSamples(3_000, samples, 1_000))
+
+        // Expect 3 windows with timestamps 1000, 2000 and 3000 respectively (with sample rate = 1kHz-
+        assertEquals(3, windows.size)
+        assertEquals(1_000, windows[0].timestamp)
+        assertEquals(2_000, windows[1].timestamp)
+        assertEquals(3_000, windows[2].timestamp)
+    }
 }
