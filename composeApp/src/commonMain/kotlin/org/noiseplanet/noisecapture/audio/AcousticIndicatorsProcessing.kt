@@ -3,18 +3,24 @@ package org.noiseplanet.noisecapture.audio
 import org.noiseplanet.noisecapture.audio.signal.SpectrumChannel
 import org.noiseplanet.noisecapture.audio.signal.get44100HZ
 import org.noiseplanet.noisecapture.audio.signal.get48000HZ
+import org.noiseplanet.noisecapture.audio.signal.window.SamplesWindowing
 import org.noiseplanet.noisecapture.model.dao.LeqRecord
 import org.noiseplanet.noisecapture.util.roundTo
 import kotlin.math.log10
 import kotlin.math.max
-import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
 
 /**
- * TODO: Document this class!
+ * Calculates acoustic indicators from raw incoming audio samples.
+ *
+ * @param sampleRate Incoming audio data sample rate
+ * @param dbGain Gain compensation
  */
-class AcousticIndicatorsProcessing(val sampleRate: Int, val dbGain: Double = ANDROID_GAIN) {
+class AcousticIndicatorsProcessing(
+    val sampleRate: Int,
+    val dbGain: Double = ANDROID_GAIN,
+) {
 
     // - Constants
 
@@ -35,11 +41,9 @@ class AcousticIndicatorsProcessing(val sampleRate: Int, val dbGain: Double = AND
 
     // - Properties
 
-    private var windowLength = (sampleRate * WINDOW_TIME_SECONDS).toInt()
-    private var windowData = FloatArray(windowLength)
-    private var windowDataCursor = 0
-    private val nominalFrequencies: List<Int>
-
+    private val samplesWindowing = SamplesWindowing(
+        windowSize = (sampleRate * WINDOW_TIME_SECONDS).toInt(),
+    )
     private val spectrumChannel: SpectrumChannel = SpectrumChannel().apply {
         this.loadConfiguration(
             when (sampleRate) {
@@ -47,62 +51,53 @@ class AcousticIndicatorsProcessing(val sampleRate: Int, val dbGain: Double = AND
                 else -> get44100HZ()
             }
         )
-        nominalFrequencies = this.getNominalFrequency()
     }
 
 
     // - Public functions
 
-    suspend fun processSamples(samples: AudioSamples): List<LeqRecord> {
-        val leqRecords = ArrayList<LeqRecord>()
-        var samplesProcessed = 0
+    /**
+     * Given a window of audio samples, calculate acoustic indicators (LEq, LAEq, LEq per frequency band...)
+     *
+     * @param audioSamples Incoming audio samples.
+     * @return Processed acoustic indicators.
+     */
+    suspend fun processSamples(audioSamples: AudioSamples): List<LeqRecord> {
+        val windows = samplesWindowing.pushSamples(audioSamples)
 
-        while (samplesProcessed < samples.samples.size) {
+        return windows.map { audioSamples ->
+            val rms = sqrt(
+                audioSamples.samples.fold(0.0) { acc, sample ->
+                    acc + sample * sample
+                } / audioSamples.samples.size
+            )
+            val leq = dbGain + 20 * log10(rms)
+            val laeq = dbGain + spectrumChannel.processSamplesWeightA(audioSamples.samples)
+            val lceq = dbGain + spectrumChannel.processSamplesWeightC(audioSamples.samples)
 
-            while (windowDataCursor < windowLength && samplesProcessed < samples.samples.size) {
-                val remainingToProcess = min(
-                    windowLength - windowDataCursor,
-                    samples.samples.size - samplesProcessed
-                )
-                for (i in 0..<remainingToProcess) {
-                    windowData[i + windowDataCursor] = samples.samples[i + samplesProcessed]
-                }
-                windowDataCursor += remainingToProcess
-                samplesProcessed += remainingToProcess
-            }
+            val thirdOctave = spectrumChannel.processSamples(audioSamples.samples)
+            val thirdOctaveGain = 10 * log10(10.0.pow(dbGain / 10.0) / thirdOctave.size)
+            val leqsPerThirdOctave = spectrumChannel.getNominalFrequencies()
+                .zip(thirdOctave.map {
+                    // Clip values to -999dB to avoid -Inf in JSON exports
+                    max(it + thirdOctaveGain, -999.0).roundTo(1)
+                }).toMap()
 
-            if (windowDataCursor == windowLength) {
-                // window complete
-                val rms = sqrt(
-                    windowData.fold(0.0) { acc, sample ->
-                        acc + sample * sample
-                    } / windowData.size
-                )
-                val leq = dbGain + 20 * log10(rms)
-                val laeq = dbGain + spectrumChannel.processSamplesWeightA(windowData)
-                val lceq = dbGain + spectrumChannel.processSamplesWeightC(windowData)
-
-                val thirdOctave = spectrumChannel.processSamples(windowData)
-                val thirdOctaveGain = 10 * log10(10.0.pow(dbGain / 10.0) / thirdOctave.size)
-                val leqsPerThirdOctave = nominalFrequencies
-                    .zip(thirdOctave.map {
-                        // Clip values to -999dB to avoid -Inf in JSON exports
-                        max(it + thirdOctaveGain, -999.0).roundTo(1)
-                    }).toMap()
-
-                leqRecords.add(
-                    LeqRecord(
-                        timestamp = samples.epoch,
-                        // Clip values to -999dB to avoid -Inf in JSON exports
-                        lzeq = max(leq, -999.0).roundTo(1),
-                        lceq = max(lceq, -999.0).roundTo(1),
-                        laeq = max(laeq, -999.0).roundTo(1),
-                        leqsPerThirdOctave = leqsPerThirdOctave,
-                    )
-                )
-                windowDataCursor = 0
-            }
+            LeqRecord(
+                timestamp = audioSamples.timestamp,
+                // Clip values to -999dB to avoid -Inf in JSON exports
+                lzeq = max(leq, -999.0).roundTo(1),
+                lceq = max(lceq, -999.0).roundTo(1),
+                laeq = max(laeq, -999.0).roundTo(1),
+                leqsPerThirdOctave = leqsPerThirdOctave,
+            )
         }
-        return leqRecords
+    }
+
+    /**
+     * Flushes internal data.
+     */
+    fun flush() {
+        samplesWindowing.flush()
     }
 }

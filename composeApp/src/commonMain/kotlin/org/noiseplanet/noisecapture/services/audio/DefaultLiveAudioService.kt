@@ -124,6 +124,7 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
         // Pause audio source, or cancel delayed start if needed
         audioSource.pause()
         startOnReady = false
+        indicatorsProcessing?.flush()
     }
 
     override fun getLeqRecordsFlow(): Flow<LeqRecord> {
@@ -188,7 +189,7 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
                 applyHannWindow = windowingMode == SpectrogramWindowingMode.HANN
             )
         }
-        return spectrogramDataProcessing?.pushSamples(audioSamples.epoch, audioSamples.samples)
+        return spectrogramDataProcessing?.pushSamples(audioSamples.timestamp, audioSamples.samples)
             .orEmpty().toList()
     }
 }

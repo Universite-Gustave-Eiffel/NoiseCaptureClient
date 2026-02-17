@@ -140,7 +140,7 @@ class SpectrogramDataProcessing(
      * @see <a href="https://www.dsprelated.com/freebooks/sasp/Filling_FFT_Input_Buffer.html">Filling the FFT Input Buffer</a>
      */
     private fun processWindow(window: Window): SpectrogramData {
-        return SpectrogramData(window.epoch, processWindowFloat(window), sampleRate)
+        return SpectrogramData(window.timestamp, processWindowFloat(window), sampleRate)
     }
 
     private fun processWindowFloat(window: Window): FloatArray {

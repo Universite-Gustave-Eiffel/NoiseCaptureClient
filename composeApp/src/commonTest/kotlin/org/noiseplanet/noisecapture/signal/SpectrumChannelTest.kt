@@ -1433,7 +1433,7 @@ class SpectrumChannelTest {
             // pad with zero
             signal = signal.copyOf(signal.size + (signal.size % sc.minimumSamplesLength))
         }
-        val frequencies = sc.getNominalFrequency()
+        val frequencies = sc.getNominalFrequencies()
         val thirdOctaves = sc.processSamples(signal)
 
         assertEquals(expectedLevel, thirdOctaves[frequencies.indexOf(125)], 0.1);

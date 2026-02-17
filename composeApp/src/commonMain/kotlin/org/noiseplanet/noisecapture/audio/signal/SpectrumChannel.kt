@@ -97,7 +97,7 @@ class SpectrumChannel {
     /**
      * @return Nominal frequency for printing results of columns of [.processSamples]
      */
-    fun getNominalFrequency(): List<Int> {
+    fun getNominalFrequencies(): List<Int> {
         return nominalFrequencies
     }
 

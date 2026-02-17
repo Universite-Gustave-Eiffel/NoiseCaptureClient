@@ -264,7 +264,7 @@ internal class IOSAudioSource : AudioSource(), KoinComponent {
             // Send processed audio samples through Channel
             emitAudioSamples(
                 AudioSamples(
-                    epoch = timestamp,
+                    timestamp = timestamp,
                     samplesBuffer,
                     audioTime.sampleRate.toInt(),
                 )

@@ -167,7 +167,7 @@ internal class AndroidAudioSource : AudioSource(), KoinComponent {
 
             emitAudioSamples(
                 AudioSamples(
-                    epoch = Clock.System.now().toEpochMilliseconds(),
+                    timestamp = Clock.System.now().toEpochMilliseconds(),
                     samples = outputSamples,
                     sampleRate = it.sampleRate,
                 )
