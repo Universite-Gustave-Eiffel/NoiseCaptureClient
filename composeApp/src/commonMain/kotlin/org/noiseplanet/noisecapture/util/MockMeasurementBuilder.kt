@@ -48,7 +48,6 @@ class MockMeasurementBuilder(
                 LeqRecord(
                     timestamp = currentTime,
                     lzeq = leq.roundTo(2),
-                    lceq = leq.roundTo(2),
                     laeq = leq.roundTo(2),
                     leqsPerThirdOctave = emptyMap() // TODO: LEq per third octave
                 )

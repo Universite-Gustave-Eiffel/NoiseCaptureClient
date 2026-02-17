@@ -73,7 +73,6 @@ class AcousticIndicatorsProcessing(
             )
             val leq = dbGain + 20 * log10(rms)
             val laeq = dbGain + spectrumChannel.processSamplesWeightA(audioSamples.samples)
-            val lceq = dbGain + spectrumChannel.processSamplesWeightC(audioSamples.samples)
 
             val thirdOctave = spectrumChannel.processSamples(audioSamples.samples)
             val thirdOctaveGain = 10 * log10(10.0.pow(dbGain / 10.0) / thirdOctave.size)
@@ -87,7 +86,6 @@ class AcousticIndicatorsProcessing(
                 timestamp = audioSamples.timestamp,
                 // Clip values to -999dB to avoid -Inf in JSON exports
                 lzeq = max(leq, -999.0).roundTo(1),
-                lceq = max(lceq, -999.0).roundTo(1),
                 laeq = max(laeq, -999.0).roundTo(1),
                 leqsPerThirdOctave = leqsPerThirdOctave,
             )
