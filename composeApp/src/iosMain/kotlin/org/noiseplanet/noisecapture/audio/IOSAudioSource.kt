@@ -31,7 +31,6 @@ import platform.AVFAudio.setPreferredIOBufferDuration
 import platform.AVFAudio.setPreferredSampleRate
 import platform.Foundation.NSNotification
 import platform.Foundation.NSTimeInterval
-import platform.posix.uint32_t
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -47,7 +46,8 @@ internal class IOSAudioSource : AudioSource(), KoinComponent {
 
     companion object {
 
-        const val SAMPLES_BUFFER_SIZE: uint32_t = 1024u
+        // 125ms target buffer duration
+        const val SAMPLES_BUFFER_DURATION: NSTimeInterval = 0.125
     }
 
 
@@ -121,9 +121,7 @@ internal class IOSAudioSource : AudioSource(), KoinComponent {
             val sampleRate = audioSession.sampleRate
             audioSession.setPreferredSampleRate(sampleRate, nsError.ptr)
 
-            val bufferDuration: NSTimeInterval =
-                1.0 / sampleRate * SAMPLES_BUFFER_SIZE.toDouble()
-            audioSession.setPreferredIOBufferDuration(bufferDuration, nsError.ptr)
+            audioSession.setPreferredIOBufferDuration(SAMPLES_BUFFER_DURATION, nsError.ptr)
 
             runCatchingNSError { nsError ->
                 // Set preferred input source (if any)
@@ -150,10 +148,11 @@ internal class IOSAudioSource : AudioSource(), KoinComponent {
         val inputNode = audioEngine.inputNode
         val busNumber: ULong = 0u // Mono input
         val inputFormat = inputNode.inputFormatForBus(busNumber)
+        val bufferSize = (audioSession.sampleRate * SAMPLES_BUFFER_DURATION).toUInt()
 
         inputNode.installTapOnBus(
             bus = busNumber,
-            bufferSize = SAMPLES_BUFFER_SIZE,
+            bufferSize = bufferSize,
             format = inputFormat,
         ) { buffer, audioTime ->
             try {
