@@ -31,7 +31,10 @@ internal class JsAudioSource : AudioSource(), KoinComponent {
 
     companion object {
 
-        const val SAMPLES_BUFFER_SIZE = 1024
+        // Buffer size must be a power of 2 in WebAudio, so take the value closest to 125ms buffer
+        // (would be 6000 for 48kHz and 5512 for 44.1kHz)
+        // https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/createScriptProcessor#buffersize
+        const val SAMPLES_BUFFER_SIZE = 4096
     }
 
 
