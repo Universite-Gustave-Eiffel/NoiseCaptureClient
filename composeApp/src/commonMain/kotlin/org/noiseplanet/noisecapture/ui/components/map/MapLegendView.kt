@@ -33,9 +33,12 @@ fun MapLegendView(
 
     // - Properties
 
-    val items: Map<String, Color> = NoiseLevelColorRamp.palette.mapKeys { entry ->
-        ">= ${entry.key.toInt()} dB"
-    }
+    val items: List<Pair<String, Color>> = NoiseLevelColorRamp.palette.toList()
+        .filter { (level, _) -> level > 0 }
+        .sortedByDescending { (level, _) -> level }
+        .map { (level, color) ->
+            Pair(">= ${level.toInt()} dB", color)
+        }
 
     val cancelButtonViewModel = NCButtonViewModel(
         title = Res.string.cancel,
