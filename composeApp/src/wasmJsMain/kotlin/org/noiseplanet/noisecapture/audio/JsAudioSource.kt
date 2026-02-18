@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import org.khronos.webgl.get
+import org.khronos.webgl.toFloatArray
 import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.interop.AudioContext
 import org.noiseplanet.noisecapture.interop.AudioNode
@@ -43,6 +44,7 @@ internal class JsAudioSource : AudioSource(), KoinComponent {
     private var audioContext: AudioContext? = null
     private var micNode: AudioNode? = null
     private var scriptProcessorNode: ScriptProcessorNode? = null
+    private var samplesBuffer = FloatArray(SAMPLES_BUFFER_SIZE)
 
 
     // - Lifecycle
@@ -96,15 +98,22 @@ internal class JsAudioSource : AudioSource(), KoinComponent {
             scriptProcessorNode?.onaudioprocess = { audioProcessingEvent ->
                 scope.launch {
                     val timestamp = Clock.System.now().toEpochMilliseconds()
-
                     val buffer = audioProcessingEvent.inputBuffer
                     val jsBuffer = buffer.getChannelData(0)
-                    val samplesBuffer = FloatArray(jsBuffer.length) { i -> jsBuffer[i] }
+
+                    // In case of inconsistency between js buffer size and internal buffer, reallocate
+                    if (jsBuffer.length != samplesBuffer.size) {
+                        samplesBuffer = FloatArray(jsBuffer.length)
+                    }
+                    // Pour audio samples in reusable buffer
+                    for (index in 0 until samplesBuffer.size) {
+                        samplesBuffer[index] = jsBuffer[index]
+                    }
 
                     emitAudioSamples(
                         AudioSamples(
                             timestamp,
-                            samplesBuffer,
+                            jsBuffer.toFloatArray(),
                             buffer.sampleRate.toInt()
                         )
                     )
