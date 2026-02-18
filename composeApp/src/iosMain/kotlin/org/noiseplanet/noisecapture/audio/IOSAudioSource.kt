@@ -56,6 +56,8 @@ internal class IOSAudioSource : AudioSource(), KoinComponent {
     private val audioSession = AVAudioSession.sharedInstance()
     private var audioEngine: AVAudioEngine? = null
 
+    private var reusableBuffer: FloatArray? = null
+
     private val interruptionNotificationHandler = NSNotificationListener(
         notificationName = AVAudioSessionInterruptionNotification,
         `object` = audioSession,
@@ -243,20 +245,28 @@ internal class IOSAudioSource : AudioSource(), KoinComponent {
      * @throws IllegalStateException Thrown if the incoming data doesn't conform to what
      *                               is expected by the shared audio code.
      */
-    private fun processBuffer(buffer: AVAudioPCMBuffer?, audioTime: AVAudioTime?) {
+    private fun processBuffer(
+        buffer: AVAudioPCMBuffer?,
+        audioTime: AVAudioTime?,
+    ) {
         requireNotNull(buffer) { "Null buffer received" }
         requireNotNull(audioTime) { "Null audio time receiver" }
 
         // Buffer size provided to audio engine is a request but not a guarantee
-        val actualSamplesCount = buffer.frameLength.toInt()
+        val actualBufferSize = buffer.frameLength.toInt()
+        // If reusable buffer size doesn't actual buffer size, reallocate
+        if (reusableBuffer?.size != actualBufferSize) {
+            reusableBuffer = FloatArray(actualBufferSize)
+        }
+        val outBuffer = reusableBuffer ?: return
 
         buffer.floatChannelData?.let { channelData ->
-            // Convert native float buffer to a Kotlin FloatArray
-            val samplesBuffer = FloatArray(actualSamplesCount) { index ->
+            // Pour native float buffer into Kotlin FloatArray
+            for (index in 0 until actualBufferSize) {
                 // Channel data is internally a pointer to a float array
                 // so we need to go through pointed.value to access the actual
                 // array and retrieve the element using index
-                channelData.pointed.value?.get(index) ?: 0f
+                outBuffer[index] = channelData.pointed.value?.get(index) ?: 0f
             }
             val timestamp = Clock.System.now().toEpochMilliseconds()
 
@@ -264,8 +274,8 @@ internal class IOSAudioSource : AudioSource(), KoinComponent {
             emitAudioSamples(
                 AudioSamples(
                     timestamp = timestamp,
-                    samplesBuffer,
-                    audioTime.sampleRate.toInt(),
+                    samples = outBuffer,
+                    sampleRate = audioTime.sampleRate.toInt(),
                 )
             )
         }

@@ -43,6 +43,7 @@ class AcousticIndicatorsProcessing(
 
     private val samplesWindowing = SamplesWindowing(
         windowSize = (sampleRate * WINDOW_TIME_SECONDS).toInt(),
+        memoryStrategy = SamplesWindowing.MemoryStrategy.BUFFER_REFERENCE,
     )
     private val spectrumChannel: SpectrumChannel = SpectrumChannel().apply {
         this.loadConfiguration(

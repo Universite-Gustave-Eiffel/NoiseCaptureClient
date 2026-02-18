@@ -47,6 +47,18 @@ class SamplesWindowing(
      * @return Windowed audio samples, with timestamp associated to each window
      */
     fun pushSamples(audioSamples: AudioSamples): List<Window> = sequence {
+        // If buffer is empty and incoming samples match expected window size, just return it as is
+        if (audioSamples.samples.size == windowSize && bufferCursor == 0) {
+            yield(
+                Window(
+                    timestamp = audioSamples.timestamp, samples = when (memoryStrategy) {
+                        MemoryStrategy.BUFFER_COPY -> audioSamples.samples.copyOf()
+                        MemoryStrategy.BUFFER_REFERENCE -> audioSamples.samples
+                    }
+                )
+            )
+            return@sequence
+        }
         // Tracks the current offset in the incoming samples array
         var samplesCursor = 0
 
