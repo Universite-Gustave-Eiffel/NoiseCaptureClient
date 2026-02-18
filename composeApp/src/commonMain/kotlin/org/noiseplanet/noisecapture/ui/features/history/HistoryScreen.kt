@@ -27,8 +27,10 @@ import kotlinx.datetime.format.FormatStringsInDatetimeFormats
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.history_empty_state_hint
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
+import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.ui.navigation.router.HistoryRouter
 import org.noiseplanet.noisecapture.util.AdaptiveUtil
 import kotlin.time.ExperimentalTime
@@ -49,7 +51,8 @@ fun HistoryScreen(
 
     // - Properties
 
-    val measurements by viewModel.measurementsFlow.collectAsStateWithLifecycle()
+    val logger = koinInject<Logger>()
+    val measurementIds by viewModel.measurementIdsFlow.collectAsStateWithLifecycle()
 
 
     // - Layout
@@ -63,12 +66,17 @@ fun HistoryScreen(
                     .asPaddingValues(),
                 modifier = Modifier.widthIn(max = AdaptiveUtil.MAX_FULL_SCREEN_WIDTH)
             ) {
-                itemsIndexed(measurements) { index, measurement ->
+                itemsIndexed(
+                    items = measurementIds,
+                    key = { _, measurementId -> measurementId }
+                ) { index, measurementId ->
                     val isFirstInSection = index == 0
-                    val isLastInSection = index == measurements.size - 1
+                    val isLastInSection = index == measurementIds.size - 1
+
+                    logger.warning("MEASUREMENT ID: $measurementId")
 
                     HistoryItemView(
-                        measurement = measurement,
+                        measurementId = measurementId,
                         onClick = router::onClickMeasurement,
                         isFirstInSection = isFirstInSection,
                         isLastInSection = isLastInSection,
@@ -84,7 +92,7 @@ fun HistoryScreen(
                 }
             }
 
-            if (measurements.isEmpty()) {
+            if (measurementIds.isEmpty()) {
                 Text(
                     text = stringResource(Res.string.history_empty_state_hint),
                     textAlign = TextAlign.Center,

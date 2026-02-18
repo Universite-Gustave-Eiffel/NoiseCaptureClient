@@ -8,7 +8,6 @@ import noisecapture.composeapp.generated.resources.history_title
 import org.jetbrains.compose.resources.StringResource
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
@@ -20,7 +19,7 @@ class HistoryScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
 
     private val measurementService: MeasurementService by inject()
 
-    val measurementsFlow: StateFlow<List<Measurement>> = measurementService.getAllMeasurementsFlow()
+    val measurementIdsFlow: StateFlow<List<String>> = measurementService.getAllMeasurementIdsFlow()
         .stateInWhileSubscribed(
             scope = viewModelScope,
             initialValue = emptyList(),
