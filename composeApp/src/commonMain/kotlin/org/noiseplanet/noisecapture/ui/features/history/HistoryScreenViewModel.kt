@@ -3,12 +3,12 @@ package org.noiseplanet.noisecapture.ui.features.history
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.history_title
 import org.jetbrains.compose.resources.StringResource
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
@@ -20,7 +20,11 @@ class HistoryScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
 
     private val measurementService: MeasurementService by inject()
 
-    val measurementsFlow: StateFlow<List<Measurement>> = measurementService.getAllMeasurementsFlow()
+    val measurementIdsFlow: StateFlow<List<String>> = measurementService.getAllMeasurementIdsFlow()
+        .map {
+            // Most recent measurements comes first
+            it.reversed()
+        }
         .stateInWhileSubscribed(
             scope = viewModelScope,
             initialValue = emptyList(),
