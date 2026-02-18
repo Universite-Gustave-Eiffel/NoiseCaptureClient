@@ -88,6 +88,9 @@ fun RecordingPager(
                                 minFontSize = 12.sp,
                                 maxFontSize = 16.sp,
                                 stepSize = 0.25.sp,
+                            ),
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         )
                     },

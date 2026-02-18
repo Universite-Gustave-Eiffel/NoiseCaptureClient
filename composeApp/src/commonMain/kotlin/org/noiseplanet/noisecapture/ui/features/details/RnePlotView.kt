@@ -104,13 +104,12 @@ fun RnePlotView(
         Text(
             text = stringResource(Res.string.details_rne_plot_title),
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface,
         )
 
         Text(
             text = stringResource(Res.string.details_rne_plot_description),
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
         Row(

@@ -73,7 +73,6 @@ fun SoundLevelMeterView(
                         style = MaterialTheme.typography.labelLarge.copy(
                             fontWeight = FontWeight.SemiBold
                         ),
-                        color = MaterialTheme.colorScheme.onSurface
                     )
 
                     Text(

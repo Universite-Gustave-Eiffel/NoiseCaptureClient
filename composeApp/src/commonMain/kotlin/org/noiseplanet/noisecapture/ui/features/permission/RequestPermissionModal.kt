@@ -121,7 +121,6 @@ fun RequestPermissionModal(
             Text(
                 text = stringResource(viewState.title),
                 style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.SemiBold,
                 textAlign = TextAlign.Center,
             )
