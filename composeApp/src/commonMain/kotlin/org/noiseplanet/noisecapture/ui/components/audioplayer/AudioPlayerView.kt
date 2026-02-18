@@ -72,7 +72,7 @@ fun AudioPlayerView(
         Text(
             text = stringResource(Res.string.details_audio_player_description),
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
         Row(
@@ -92,7 +92,7 @@ fun AudioPlayerView(
                 text = "-" + (playerCurrentPosition - viewModel.duration)
                     .toHhMmSs(hideHoursIfZero = true),
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

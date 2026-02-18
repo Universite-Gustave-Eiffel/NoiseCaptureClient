@@ -87,13 +87,12 @@ fun HomeMicrophoneSetupView(
                             Text(
                                 text = title,
                                 style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.weight(1f),
                             )
                             Icon(
                                 imageVector = Icons.Default.ArrowDropDown,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurface,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
                         Text(
@@ -184,7 +183,6 @@ private fun MicrophoneSelectMenu(
                         Text(
                             text = title,
                             style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onSurface,
                         )
                         Text(
                             text = description,

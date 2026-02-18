@@ -16,7 +16,6 @@ import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
@@ -70,7 +69,7 @@ fun SoundLevelMeterHeaderView(
                     Text(
                         text = stringResource(viewModel.soundLevelMeterHintText),
                         style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.alpha(0.75f)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
                     NCButton(
@@ -89,7 +88,8 @@ fun SoundLevelMeterHeaderView(
                     Text(
                         text = stringResource(viewModel.soundLevelMeterHintText),
                         style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.alpha(0.75f).weight(1f)
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.weight(1f)
                     )
 
                     NCButton(

@@ -62,15 +62,14 @@ fun <T : Any> SettingsItem(
                 modifier = Modifier.weight(0.8f, fill = false)
             ) {
                 Text(
-                    stringResource(viewModel.title),
+                    text = stringResource(viewModel.title),
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
-                    stringResource(viewModel.description),
+                    text = stringResource(viewModel.description),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     overflow = TextOverflow.Ellipsis,
                 )
             }

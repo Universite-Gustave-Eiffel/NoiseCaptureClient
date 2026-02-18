@@ -103,9 +103,8 @@ private fun LastMeasurementsViewContentReady(
             ) {
                 Text(
                     text = stringResource(Res.string.home_statistics_title),
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    ),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
 
                 StatisticsElement(

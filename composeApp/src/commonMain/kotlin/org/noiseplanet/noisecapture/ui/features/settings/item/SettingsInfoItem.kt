@@ -66,14 +66,13 @@ fun SettingsInfoItem(
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                stringResource(Res.string.settings_info_app_title),
+                text = stringResource(Res.string.settings_info_app_title),
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 text = info,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 overflow = TextOverflow.Ellipsis,
             )
         }

@@ -77,7 +77,7 @@ fun LaeqSummaryView(
                 append(stringResource(Res.string.details_laeq_summary_max) + "\n")
             },
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         Row(modifier = Modifier.fillMaxWidth()) {
