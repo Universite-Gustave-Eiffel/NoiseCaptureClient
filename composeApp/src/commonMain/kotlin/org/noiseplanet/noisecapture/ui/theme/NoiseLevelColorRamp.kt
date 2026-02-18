@@ -60,6 +60,7 @@ object NoiseLevelColorRamp {
      */
     val palette: Map<Double, Color> = mapOf(
         0.0 to level1,
+        30.0 to level1,
         35.0 to level2,
         40.0 to level3,
         45.0 to level4,
@@ -77,6 +78,7 @@ object NoiseLevelColorRamp {
      */
     val paletteDarker: Map<Double, Color> = mapOf(
         0.0 to level1Dark,
+        30.0 to level1Dark,
         35.0 to level2Dark,
         40.0 to level3Dark,
         45.0 to level4Dark,
@@ -94,6 +96,7 @@ object NoiseLevelColorRamp {
      */
     val paletteLighter: Map<Double, Color> = mapOf(
         0.0 to level1Light,
+        30.0 to level1Light,
         35.0 to level2Light,
         40.0 to level3Light,
         45.0 to level4Light,
@@ -151,5 +154,34 @@ object NoiseLevelColorRamp {
             .minByOrNull { value - it.key }
             ?.value
             ?: Color.Black
+    }
+
+    /**
+     * Returns a [label: color] legend representation of the given palette
+     *
+     * @param palette Target color palette
+     * @param descendingOrder If true, elements will be returned in descending order.
+     * @return Legend label to color representation
+     */
+    fun paletteAsLegendElements(
+        palette: Map<Double, Color> = NoiseLevelColorRamp.palette,
+        descendingOrder: Boolean = false,
+    ): List<Pair<String, Color>> {
+        val legendList = palette.filter { (level, _) -> level > 0 }.toList()
+
+        val legend = legendList.mapIndexed { index, (level, color) ->
+            val label = when (index) {
+                0 -> "<${level.toInt()} dB(A)"
+                legendList.lastIndex -> ">${level.toInt()} dB(A)"
+                else -> "${level.toInt()}-${legendList[index + 1].first.toInt()} dB(A)"
+            }
+            Pair(label, color)
+        }
+
+        return if (descendingOrder) {
+            legend.reversed()
+        } else {
+            legend
+        }
     }
 }

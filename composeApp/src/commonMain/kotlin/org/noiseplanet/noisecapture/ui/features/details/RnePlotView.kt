@@ -53,15 +53,7 @@ fun RnePlotView(
     // - Properties
 
     var selectedSliceIndex: Int? by remember { mutableStateOf(null) }
-    val legendData = remember {
-        NoiseLevelColorRamp.palette.keys.mapIndexed { index, level ->
-            when (index) {
-                0 -> "<${rneData.keys.elementAt(index + 1).toInt()} dB(A)"
-                rneData.keys.size - 1 -> ">${level.toInt()} dB(A)"
-                else -> "${level.toInt()}-${rneData.keys.elementAt(index + 1).toInt()} dB(A)"
-            }
-        }.zip(NoiseLevelColorRamp.palette.values).toMap()
-    }
+    val legendData = remember { NoiseLevelColorRamp.paletteAsLegendElements() }
 
 
     // - Subviews
@@ -191,13 +183,11 @@ fun RnePlotView(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                legendData.keys.chunked(6).forEach { chunk ->
+                legendData.chunked(6).forEach { chunk ->
                     Column {
-                        chunk.forEach { label ->
-                            legendData[label]?.let { color ->
-                                val index = legendData.keys.indexOf(label)
-                                LegendElement(color, label, index)
-                            }
+                        chunk.forEachIndexed { index, (label, color) ->
+                            val trueIndex = legendData.indexOfFirst { it.first == label }
+                            LegendElement(color, label, trueIndex)
                         }
                     }
                 }

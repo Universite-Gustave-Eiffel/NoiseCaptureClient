@@ -18,11 +18,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.details_audio_player_description
+import noisecapture.composeapp.generated.resources.details_audio_player_disclaimer
 import noisecapture.composeapp.generated.resources.details_audio_player_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -70,7 +75,13 @@ fun AudioPlayerView(
         )
 
         Text(
-            text = stringResource(Res.string.details_audio_player_description),
+            text = buildAnnotatedString {
+                append(stringResource(Res.string.details_audio_player_description))
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                    // show disclaimer with bold font
+                    append(stringResource(Res.string.details_audio_player_disclaimer))
+                }
+            },
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
