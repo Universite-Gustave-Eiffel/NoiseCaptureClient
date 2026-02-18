@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.ui.theme
 
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RippleConfiguration
@@ -110,7 +111,8 @@ fun AppTheme(
 
     CompositionLocalProvider(
         LocalRippleConfiguration provides rippleConfiguration,
-        LocalDensity provides density
+        LocalDensity provides density,
+        LocalContentColor provides colorScheme.onSurface,
     ) {
         MaterialTheme(
             colorScheme = colorScheme,
