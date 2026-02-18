@@ -155,4 +155,33 @@ object NoiseLevelColorRamp {
             ?.value
             ?: Color.Black
     }
+
+    /**
+     * Returns a [label: color] legend representation of the given palette
+     *
+     * @param palette Target color palette
+     * @param descendingOrder If true, elements will be returned in descending order.
+     * @return Legend label to color representation
+     */
+    fun paletteAsLegendElements(
+        palette: Map<Double, Color> = NoiseLevelColorRamp.palette,
+        descendingOrder: Boolean = false,
+    ): List<Pair<String, Color>> {
+        val legendList = palette.filter { (level, _) -> level > 0 }.toList()
+
+        val legend = legendList.mapIndexed { index, (level, color) ->
+            val label = when (index) {
+                0 -> "<${level.toInt()} dB(A)"
+                legendList.lastIndex -> ">${level.toInt()} dB(A)"
+                else -> "${level.toInt()}-${legendList[index + 1].first.toInt()} dB(A)"
+            }
+            Pair(label, color)
+        }
+
+        return if (descendingOrder) {
+            legend.reversed()
+        } else {
+            legend
+        }
+    }
 }

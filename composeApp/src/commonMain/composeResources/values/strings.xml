@@ -78,6 +78,7 @@
 
     <string name="details_audio_player_title">Recorded audio</string>
     <string name="details_audio_player_description">Listen to the audio that was recorded during your measurement.</string>
+    <string name="details_audio_player_disclaimer">This is for your ears only, audio recordings are never sent to our servers.</string>
 
     <string name="details_spl_time_plot_title">Noise level over time</string>
     <string name="details_spl_time_plot_description">Visualise the evolution of recorded noise level as a function of time.</string>
