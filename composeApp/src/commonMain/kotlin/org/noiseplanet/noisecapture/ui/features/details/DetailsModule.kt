@@ -3,6 +3,7 @@ package org.noiseplanet.noisecapture.ui.features.details
 import androidx.window.core.layout.WindowSizeClass
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
+import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.ui.components.audioplayer.AudioPlayerViewModel
 import org.noiseplanet.noisecapture.ui.components.map.MapViewModel
 import org.noiseplanet.noisecapture.ui.components.map.MapViewModelParameters
@@ -10,8 +11,8 @@ import org.noiseplanet.noisecapture.ui.features.details.manage.ManageMeasurement
 
 val detailsModule = module {
 
-    viewModel { (filePath: String) ->
-        AudioPlayerViewModel(filePath)
+    viewModel { (measurement: Measurement) ->
+        AudioPlayerViewModel(measurement)
     }
 
     viewModel { (measurementId: String) ->

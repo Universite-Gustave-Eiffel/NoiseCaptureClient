@@ -3,6 +3,7 @@ package org.noiseplanet.noisecapture.ui.components.audioplayer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
@@ -14,8 +15,11 @@ import org.koin.core.component.inject
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.audio.player.AudioPlayer
 import org.noiseplanet.noisecapture.log.Logger
+import org.noiseplanet.noisecapture.model.dao.Measurement
+import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.ui.components.button.IconNCButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
+import org.noiseplanet.noisecapture.ui.components.button.NCButtonStyle
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
 import org.noiseplanet.noisecapture.util.injectLogger
 import kotlin.time.Duration
@@ -23,7 +27,7 @@ import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 class AudioPlayerViewModel(
-    val filePath: String,
+    val measurement: Measurement,
 ) : ViewModel(), KoinComponent {
 
     // - Constants
@@ -40,7 +44,8 @@ class AudioPlayerViewModel(
     // - Properties
 
     private val logger: Logger by injectLogger()
-    private val audioPlayer: AudioPlayer by inject { parametersOf(filePath) }
+    private val audioPlayer: AudioPlayer by inject { parametersOf(measurement.recordedAudioUrl) }
+    private val measurementService: MeasurementService by inject()
 
     private val playPauseButtonViewModelFlow = MutableStateFlow(getButtonViewModel())
     val playPauseButtonViewModel: StateFlow<NCButtonViewModel> = playPauseButtonViewModelFlow
@@ -53,6 +58,12 @@ class AudioPlayerViewModel(
 
     val duration: Duration
         get() = audioPlayer.duration
+
+    val deleteButtonViewModel = IconNCButtonViewModel(
+        icon = Icons.Outlined.DeleteOutline,
+        style = NCButtonStyle.TEXT,
+        colors = { NCButtonColors.Defaults.text() }
+    )
 
 
     // - Lifecycle
@@ -100,6 +111,12 @@ class AudioPlayerViewModel(
 
     fun release() {
         audioPlayer.release()
+    }
+
+    fun deleteAudioClip() {
+        viewModelScope.launch {
+            measurementService.deleteMeasurementAssociatedAudio(measurement)
+        }
     }
 
 
