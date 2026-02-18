@@ -60,6 +60,7 @@ object NoiseLevelColorRamp {
      */
     val palette: Map<Double, Color> = mapOf(
         0.0 to level1,
+        30.0 to level1,
         35.0 to level2,
         40.0 to level3,
         45.0 to level4,
@@ -77,6 +78,7 @@ object NoiseLevelColorRamp {
      */
     val paletteDarker: Map<Double, Color> = mapOf(
         0.0 to level1Dark,
+        30.0 to level1Dark,
         35.0 to level2Dark,
         40.0 to level3Dark,
         45.0 to level4Dark,
@@ -94,6 +96,7 @@ object NoiseLevelColorRamp {
      */
     val paletteLighter: Map<Double, Color> = mapOf(
         0.0 to level1Light,
+        30.0 to level1Light,
         35.0 to level2Light,
         40.0 to level3Light,
         45.0 to level4Light,
