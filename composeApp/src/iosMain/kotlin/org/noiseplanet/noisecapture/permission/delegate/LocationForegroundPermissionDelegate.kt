@@ -7,18 +7,24 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.permission.LocationManager
 import org.noiseplanet.noisecapture.permission.PermissionState
-import org.noiseplanet.noisecapture.permission.util.openNSUrl
+import org.noiseplanet.noisecapture.permission.util.openURL
+import org.noiseplanet.noisecapture.util.injectLogger
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 import platform.CoreLocation.kCLAuthorizationStatusAuthorizedAlways
 import platform.CoreLocation.kCLAuthorizationStatusAuthorizedWhenInUse
 import platform.CoreLocation.kCLAuthorizationStatusDenied
 import platform.CoreLocation.kCLAuthorizationStatusRestricted
+import platform.UIKit.UIApplication
+import platform.UIKit.UIApplicationOpenSettingsURLString
 
 internal class LocationForegroundPermissionDelegate : PermissionDelegate, KoinComponent {
 
     // - Properties
+
+    private val logger: Logger by injectLogger()
 
     private val locationManager: LocationManager by inject()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -63,6 +69,8 @@ internal class LocationForegroundPermissionDelegate : PermissionDelegate, KoinCo
     override fun canOpenSettings(): Boolean = true
 
     override fun openSettingPage() {
-        openNSUrl("App-Prefs:Privacy&path=LOCATION")
+        UIApplication.sharedApplication.openURL(UIApplicationOpenSettingsURLString) { _, error ->
+            error?.let { logger.error(it) }
+        }
     }
 }
