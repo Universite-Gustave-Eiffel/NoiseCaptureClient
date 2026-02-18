@@ -8,7 +8,10 @@ import android.media.AudioRecord
 import android.media.MediaRecorder
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.newSingleThreadContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.noiseplanet.noisecapture.util.getInputDevice
@@ -41,6 +44,9 @@ internal class AndroidAudioSource : AudioSource(), KoinComponent {
     private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     private var audioRecord: AudioRecord? = null
 
+    private var audioJob: Job? = null
+    private val audioThread = newSingleThreadContext("audio-source")
+
 
     // - Public functions
 
@@ -60,38 +66,31 @@ internal class AndroidAudioSource : AudioSource(), KoinComponent {
 
         // Initialise AudioRecord with the target supported configuration
         audioRecord = AudioRecord(audioSourceConfig, sampleRate, CHANNEL, ENCODING, bufferSizeBytes)
-            .apply {
-                // Set an update listener that will fetch and process audio data every 125ms
-                setRecordPositionUpdateListener(object : AudioRecord.OnRecordPositionUpdateListener {
-                    override fun onMarkerReached(caller: AudioRecord?) {
-                        // Do nothing
-                    }
-
-                    override fun onPeriodicNotification(caller: AudioRecord?) {
-                        scope.launch {
-                            // Process audio data in background thread
-                            onAudioSamplesAvailable(bufferSizeBytes)
-                        }
-                    }
-                })
-                // Call our listener every n frames
-                positionNotificationPeriod = periodSizeInFrames
-
-                // If provided target device ID is found in available input devices,
-                // use it as input microphone
-                microphoneProvider.preferredInput.value?.id?.toIntOrNull()
-                    ?.let { audioManager.getInputDevice(it) }
-                    ?.let { preferredDevice = it }
-            }
+        // If provided target device ID is found in available input devices,
+        // use it as input microphone
+        microphoneProvider.preferredInput.value?.id?.toIntOrNull()
+            ?.let { audioManager.getInputDevice(it) }
+            ?.let { audioRecord?.preferredDevice = it }
     }
 
     override fun startInternal() {
-        audioRecord?.startRecording()
+        audioRecord?.let {
+            // Start audio recording
+            it.startRecording()
+            // Launch a coroutine job on its dedicated thread that will process incoming samples
+            audioJob = scope.launch(audioThread) {
+                val buffer = FloatArray(it.bufferSizeInFrames)
+                while (isActive) {
+                    processNextAvailableAudioData(buffer)
+                }
+            }
+        }
     }
 
     override fun pauseInternal() {
         audioRecord?.stop()
-
+        audioJob?.cancel()
+        audioJob = null
     }
 
     override suspend fun releaseInternal() {
@@ -139,12 +138,12 @@ internal class AndroidAudioSource : AudioSource(), KoinComponent {
     }
 
     /**
-     * Called whenever audio samples are available for read
+     * Reads incoming audio data into output buffer.
+     * The read is blocking and will only return when enough data is available, so this should
+     * run in a dedicated background thread.
      */
-    private fun onAudioSamplesAvailable(bufferSizeBytes: Int) {
+    private fun processNextAvailableAudioData(buffer: FloatArray) {
         audioRecord?.let {
-            // Initialize output buffer
-            val buffer = FloatArray(bufferSizeBytes / 4)
             // Read incoming audio samples (use blocking read to get all samples at once)
             val read = it.read(buffer, 0, buffer.size, AudioRecord.READ_BLOCKING)
 
