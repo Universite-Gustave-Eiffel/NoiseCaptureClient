@@ -1,8 +1,10 @@
 import org.noiseplanet.noisecapture.interop.navigator
 import org.noiseplanet.noisecapture.model.dao.UserAgent
 import org.noiseplanet.noisecapture.permission.Permission
+import org.noiseplanet.noisecapture.ui.navigation.NavigationTransitions
 import org.noiseplanet.noisecapture.ui.navigation.RouteId
 import org.noiseplanet.noisecapture.ui.navigation.RouteIds
+import org.noiseplanet.noisecapture.ui.navigation.WebNavigationTransitions
 
 class WasmJSPlatform : Platform {
 
@@ -34,4 +36,7 @@ class WasmJSPlatform : Platform {
                 Permission.LOCATION_BACKGROUND,
             )
         )
+
+    override val navigationTransitions: NavigationTransitions
+        get() = WebNavigationTransitions
 }

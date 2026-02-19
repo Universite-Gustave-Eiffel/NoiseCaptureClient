@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.ui.navigation
 
+import Platform
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,6 +12,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.permission.Permission
@@ -43,13 +45,20 @@ fun NavigationManager(
     showPermissionPrompt: (Permission) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // - Properties
+
+    val platform: Platform = koinInject()
+
+
+    // - Navigation graph
+
     NavHost(
         navController = navController,
         startDestination = HomeRoute(),
-        enterTransition = Transitions.enterTransition,
-        exitTransition = Transitions.exitTransition,
-        popEnterTransition = Transitions.popEnterTransition,
-        popExitTransition = Transitions.popExitTransition,
+        enterTransition = platform.navigationTransitions.enterTransition,
+        exitTransition = platform.navigationTransitions.exitTransition,
+        popEnterTransition = platform.navigationTransitions.popEnterTransition,
+        popExitTransition = platform.navigationTransitions.popExitTransition,
         modifier = modifier.fillMaxSize()
             .padding(top = innerPadding.calculateTopPadding())
             .background(MaterialTheme.colorScheme.surface)
