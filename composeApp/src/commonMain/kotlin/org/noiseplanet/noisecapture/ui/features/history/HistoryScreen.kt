@@ -27,10 +27,8 @@ import kotlinx.datetime.format.FormatStringsInDatetimeFormats
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.history_empty_state_hint
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
 import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
-import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.ui.navigation.router.HistoryRouter
 import org.noiseplanet.noisecapture.util.AdaptiveUtil
 import kotlin.time.ExperimentalTime
@@ -51,7 +49,6 @@ fun HistoryScreen(
 
     // - Properties
 
-    val logger = koinInject<Logger>()
     val measurementIds by viewModel.measurementIdsFlow.collectAsStateWithLifecycle()
 
 
@@ -72,8 +69,6 @@ fun HistoryScreen(
                 ) { index, measurementId ->
                     val isFirstInSection = index == 0
                     val isLastInSection = index == measurementIds.size - 1
-
-                    logger.warning("MEASUREMENT ID: $measurementId")
 
                     HistoryItemView(
                         measurementId = measurementId,
