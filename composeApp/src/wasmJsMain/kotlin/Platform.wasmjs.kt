@@ -39,4 +39,8 @@ class WasmJSPlatform : Platform {
 
     override val navigationTransitions: NavigationTransitions
         get() = WebNavigationTransitions
+
+    // On web, rely on the browser's backward/forward buttons for navigation
+    override val showAppBarBackButton: Boolean
+        get() = false
 }

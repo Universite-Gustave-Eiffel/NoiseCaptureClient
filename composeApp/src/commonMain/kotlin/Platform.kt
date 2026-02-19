@@ -54,4 +54,11 @@ interface Platform {
      */
     val navigationTransitions: NavigationTransitions
         get() = MobileNavigationTransitions
+
+    /**
+     * If true, show the back arrow button in app bar to navigate back.
+     * Defaults to `true`.
+     */
+    val showAppBarBackButton: Boolean
+        get() = true
 }
