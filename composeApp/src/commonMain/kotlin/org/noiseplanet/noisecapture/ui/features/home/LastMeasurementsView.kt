@@ -1,7 +1,5 @@
 package org.noiseplanet.noisecapture.ui.features.home
 
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -53,16 +51,15 @@ fun LastMeasurementsView(
 
     // - Layout
 
-    Crossfade(viewState, modifier = modifier) { viewState ->
-        when (viewState) {
-            is LastMeasurementsViewModel.ViewState.Loading -> LastMeasurementsViewLoading()
+    when (viewState) {
+        is LastMeasurementsViewModel.ViewState.Loading -> LastMeasurementsViewLoading()
 
-            is LastMeasurementsViewModel.ViewState.ContentReady -> LastMeasurementsViewContentReady(
-                viewState,
-                onClickMeasurement = onClickMeasurement,
-                onClickOpenHistoryButton = onClickOpenHistoryButton,
-            )
-        }
+        is LastMeasurementsViewModel.ViewState.ContentReady -> LastMeasurementsViewContentReady(
+            viewState as LastMeasurementsViewModel.ViewState.ContentReady,
+            onClickMeasurement = onClickMeasurement,
+            onClickOpenHistoryButton = onClickOpenHistoryButton,
+            modifier = modifier,
+        )
     }
 }
 
@@ -81,7 +78,7 @@ private fun LastMeasurementsViewContentReady(
         return
     }
 
-    Column(modifier = modifier.animateContentSize()) {
+    Column(modifier = modifier) {
         ListSectionHeader(
             title = Res.string.home_last_measurements_section_header,
             modifier = Modifier.padding(start = 12.dp),
