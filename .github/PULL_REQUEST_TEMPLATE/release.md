@@ -14,4 +14,5 @@ _Any additional notes that are related to this deployment_
 
 - [ ] Code compiles correctly on all platforms
 - [ ] All pre-existing tests are passing
-- [ ] [CHANGELOG.md](../../CHANGELOG.md) is in sync and contains all the changes of this new version 
+- [ ] In [CHANGELOG.md](../../CHANGELOG.md), the `[Unreleased]` section was replaced with this
+  version's number and the corresponding release date.
