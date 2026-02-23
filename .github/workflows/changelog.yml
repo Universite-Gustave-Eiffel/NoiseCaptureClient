@@ -1,0 +1,26 @@
+name: Check CHANGELOG for PR reference
+
+on:
+  pull_request:
+    types: [ opened, reopened, synchronize, edited ]
+
+jobs:
+  check-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get PR number
+        id: pr
+        run: echo "PR_NUMBER=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+
+      - name: Check CHANGELOG for PR reference
+        run: |
+          PR_NUMBER="#${{ steps.pr.outputs.PR_NUMBER }}"
+          if grep -q "$PR_NUMBER" CHANGELOG.md; then
+            echo "PR $PR_NUMBER is referenced in CHANGELOG.md"
+          else
+            echo "::error::PR $PR_NUMBER is NOT referenced in CHANGELOG.md. Please add a reference to your changes in the CHANGELOG.md file."
+            exit 1
+          fi
