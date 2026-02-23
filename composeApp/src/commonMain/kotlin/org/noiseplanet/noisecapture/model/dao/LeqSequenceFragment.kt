@@ -31,7 +31,6 @@ data class LeqSequenceFragment(
 
     val lzeq: MutableList<Double> = mutableListOf(),
     val laeq: MutableList<Double> = mutableListOf(),
-    val lceq: MutableList<Double> = mutableListOf(),
 
     val leqsPerThirdOctaveBand: MutableMap<Int, MutableList<Double>> = mutableMapOf(),
 ) : SequenceFragment<LeqRecord> {
@@ -40,7 +39,6 @@ data class LeqSequenceFragment(
         timestamp.add(element.timestamp)
         lzeq.add(element.lzeq)
         laeq.add(element.laeq)
-        lceq.add(element.lzeq)
 
         element.leqsPerThirdOctave.forEach { entry ->
             // For each third octave band, if the frequency already exists in the map,

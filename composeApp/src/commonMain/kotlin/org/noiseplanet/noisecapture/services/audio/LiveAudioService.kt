@@ -3,7 +3,7 @@ package org.noiseplanet.noisecapture.services.audio
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import org.noiseplanet.noisecapture.audio.AcousticIndicatorsProcessing
-import org.noiseplanet.noisecapture.audio.AudioSourceState
+import org.noiseplanet.noisecapture.audio.AudioSource
 import org.noiseplanet.noisecapture.audio.signal.LevelDisplayWeightedDecay
 import org.noiseplanet.noisecapture.audio.signal.window.SpectrogramData
 import org.noiseplanet.noisecapture.model.dao.LeqRecord
@@ -33,26 +33,14 @@ interface LiveAudioService {
     // - Properties
 
     /**
-     * True if service is currently monitoring incoming audio,
-     * false otherwise
+     * True if audio source is currently running.
      */
-    val isRunning: Boolean
+    val isRunning: StateFlow<Boolean>
 
     /**
-     * A flow of [isRunning] values.
+     * Flow of current [AudioSource] state.
      */
-    val isRunningFlow: StateFlow<Boolean>
-
-    /**
-     * State of the underlying audio source.
-     * Can be used to reflect system interruptions or resumes to user interface
-     */
-    val audioSourceState: AudioSourceState
-
-    /**
-     * A flow of [audioSourceState] values.
-     */
-    val audioSourceStateFlow: Flow<AudioSourceState>
+    val audioSourceState: StateFlow<AudioSource.State>
 
 
     // - Public functions

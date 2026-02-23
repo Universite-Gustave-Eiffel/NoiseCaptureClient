@@ -6,23 +6,9 @@ import kotlinx.cinterop.get
 import kotlinx.cinterop.pointed
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.value
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-import org.noiseplanet.noisecapture.audio.mic.MicrophoneProvider
-import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.util.NSNotificationListener
 import org.noiseplanet.noisecapture.util.getInput
-import org.noiseplanet.noisecapture.util.injectLogger
 import org.noiseplanet.noisecapture.util.runCatchingNSError
 import platform.AVFAudio.AVAudioEngine
 import platform.AVFAudio.AVAudioPCMBuffer
@@ -45,7 +31,6 @@ import platform.AVFAudio.setPreferredIOBufferDuration
 import platform.AVFAudio.setPreferredSampleRate
 import platform.Foundation.NSNotification
 import platform.Foundation.NSTimeInterval
-import platform.posix.uint32_t
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -55,27 +40,23 @@ import kotlin.time.ExperimentalTime
  * [Swift documentation](https://developer.apple.com/documentation/avfaudio/avaudioengine)
  */
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class, ExperimentalTime::class)
-internal class IOSAudioSource : AudioSource, KoinComponent {
+internal class IOSAudioSource : AudioSource(), KoinComponent {
 
     // - Constants
 
     companion object {
 
-        const val SAMPLES_BUFFER_SIZE: uint32_t = 1024u
+        // 125ms target buffer duration
+        const val SAMPLES_BUFFER_DURATION: NSTimeInterval = 0.125
     }
 
 
     // - Properties
 
-    private val audioSamplesChannel = Channel<AudioSamples>(
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
-    private val stateChannel = Channel<AudioSourceState>(
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
-
     private val audioSession = AVAudioSession.sharedInstance()
     private var audioEngine: AVAudioEngine? = null
+
+    private var reusableBuffer: FloatArray? = null
 
     private val interruptionNotificationHandler = NSNotificationListener(
         notificationName = AVAudioSessionInterruptionNotification,
@@ -83,109 +64,28 @@ internal class IOSAudioSource : AudioSource, KoinComponent {
         callback = { handleSessionInterruptionNotification(it) }
     )
 
-    private val microphoneProvider: MicrophoneProvider by inject()
-    private val logger: Logger by injectLogger()
-
-    private val scope = CoroutineScope(Dispatchers.IO)
-
-    override var state: AudioSourceState = AudioSourceState.UNINITIALIZED
-        set(value) {
-            field = value
-            stateChannel.trySend(value)
-        }
-
-    override val audioSamples: Flow<AudioSamples> = audioSamplesChannel.receiveAsFlow()
-    override val stateFlow: Flow<AudioSourceState> = stateChannel.receiveAsFlow()
-
-
-    // - Lifecycle
-
-    init {
-        // Subscribe to preferred input updates
-        scope.launch {
-            microphoneProvider.preferredInput.mapNotNull { it }
-                .distinctUntilChanged { old, new ->
-                    old.id == new.id
-                }.collect {
-                    onSelectedMicrophoneChange()
-                }
-        }
-    }
-
 
     // - Public functions
 
-    override suspend fun setup() {
-        if (state != AudioSourceState.UNINITIALIZED) {
-            logger.debug("Audio source is already initialized, skipping setup.")
-            return
-        }
-
-        try {
-            setupAudioSession()
-            setupAudioEngine()
-        } catch (e: IllegalStateException) {
-            logger.error("Error during audio source setup", e)
-            state = AudioSourceState.UNINITIALIZED
-            return
-        }
+    override suspend fun setupInternal() {
+        setupAudioSession()
+        setupAudioEngine()
 
         // Start listening to interruption notifications
         interruptionNotificationHandler.startListening()
-        state = AudioSourceState.READY
     }
 
-    override fun start() {
-        when (state) {
-            AudioSourceState.UNINITIALIZED -> {
-                logger.error("Audio source not initialized. Call setup() first.")
-                return
-            }
-
-            AudioSourceState.RUNNING -> {
-                logger.debug("Audio source already started.")
-                return
-            }
-
-            AudioSourceState.READY, AudioSourceState.PAUSED -> {
-                logger.debug("Starting audio source")
-                runCatchingNSError { nsError ->
-                    audioEngine?.startAndReturnError(nsError.ptr)
-                }.onSuccess {
-                    state = AudioSourceState.RUNNING
-                }.onFailure {
-                    logger.error("Error while starting AVAudioEngine", it)
-                }
-            }
-        }
+    override fun startInternal() {
+        runCatchingNSError { nsError ->
+            audioEngine?.startAndReturnError(nsError.ptr)
+        }.getOrThrow()
     }
 
-    override fun pause() {
-        when (state) {
-            AudioSourceState.UNINITIALIZED -> {
-                logger.error("Audio source not initialized. Call setup() first.")
-                return
-            }
-
-            AudioSourceState.RUNNING -> {
-                logger.debug("Pausing audio source.")
-                audioEngine?.stop()
-                state = AudioSourceState.PAUSED
-            }
-
-            AudioSourceState.READY, AudioSourceState.PAUSED -> {
-                logger.debug("Audio source already paused.")
-                return
-            }
-        }
+    override fun pauseInternal() {
+        audioEngine?.stop()
     }
 
-    override fun release() {
-        if (state == AudioSourceState.UNINITIALIZED) {
-            logger.debug("Audio source already uninitialized, skipping cleanup.")
-            return
-        }
-
+    override suspend fun releaseInternal() {
         // Stop and release audio engine...
         audioEngine?.stop()
         audioEngine = null
@@ -193,8 +93,6 @@ internal class IOSAudioSource : AudioSource, KoinComponent {
         setAudioSessionActive(false)
         // Stop listening to interruption notifications
         interruptionNotificationHandler.stopListening()
-        // Lastly, update state
-        state = AudioSourceState.UNINITIALIZED
     }
 
 
@@ -225,9 +123,7 @@ internal class IOSAudioSource : AudioSource, KoinComponent {
             val sampleRate = audioSession.sampleRate
             audioSession.setPreferredSampleRate(sampleRate, nsError.ptr)
 
-            val bufferDuration: NSTimeInterval =
-                1.0 / sampleRate * SAMPLES_BUFFER_SIZE.toDouble()
-            audioSession.setPreferredIOBufferDuration(bufferDuration, nsError.ptr)
+            audioSession.setPreferredIOBufferDuration(SAMPLES_BUFFER_DURATION, nsError.ptr)
 
             runCatchingNSError { nsError ->
                 // Set preferred input source (if any)
@@ -254,10 +150,11 @@ internal class IOSAudioSource : AudioSource, KoinComponent {
         val inputNode = audioEngine.inputNode
         val busNumber: ULong = 0u // Mono input
         val inputFormat = inputNode.inputFormatForBus(busNumber)
+        val bufferSize = (audioSession.sampleRate * SAMPLES_BUFFER_DURATION).toUInt()
 
         inputNode.installTapOnBus(
             bus = busNumber,
-            bufferSize = SAMPLES_BUFFER_SIZE,
+            bufferSize = bufferSize,
             format = inputFormat,
         ) { buffer, audioTime ->
             try {
@@ -348,53 +245,39 @@ internal class IOSAudioSource : AudioSource, KoinComponent {
      * @throws IllegalStateException Thrown if the incoming data doesn't conform to what
      *                               is expected by the shared audio code.
      */
-    private fun processBuffer(buffer: AVAudioPCMBuffer?, audioTime: AVAudioTime?) {
+    private fun processBuffer(
+        buffer: AVAudioPCMBuffer?,
+        audioTime: AVAudioTime?,
+    ) {
         requireNotNull(buffer) { "Null buffer received" }
         requireNotNull(audioTime) { "Null audio time receiver" }
 
         // Buffer size provided to audio engine is a request but not a guarantee
-        val actualSamplesCount = buffer.frameLength.toInt()
+        val actualBufferSize = buffer.frameLength.toInt()
+        // If reusable buffer size doesn't actual buffer size, reallocate
+        if (reusableBuffer?.size != actualBufferSize) {
+            reusableBuffer = FloatArray(actualBufferSize)
+        }
+        val outBuffer = reusableBuffer ?: return
 
         buffer.floatChannelData?.let { channelData ->
-            // Convert native float buffer to a Kotlin FloatArray
-            val samplesBuffer = FloatArray(actualSamplesCount) { index ->
+            // Pour native float buffer into Kotlin FloatArray
+            for (index in 0 until actualBufferSize) {
                 // Channel data is internally a pointer to a float array
                 // so we need to go through pointed.value to access the actual
                 // array and retrieve the element using index
-                channelData.pointed.value?.get(index) ?: 0f
+                outBuffer[index] = channelData.pointed.value?.get(index) ?: 0f
             }
             val timestamp = Clock.System.now().toEpochMilliseconds()
 
             // Send processed audio samples through Channel
-            audioSamplesChannel.trySend(
+            emitAudioSamples(
                 AudioSamples(
-                    epoch = timestamp,
-                    samplesBuffer,
-                    audioTime.sampleRate.toInt(),
+                    timestamp = timestamp,
+                    samples = outBuffer,
+                    sampleRate = audioTime.sampleRate.toInt(),
                 )
             )
-        }
-    }
-
-    private fun onSelectedMicrophoneChange() {
-        when (state) {
-            // If audio source is setup but not running, setup again
-            AudioSourceState.READY, AudioSourceState.PAUSED -> {
-                release()
-                scope.launch { setup() }
-            }
-
-            // If audio source is setup and running, setup again then start
-            AudioSourceState.RUNNING -> {
-                release()
-                scope.launch {
-                    setup()
-                    start()
-                }
-            }
-
-            // Otherwise, do nothing
-            AudioSourceState.UNINITIALIZED -> return
         }
     }
 }
