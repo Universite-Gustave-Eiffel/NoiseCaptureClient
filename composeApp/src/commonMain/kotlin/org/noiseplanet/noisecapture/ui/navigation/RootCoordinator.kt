@@ -3,10 +3,12 @@ package org.noiseplanet.noisecapture.ui.navigation
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
@@ -25,24 +27,18 @@ import org.noiseplanet.noisecapture.ui.features.permission.RequestPermissionModa
 @Composable
 fun RootCoordinator(
     viewModel: RootCoordinatorViewModel,
+    onNavHostReady: suspend (NavController) -> Unit = {},
 ) {
 
     // - Properties
 
     val navController: NavHostController = rememberNavController()
-    val appBarState: AppBarState = rememberAppBarState(navController)
 
+    val appBarState: AppBarState = rememberAppBarState(navController)
     val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
 
 
     // - Lifecycle
-
-    navController.addOnDestinationChangedListener { navController, _, _ ->
-        // Triggered when navigating to a new screen or from another screen
-        navController.currentBackStackEntry?.toRoute<Route>()?.let {
-            viewModel.setCurrentRoute(it)
-        }
-    }
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -101,6 +97,17 @@ fun RootCoordinator(
                 viewModel.promptPermissionIfNeeded(permission)
             }
         )
+
+        // After navigation is created, subscribe to destination changes and notify listeners
+        LaunchedEffect(navController) {
+            navController.addOnDestinationChangedListener { navController, _, _ ->
+                // Triggered when navigating to a new screen or from another screen
+                navController.currentBackStackEntry?.toRoute<Route>()?.let {
+                    viewModel.setCurrentRoute(it)
+                }
+            }
+            onNavHostReady(navController)
+        }
 
         // If needed, prompt permission request to the user
         RequestPermissionModal(

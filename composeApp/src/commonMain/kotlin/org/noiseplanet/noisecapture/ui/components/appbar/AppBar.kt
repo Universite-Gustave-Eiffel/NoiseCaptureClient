@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.ui.components.appbar
 
+import Platform
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -21,6 +22,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.back_button
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 
 @Composable
 fun AppBar(
@@ -28,6 +30,8 @@ fun AppBar(
     modifier: Modifier = Modifier,
 ) {
     // - Properties
+
+    val platform: Platform = koinInject()
 
     val screenViewModel = appBarState.viewModel ?: return
     val actions by screenViewModel.actions.collectAsStateWithLifecycle()
@@ -52,7 +56,7 @@ fun AppBar(
             actionIconContentColor = MaterialTheme.colorScheme.onSurface,
         ),
         navigationIcon = {
-            if (canNavigateUp) {
+            if (canNavigateUp && platform.showAppBarBackButton) {
                 IconButton(onClick = {
                     if (screenViewModel.confirmPopBackStack()) {
                         appBarState.navController.navigateUp()

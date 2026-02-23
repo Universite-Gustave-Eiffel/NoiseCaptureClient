@@ -95,6 +95,7 @@ fun RecordingScreen(
         lifecycleOwner.lifecycle.addObserver(observer)
 
         onDispose {
+            viewModel.endCurrentRecording()
             lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }

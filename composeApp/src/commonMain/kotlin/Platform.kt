@@ -1,6 +1,8 @@
 import androidx.compose.ui.graphics.ImageBitmapConfig
 import org.noiseplanet.noisecapture.model.dao.UserAgent
 import org.noiseplanet.noisecapture.permission.Permission
+import org.noiseplanet.noisecapture.ui.navigation.MobileNavigationTransitions
+import org.noiseplanet.noisecapture.ui.navigation.NavigationTransitions
 import org.noiseplanet.noisecapture.ui.navigation.RouteId
 import org.noiseplanet.noisecapture.ui.navigation.RouteIds
 
@@ -45,4 +47,18 @@ interface Platform {
      */
     val bitmapConfig: ImageBitmapConfig
         get() = ImageBitmapConfig.Rgb565
+
+    /**
+     * Describes the animations when navigating between screens.
+     * Defaults to [MobileNavigationTransitions].
+     */
+    val navigationTransitions: NavigationTransitions
+        get() = MobileNavigationTransitions
+
+    /**
+     * If true, show the back arrow button in app bar to navigate back.
+     * Defaults to `true`.
+     */
+    val showAppBarBackButton: Boolean
+        get() = true
 }
