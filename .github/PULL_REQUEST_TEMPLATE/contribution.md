@@ -22,3 +22,4 @@ them here and open issues if needed._
 - [ ] If needed, new tests have been added
 - [ ] Extended the README / documentation if necessary
 - [ ] Added code has been documented
+- [ ] Added this change to [CHANGELOG.md](../../CHANGELOG.md) 
