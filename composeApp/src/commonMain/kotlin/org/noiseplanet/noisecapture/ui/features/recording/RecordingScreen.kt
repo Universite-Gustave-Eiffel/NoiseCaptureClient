@@ -128,7 +128,10 @@ fun RecordingScreen(
 
     if (showEndRecordingConfirmationDialog) {
         EndRecordingConfirmationDialog(
-            onDismissRequest = { showEndRecordingConfirmationDialog = false },
+            onDismissRequest = {
+                viewModel.shouldOpenDetailsOnceDone = true
+                showEndRecordingConfirmationDialog = false
+            },
             onConfirm = {
                 viewModel.endCurrentRecording()
             },
