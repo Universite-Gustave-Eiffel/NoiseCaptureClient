@@ -14,7 +14,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   delete button right next to the player. (#256)
 - WasmJS: Browser URL bar now shows the current page URL. Navigation on web is now done through
   browser backward/forward actions instead of in-app back buttons. (#257)
-- Added changelog to better keep track of changes
+- Added changelog to better keep track of changes (#263)
 
 ### Fixed
 
