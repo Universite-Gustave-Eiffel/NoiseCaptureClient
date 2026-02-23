@@ -1,8 +1,6 @@
-name: Check CHANGELOG for PR reference
+name: check_changelog
 
-on:
-  pull_request:
-    types: [ opened, reopened, synchronize, edited ]
+on: workflow_call
 
 jobs:
   check-changelog:
