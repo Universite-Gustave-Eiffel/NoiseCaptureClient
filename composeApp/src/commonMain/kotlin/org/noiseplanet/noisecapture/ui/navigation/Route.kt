@@ -15,6 +15,9 @@ object RouteIds {
     const val DETAILS: RouteId = "details"
     const val COMMUNITY_MAP: RouteId = "map"
 
+    const val CALIBRATION_CONFIG: RouteId = "calibration"
+    const val CALIBRATION: RouteId = "calibration/analysis"
+
     // Naming this route "DEBUG" breaks compilation on iOS because it gets interpreted as and
     // obj-C macro.
     const val DEBUG_ROUTE: RouteId = "debug"
@@ -107,6 +110,12 @@ class DetailsRoute(
 
 @Serializable
 class CommunityMapRoute : Route(id = RouteIds.COMMUNITY_MAP)
+
+@Serializable
+class CalibrationConfigRoute : Route(id = RouteIds.CALIBRATION_CONFIG)
+
+@Serializable
+class CalibrationRoute : Route(id = RouteIds.CALIBRATION)
 
 @Serializable
 class DebugRoute : Route(id = RouteIds.DEBUG_ROUTE)

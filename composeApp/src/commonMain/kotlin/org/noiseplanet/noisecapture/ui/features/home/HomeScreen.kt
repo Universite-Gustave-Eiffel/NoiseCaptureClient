@@ -91,6 +91,7 @@ private fun HomeScreenCompact(viewModel: HomeScreenViewModel, router: HomeRouter
         )
 
         HomeMicrophoneSetupView(
+            router = router,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
 
@@ -148,11 +149,10 @@ private fun HomeScreenLarge(viewModel: HomeScreenViewModel, router: HomeRouter) 
             )
 
             HomeMicrophoneSetupView(
+                router = router,
                 modifier = Modifier.weight(1f)
             )
         }
-
-        // TODO: Add device calibration section
 
         // TODO: Add more info section
     }

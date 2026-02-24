@@ -5,6 +5,7 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 import org.noiseplanet.noisecapture.ui.components.map.MapViewModel
 import org.noiseplanet.noisecapture.ui.components.map.MapViewModelParameters
+import org.noiseplanet.noisecapture.ui.components.micselect.MicrophoneSelectViewModel
 import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel
 
 val homeModule = module {
@@ -38,5 +39,9 @@ val homeModule = module {
 
     viewModel {
         HomeMicrophoneSetupViewModel()
+    }
+
+    viewModel {
+        MicrophoneSelectViewModel()
     }
 }

@@ -17,6 +17,8 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBarState
+import org.noiseplanet.noisecapture.ui.features.calibration.config.CalibrationConfigScreen
+import org.noiseplanet.noisecapture.ui.features.calibration.config.CalibrationConfigScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.debug.DebugScreen
 import org.noiseplanet.noisecapture.ui.features.debug.DebugScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.details.DetailsScreen
@@ -126,6 +128,13 @@ fun NavigationManager(
             appBarState.setCurrentScreenViewModel(screenViewModel)
 
             SettingsScreen(screenViewModel)
+        }
+
+        composable<CalibrationConfigRoute> {
+            val screenViewModel: CalibrationConfigScreenViewModel = koinViewModel()
+            appBarState.setCurrentScreenViewModel(screenViewModel)
+
+            CalibrationConfigScreen(screenViewModel)
         }
 
         composable<DebugRoute> {
