@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
@@ -31,7 +32,6 @@ import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.calibration_duration_select_title
 import noisecapture.composeapp.generated.resources.calibration_frequencies_select_title
 import noisecapture.composeapp.generated.resources.calibration_frequencies_whole_spectrum_description
-import noisecapture.composeapp.generated.resources.calibration_frequencies_whole_spectrum_title
 import noisecapture.composeapp.generated.resources.calibration_from_reference_intro_description
 import noisecapture.composeapp.generated.resources.calibration_from_reference_intro_title
 import noisecapture.composeapp.generated.resources.calibration_microphone_select_title
@@ -39,8 +39,10 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.model.enums.CalibrationFrequencyBand
+import org.noiseplanet.noisecapture.ui.components.button.NCButton
 import org.noiseplanet.noisecapture.ui.components.micselect.MicrophoneSelectView
 import org.noiseplanet.noisecapture.ui.features.calibration.calibrationModule
+import org.noiseplanet.noisecapture.ui.navigation.router.CalibrationRouter
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 
@@ -49,6 +51,7 @@ import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 @Composable
 fun CalibrationConfigScreen(
     viewModel: CalibrationConfigScreenViewModel,
+    router: CalibrationRouter,
 ) {
     // - DI
 
@@ -59,7 +62,13 @@ fun CalibrationConfigScreen(
 
     // - Properties
 
+    val defaultCalibrationDurationSeconds = 10
+
     var showFrequencyBandsSelectMenu: Boolean by remember { mutableStateOf(false) }
+    var selectedDurationSeconds: Int by remember { mutableStateOf(defaultCalibrationDurationSeconds) }
+    var selectedFrequencyBand: CalibrationFrequencyBand by remember {
+        mutableStateOf(CalibrationFrequencyBand.WHOLE_SPECTRUM)
+    }
 
 
     // - Layout
@@ -70,6 +79,7 @@ fun CalibrationConfigScreen(
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(16.dp)
                 .paddingBottomWithInsets()
         ) {
@@ -133,9 +143,10 @@ fun CalibrationConfigScreen(
                         text = stringResource(Res.string.calibration_duration_select_title),
                         style = MaterialTheme.typography.titleMedium,
                     )
-                    CalibrationDurationSelectView(onSelectedDurationChange = {
-                        // TODO: Update viewmodel value or local variable
-                    })
+                    CalibrationDurationSelectView(
+                        onSelectedDurationChange = { selectedDurationSeconds = it },
+                        initialValue = selectedDurationSeconds,
+                    )
                 }
 
                 Column(
@@ -152,7 +163,7 @@ fun CalibrationConfigScreen(
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = stringResource(Res.string.calibration_frequencies_whole_spectrum_title),
+                                text = selectedFrequencyBand.label,
                                 style = MaterialTheme.typography.titleSmall,
                                 modifier = Modifier.weight(1f)
                             )
@@ -174,6 +185,17 @@ fun CalibrationConfigScreen(
                     }
                 }
             }
+
+            NCButton(
+                viewModel = viewModel.startButtonViewModel,
+                onClick = {
+                    router.onClickStartCalibration(
+                        durationSeconds = selectedDurationSeconds,
+                        frequencyBand = selectedFrequencyBand
+                    )
+                },
+                modifier = Modifier.height(50.dp)
+            )
         }
     }
 }

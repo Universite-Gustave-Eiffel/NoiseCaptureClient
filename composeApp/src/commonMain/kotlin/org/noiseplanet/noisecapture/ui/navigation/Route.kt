@@ -1,6 +1,7 @@
 package org.noiseplanet.noisecapture.ui.navigation
 
 import kotlinx.serialization.Serializable
+import org.noiseplanet.noisecapture.model.enums.CalibrationFrequencyBand
 
 
 /**
@@ -115,7 +116,10 @@ class CommunityMapRoute : Route(id = RouteIds.COMMUNITY_MAP)
 class CalibrationConfigRoute : Route(id = RouteIds.CALIBRATION_CONFIG)
 
 @Serializable
-class CalibrationRoute : Route(id = RouteIds.CALIBRATION)
+class CalibrationRoute(
+    val durationSeconds: Int,
+    val frequencyBand: CalibrationFrequencyBand,
+) : Route(id = RouteIds.CALIBRATION)
 
 @Serializable
 class DebugRoute : Route(id = RouteIds.DEBUG_ROUTE)

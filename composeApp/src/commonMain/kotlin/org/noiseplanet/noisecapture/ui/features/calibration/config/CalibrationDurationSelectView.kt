@@ -29,6 +29,7 @@ import kotlin.time.Duration.Companion.seconds
 @Composable
 fun CalibrationDurationSelectView(
     onSelectedDurationChange: (durationSeconds: Int) -> Unit,
+    initialValue: Int = 10,
     modifier: Modifier = Modifier,
 ) {
     // - Properties
@@ -36,7 +37,7 @@ fun CalibrationDurationSelectView(
     val minCalibrationDuration: Int = 5
     val maxCalibrationDuration: Int = 30
 
-    var selectedDurationSeconds: Int by remember { mutableStateOf(10) }
+    var selectedDurationSeconds: Int by remember { mutableStateOf(initialValue) }
     val isMinusButtonEnabled: Boolean by derivedStateOf {
         selectedDurationSeconds > minCalibrationDuration
     }

@@ -247,6 +247,10 @@
     <string name="calibration_frequencies_select_title">Frequency band(s)</string>
     <string name="calibration_frequencies_whole_spectrum_title">Whole spectrum</string>
     <string name="calibration_frequencies_whole_spectrum_description">All frequency bands</string>
+    <string name="calibration_start_button_title">Start calibration</string>
+    <string name="calibration_countdown_label">Calibration will start in</string>
+    <string name="calibration_recording_countdown_label">Measuring...</string>
+    <string name="calibration_recording_current_average">Current average</string>
 
     <!-- Misc -->
     <string name="na">N/A</string>
