@@ -22,7 +22,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -72,9 +71,6 @@ fun CalibrationResultsView(
     // - Properties
 
     var referenceDeviceFieldValue: String by remember { mutableStateOf("") }
-    val referenceDeviceValue: Double? by derivedStateOf {
-        referenceDeviceFieldValue.toDoubleOrNull()
-    }
     val interactionSource = remember { MutableInteractionSource() }
 
 

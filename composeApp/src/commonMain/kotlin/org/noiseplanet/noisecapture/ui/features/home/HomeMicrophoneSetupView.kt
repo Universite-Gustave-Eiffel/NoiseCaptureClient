@@ -11,18 +11,25 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.ZeroCornerSize
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import nl.jacobras.humanreadable.HumanReadable
 import noisecapture.composeapp.generated.resources.Res
-import noisecapture.composeapp.generated.resources.home_mic_not_calibrated
+import noisecapture.composeapp.generated.resources.home_mic_setup_current_gain
+import noisecapture.composeapp.generated.resources.home_mic_setup_last_calibrated
+import noisecapture.composeapp.generated.resources.home_mic_setup_not_calibrated
 import noisecapture.composeapp.generated.resources.home_mic_setup_section_header
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -30,7 +37,8 @@ import org.noiseplanet.noisecapture.ui.components.ListSectionHeader
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
 import org.noiseplanet.noisecapture.ui.components.micselect.MicrophoneSelectView
 import org.noiseplanet.noisecapture.ui.navigation.router.HomeRouter
-import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
+import org.noiseplanet.noisecapture.util.toSignedString
+import kotlin.time.Instant
 
 
 @Composable
@@ -42,6 +50,7 @@ fun HomeMicrophoneSetupView(
     // - Properties
 
     val viewModel: HomeMicrophoneSetupViewModel = koinViewModel()
+    val viewState: HomeMicrophoneSetupViewModel.ViewState by viewModel.viewState.collectAsStateWithLifecycle()
 
 
     // - Layout
@@ -69,9 +78,10 @@ fun HomeMicrophoneSetupView(
 
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.height(IntrinsicSize.Min)
                     .background(
-                        color = NoiseLevelColorRamp.level6Light,
+                        color = viewState.containerColor,
                         shape = MaterialTheme.shapes.large.copy(
                             topStart = ZeroCornerSize,
                             topEnd = ZeroCornerSize
@@ -79,10 +89,23 @@ fun HomeMicrophoneSetupView(
                     )
                     .padding(12.dp)
             ) {
+                val calibrationProfileText = buildAnnotatedString {
+                    viewState.calibrationProfile?.let { profile ->
+                        withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                            append(stringResource(Res.string.home_mic_setup_current_gain) + " ")
+                            append("${profile.compensationGain.toSignedString()} dB(A)\n")
+                        }
+                        append(stringResource(Res.string.home_mic_setup_last_calibrated) + " ")
+                        val datetime = Instant.fromEpochMilliseconds(profile.calibrationTimestamp)
+                        append(HumanReadable.timeAgo(datetime))
+                    } ?: run {
+                        append(stringResource(Res.string.home_mic_setup_not_calibrated))
+                    }
+                }
                 Text(
-                    text = stringResource(Res.string.home_mic_not_calibrated),
+                    text = calibrationProfileText,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = NoiseLevelColorRamp.level6Dark,
+                    color = viewState.contentColor,
                     modifier = Modifier.weight(1f),
                 )
 
@@ -92,15 +115,15 @@ fun HomeMicrophoneSetupView(
                     modifier = Modifier.fillMaxHeight()
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Info,
+                        imageVector = viewState.icon,
                         contentDescription = null,
-                        tint = NoiseLevelColorRamp.level6Dark,
+                        tint = viewState.contentColor,
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
                     NCButton(
-                        viewModel = viewModel.calibrationButtonViewModel,
+                        viewModel = viewState.buttonViewModel,
                         onClick = router::onClickCalibrateButton,
                     )
                 }

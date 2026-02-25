@@ -16,8 +16,8 @@
     <string name="home_map_browse_button">Browse</string>
     <string name="home_mic_setup_section_header">Microphone setup</string>
     <string name="home_mic_setup_current_gain">Current gain</string>
-    <string name="home_mic_setup_last_calibrated">Your microphone was last calibrated on</string>
-    <string name="home_mic_not_calibrated">For your measurements to be accurate, it is important that you calibrate your microphone.</string>
+    <string name="home_mic_setup_last_calibrated">This microphone was last calibrated</string>
+    <string name="home_mic_setup_not_calibrated">For your measurements to be accurate, it is important that you calibrate your microphone.</string>
     <string name="home_mic_setup_calibrate_button">Calibrate</string>
     <string name="home_mic_setup_recalibrate_button">Recalibrate</string>
 
