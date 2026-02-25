@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -97,7 +96,9 @@ fun CalibrationScreen(
                 }
 
                 is CalibrationScreenViewModel.ViewState.Results -> {
-                    Text("DONE !")
+                    CalibrationResultsView(
+                        viewState as CalibrationScreenViewModel.ViewState.Results, router
+                    )
                 }
             }
         }

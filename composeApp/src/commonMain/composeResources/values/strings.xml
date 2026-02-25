@@ -251,6 +251,13 @@
     <string name="calibration_countdown_label">Calibration will start in</string>
     <string name="calibration_recording_countdown_label">Measuring...</string>
     <string name="calibration_recording_current_average">Current average</string>
+    <string name="calibration_results_current_gain">With current compensation gain</string>
+    <string name="calibration_results_your_device_value">Your device measured</string>
+    <string name="calibration_results_reference_value">The reference device measured</string>
+    <string name="calibration_results_reference_value_placeholder">Enter value here</string>
+    <string name="calibration_results_difference">That's a difference of</string>
+    <string name="calibration_results_suggested_gain">Suggested compensation gain</string>
+    <string name="calibration_results_save_gain">Save gain</string>
 
     <!-- Misc -->
     <string name="na">N/A</string>
