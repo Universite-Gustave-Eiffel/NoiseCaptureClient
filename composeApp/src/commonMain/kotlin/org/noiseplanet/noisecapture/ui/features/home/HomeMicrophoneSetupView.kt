@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.ZeroCornerSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -114,11 +116,13 @@ fun HomeMicrophoneSetupView(
                     horizontalAlignment = Alignment.End,
                     modifier = Modifier.fillMaxHeight()
                 ) {
-                    Icon(
-                        imageVector = viewState.icon,
-                        contentDescription = null,
-                        tint = viewState.contentColor,
-                    )
+                    if (viewState.calibrationProfile == null) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = null,
+                            tint = viewState.contentColor,
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(8.dp))
 

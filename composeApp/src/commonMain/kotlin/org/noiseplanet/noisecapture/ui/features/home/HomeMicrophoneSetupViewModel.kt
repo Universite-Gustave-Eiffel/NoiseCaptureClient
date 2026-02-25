@@ -1,10 +1,6 @@
 package org.noiseplanet.noisecapture.ui.features.home
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircleOutline
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.StateFlow
@@ -31,7 +27,6 @@ class HomeMicrophoneSetupViewModel : ViewModel(), KoinComponent {
         val buttonViewModel: NCButtonViewModel,
         val contentColor: Color,
         val containerColor: Color,
-        val icon: ImageVector,
         val calibrationProfile: MicrophoneCalibrationProfile? = null,
     )
 
@@ -56,14 +51,12 @@ class HomeMicrophoneSetupViewModel : ViewModel(), KoinComponent {
                     ),
                     contentColor = NoiseLevelColorRamp.level5Dark,
                     containerColor = NoiseLevelColorRamp.level5Light,
-                    icon = Icons.Default.CheckCircleOutline,
                     calibrationProfile = it
                 )
             } ?: ViewState(
                 buttonViewModel = NCButtonViewModel(Res.string.home_mic_setup_calibrate_button),
                 contentColor = NoiseLevelColorRamp.level6Dark,
                 containerColor = NoiseLevelColorRamp.level6Light,
-                icon = Icons.Default.Info,
             )
         }
         .stateInWhileSubscribed(
@@ -72,7 +65,6 @@ class HomeMicrophoneSetupViewModel : ViewModel(), KoinComponent {
                 buttonViewModel = NCButtonViewModel(Res.string.home_mic_setup_calibrate_button),
                 contentColor = NoiseLevelColorRamp.level6Dark,
                 containerColor = NoiseLevelColorRamp.level6Light,
-                icon = Icons.Default.Info,
             )
         )
 }

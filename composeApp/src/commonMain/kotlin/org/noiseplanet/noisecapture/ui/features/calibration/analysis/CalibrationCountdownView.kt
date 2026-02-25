@@ -58,7 +58,12 @@ fun CalibrationCountdownView(
     NCButton(
         viewModel = NCButtonViewModel(
             title = Res.string.cancel,
-            colors = { NCButtonColors.Defaults.secondary() }
+            colors = {
+                NCButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                )
+            }
         ),
         onClick = router::popBackStack,
         modifier = Modifier.height(50.dp).width(200.dp)
