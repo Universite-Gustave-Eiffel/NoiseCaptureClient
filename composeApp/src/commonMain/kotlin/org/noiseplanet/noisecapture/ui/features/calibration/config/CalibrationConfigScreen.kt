@@ -204,7 +204,7 @@ fun CalibrationConfigScreen(
                             expanded = showFrequencyBandsSelectMenu,
                             onDismissRequest = { showFrequencyBandsSelectMenu = false },
                             onSelectFrequencyBand = {
-                                // TODO: Update selected frequency band
+                                selectedFrequencyBand = it
                                 showFrequencyBandsSelectMenu = false
                             },
                         )
