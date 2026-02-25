@@ -23,5 +23,15 @@ object DateUtil {
                 hour(); chars(":"); minute()
             })
         }
+
+        val CALIBRATION_DATETIME = LocalDateTime.Format {
+            date(LocalDate.Format {
+                monthName(MonthNames.ENGLISH_ABBREVIATED)
+                chars(". ")
+                day()
+                chars(" ")
+                year()
+            })
+        }
     }
 }

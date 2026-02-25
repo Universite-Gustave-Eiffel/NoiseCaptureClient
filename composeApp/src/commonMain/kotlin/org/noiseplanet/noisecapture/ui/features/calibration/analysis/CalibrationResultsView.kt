@@ -57,6 +57,7 @@ import org.noiseplanet.noisecapture.ui.navigation.router.CalibrationRouter
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 import org.noiseplanet.noisecapture.util.roundTo
+import org.noiseplanet.noisecapture.util.toSignedString
 
 
 @Composable
@@ -86,7 +87,7 @@ fun CalibrationResultsView(
         modifier = Modifier.padding(horizontal = 16.dp + 24.dp)
     )
     Text(
-        text = "${if (viewState.currentGain >= 0) "+" else ""}${viewState.currentGain} dB(A)",
+        text = "${viewState.currentGain.toSignedString()} dB(A)",
         style = MaterialTheme.typography.headlineMedium,
         fontWeight = FontWeight.Black,
         color = NoiseLevelColorRamp.level1Dark,
@@ -158,7 +159,7 @@ fun CalibrationResultsView(
             modifier = Modifier.padding(horizontal = 16.dp + 24.dp).fillMaxWidth(),
         )
         Text(
-            text = "${if (difference >= 0) "+" else ""}$difference dB(A)",
+            text = "${difference.toSignedString()} dB(A)",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Black,
             color = NoiseLevelColorRamp.level1Dark,
@@ -193,7 +194,7 @@ fun CalibrationResultsView(
             Text(
                 text = buildAnnotatedString {
                     withStyle(SpanStyle(fontSize = MaterialTheme.typography.displayMedium.fontSize)) {
-                        append("${if (suggestedGain >= 0) "+" else ""}$suggestedGain")
+                        append(suggestedGain.toSignedString())
                     }
                     append(" dB(A)")
                 },

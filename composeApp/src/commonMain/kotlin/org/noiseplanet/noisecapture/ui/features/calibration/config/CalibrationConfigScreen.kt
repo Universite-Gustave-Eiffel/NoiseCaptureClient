@@ -27,17 +27,27 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import nl.jacobras.humanreadable.HumanReadable
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.calibration_duration_select_title
 import noisecapture.composeapp.generated.resources.calibration_frequencies_select_title
 import noisecapture.composeapp.generated.resources.calibration_frequencies_whole_spectrum_description
 import noisecapture.composeapp.generated.resources.calibration_from_reference_intro_description
 import noisecapture.composeapp.generated.resources.calibration_from_reference_intro_title
+import noisecapture.composeapp.generated.resources.calibration_microphone_current_gain
+import noisecapture.composeapp.generated.resources.calibration_microphone_last_calibrated
+import noisecapture.composeapp.generated.resources.calibration_microphone_not_calibrated
 import noisecapture.composeapp.generated.resources.calibration_microphone_select_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
+import org.noiseplanet.noisecapture.model.dao.MicrophoneCalibrationProfile
 import org.noiseplanet.noisecapture.model.enums.CalibrationFrequencyBand
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
 import org.noiseplanet.noisecapture.ui.components.micselect.MicrophoneSelectView
@@ -45,6 +55,8 @@ import org.noiseplanet.noisecapture.ui.features.calibration.calibrationModule
 import org.noiseplanet.noisecapture.ui.navigation.router.CalibrationRouter
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
+import org.noiseplanet.noisecapture.util.toSignedString
+import kotlin.time.Instant
 
 
 @OptIn(KoinExperimentalAPI::class)
@@ -69,6 +81,8 @@ fun CalibrationConfigScreen(
     var selectedFrequencyBand: CalibrationFrequencyBand by remember {
         mutableStateOf(CalibrationFrequencyBand.WHOLE_SPECTRUM)
     }
+    val currentCalibrationProfile: MicrophoneCalibrationProfile? by viewModel.currentCalibrationProfile
+        .collectAsStateWithLifecycle()
 
 
     // - Layout
@@ -116,9 +130,21 @@ fun CalibrationConfigScreen(
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
                 )
 
+                val calibrationProfileText = buildAnnotatedString {
+                    currentCalibrationProfile?.let { profile ->
+                        append(stringResource(Res.string.calibration_microphone_last_calibrated) + " ")
+                        val datetime = Instant.fromEpochMilliseconds(profile.calibrationTimestamp)
+                        append(HumanReadable.timeAgo(datetime) + "\n")
+                        append(stringResource(Res.string.calibration_microphone_current_gain) + " ")
+                        withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                            append("${profile.compensationGain.toSignedString()} dB(A)")
+                        }
+                    } ?: run {
+                        append(stringResource(Res.string.calibration_microphone_not_calibrated))
+                    }
+                }
                 Text(
-                    // TODO: Dynamic text here
-                    text = "Last calibrated on 24 Oct. 2025\n" + "Current compensation gain: +3.2 dB(A)",
+                    text = calibrationProfileText,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = 12.dp)

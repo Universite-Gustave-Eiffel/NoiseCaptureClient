@@ -239,15 +239,20 @@
 
     <!-- Calibration -->
     <string name="calibration_title">Calibration</string>
+
     <string name="calibration_from_reference_intro_title">Calibrate using a reference microphone</string>
     <string name="calibration_from_reference_intro_description">Both microphones will measure the average surrounding noise level over a given period of time. The NoiseCapture app will apply a compensation gain to your microphone so that future measurements should match the reference output.</string>
     <string name="calibration_from_reference_tips_title">Tips for a good calibration</string>
     <string name="calibration_microphone_select_title">Microphone to calibrate</string>
+    <string name="calibration_microphone_last_calibrated">Last calibrated</string>
+    <string name="calibration_microphone_not_calibrated">This microphone is not yet calibrated</string>
+    <string name="calibration_microphone_current_gain">Current compensation gain:</string>
     <string name="calibration_duration_select_title">Duration</string>
     <string name="calibration_frequencies_select_title">Frequency band(s)</string>
     <string name="calibration_frequencies_whole_spectrum_title">Whole spectrum</string>
     <string name="calibration_frequencies_whole_spectrum_description">All frequency bands</string>
     <string name="calibration_start_button_title">Start calibration</string>
+
     <string name="calibration_countdown_label">Calibration will start in</string>
     <string name="calibration_recording_countdown_label">Measuring...</string>
     <string name="calibration_recording_current_average">Current average</string>
@@ -258,6 +263,7 @@
     <string name="calibration_results_difference">That's a difference of</string>
     <string name="calibration_results_suggested_gain">Suggested compensation gain</string>
     <string name="calibration_results_save_gain">Save gain</string>
+
 
     <!-- Misc -->
     <string name="na">N/A</string>
