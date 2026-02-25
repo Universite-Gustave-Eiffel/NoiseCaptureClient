@@ -17,6 +17,7 @@ import org.noiseplanet.noisecapture.model.enums.CalibrationFrequencyBand
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 import org.noiseplanet.noisecapture.util.dbAverage
+import org.noiseplanet.noisecapture.util.roundTo
 import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -52,7 +53,12 @@ class CalibrationScreenViewModel(
             val currentAverage: Double,
         ) : ViewState
 
-        data class Results(val measuredValue: Double) : ViewState
+        data class Results(
+            val measuredValue: Double,
+            val currentGain: Double,
+            val difference: Double? = null,
+            val suggestedGain: Double? = null,
+        ) : ViewState
     }
 
 
@@ -62,8 +68,15 @@ class CalibrationScreenViewModel(
 
     private val liveAudioService: LiveAudioService by inject()
 
+    // TODO: Dynamic based on selected microphone
+    val currentGain: Double = 1.2
+    var measuredValue: Double = 57.8
+
     private val _viewState = MutableStateFlow<ViewState>(
-        value = ViewState.Countdown(COUNTDOWN_DURATION, COUNTDOWN_DURATION)
+        value = ViewState.Results(
+            measuredValue = measuredValue,
+            currentGain = currentGain,
+        )
     )
     val viewState: StateFlow<ViewState> = _viewState
 
@@ -71,7 +84,29 @@ class CalibrationScreenViewModel(
     // - Lifecycle
 
     init {
-        startCountdown()
+//        startCountdown()
+    }
+
+
+    // - Public functions
+
+    fun onReferenceValueChange(newReferenceValue: Double?) {
+        _viewState.tryEmit(
+            ViewState.Results(
+                measuredValue = measuredValue,
+                currentGain = currentGain,
+                difference = newReferenceValue?.let {
+                    (it - measuredValue).roundTo(1)
+                },
+                suggestedGain = newReferenceValue?.let {
+                    (it - (measuredValue - currentGain)).roundTo(1)
+                }
+            )
+        )
+    }
+
+    fun saveGain() {
+        // TODO: Save gain
     }
 
 
@@ -134,7 +169,12 @@ class CalibrationScreenViewModel(
                 _viewState.emit(state)
 
                 if (timeLeft <= Duration.ZERO) {
-                    _viewState.emit(ViewState.Results(measuredValue = measuredValues.dbAverage()))
+                    _viewState.emit(
+                        ViewState.Results(
+                            measuredValue = measuredValues.dbAverage(),
+                            currentGain = currentGain,
+                        )
+                    )
                     cancel()
                 }
             }

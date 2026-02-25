@@ -97,7 +97,7 @@ fun CalibrationScreen(
 
                 is CalibrationScreenViewModel.ViewState.Results -> {
                     CalibrationResultsView(
-                        viewState as CalibrationScreenViewModel.ViewState.Results, router
+                        viewModel, viewState as CalibrationScreenViewModel.ViewState.Results, router
                     )
                 }
             }

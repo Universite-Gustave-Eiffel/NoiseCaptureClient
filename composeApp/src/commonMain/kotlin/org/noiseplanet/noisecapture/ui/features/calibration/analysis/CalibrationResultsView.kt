@@ -61,6 +61,7 @@ import org.noiseplanet.noisecapture.util.roundTo
 
 @Composable
 fun CalibrationResultsView(
+    viewModel: CalibrationScreenViewModel,
     viewState: CalibrationScreenViewModel.ViewState.Results,
     router: CalibrationRouter,
 ) = Column(
@@ -77,6 +78,7 @@ fun CalibrationResultsView(
 
 
     // - Layout
+
     Text(
         text = stringResource(Res.string.calibration_results_current_gain),
         style = MaterialTheme.typography.titleMedium,
@@ -135,92 +137,104 @@ fun CalibrationResultsView(
         )
         ReferenceDeviceValueField(
             value = referenceDeviceFieldValue,
-            onValueChange = { referenceDeviceFieldValue = it },
+            onValueChange = {
+                referenceDeviceFieldValue = it
+                viewModel.onReferenceValueChange(it.toDoubleOrNull())
+            },
             interactionSource = interactionSource,
+            isError = referenceDeviceFieldValue.isNotEmpty() &&
+                referenceDeviceFieldValue.toDoubleOrNull() == null
         )
     }
 
-    Spacer(modifier = Modifier.height(12.dp))
+    viewState.difference?.let { difference ->
+        Spacer(modifier = Modifier.height(12.dp))
 
-    Text(
-        text = stringResource(Res.string.calibration_results_difference),
-        style = MaterialTheme.typography.titleMedium,
-        color = NoiseLevelColorRamp.level1Dark,
-        textAlign = TextAlign.End,
-        modifier = Modifier.padding(horizontal = 16.dp + 24.dp).fillMaxWidth(),
-    )
-    Text(
-        text = "+2.3 dB(A)", // TODO: Dynamic value here
-        style = MaterialTheme.typography.headlineMedium,
-        fontWeight = FontWeight.Black,
-        color = NoiseLevelColorRamp.level1Dark,
-        textAlign = TextAlign.End,
-        modifier = Modifier.padding(horizontal = 16.dp + 24.dp).fillMaxWidth(),
-    )
+        Text(
+            text = stringResource(Res.string.calibration_results_difference),
+            style = MaterialTheme.typography.titleMedium,
+            color = NoiseLevelColorRamp.level1Dark,
+            textAlign = TextAlign.End,
+            modifier = Modifier.padding(horizontal = 16.dp + 24.dp).fillMaxWidth(),
+        )
+        Text(
+            text = "${if (difference >= 0) "+" else ""}$difference dB(A)",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Black,
+            color = NoiseLevelColorRamp.level1Dark,
+            textAlign = TextAlign.End,
+            modifier = Modifier.padding(horizontal = 16.dp + 24.dp).fillMaxWidth(),
+        )
+    }
 
     Spacer(modifier = Modifier.weight(1f))
 
     // Suggested compensation gain
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .background(
-                color = NoiseLevelColorRamp.level1Dark,
-                shape = MaterialTheme.shapes.large.copy(
-                    bottomStart = ZeroCornerSize,
-                    bottomEnd = ZeroCornerSize
+    viewState.suggestedGain?.let { suggestedGain ->
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .background(
+                    color = NoiseLevelColorRamp.level1Dark,
+                    shape = MaterialTheme.shapes.large.copy(
+                        bottomStart = ZeroCornerSize,
+                        bottomEnd = ZeroCornerSize
+                    )
                 )
-            )
-            .padding(horizontal = 16.dp)
-            .padding(top = 24.dp)
-            .paddingBottomWithInsets(withNavBar = 12.dp, withoutNavBar = 24.dp),
-    ) {
-        Text(
-            text = stringResource(Res.string.calibration_results_suggested_gain),
-            style = MaterialTheme.typography.titleMedium,
-            color = NoiseLevelColorRamp.level1Light,
-        )
-        Text(
-            text = buildAnnotatedString {
-                withStyle(SpanStyle(fontSize = MaterialTheme.typography.displayMedium.fontSize)) {
-                    append("+3.5" + " ") // TODO: Dynamic value here
-                }
-                append("dB(A)")
-            },
-            style = MaterialTheme.typography.headlineLarge,
-            fontWeight = FontWeight.Black,
-            color = NoiseLevelColorRamp.level1Light,
-        )
-
-        Row(
-            modifier = Modifier.padding(top = 24.dp).fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .padding(top = 24.dp)
+                .paddingBottomWithInsets(withNavBar = 12.dp, withoutNavBar = 24.dp),
         ) {
-            NCButton(
-                viewModel = NCButtonViewModel(
-                    title = Res.string.cancel,
-                    style = NCButtonStyle.TEXT,
-                    colors = {
-                        NCButtonColors.Defaults.text()
-                            .copy(contentColor = NoiseLevelColorRamp.level1Light)
+            Text(
+                text = stringResource(Res.string.calibration_results_suggested_gain),
+                style = MaterialTheme.typography.titleMedium,
+                color = NoiseLevelColorRamp.level1Light,
+            )
+            Text(
+                text = buildAnnotatedString {
+                    withStyle(SpanStyle(fontSize = MaterialTheme.typography.displayMedium.fontSize)) {
+                        append("${if (suggestedGain >= 0) "+" else ""}$suggestedGain")
                     }
-                ),
-                onClick = { router.popBackStack() },
-                modifier = Modifier.height(50.dp).weight(1f),
+                    append(" dB(A)")
+                },
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Black,
+                color = NoiseLevelColorRamp.level1Light,
             )
-            NCButton(
-                viewModel = NCButtonViewModel(
-                    title = Res.string.calibration_results_save_gain,
-                    colors = {
-                        NCButtonColors(
-                            contentColor = NoiseLevelColorRamp.level1Dark,
-                            containerColor = NoiseLevelColorRamp.level1Light
-                        )
+
+            Row(
+                modifier = Modifier.padding(top = 24.dp).fillMaxWidth()
+            ) {
+                NCButton(
+                    viewModel = NCButtonViewModel(
+                        title = Res.string.cancel,
+                        style = NCButtonStyle.TEXT,
+                        colors = {
+                            NCButtonColors.Defaults.text()
+                                .copy(contentColor = NoiseLevelColorRamp.level1Light)
+                        }
+                    ),
+                    onClick = { router.popBackStack() },
+                    modifier = Modifier.height(50.dp).weight(1f),
+                )
+                NCButton(
+                    viewModel = NCButtonViewModel(
+                        title = Res.string.calibration_results_save_gain,
+                        colors = {
+                            NCButtonColors(
+                                contentColor = NoiseLevelColorRamp.level1Dark,
+                                containerColor = NoiseLevelColorRamp.level1Light
+                            )
+                        },
+                        hasDropShadow = true,
+                    ),
+                    onClick = {
+                        viewModel.saveGain()
+                        router.popBackStack()
                     },
-                    hasDropShadow = true,
-                ),
-                onClick = { router.popBackStack() },
-                modifier = Modifier.height(50.dp).weight(1f),
-            )
+                    modifier = Modifier.height(50.dp).weight(1f),
+                )
+            }
         }
     }
 }
@@ -232,6 +246,7 @@ fun CalibrationResultsView(
 @Composable
 private fun ReferenceDeviceValueField(
     value: String,
+    isError: Boolean,
     onValueChange: (String) -> Unit,
     interactionSource: InteractionSource,
 ) {
@@ -241,7 +256,11 @@ private fun ReferenceDeviceValueField(
         textStyle = MaterialTheme.typography.displayMedium.copy(
             fontWeight = FontWeight.Black,
             textAlign = TextAlign.End,
-            color = MaterialTheme.colorScheme.onSurface
+            color = if (isError) {
+                MaterialTheme.colorScheme.error
+            } else {
+                MaterialTheme.colorScheme.onSurface
+            }
         ),
         // Shorten cursor height a little so that it doesn't overlaps with top label
         cursorBrush = Brush.verticalGradient(
@@ -295,12 +314,15 @@ private fun ReferenceDeviceValueField(
                 )
             },
             colors = TextFieldDefaults.colors().copy(
-                unfocusedContainerColor = Color.Transparent,
                 focusedContainerColor = Color.Transparent,
                 focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                 focusedIndicatorColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                 unfocusedIndicatorColor = Color.Transparent,
+                errorTextColor = MaterialTheme.colorScheme.error,
+                errorContainerColor = Color.Transparent,
+                errorIndicatorColor = Color.Transparent,
                 cursorColor = MaterialTheme.colorScheme.onSurfaceVariant
             ),
             contentPadding = PaddingValues(0.dp)
