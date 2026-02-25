@@ -13,6 +13,8 @@ import noisecapture.composeapp.generated.resources.calibration_title
 import org.jetbrains.compose.resources.StringResource
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.noiseplanet.noisecapture.audio.mic.MicrophoneProvider
+import org.noiseplanet.noisecapture.model.dao.MicrophoneCalibrationProfile
 import org.noiseplanet.noisecapture.model.enums.CalibrationFrequencyBand
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
@@ -67,16 +69,10 @@ class CalibrationScreenViewModel(
     override val title: StringResource = Res.string.calibration_title
 
     private val liveAudioService: LiveAudioService by inject()
-
-    // TODO: Dynamic based on selected microphone
-    val currentGain: Double = 1.2
-    var measuredValue: Double = 57.8
+    private val microphoneProvider: MicrophoneProvider by inject()
 
     private val _viewState = MutableStateFlow<ViewState>(
-        value = ViewState.Results(
-            measuredValue = measuredValue,
-            currentGain = currentGain,
-        )
+        value = ViewState.Countdown(COUNTDOWN_DURATION, COUNTDOWN_DURATION)
     )
     val viewState: StateFlow<ViewState> = _viewState
 
@@ -84,29 +80,38 @@ class CalibrationScreenViewModel(
     // - Lifecycle
 
     init {
-//        startCountdown()
+        startCountdown()
     }
 
 
     // - Public functions
 
     fun onReferenceValueChange(newReferenceValue: Double?) {
+        val state = viewState.value as ViewState.Results
         _viewState.tryEmit(
-            ViewState.Results(
-                measuredValue = measuredValue,
-                currentGain = currentGain,
+            state.copy(
                 difference = newReferenceValue?.let {
-                    (it - measuredValue).roundTo(1)
+                    (it - state.measuredValue).roundTo(1)
                 },
                 suggestedGain = newReferenceValue?.let {
-                    (it - (measuredValue - currentGain)).roundTo(1)
+                    (it - (state.measuredValue - state.currentGain)).roundTo(1)
                 }
             )
         )
     }
 
-    fun saveGain() {
-        // TODO: Save gain
+    fun saveGain(gain: Double) {
+        val preferredInput = microphoneProvider.preferredInput.value ?: return
+
+        viewModelScope.launch {
+            microphoneProvider.saveCalibrationProfile(
+                MicrophoneCalibrationProfile(
+                    calibrationTimestamp = Clock.System.now().toEpochMilliseconds(),
+                    compensationGain = gain,
+                    microphoneType = preferredInput.type,
+                )
+            )
+        }
     }
 
 
@@ -172,12 +177,18 @@ class CalibrationScreenViewModel(
                     _viewState.emit(
                         ViewState.Results(
                             measuredValue = measuredValues.dbAverage(),
-                            currentGain = currentGain,
+                            currentGain = getCurrentCompensationGain(),
                         )
                     )
                     cancel()
                 }
             }
         }
+    }
+
+    private fun getCurrentCompensationGain(): Double {
+        return microphoneProvider.currentCalibrationProfile.value
+            ?.compensationGain
+            ?: 0.0
     }
 }

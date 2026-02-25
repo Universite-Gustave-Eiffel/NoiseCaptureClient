@@ -86,7 +86,7 @@ fun CalibrationResultsView(
         modifier = Modifier.padding(horizontal = 16.dp + 24.dp)
     )
     Text(
-        text = "+1.2 dB(A)", // TODO: Dynamic value here
+        text = "${if (viewState.currentGain >= 0) "+" else ""}${viewState.currentGain} dB(A)",
         style = MaterialTheme.typography.headlineMedium,
         fontWeight = FontWeight.Black,
         color = NoiseLevelColorRamp.level1Dark,
@@ -229,7 +229,7 @@ fun CalibrationResultsView(
                         hasDropShadow = true,
                     ),
                     onClick = {
-                        viewModel.saveGain()
+                        viewModel.saveGain(viewState.suggestedGain)
                         router.popBackStack()
                     },
                     modifier = Modifier.height(50.dp).weight(1f),
