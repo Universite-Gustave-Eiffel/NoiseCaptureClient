@@ -14,6 +14,6 @@ class CalibrationRouter(
     // - Public functions
 
     fun onClickStartCalibration(durationSeconds: Int, frequencyBand: CalibrationFrequencyBand) {
-        navController.navigate(CalibrationRoute(durationSeconds, frequencyBand))
+        navController.navigate(CalibrationRoute(durationSeconds, frequencyBand.name))
     }
 }

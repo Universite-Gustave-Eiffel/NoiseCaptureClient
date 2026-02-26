@@ -15,6 +15,7 @@ import androidx.navigation.toRoute
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+import org.noiseplanet.noisecapture.model.enums.CalibrationFrequencyBand
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBarState
 import org.noiseplanet.noisecapture.ui.features.calibration.analysis.CalibrationScreen
@@ -148,7 +149,10 @@ fun NavigationManager(
             val route: CalibrationRoute = backStackEntry.toRoute()
 
             val screenViewModel: CalibrationScreenViewModel = koinViewModel {
-                parametersOf(route.durationSeconds.seconds, route.frequencyBand)
+                parametersOf(
+                    route.durationSeconds.seconds,
+                    CalibrationFrequencyBand.valueOf(route.frequencyBandName),
+                )
             }
             appBarState.setCurrentScreenViewModel(screenViewModel)
 

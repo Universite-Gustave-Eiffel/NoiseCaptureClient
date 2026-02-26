@@ -1,13 +1,15 @@
 package org.noiseplanet.noisecapture.model.enums
 
 import androidx.compose.runtime.Composable
+import kotlinx.serialization.Serializable
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.calibration_frequencies_whole_spectrum_title
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.util.toFrequencyString
 
-
+@Serializable
 enum class CalibrationFrequencyBand(val centerFrequency: Int) {
+
     WHOLE_SPECTRUM(centerFrequency = 0),
 
     HZ_125(centerFrequency = 125),
