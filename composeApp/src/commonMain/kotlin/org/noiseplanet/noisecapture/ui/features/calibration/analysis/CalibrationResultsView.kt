@@ -1,6 +1,7 @@
 package org.noiseplanet.noisecapture.ui.features.calibration.analysis
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -36,6 +37,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -73,14 +76,13 @@ fun CalibrationResultsView(
     viewModel: CalibrationScreenViewModel,
     viewState: CalibrationScreenViewModel.ViewState.Results,
     router: CalibrationRouter,
-) = Column(
-    modifier = Modifier.padding(top = 24.dp)
 ) {
     // - Properties
 
     var referenceDeviceFieldValue: String by remember { mutableStateOf("") }
 
     val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val interactionSource = remember { MutableInteractionSource() }
 
@@ -96,171 +98,182 @@ fun CalibrationResultsView(
 
     // - Layout
 
-    Text(
-        text = stringResource(Res.string.calibration_results_current_gain),
-        style = MaterialTheme.typography.titleMedium,
-        color = NoiseLevelColorRamp.level1Dark,
-        modifier = Modifier.padding(horizontal = 16.dp + 24.dp)
-    )
-    Text(
-        text = "${viewState.currentGain.toSignedString()} dB(A)",
-        style = MaterialTheme.typography.headlineMedium,
-        fontWeight = FontWeight.Black,
-        color = NoiseLevelColorRamp.level1Dark,
-        modifier = Modifier.padding(horizontal = 16.dp + 24.dp)
-    )
-
-    Spacer(modifier = Modifier.height(12.dp))
-
     Column(
-        modifier = Modifier.padding(horizontal = 16.dp)
-            .background(
-                color = MaterialTheme.colorScheme.surfaceContainer,
-                shape = MaterialTheme.shapes.large
-            ).padding(top = 16.dp, start = 24.dp, end = 24.dp, bottom = 10.dp)
+        modifier = Modifier.padding(top = 24.dp)
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = {
+                    keyboardController?.hide()
+                    focusManager.clearFocus()
+                })
+            }
     ) {
-        // Current device measured value
         Text(
-            text = stringResource(Res.string.calibration_results_your_device_value),
+            text = stringResource(Res.string.calibration_results_current_gain),
             style = MaterialTheme.typography.titleMedium,
+            color = NoiseLevelColorRamp.level1Dark,
+            modifier = Modifier.padding(horizontal = 16.dp + 24.dp)
         )
         Text(
-            text = buildAnnotatedString {
-                withStyle(SpanStyle(fontSize = 45.sp)) {
-                    append(viewState.measuredValue.roundTo(1).toString() + " ")
-                }
-                append("dB(A)")
-            },
+            text = "${viewState.currentGain.toSignedString()} dB(A)",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Black,
-            modifier = Modifier.offset(y = (-8).dp)
+            color = NoiseLevelColorRamp.level1Dark,
+            modifier = Modifier.padding(horizontal = 16.dp + 24.dp)
         )
 
-        // Divider
-        Spacer(modifier = Modifier.height(16.dp))
-        Box(
-            modifier = Modifier.height(1.dp)
-                .fillMaxWidth()
-                .background(color = NoiseLevelColorRamp.level1.copy(alpha = 0.5f))
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Reference device measured value
-        Text(
-            text = stringResource(Res.string.calibration_results_reference_value),
-            style = MaterialTheme.typography.titleMedium,
-            textAlign = TextAlign.End,
-            modifier = Modifier.fillMaxWidth()
-        )
-        ReferenceDeviceValueField(
-            value = referenceDeviceFieldValue,
-            onValueChange = {
-                referenceDeviceFieldValue = it
-                viewModel.onReferenceValueChange(it.toDoubleOrNull())
-            },
-            interactionSource = interactionSource,
-            isError = referenceDeviceFieldValue.isNotEmpty() &&
-                referenceDeviceFieldValue.toDoubleOrNull() == null,
-            keyboardActions = KeyboardActions {
-                keyboardController?.hide()
-                focusRequester.freeFocus()
-            },
-            modifier = Modifier.focusRequester(focusRequester)
-                .onFocusChanged { focusState ->
-                    if (focusState.isFocused) {
-                        keyboardController?.show()
-                    }
-                }
-        )
-    }
-
-    viewState.difference?.let { difference ->
         Spacer(modifier = Modifier.height(12.dp))
 
-        Text(
-            text = stringResource(Res.string.calibration_results_difference),
-            style = MaterialTheme.typography.titleMedium,
-            color = NoiseLevelColorRamp.level1Dark,
-            textAlign = TextAlign.End,
-            modifier = Modifier.padding(horizontal = 16.dp + 24.dp).fillMaxWidth(),
-        )
-        Text(
-            text = "${difference.toSignedString()} dB(A)",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Black,
-            color = NoiseLevelColorRamp.level1Dark,
-            textAlign = TextAlign.End,
-            modifier = Modifier.padding(horizontal = 16.dp + 24.dp).fillMaxWidth(),
-        )
-    }
-
-    Spacer(modifier = Modifier.weight(1f))
-
-    // Suggested compensation gain
-    viewState.suggestedGain?.let { suggestedGain ->
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
+            modifier = Modifier.padding(horizontal = 16.dp)
                 .background(
-                    color = NoiseLevelColorRamp.level1Dark,
-                    shape = MaterialTheme.shapes.large.copy(
-                        bottomStart = ZeroCornerSize,
-                        bottomEnd = ZeroCornerSize
-                    )
-                )
-                .padding(horizontal = 16.dp)
-                .padding(top = 24.dp)
-                .paddingBottomWithInsets(withNavBar = 12.dp, withoutNavBar = 24.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    shape = MaterialTheme.shapes.large
+                ).padding(top = 16.dp, start = 24.dp, end = 24.dp, bottom = 10.dp)
         ) {
+            // Current device measured value
             Text(
-                text = stringResource(Res.string.calibration_results_suggested_gain),
+                text = stringResource(Res.string.calibration_results_your_device_value),
                 style = MaterialTheme.typography.titleMedium,
-                color = NoiseLevelColorRamp.level1Light,
             )
             Text(
                 text = buildAnnotatedString {
-                    withStyle(SpanStyle(fontSize = MaterialTheme.typography.displayMedium.fontSize)) {
-                        append(suggestedGain.toSignedString())
+                    withStyle(SpanStyle(fontSize = 45.sp)) {
+                        append(viewState.measuredValue.roundTo(1).toString() + " ")
                     }
-                    append(" dB(A)")
+                    append("dB(A)")
                 },
-                style = MaterialTheme.typography.headlineLarge,
+                style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Black,
-                color = NoiseLevelColorRamp.level1Light,
+                modifier = Modifier.offset(y = (-8).dp)
             )
 
-            Row(
-                modifier = Modifier.padding(top = 24.dp).fillMaxWidth()
-            ) {
-                NCButton(
-                    viewModel = NCButtonViewModel(
-                        title = Res.string.cancel,
-                        style = NCButtonStyle.TEXT,
-                        colors = {
-                            NCButtonColors.Defaults.text()
-                                .copy(contentColor = NoiseLevelColorRamp.level1Light)
+            // Divider
+            Spacer(modifier = Modifier.height(16.dp))
+            Box(
+                modifier = Modifier.height(1.dp)
+                    .fillMaxWidth()
+                    .background(color = NoiseLevelColorRamp.level1.copy(alpha = 0.5f))
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Reference device measured value
+            Text(
+                text = stringResource(Res.string.calibration_results_reference_value),
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.End,
+                modifier = Modifier.fillMaxWidth()
+            )
+            ReferenceDeviceValueField(
+                value = referenceDeviceFieldValue,
+                onValueChange = {
+                    // Replace commas with dots for locales that use commas as decimal separator
+                    referenceDeviceFieldValue = it.replace(",", ".")
+                    viewModel.onReferenceValueChange(referenceDeviceFieldValue.toDoubleOrNull())
+                },
+                interactionSource = interactionSource,
+                keyboardActions = KeyboardActions {
+                    keyboardController?.hide()
+                    focusRequester.freeFocus()
+                },
+                isError = referenceDeviceFieldValue.isNotEmpty() &&
+                    referenceDeviceFieldValue.toDoubleOrNull() == null,
+                modifier = Modifier.focusRequester(focusRequester)
+                    .onFocusChanged { focusState ->
+                        if (focusState.isFocused) {
+                            keyboardController?.show()
                         }
-                    ),
-                    onClick = { router.popBackStack() },
-                    modifier = Modifier.height(50.dp).weight(1f),
+                    }
+            )
+        }
+
+        viewState.difference?.let { difference ->
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = stringResource(Res.string.calibration_results_difference),
+                style = MaterialTheme.typography.titleMedium,
+                color = NoiseLevelColorRamp.level1Dark,
+                textAlign = TextAlign.End,
+                modifier = Modifier.padding(horizontal = 16.dp + 24.dp).fillMaxWidth(),
+            )
+            Text(
+                text = "${difference.toSignedString()} dB(A)",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Black,
+                color = NoiseLevelColorRamp.level1Dark,
+                textAlign = TextAlign.End,
+                modifier = Modifier.padding(horizontal = 16.dp + 24.dp).fillMaxWidth(),
+            )
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        // Suggested compensation gain
+        viewState.suggestedGain?.let { suggestedGain ->
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .background(
+                        color = NoiseLevelColorRamp.level1Dark,
+                        shape = MaterialTheme.shapes.large.copy(
+                            bottomStart = ZeroCornerSize,
+                            bottomEnd = ZeroCornerSize
+                        )
+                    )
+                    .padding(horizontal = 16.dp)
+                    .padding(top = 24.dp)
+                    .paddingBottomWithInsets(withNavBar = 12.dp, withoutNavBar = 24.dp),
+            ) {
+                Text(
+                    text = stringResource(Res.string.calibration_results_suggested_gain),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = NoiseLevelColorRamp.level1Light,
                 )
-                NCButton(
-                    viewModel = NCButtonViewModel(
-                        title = Res.string.calibration_results_save_gain,
-                        colors = {
-                            NCButtonColors(
-                                contentColor = NoiseLevelColorRamp.level1Dark,
-                                containerColor = NoiseLevelColorRamp.level1Light
-                            )
-                        },
-                        hasDropShadow = true,
-                    ),
-                    onClick = {
-                        viewModel.saveGain(viewState.suggestedGain)
-                        router.popBackStack()
+                Text(
+                    text = buildAnnotatedString {
+                        withStyle(SpanStyle(fontSize = MaterialTheme.typography.displayMedium.fontSize)) {
+                            append(suggestedGain.toSignedString())
+                        }
+                        append(" dB(A)")
                     },
-                    modifier = Modifier.height(50.dp).weight(1f),
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Black,
+                    color = NoiseLevelColorRamp.level1Light,
                 )
+
+                Row(
+                    modifier = Modifier.padding(top = 24.dp).fillMaxWidth()
+                ) {
+                    NCButton(
+                        viewModel = NCButtonViewModel(
+                            title = Res.string.cancel,
+                            style = NCButtonStyle.TEXT,
+                            colors = {
+                                NCButtonColors.Defaults.text()
+                                    .copy(contentColor = NoiseLevelColorRamp.level1Light)
+                            }
+                        ),
+                        onClick = { router.popBackStack() },
+                        modifier = Modifier.height(50.dp).weight(1f),
+                    )
+                    NCButton(
+                        viewModel = NCButtonViewModel(
+                            title = Res.string.calibration_results_save_gain,
+                            colors = {
+                                NCButtonColors(
+                                    contentColor = NoiseLevelColorRamp.level1Dark,
+                                    containerColor = NoiseLevelColorRamp.level1Light
+                                )
+                            },
+                            hasDropShadow = true,
+                        ),
+                        onClick = {
+                            viewModel.saveGain(viewState.suggestedGain)
+                            router.popBackStack()
+                        },
+                        modifier = Modifier.height(50.dp).weight(1f),
+                    )
+                }
             }
         }
     }
