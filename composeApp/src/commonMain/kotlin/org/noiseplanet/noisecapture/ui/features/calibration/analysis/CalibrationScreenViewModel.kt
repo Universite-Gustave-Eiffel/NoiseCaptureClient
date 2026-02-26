@@ -183,6 +183,7 @@ class CalibrationScreenViewModel(
                             currentGain = getCurrentCompensationGain(),
                         )
                     )
+                    liveAudioService.stopListening()
                     cancel()
                 }
             }

@@ -67,14 +67,14 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
             val processedSamples = processRawSamples(it)
             flowOf(*processedSamples.toTypedArray())
         }
-        .shareIn(scope = scope, started = SharingStarted.WhileSubscribed(), replay = 1)
+        .shareIn(scope = scope, started = SharingStarted.WhileSubscribed(1_000))
 
     private val spectrogramDataFlow = audioSource.audioSamples
         .flatMapConcat {
             val processedSamples = processSpectrogramData(it)
             flowOf(*processedSamples.toTypedArray())
         }
-        .shareIn(scope = scope, started = SharingStarted.WhileSubscribed(), replay = 1)
+        .shareIn(scope = scope, started = SharingStarted.WhileSubscribed(1_000))
 
 
     // - LiveAudioService
@@ -116,6 +116,7 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
         if (audioSourceState.value == AudioSource.State.UNINITIALIZED) {
             startOnReady = true
         } else {
+            indicatorsProcessing?.flush()
             audioSource.start()
         }
     }
