@@ -7,8 +7,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.log.Logger
@@ -48,6 +48,7 @@ abstract class MicrophoneProvider : KoinComponent {
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private val _availableInputs = MutableStateFlow<List<MicrophoneInfo>>(emptyList())
     private val _preferredInput = MutableStateFlow<MicrophoneInfo?>(null)
+    private val _calibrationUpdates = MutableStateFlow<Long>(0)
 
     /**
      * Holds the audio device currently selected by the user, or null if system device
@@ -70,11 +71,9 @@ abstract class MicrophoneProvider : KoinComponent {
      * Calibration profile of the currently used microphone, if found in local storage.
      */
     val currentCalibrationProfile: StateFlow<MicrophoneCalibrationProfile?> = _preferredInput
-        .flatMapLatest { input ->
-            input?.let {
-                // Use microphone type name as storage identifier
-                calibrationService.subscribeOne(it.type.name)
-            } ?: flowOf(null)
+        .combine(_calibrationUpdates) { input, _ -> input }
+        .map { input ->
+            input?.let { calibrationService.get(it.type.name) }
         }
         .stateIn(
             scope = scope,
@@ -110,6 +109,7 @@ abstract class MicrophoneProvider : KoinComponent {
             uuid = calibrationProfile.microphoneType.name,
             newValue = calibrationProfile
         )
+        _calibrationUpdates.tryEmit(calibrationProfile.calibrationTimestamp)
     }
 
 
