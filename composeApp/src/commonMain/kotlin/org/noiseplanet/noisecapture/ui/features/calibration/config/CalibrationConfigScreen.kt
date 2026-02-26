@@ -23,7 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,9 +76,13 @@ fun CalibrationConfigScreen(
 
     val defaultCalibrationDurationSeconds = 10
 
-    var showFrequencyBandsSelectMenu: Boolean by remember { mutableStateOf(false) }
-    var selectedDurationSeconds: Int by remember { mutableStateOf(defaultCalibrationDurationSeconds) }
-    var selectedFrequencyBand: CalibrationFrequencyBand by remember {
+    var showFrequencyBandsSelectMenu: Boolean by rememberSaveable {
+        mutableStateOf(false)
+    }
+    var selectedDurationSeconds: Int by rememberSaveable {
+        mutableStateOf(defaultCalibrationDurationSeconds)
+    }
+    var selectedFrequencyBand: CalibrationFrequencyBand by rememberSaveable {
         mutableStateOf(CalibrationFrequencyBand.WHOLE_SPECTRUM)
     }
     val currentCalibrationProfile: MicrophoneCalibrationProfile? by viewModel.currentCalibrationProfile
