@@ -271,8 +271,9 @@ fun CalibrationResultsView(
                             hasDropShadow = true,
                         ),
                         onClick = {
-                            viewModel.saveGain(viewState.suggestedGain)
-                            router.popBackStack()
+                            viewModel.saveGain(viewState.suggestedGain) {
+                                router.popBackStack()
+                            }
                         },
                         modifier = Modifier.height(50.dp).weight(1f),
                     )

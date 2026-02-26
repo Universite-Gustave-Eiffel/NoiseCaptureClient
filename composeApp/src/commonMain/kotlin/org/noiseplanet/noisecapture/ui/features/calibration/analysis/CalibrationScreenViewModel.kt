@@ -19,6 +19,7 @@ import org.noiseplanet.noisecapture.model.enums.CalibrationFrequencyBand
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 import org.noiseplanet.noisecapture.util.dbAverage
+import org.noiseplanet.noisecapture.util.injectLogger
 import org.noiseplanet.noisecapture.util.roundTo
 import kotlin.time.Clock
 import kotlin.time.Duration
@@ -100,7 +101,8 @@ class CalibrationScreenViewModel(
         )
     }
 
-    fun saveGain(gain: Double) {
+    val logger by injectLogger()
+    fun saveGain(gain: Double, completionHandler: () -> Unit) {
         val preferredInput = microphoneProvider.preferredInput.value ?: return
 
         viewModelScope.launch {
@@ -111,6 +113,7 @@ class CalibrationScreenViewModel(
                     microphoneType = preferredInput.type,
                 )
             )
+            completionHandler()
         }
     }
 
