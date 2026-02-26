@@ -7,15 +7,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.noiseplanet.noisecapture.audio.mic.MicrophoneInfo
-import org.noiseplanet.noisecapture.audio.mic.MicrophoneProvider
+import org.noiseplanet.noisecapture.model.dao.MicrophoneInfo
+import org.noiseplanet.noisecapture.services.audio.MicrophoneProviderService
 
 
 class MicrophoneSelectViewModel : ViewModel(), KoinComponent {
 
     // - Properties
 
-    private val microphoneProvider: MicrophoneProvider by inject()
+    private val microphoneProvider: MicrophoneProviderService by inject()
 
     val availableDevices = microphoneProvider.availableInputs
     val activeDevice = microphoneProvider.preferredInput

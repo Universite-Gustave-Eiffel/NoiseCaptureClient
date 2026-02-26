@@ -1,5 +1,6 @@
-package org.noiseplanet.noisecapture.audio.mic
+package org.noiseplanet.noisecapture.model.dao
 
+import kotlinx.serialization.Serializable
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.microphone_type_bluetooth
 import noisecapture.composeapp.generated.resources.microphone_type_builtin
@@ -19,6 +20,7 @@ import org.jetbrains.compose.resources.StringResource
  * @param type Microphone type (builtin, wired, bluetooth, ...). We expect only one microphone of
  *             each type to be available at the same time.
  */
+@Serializable
 data class MicrophoneInfo(
     val id: String,
     val label: String,
@@ -29,6 +31,7 @@ data class MicrophoneInfo(
 /**
  * Possible supported microphone types
  */
+@Serializable
 enum class MicrophoneType {
 
     // - Cases

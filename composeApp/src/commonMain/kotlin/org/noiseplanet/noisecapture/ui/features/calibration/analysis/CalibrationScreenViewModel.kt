@@ -13,10 +13,10 @@ import noisecapture.composeapp.generated.resources.calibration_title
 import org.jetbrains.compose.resources.StringResource
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.noiseplanet.noisecapture.audio.mic.MicrophoneProvider
 import org.noiseplanet.noisecapture.model.dao.MicrophoneCalibrationProfile
 import org.noiseplanet.noisecapture.model.enums.CalibrationFrequencyBand
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
+import org.noiseplanet.noisecapture.services.audio.MicrophoneProviderService
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 import org.noiseplanet.noisecapture.util.dbAverage
 import org.noiseplanet.noisecapture.util.injectLogger
@@ -70,7 +70,7 @@ class CalibrationScreenViewModel(
     override val title: StringResource = Res.string.calibration_title
 
     private val liveAudioService: LiveAudioService by inject()
-    private val microphoneProvider: MicrophoneProvider by inject()
+    private val microphoneProvider: MicrophoneProviderService by inject()
 
     private val _viewState = MutableStateFlow<ViewState>(
         value = ViewState.Countdown(COUNTDOWN_DURATION, COUNTDOWN_DURATION)

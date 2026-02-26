@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.audio.mic
+package org.noiseplanet.noisecapture.services.audio
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -13,18 +13,19 @@ import kotlinx.coroutines.flow.stateIn
 import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.dao.MicrophoneCalibrationProfile
+import org.noiseplanet.noisecapture.model.dao.MicrophoneInfo
+import org.noiseplanet.noisecapture.model.dao.MicrophoneType
 import org.noiseplanet.noisecapture.services.storage.StorageService
 import org.noiseplanet.noisecapture.services.storage.injectStorageService
 import org.noiseplanet.noisecapture.util.injectLogger
 import kotlin.jvm.JvmStatic
-
 
 /**
  * Cross platform interface that abstracts getting available input sources and letting the user
  * manually select their preferred microphone.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-abstract class MicrophoneProvider : KoinComponent {
+abstract class MicrophoneProviderService : KoinComponent {
 
     // - Constants
 
@@ -78,7 +79,7 @@ abstract class MicrophoneProvider : KoinComponent {
         }
         .stateIn(
             scope = scope,
-            started = SharingStarted.Eagerly,
+            started = SharingStarted.Companion.Eagerly,
             initialValue = null
         )
 

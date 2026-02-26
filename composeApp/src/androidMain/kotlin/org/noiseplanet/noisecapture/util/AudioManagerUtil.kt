@@ -4,8 +4,8 @@ import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.os.Build
 import androidx.annotation.RequiresApi
-import org.noiseplanet.noisecapture.audio.mic.MicrophoneInfo
-import org.noiseplanet.noisecapture.audio.mic.MicrophoneType
+import org.noiseplanet.noisecapture.model.dao.MicrophoneInfo
+import org.noiseplanet.noisecapture.model.dao.MicrophoneType
 
 
 private typealias AndroidMicrophoneInfo = android.media.MicrophoneInfo

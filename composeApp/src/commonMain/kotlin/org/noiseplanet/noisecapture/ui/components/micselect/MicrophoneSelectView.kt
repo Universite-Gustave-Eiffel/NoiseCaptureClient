@@ -25,8 +25,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import org.noiseplanet.noisecapture.audio.mic.MicrophoneInfo
-import org.noiseplanet.noisecapture.audio.mic.MicrophoneType
+import org.noiseplanet.noisecapture.model.dao.MicrophoneInfo
+import org.noiseplanet.noisecapture.model.dao.MicrophoneType
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 
 

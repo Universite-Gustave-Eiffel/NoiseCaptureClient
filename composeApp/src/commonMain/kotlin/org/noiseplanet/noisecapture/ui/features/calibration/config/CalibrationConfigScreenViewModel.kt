@@ -9,7 +9,7 @@ import noisecapture.composeapp.generated.resources.measurement_title
 import org.jetbrains.compose.resources.StringResource
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.noiseplanet.noisecapture.audio.mic.MicrophoneProvider
+import org.noiseplanet.noisecapture.services.audio.MicrophoneProviderService
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
 
@@ -18,7 +18,7 @@ class CalibrationConfigScreenViewModel : ViewModel(), ScreenViewModel, KoinCompo
 
     // - Properties
 
-    private val microphoneProvider: MicrophoneProvider by inject()
+    private val microphoneProvider: MicrophoneProviderService by inject()
 
     override val title: StringResource = Res.string.measurement_title
 

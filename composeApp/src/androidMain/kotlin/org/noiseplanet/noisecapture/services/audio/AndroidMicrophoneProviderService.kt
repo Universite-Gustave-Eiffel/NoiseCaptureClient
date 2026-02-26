@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.audio.mic
+package org.noiseplanet.noisecapture.services.audio
 
 import android.content.Context
 import android.media.AudioDeviceCallback
@@ -10,10 +10,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.noiseplanet.noisecapture.model.dao.MicrophoneInfo
+import org.noiseplanet.noisecapture.model.dao.MicrophoneType
 import org.noiseplanet.noisecapture.util.toMicrophoneInfo
 
-
-class AndroidMicrophoneProvider : MicrophoneProvider(), KoinComponent {
+class AndroidMicrophoneProviderService : MicrophoneProviderService(), KoinComponent {
 
     // - Properties
 

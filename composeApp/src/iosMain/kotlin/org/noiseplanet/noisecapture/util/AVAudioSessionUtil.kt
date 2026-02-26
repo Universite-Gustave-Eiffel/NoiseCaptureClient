@@ -1,7 +1,7 @@
 package org.noiseplanet.noisecapture.util
 
-import org.noiseplanet.noisecapture.audio.mic.MicrophoneInfo
-import org.noiseplanet.noisecapture.audio.mic.MicrophoneType
+import org.noiseplanet.noisecapture.model.dao.MicrophoneInfo
+import org.noiseplanet.noisecapture.model.dao.MicrophoneType
 import platform.AVFAudio.AVAudioSession
 import platform.AVFAudio.AVAudioSessionPort
 import platform.AVFAudio.AVAudioSessionPortBluetoothA2DP

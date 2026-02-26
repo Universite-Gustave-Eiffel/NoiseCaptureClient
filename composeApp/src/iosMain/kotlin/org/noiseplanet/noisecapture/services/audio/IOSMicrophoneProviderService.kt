@@ -1,10 +1,12 @@
-package org.noiseplanet.noisecapture.audio.mic
+package org.noiseplanet.noisecapture.services.audio
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
+import org.noiseplanet.noisecapture.model.dao.MicrophoneInfo
+import org.noiseplanet.noisecapture.model.dao.MicrophoneType
 import org.noiseplanet.noisecapture.util.NSNotificationListener
 import org.noiseplanet.noisecapture.util.toMicrophoneInfo
 import platform.AVFAudio.AVAudioSession
@@ -15,12 +17,11 @@ import platform.AVFAudio.availableInputs
 import platform.AVFAudio.currentRoute
 import platform.Foundation.NSNotification
 
-
-class IOSMicrophoneProvider : MicrophoneProvider(), KoinComponent {
+class IOSMicrophoneProviderService : MicrophoneProviderService(), KoinComponent {
 
     // - Properties
 
-    private val audioSession = AVAudioSession.sharedInstance()
+    private val audioSession = AVAudioSession.Companion.sharedInstance()
     private val inputsChangeListener = NSNotificationListener(
         notificationName = AVAudioSessionRouteChangeNotification,
         `object` = audioSession,
