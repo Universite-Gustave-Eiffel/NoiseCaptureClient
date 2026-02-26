@@ -54,7 +54,6 @@ fun CalibrationScreen(
     ) {
         Box(
             contentAlignment = Alignment.BottomCenter,
-            modifier = Modifier.fillMaxSize()
         ) {
             // Show countdown progress indicator based on current state value
             Box(

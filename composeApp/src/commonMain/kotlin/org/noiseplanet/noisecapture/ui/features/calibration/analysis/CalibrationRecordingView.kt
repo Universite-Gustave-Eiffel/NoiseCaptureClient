@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,6 +29,7 @@ import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
 import org.noiseplanet.noisecapture.ui.navigation.router.CalibrationRouter
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
+import org.noiseplanet.noisecapture.util.AdaptiveUtil
 import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 import org.noiseplanet.noisecapture.util.roundTo
 import kotlin.math.ceil
@@ -42,6 +44,7 @@ fun CalibrationRecordingView(
     verticalArrangement = Arrangement.spacedBy(8.dp),
     horizontalAlignment = Alignment.CenterHorizontally,
     modifier = modifier.fillMaxSize()
+        .widthIn(max = AdaptiveUtil.MAX_FULL_SCREEN_WIDTH)
         .paddingBottomWithInsets(withNavBar = 16.dp, withoutNavBar = 24.dp)
         .padding(top = 16.dp)
         .padding(horizontal = 24.dp),

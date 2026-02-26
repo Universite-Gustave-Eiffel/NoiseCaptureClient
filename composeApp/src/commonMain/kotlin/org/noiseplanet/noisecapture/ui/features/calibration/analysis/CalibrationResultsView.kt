@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -66,6 +67,7 @@ import org.noiseplanet.noisecapture.ui.components.button.NCButtonStyle
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
 import org.noiseplanet.noisecapture.ui.navigation.router.CalibrationRouter
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
+import org.noiseplanet.noisecapture.util.AdaptiveUtil
 import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 import org.noiseplanet.noisecapture.util.roundTo
 import org.noiseplanet.noisecapture.util.toSignedString
@@ -99,7 +101,8 @@ fun CalibrationResultsView(
     // - Layout
 
     Column(
-        modifier = Modifier.padding(top = 24.dp)
+        modifier = Modifier.widthIn(max = AdaptiveUtil.MAX_FULL_SCREEN_WIDTH)
+            .padding(top = 24.dp)
             .pointerInput(Unit) {
                 detectTapGestures(onTap = {
                     keyboardController?.hide()
@@ -325,8 +328,11 @@ private fun ReferenceDeviceValueField(
         TextFieldDefaults.DecorationBox(
             value = value,
             innerTextField = {
-                // Fix alignment of inner text field so it gets closer to the top label
-                Box(modifier = Modifier.offset(y = (-6).dp)) {
+                Box(
+                    contentAlignment = Alignment.CenterEnd,
+                    // Fix alignment of inner text field so it gets closer to the top label
+                    modifier = Modifier.offset(y = (-6).dp).fillMaxWidth()
+                ) {
                     innerTextField()
                 }
             },

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -54,6 +55,7 @@ import org.noiseplanet.noisecapture.ui.components.micselect.MicrophoneSelectView
 import org.noiseplanet.noisecapture.ui.features.calibration.calibrationModule
 import org.noiseplanet.noisecapture.ui.navigation.router.CalibrationRouter
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
+import org.noiseplanet.noisecapture.util.AdaptiveUtil
 import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 import org.noiseplanet.noisecapture.util.toSignedString
 import kotlin.time.Instant
@@ -95,137 +97,141 @@ fun CalibrationConfigScreen(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.surface,
     ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(16.dp)
-                .paddingBottomWithInsets()
-        ) {
-            // Introduction section
-            Column {
-                Text(
-                    text = stringResource(Res.string.calibration_from_reference_intro_title),
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                Text(
-                    text = stringResource(Res.string.calibration_from_reference_intro_description),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-
-            // TODO: Add tips section
-
-            // Microphone select section
+        Box(contentAlignment = Alignment.TopCenter) {
             Column(
-                modifier = Modifier.fillMaxWidth()
-                    .background(
-                        color = MaterialTheme.colorScheme.surfaceContainer,
-                        shape = MaterialTheme.shapes.medium
-                    )
-                    .padding(vertical = 12.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.widthIn(max = AdaptiveUtil.MAX_FULL_SCREEN_WIDTH)
+                    .padding(16.dp)
+                    .paddingBottomWithInsets()
             ) {
-                Text(
-                    text = stringResource(Res.string.calibration_microphone_select_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(horizontal = 12.dp)
-                )
+                // Introduction section
+                Column {
+                    Text(
+                        text = stringResource(Res.string.calibration_from_reference_intro_title),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(
+                        text = stringResource(Res.string.calibration_from_reference_intro_description),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
 
-                MicrophoneSelectView(
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
-                )
+                // TODO: Add tips section
 
-                val calibrationProfileText = buildAnnotatedString {
-                    currentCalibrationProfile?.let { profile ->
-                        append(stringResource(Res.string.calibration_microphone_last_calibrated) + " ")
-                        val datetime = Instant.fromEpochMilliseconds(profile.calibrationTimestamp)
-                        append(HumanReadable.timeAgo(datetime) + "\n")
-                        append(stringResource(Res.string.calibration_microphone_current_gain) + " ")
-                        withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
-                            append("${profile.compensationGain.toSignedString()} dB(A)")
+                // Microphone select section
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                        .background(
+                            color = MaterialTheme.colorScheme.surfaceContainer,
+                            shape = MaterialTheme.shapes.medium
+                        )
+                        .padding(vertical = 12.dp)
+                ) {
+                    Text(
+                        text = stringResource(Res.string.calibration_microphone_select_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(horizontal = 12.dp)
+                    )
+
+                    MicrophoneSelectView(
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                    )
+
+                    val calibrationProfileText = buildAnnotatedString {
+                        currentCalibrationProfile?.let { profile ->
+                            append(stringResource(Res.string.calibration_microphone_last_calibrated) + " ")
+                            val datetime =
+                                Instant.fromEpochMilliseconds(profile.calibrationTimestamp)
+                            append(HumanReadable.timeAgo(datetime) + "\n")
+                            append(stringResource(Res.string.calibration_microphone_current_gain) + " ")
+                            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                                append("${profile.compensationGain.toSignedString()} dB(A)")
+                            }
+                        } ?: run {
+                            append(stringResource(Res.string.calibration_microphone_not_calibrated))
                         }
-                    } ?: run {
-                        append(stringResource(Res.string.calibration_microphone_not_calibrated))
                     }
-                }
-                Text(
-                    text = calibrationProfileText,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 12.dp)
-                )
-            }
-
-            // Duration and frequency band select section
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier
-                    .background(
-                        color = MaterialTheme.colorScheme.surfaceContainer,
-                        shape = MaterialTheme.shapes.medium
-                    )
-                    .padding(12.dp)
-            ) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.weight(1f),
-                ) {
                     Text(
-                        text = stringResource(Res.string.calibration_duration_select_title),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    CalibrationDurationSelectView(
-                        onSelectedDurationChange = { selectedDurationSeconds = it },
-                        initialValue = selectedDurationSeconds,
+                        text = calibrationProfileText,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 12.dp)
                     )
                 }
 
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.weight(1f),
+                // Duration and frequency band select section
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier
+                        .background(
+                            color = MaterialTheme.colorScheme.surfaceContainer,
+                            shape = MaterialTheme.shapes.medium
+                        )
+                        .padding(12.dp)
                 ) {
-                    Text(
-                        text = stringResource(Res.string.calibration_frequencies_select_title),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-
-                    Box(
-                        modifier = Modifier.clickable { showFrequencyBandsSelectMenu = true }
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.weight(1f),
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = selectedFrequencyBand.label,
-                                style = MaterialTheme.typography.titleSmall,
-                                modifier = Modifier.weight(1f)
-                            )
-                            Icon(
-                                imageVector = Icons.Default.ArrowDropDown,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-
-                        FrequencyBandSelectMenu(
-                            expanded = showFrequencyBandsSelectMenu,
-                            onDismissRequest = { showFrequencyBandsSelectMenu = false },
-                            onSelectFrequencyBand = {
-                                selectedFrequencyBand = it
-                                showFrequencyBandsSelectMenu = false
-                            },
+                        Text(
+                            text = stringResource(Res.string.calibration_duration_select_title),
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        CalibrationDurationSelectView(
+                            onSelectedDurationChange = { selectedDurationSeconds = it },
+                            initialValue = selectedDurationSeconds,
                         )
                     }
-                }
-            }
 
-            NCButton(
-                viewModel = viewModel.startButtonViewModel,
-                onClick = {
-                    router.onClickStartCalibration(
-                        durationSeconds = selectedDurationSeconds,
-                        frequencyBand = selectedFrequencyBand
-                    )
-                },
-                modifier = Modifier.height(50.dp)
-            )
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.calibration_frequencies_select_title),
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+
+                        Box(
+                            modifier = Modifier.clickable { showFrequencyBandsSelectMenu = true }
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = selectedFrequencyBand.label,
+                                    style = MaterialTheme.typography.titleSmall,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Icon(
+                                    imageVector = Icons.Default.ArrowDropDown,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+
+                            FrequencyBandSelectMenu(
+                                expanded = showFrequencyBandsSelectMenu,
+                                onDismissRequest = { showFrequencyBandsSelectMenu = false },
+                                onSelectFrequencyBand = {
+                                    selectedFrequencyBand = it
+                                    showFrequencyBandsSelectMenu = false
+                                },
+                            )
+                        }
+                    }
+                }
+
+                NCButton(
+                    viewModel = viewModel.startButtonViewModel,
+                    onClick = {
+                        router.onClickStartCalibration(
+                            durationSeconds = selectedDurationSeconds,
+                            frequencyBand = selectedFrequencyBand
+                        )
+                    },
+                    modifier = Modifier.height(50.dp)
+                )
+            }
         }
     }
 }
