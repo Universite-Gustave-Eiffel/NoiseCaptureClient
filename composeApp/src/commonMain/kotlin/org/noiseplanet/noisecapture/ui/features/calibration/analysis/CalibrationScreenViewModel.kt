@@ -110,7 +110,7 @@ class CalibrationScreenViewModel(
                 MicrophoneCalibrationProfile(
                     calibrationTimestamp = Clock.System.now().toEpochMilliseconds(),
                     compensationGain = gain,
-                    microphoneType = preferredInput.type,
+                    microphoneInfo = preferredInput,
                 )
             )
             completionHandler()

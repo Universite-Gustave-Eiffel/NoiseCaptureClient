@@ -8,6 +8,7 @@ import noisecapture.composeapp.generated.resources.microphone_type_unknown
 import noisecapture.composeapp.generated.resources.microphone_type_wired_aux
 import noisecapture.composeapp.generated.resources.microphone_type_wired_usb
 import org.jetbrains.compose.resources.StringResource
+import org.noiseplanet.noisecapture.util.slugify
 
 
 /**
@@ -25,7 +26,17 @@ data class MicrophoneInfo(
     val id: String,
     val label: String,
     val type: MicrophoneType,
-)
+) {
+
+    /**
+     * Identifier of the calibration profile that will be associated to this microphone.
+     * Currently it is a combination of microphone type + label, allowing for instance for two
+     * different USB microphones to each have their own calibration profile.
+     */
+    fun calibrationProfileIdentifier(): String {
+        return "${type.name}_$label".slugify()
+    }
+}
 
 
 /**

@@ -73,8 +73,7 @@ abstract class MicrophoneProviderService : KoinComponent {
     val currentCalibrationProfile: StateFlow<MicrophoneCalibrationProfile?> = _preferredInput
         .flatMapLatest { input ->
             input?.let {
-                // Use microphone type name as storage identifier
-                calibrationService.subscribeOne(it.type.name)
+                calibrationService.subscribeOne(it.calibrationProfileIdentifier())
             } ?: flowOf(null)
         }
         .stateIn(
@@ -107,8 +106,7 @@ abstract class MicrophoneProviderService : KoinComponent {
      */
     suspend fun saveCalibrationProfile(calibrationProfile: MicrophoneCalibrationProfile) {
         calibrationService.set(
-            // Use microphone type name as storage identifier
-            uuid = calibrationProfile.microphoneType.name,
+            uuid = calibrationProfile.uuid,
             newValue = calibrationProfile
         )
     }
