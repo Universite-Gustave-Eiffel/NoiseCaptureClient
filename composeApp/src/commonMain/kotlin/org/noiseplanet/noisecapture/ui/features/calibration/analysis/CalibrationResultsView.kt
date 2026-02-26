@@ -65,8 +65,7 @@ fun CalibrationResultsView(
     viewState: CalibrationScreenViewModel.ViewState.Results,
     router: CalibrationRouter,
 ) = Column(
-    modifier = Modifier.background(color = NoiseLevelColorRamp.level1Light)
-        .padding(top = 24.dp)
+    modifier = Modifier.padding(top = 24.dp)
 ) {
     // - Properties
 

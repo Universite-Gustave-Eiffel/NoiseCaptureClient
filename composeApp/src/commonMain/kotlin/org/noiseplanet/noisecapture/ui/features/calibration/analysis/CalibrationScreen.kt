@@ -1,6 +1,5 @@
 package org.noiseplanet.noisecapture.ui.features.calibration.analysis
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
@@ -34,31 +33,17 @@ fun CalibrationScreen(
         when (viewState) {
             is CalibrationScreenViewModel.ViewState.Countdown -> {
                 val state = viewState as CalibrationScreenViewModel.ViewState.Countdown
-                1f - (state.timeLeft / state.duration).toFloat()
-            }
-
-            is CalibrationScreenViewModel.ViewState.Recording -> {
-                val state = viewState as CalibrationScreenViewModel.ViewState.Recording
                 (state.timeLeft / state.duration).toFloat()
             }
 
-            else -> 0f
-        }
-    }
-
-    val progressIndicatorColor by animateColorAsState(
-        when (viewState) {
             is CalibrationScreenViewModel.ViewState.Recording -> {
                 val state = viewState as CalibrationScreenViewModel.ViewState.Recording
-                NoiseLevelColorRamp.getColorForSPLValue(
-                    value = state.currentAverage,
-                    palette = NoiseLevelColorRamp.paletteLighter
-                )
+                1f - (state.timeLeft / state.duration).toFloat()
             }
 
-            else -> NoiseLevelColorRamp.level1Light
+            else -> 1f
         }
-    )
+    }
 
 
     // - Layout
@@ -74,10 +59,8 @@ fun CalibrationScreen(
             // Show countdown progress indicator based on current state value
             Box(
                 modifier = Modifier.fillMaxWidth()
-                    .background(color = progressIndicatorColor)
-                    .animateContentSize(
-                        animationSpec = tween(durationMillis = 150, easing = LinearEasing)
-                    )
+                    .background(color = NoiseLevelColorRamp.level1Light)
+                    .animateContentSize(tween(durationMillis = 150, easing = LinearEasing))
                     .fillMaxHeight(progressIndicatorHeightFraction)
             )
 

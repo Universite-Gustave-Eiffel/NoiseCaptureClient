@@ -78,10 +78,7 @@ fun CalibrationRecordingView(
                 }
                 append(" dB(A)")
             },
-            color = NoiseLevelColorRamp.getColorForSPLValue(
-                value = viewState.currentAverage,
-                palette = NoiseLevelColorRamp.paletteDarker
-            ),
+            color = NoiseLevelColorRamp.level1Dark,
             style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Black,
         )
