@@ -54,6 +54,7 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
     private val audioSource: AudioSource by inject()
     private val permissionService: PermissionService by inject()
     private val settingsService: UserSettingsService by inject()
+    private val microphoneProvider: MicrophoneProviderService by inject()
 
     private var startOnReady: Boolean = false
 
@@ -61,6 +62,9 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
     private var spectrogramDataProcessing: SpectrogramDataProcessing? = null
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    private val currentCompensationGain: Double
+        get() = microphoneProvider.currentCalibrationProfile.value?.compensationGain ?: 0.0
 
     private val leqRecordsFlow = audioSource.audioSamples
         .flatMapConcat {
@@ -171,9 +175,14 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
     // - Private functions
 
     private suspend fun processRawSamples(audioSamples: AudioSamples): List<LeqRecord> {
-        if (indicatorsProcessing?.sampleRate != audioSamples.sampleRate) {
+        if (indicatorsProcessing?.sampleRate != audioSamples.sampleRate
+            || indicatorsProcessing?.compensationGain != currentCompensationGain
+        ) {
             logger.debug("Processing audio indicators with sample rate of ${audioSamples.sampleRate}")
-            indicatorsProcessing = AcousticIndicatorsProcessing(audioSamples.sampleRate)
+            indicatorsProcessing = AcousticIndicatorsProcessing(
+                sampleRate = audioSamples.sampleRate,
+                compensationGain = currentCompensationGain
+            )
         }
 
         return indicatorsProcessing?.processSamples(audioSamples).orEmpty()

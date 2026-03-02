@@ -15,11 +15,11 @@ import kotlin.math.sqrt
  * Calculates acoustic indicators from raw incoming audio samples.
  *
  * @param sampleRate Incoming audio data sample rate
- * @param dbGain Gain compensation
+ * @param compensationGain Gain compensation
  */
 class AcousticIndicatorsProcessing(
     val sampleRate: Int,
-    val dbGain: Double = ANDROID_GAIN,
+    val compensationGain: Double,
 ) {
 
     // - Constants
@@ -35,11 +35,14 @@ class AcousticIndicatorsProcessing(
         // 90 dB Sound Pressure Level (SPL) yields a response with RMS of 2500 for 16 bit-samples
         // (or -22.35 dB Full Scale for floating point/double precision samples) for each and every
         // microphone used to record the voice recognition audio source.
-        const val ANDROID_GAIN = -(-22.35 - 90)
+        // TODO: Make this platform dependent
+        const val BASE_COMPENSATION_GAIN = -(-22.35 - 90)
     }
 
 
     // - Properties
+
+    private val totalGain = BASE_COMPENSATION_GAIN + compensationGain
 
     private val samplesWindowing = SamplesWindowing(
         windowSize = (sampleRate * WINDOW_TIME_SECONDS).toInt(),
@@ -72,11 +75,11 @@ class AcousticIndicatorsProcessing(
                     acc + sample * sample
                 } / audioSamples.samples.size
             )
-            val leq = dbGain + 20 * log10(rms)
-            val laeq = dbGain + spectrumChannel.processSamplesWeightA(audioSamples.samples)
+            val leq = totalGain + 20 * log10(rms)
+            val laeq = totalGain + spectrumChannel.processSamplesWeightA(audioSamples.samples)
 
             val thirdOctave = spectrumChannel.processSamples(audioSamples.samples)
-            val thirdOctaveGain = 10 * log10(10.0.pow(dbGain / 10.0) / thirdOctave.size)
+            val thirdOctaveGain = 10 * log10(10.0.pow(totalGain / 10.0) / thirdOctave.size)
             val leqsPerThirdOctave = spectrumChannel.getNominalFrequencies()
                 .zip(thirdOctave.map {
                     // Clip values to -999dB to avoid -Inf in JSON exports
