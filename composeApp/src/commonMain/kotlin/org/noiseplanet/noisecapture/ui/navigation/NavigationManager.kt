@@ -15,13 +15,10 @@ import androidx.navigation.toRoute
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
-import org.noiseplanet.noisecapture.model.enums.CalibrationFrequencyBand
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBarState
-import org.noiseplanet.noisecapture.ui.features.calibration.analysis.CalibrationScreen
-import org.noiseplanet.noisecapture.ui.features.calibration.analysis.CalibrationScreenViewModel
-import org.noiseplanet.noisecapture.ui.features.calibration.config.CalibrationConfigScreen
-import org.noiseplanet.noisecapture.ui.features.calibration.config.CalibrationConfigScreenViewModel
+import org.noiseplanet.noisecapture.ui.features.calibration.CalibrationScreen
+import org.noiseplanet.noisecapture.ui.features.calibration.CalibrationScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.debug.DebugScreen
 import org.noiseplanet.noisecapture.ui.features.debug.DebugScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.details.DetailsScreen
@@ -41,7 +38,6 @@ import org.noiseplanet.noisecapture.ui.navigation.router.DetailsRouter
 import org.noiseplanet.noisecapture.ui.navigation.router.HistoryRouter
 import org.noiseplanet.noisecapture.ui.navigation.router.HomeRouter
 import org.noiseplanet.noisecapture.ui.navigation.router.RecordingRouter
-import kotlin.time.Duration.Companion.seconds
 
 
 @Composable
@@ -121,7 +117,7 @@ fun NavigationManager(
             )
         }
 
-        composable<CommunityMapRoute> { backStackEntry ->
+        composable<CommunityMapRoute> {
             val screenViewModel: CommunityMapScreenViewModel = koinViewModel()
             appBarState.setCurrentScreenViewModel(screenViewModel)
 
@@ -135,25 +131,8 @@ fun NavigationManager(
             SettingsScreen(screenViewModel)
         }
 
-        composable<CalibrationConfigRoute> { backStackEntry ->
-            val screenViewModel: CalibrationConfigScreenViewModel = koinViewModel()
-            appBarState.setCurrentScreenViewModel(screenViewModel)
-
-            CalibrationConfigScreen(
-                viewModel = screenViewModel,
-                router = CalibrationRouter(navController, backStackEntry)
-            )
-        }
-
         composable<CalibrationRoute> { backStackEntry ->
-            val route: CalibrationRoute = backStackEntry.toRoute()
-
-            val screenViewModel: CalibrationScreenViewModel = koinViewModel {
-                parametersOf(
-                    route.durationSeconds.seconds,
-                    CalibrationFrequencyBand.valueOf(route.frequencyBandName),
-                )
-            }
+            val screenViewModel: CalibrationScreenViewModel = koinViewModel()
             appBarState.setCurrentScreenViewModel(screenViewModel)
 
             CalibrationScreen(

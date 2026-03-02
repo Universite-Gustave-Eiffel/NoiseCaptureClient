@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.ui.features.calibration.config
+package org.noiseplanet.noisecapture.ui.features.calibration
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues

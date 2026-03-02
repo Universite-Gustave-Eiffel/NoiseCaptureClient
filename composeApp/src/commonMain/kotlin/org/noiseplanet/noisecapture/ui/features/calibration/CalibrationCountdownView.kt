@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.ui.features.calibration.analysis
+package org.noiseplanet.noisecapture.ui.features.calibration
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,32 +13,25 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import noisecapture.composeapp.generated.resources.Res
-import noisecapture.composeapp.generated.resources.calibration_recording_countdown_label
-import noisecapture.composeapp.generated.resources.calibration_recording_current_average
+import noisecapture.composeapp.generated.resources.calibration_countdown_label
 import noisecapture.composeapp.generated.resources.cancel
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.time.inMs
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
-import org.noiseplanet.noisecapture.ui.navigation.router.CalibrationRouter
-import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.AdaptiveUtil
 import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
-import org.noiseplanet.noisecapture.util.roundTo
 import kotlin.math.ceil
 
 
 @Composable
-fun CalibrationRecordingView(
-    viewState: CalibrationScreenViewModel.ViewState.Recording,
-    router: CalibrationRouter,
+fun CalibrationCountdownView(
+    viewModel: CalibrationScreenViewModel,
+    viewState: CalibrationScreenViewModel.ViewState.Countdown,
     modifier: Modifier = Modifier,
 ) = Column(
     verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -52,7 +45,7 @@ fun CalibrationRecordingView(
     Spacer(modifier = Modifier.weight(1f))
 
     Text(
-        text = stringResource(Res.string.calibration_recording_countdown_label),
+        text = stringResource(Res.string.calibration_countdown_label),
         style = MaterialTheme.typography.titleMedium,
     )
 
@@ -62,30 +55,7 @@ fun CalibrationRecordingView(
         fontWeight = FontWeight.Black,
     )
 
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.weight(1f),
-    ) {
-        Text(
-            text = stringResource(Res.string.calibration_recording_current_average),
-            style = MaterialTheme.typography.titleMedium,
-        )
-
-        Text(
-            text = buildAnnotatedString {
-                withStyle(
-                    SpanStyle(fontSize = MaterialTheme.typography.displayMedium.fontSize)
-                ) {
-                    append(viewState.currentAverage.roundTo(1).toString())
-                }
-                append(" dB(A)")
-            },
-            color = NoiseLevelColorRamp.level1Dark,
-            style = MaterialTheme.typography.headlineLarge,
-            fontWeight = FontWeight.Black,
-        )
-    }
+    Spacer(modifier = Modifier.weight(1f))
 
     NCButton(
         viewModel = NCButtonViewModel(
@@ -97,7 +67,7 @@ fun CalibrationRecordingView(
                 )
             }
         ),
-        onClick = router::popBackStack,
+        onClick = { viewModel.cancelCalibration() },
         modifier = Modifier.height(50.dp).width(200.dp)
     )
 }

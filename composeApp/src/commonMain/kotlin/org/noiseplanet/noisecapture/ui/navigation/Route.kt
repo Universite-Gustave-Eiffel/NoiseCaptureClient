@@ -14,9 +14,7 @@ object RouteIds {
     const val SETTINGS: RouteId = "settings"
     const val DETAILS: RouteId = "details"
     const val COMMUNITY_MAP: RouteId = "map"
-
-    const val CALIBRATION_CONFIG: RouteId = "calibration"
-    const val CALIBRATION: RouteId = "calibration/analysis"
+    const val CALIBRATION: RouteId = "calibration"
 
     // Naming this route "DEBUG" breaks compilation on iOS because it gets interpreted as and
     // obj-C macro.
@@ -61,10 +59,7 @@ open class Route(
 
                 RouteIds.DETAILS -> {
                     val measurementId = pathComponents.getOrNull(1) ?: return null
-                    DetailsRoute(
-                        measurementId = measurementId,
-                        parentRouteId = RouteIds.HOME, // TODO: Can this work?
-                    )
+                    DetailsRoute(measurementId)
                 }
 
                 else -> null
@@ -98,10 +93,7 @@ class HistoryRoute : Route(id = RouteIds.HISTORY)
 class SettingsRoute : Route(id = RouteIds.SETTINGS)
 
 @Serializable
-class DetailsRoute(
-    val measurementId: String,
-    val parentRouteId: String,
-) : Route(id = RouteIds.DETAILS) {
+class DetailsRoute(val measurementId: String) : Route(id = RouteIds.DETAILS) {
 
     override fun toUrlPath(): String {
         return "$id/$measurementId"
@@ -112,13 +104,7 @@ class DetailsRoute(
 class CommunityMapRoute : Route(id = RouteIds.COMMUNITY_MAP)
 
 @Serializable
-class CalibrationConfigRoute : Route(id = RouteIds.CALIBRATION_CONFIG)
-
-@Serializable
-class CalibrationRoute(
-    val durationSeconds: Int,
-    val frequencyBandName: String,
-) : Route(id = RouteIds.CALIBRATION)
+class CalibrationRoute : Route(id = RouteIds.CALIBRATION)
 
 @Serializable
 class DebugRoute : Route(id = RouteIds.DEBUG_ROUTE)

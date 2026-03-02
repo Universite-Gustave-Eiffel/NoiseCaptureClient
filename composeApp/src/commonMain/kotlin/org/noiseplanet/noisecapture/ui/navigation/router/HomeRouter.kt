@@ -4,7 +4,7 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.permission.Permission
-import org.noiseplanet.noisecapture.ui.navigation.CalibrationConfigRoute
+import org.noiseplanet.noisecapture.ui.navigation.CalibrationRoute
 import org.noiseplanet.noisecapture.ui.navigation.CommunityMapRoute
 import org.noiseplanet.noisecapture.ui.navigation.DetailsRoute
 import org.noiseplanet.noisecapture.ui.navigation.HistoryRoute
@@ -24,13 +24,7 @@ class HomeRouter(
     // - Public functions
 
     fun onClickMeasurement(measurement: Measurement) {
-        navController.navigate(
-            DetailsRoute(
-                measurement.uuid,
-                backStackEntry.id,
-            )
-        )
-        navController.currentBackStackEntry
+        navController.navigate(DetailsRoute(measurement.uuid))
     }
 
     fun onClickOpenSoundLevelMeterButton() {
@@ -50,6 +44,6 @@ class HomeRouter(
     }
 
     fun onClickCalibrateButton() {
-        navController.navigate(CalibrationConfigRoute())
+        navController.navigate(CalibrationRoute())
     }
 }

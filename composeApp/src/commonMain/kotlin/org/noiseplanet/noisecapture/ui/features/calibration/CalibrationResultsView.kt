@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.ui.features.calibration.analysis
+package org.noiseplanet.noisecapture.ui.features.calibration
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -256,7 +256,7 @@ fun CalibrationResultsView(
                                     .copy(contentColor = NoiseLevelColorRamp.level1Light)
                             }
                         ),
-                        onClick = { router.popBackStack() },
+                        onClick = { viewModel.cancelCalibration() },
                         modifier = Modifier.height(50.dp).weight(1f),
                     )
                     NCButton(

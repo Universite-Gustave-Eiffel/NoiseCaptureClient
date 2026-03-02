@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.ui.features.calibration.config
+package org.noiseplanet.noisecapture.ui.features.calibration
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -46,46 +46,35 @@ import noisecapture.composeapp.generated.resources.calibration_microphone_last_c
 import noisecapture.composeapp.generated.resources.calibration_microphone_not_calibrated
 import noisecapture.composeapp.generated.resources.calibration_microphone_select_title
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.model.dao.MicrophoneCalibrationProfile
 import org.noiseplanet.noisecapture.model.enums.CalibrationFrequencyBand
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
 import org.noiseplanet.noisecapture.ui.components.micselect.MicrophoneSelectView
-import org.noiseplanet.noisecapture.ui.features.calibration.calibrationModule
-import org.noiseplanet.noisecapture.ui.navigation.router.CalibrationRouter
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.AdaptiveUtil
 import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 import org.noiseplanet.noisecapture.util.toSignedString
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 
 
 @OptIn(KoinExperimentalAPI::class)
 @Composable
-fun CalibrationConfigScreen(
-    viewModel: CalibrationConfigScreenViewModel,
-    router: CalibrationRouter,
+fun CalibrationConfigView(
+    viewModel: CalibrationScreenViewModel,
+    viewState: CalibrationScreenViewModel.ViewState.Configure,
 ) {
-    // - DI
-
-    rememberKoinModules {
-        listOf(calibrationModule)
-    }
-
-
     // - Properties
-
-    val defaultCalibrationDurationSeconds = 10
 
     var showFrequencyBandsSelectMenu: Boolean by rememberSaveable {
         mutableStateOf(false)
     }
     var selectedDurationSeconds: Int by rememberSaveable {
-        mutableStateOf(defaultCalibrationDurationSeconds)
+        mutableStateOf(viewState.duration.inWholeSeconds.toInt())
     }
     var selectedFrequencyBand: CalibrationFrequencyBand by rememberSaveable {
-        mutableStateOf(CalibrationFrequencyBand.WHOLE_SPECTRUM)
+        mutableStateOf(viewState.frequencyBand)
     }
     val currentCalibrationProfile: MicrophoneCalibrationProfile? by viewModel.currentCalibrationProfile
         .collectAsStateWithLifecycle()
@@ -181,7 +170,9 @@ fun CalibrationConfigScreen(
                             style = MaterialTheme.typography.titleMedium,
                         )
                         CalibrationDurationSelectView(
-                            onSelectedDurationChange = { selectedDurationSeconds = it },
+                            onSelectedDurationChange = {
+                                selectedDurationSeconds = it
+                            },
                             initialValue = selectedDurationSeconds,
                         )
                     }
@@ -226,9 +217,9 @@ fun CalibrationConfigScreen(
                 NCButton(
                     viewModel = viewModel.startButtonViewModel,
                     onClick = {
-                        router.onClickStartCalibration(
-                            durationSeconds = selectedDurationSeconds,
-                            frequencyBand = selectedFrequencyBand
+                        viewModel.startCalibration(
+                            duration = selectedDurationSeconds.seconds,
+                            frequencyBand = selectedFrequencyBand,
                         )
                     },
                     modifier = Modifier.height(50.dp)
