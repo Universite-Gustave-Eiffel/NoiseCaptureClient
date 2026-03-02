@@ -46,7 +46,7 @@ class CalibrationScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
         /**
          * If the absolute suggested gain is above this value, show a warning state.
          */
-        private val CALIBRATION_WARNING_THRESHOLD: Double = 20.0
+        private const val CALIBRATION_WARNING_THRESHOLD: Double = 20.0
     }
 
 
