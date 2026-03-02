@@ -55,6 +55,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.calibration_results_already_calibrated
 import noisecapture.composeapp.generated.resources.calibration_results_current_gain
 import noisecapture.composeapp.generated.resources.calibration_results_difference
 import noisecapture.composeapp.generated.resources.calibration_results_reference_value
@@ -75,6 +76,7 @@ import org.noiseplanet.noisecapture.util.AdaptiveUtil
 import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 import org.noiseplanet.noisecapture.util.roundTo
 import org.noiseplanet.noisecapture.util.toSignedString
+import kotlin.math.absoluteValue
 
 
 @Composable
@@ -205,14 +207,29 @@ fun CalibrationResultsView(
                 textAlign = TextAlign.End,
                 modifier = Modifier.padding(horizontal = 16.dp + 24.dp).fillMaxWidth(),
             )
+
+            val differenceText = if (difference.absoluteValue < 0.5) {
+                "<0.5 dB(A)"
+            } else {
+                "${difference.toSignedString()} dB(A)"
+            }
             Text(
-                text = "${difference.toSignedString()} dB(A)",
+                text = differenceText,
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Black,
                 color = NoiseLevelColorRamp.level1Dark,
                 textAlign = TextAlign.End,
                 modifier = Modifier.padding(horizontal = 16.dp + 24.dp).fillMaxWidth(),
             )
+            if (difference.absoluteValue < 0.5) {
+                Text(
+                    text = stringResource(Res.string.calibration_results_already_calibrated),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = NoiseLevelColorRamp.level1Dark,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.padding(horizontal = 16.dp + 24.dp).fillMaxWidth(),
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))

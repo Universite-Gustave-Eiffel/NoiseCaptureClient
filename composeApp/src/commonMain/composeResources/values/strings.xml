@@ -261,6 +261,7 @@
     <string name="calibration_results_reference_value">The reference device measured</string>
     <string name="calibration_results_reference_value_placeholder">Enter value here</string>
     <string name="calibration_results_difference">That's a difference of</string>
+    <string name="calibration_results_already_calibrated">Your microphone is already\nproperly calibrated!</string>
     <string name="calibration_results_suggested_gain">Suggested compensation gain</string>
     <string name="calibration_results_save_gain">Save gain</string>
     <string name="calibration_results_suggested_gain_warning">The gain difference between your device and the reference is suspiciously high. We advise that you try calibrating again, following the tips. If you’re confident with your calibration method, you can still apply this suggested gain.</string>
