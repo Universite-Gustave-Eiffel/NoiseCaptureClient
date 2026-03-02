@@ -27,7 +27,8 @@ fun AudioManager.getInputDevice(deviceId: Int): AudioDeviceInfo? {
 fun AndroidMicrophoneInfo.toMicrophoneInfo(): MicrophoneInfo {
     return MicrophoneInfo(
         id = id.toString(),
-        label = description,
+        // If device id is encoded in description, remove it
+        label = description.replace(id.toString(), ""),
         type = type.toMicrophoneType(),
     )
 }
