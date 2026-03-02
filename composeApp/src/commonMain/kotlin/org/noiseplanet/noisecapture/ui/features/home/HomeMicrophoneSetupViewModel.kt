@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.home_mic_setup_calibrate_button
@@ -36,8 +37,9 @@ class HomeMicrophoneSetupViewModel : ViewModel(), KoinComponent {
     private val microphoneProvider: MicrophoneProviderService by inject()
 
     val viewState: StateFlow<ViewState> = microphoneProvider.currentCalibrationProfile
+        .filterNotNull()
         .map { calibrationProfile ->
-            calibrationProfile?.let {
+            if (calibrationProfile.isCalibrated) {
                 ViewState(
                     buttonViewModel = NCButtonViewModel(
                         title = Res.string.home_mic_setup_recalibrate_button,
@@ -51,13 +53,16 @@ class HomeMicrophoneSetupViewModel : ViewModel(), KoinComponent {
                     ),
                     contentColor = NoiseLevelColorRamp.level5Dark,
                     containerColor = NoiseLevelColorRamp.level5Light,
-                    calibrationProfile = it
+                    calibrationProfile = calibrationProfile,
                 )
-            } ?: ViewState(
-                buttonViewModel = NCButtonViewModel(Res.string.home_mic_setup_calibrate_button),
-                contentColor = NoiseLevelColorRamp.level6Dark,
-                containerColor = NoiseLevelColorRamp.level6Light,
-            )
+            } else {
+                ViewState(
+                    buttonViewModel = NCButtonViewModel(Res.string.home_mic_setup_calibrate_button),
+                    contentColor = NoiseLevelColorRamp.level6Dark,
+                    containerColor = NoiseLevelColorRamp.level6Light,
+                    calibrationProfile = calibrationProfile,
+                )
+            }
         }
         .stateInWhileSubscribed(
             scope = viewModelScope,

@@ -14,6 +14,7 @@ import org.noiseplanet.noisecapture.model.dao.LocationSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.model.dao.MeasurementSummary
 import org.noiseplanet.noisecapture.model.dao.MutableMeasurement
+import org.noiseplanet.noisecapture.services.audio.MicrophoneProviderService
 import org.noiseplanet.noisecapture.services.statistics.UserStatisticsService
 import org.noiseplanet.noisecapture.services.storage.FileSystemService
 import org.noiseplanet.noisecapture.services.storage.StorageService
@@ -72,6 +73,7 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
     private val locationSequenceStorageService: StorageService<LocationSequenceFragment> by injectStorageService()
     private val userStatisticsService: UserStatisticsService by inject()
     private val fileSystemService: FileSystemService by inject()
+    private val microphoneProvider: MicrophoneProviderService by inject()
 
     private var ongoingMeasurement: MutableMeasurement? = null
 
@@ -392,6 +394,7 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
             leqsSequenceIds = ongoingMeasurement.leqsSequenceIds,
             recordedAudioUrl = ongoingMeasurement.recordedAudioUrl,
             laeqMetrics = leqMetrics,
+            calibrationProfile = microphoneProvider.currentCalibrationProfile.value,
         )
         measurementStorageService.set(measurement.uuid, measurement)
         laeqMetricsFlow.emit(null)

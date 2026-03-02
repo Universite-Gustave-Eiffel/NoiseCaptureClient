@@ -109,6 +109,7 @@ class CalibrationScreenViewModel(
             microphoneProvider.saveCalibrationProfile(
                 MicrophoneCalibrationProfile(
                     calibrationTimestamp = Clock.System.now().toEpochMilliseconds(),
+                    isCalibrated = true,
                     compensationGain = gain,
                     microphoneInfo = preferredInput,
                 )

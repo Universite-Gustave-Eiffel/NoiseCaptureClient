@@ -78,58 +78,61 @@ fun HomeMicrophoneSetupView(
                     .background(MaterialTheme.colorScheme.surfaceContainer)
             )
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.height(IntrinsicSize.Min)
-                    .background(
-                        color = viewState.containerColor,
-                        shape = MaterialTheme.shapes.large.copy(
-                            topStart = ZeroCornerSize,
-                            topEnd = ZeroCornerSize
+            viewState.calibrationProfile?.let { calibrationProfile ->
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.height(IntrinsicSize.Min)
+                        .background(
+                            color = viewState.containerColor,
+                            shape = MaterialTheme.shapes.large.copy(
+                                topStart = ZeroCornerSize,
+                                topEnd = ZeroCornerSize
+                            )
                         )
-                    )
-                    .padding(12.dp)
-            ) {
-                val calibrationProfileText = buildAnnotatedString {
-                    viewState.calibrationProfile?.let { profile ->
-                        withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
-                            append(stringResource(Res.string.home_mic_setup_current_gain) + " ")
-                            append("${profile.compensationGain.toSignedString()} dB(A)\n")
-                        }
-                        append(stringResource(Res.string.home_mic_setup_last_calibrated) + " ")
-                        val datetime = Instant.fromEpochMilliseconds(profile.calibrationTimestamp)
-                        append(HumanReadable.timeAgo(datetime))
-                    } ?: run {
-                        append(stringResource(Res.string.home_mic_setup_not_calibrated))
-                    }
-                }
-                Text(
-                    text = calibrationProfileText,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = viewState.contentColor,
-                    modifier = Modifier.weight(1f),
-                )
-
-                Column(
-                    verticalArrangement = Arrangement.SpaceBetween,
-                    horizontalAlignment = Alignment.End,
-                    modifier = Modifier.fillMaxHeight()
+                        .padding(12.dp)
                 ) {
-                    if (viewState.calibrationProfile == null) {
-                        Icon(
-                            imageVector = Icons.Default.Info,
-                            contentDescription = null,
-                            tint = viewState.contentColor,
+                    val calibrationProfileText = buildAnnotatedString {
+                        if (calibrationProfile.isCalibrated) {
+                            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                                append(stringResource(Res.string.home_mic_setup_current_gain) + " ")
+                                append("${viewState.calibrationProfile?.compensationGain?.toSignedString()} dB(A)\n")
+                            }
+                            append(stringResource(Res.string.home_mic_setup_last_calibrated) + " ")
+                            val datetime =
+                                Instant.fromEpochMilliseconds(calibrationProfile.calibrationTimestamp)
+                            append(HumanReadable.timeAgo(datetime))
+                        } else {
+                            append(stringResource(Res.string.home_mic_setup_not_calibrated))
+                        }
+                    }
+                    Text(
+                        text = calibrationProfileText,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = viewState.contentColor,
+                        modifier = Modifier.weight(1f),
+                    )
+
+                    Column(
+                        verticalArrangement = Arrangement.SpaceBetween,
+                        horizontalAlignment = Alignment.End,
+                        modifier = Modifier.fillMaxHeight()
+                    ) {
+                        if (!calibrationProfile.isCalibrated) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = null,
+                                tint = viewState.contentColor,
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        NCButton(
+                            viewModel = viewState.buttonViewModel,
+                            onClick = router::onClickCalibrateButton,
                         )
                     }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    NCButton(
-                        viewModel = viewState.buttonViewModel,
-                        onClick = router::onClickCalibrateButton,
-                    )
                 }
             }
         }

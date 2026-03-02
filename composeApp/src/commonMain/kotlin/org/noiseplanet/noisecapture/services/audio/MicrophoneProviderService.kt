@@ -71,14 +71,20 @@ abstract class MicrophoneProviderService : KoinComponent {
      * Calibration profile of the currently used microphone, if found in local storage.
      */
     val currentCalibrationProfile: StateFlow<MicrophoneCalibrationProfile?> = _preferredInput
-        .flatMapLatest { input ->
-            input?.let {
-                calibrationService.subscribeOne(it.calibrationProfileIdentifier())
+        .flatMapLatest {
+            it?.let { mic ->
+                if (calibrationService.get(mic.calibrationProfileIdentifier()) == null) {
+                    calibrationService.set(
+                        mic.calibrationProfileIdentifier(),
+                        MicrophoneCalibrationProfile(mic),
+                    )
+                }
+                calibrationService.subscribeOne(mic.calibrationProfileIdentifier())
             } ?: flowOf(null)
         }
         .stateIn(
             scope = scope,
-            started = SharingStarted.Companion.Eagerly,
+            started = SharingStarted.Eagerly,
             initialValue = null
         )
 

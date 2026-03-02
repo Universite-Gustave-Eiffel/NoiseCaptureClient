@@ -138,26 +138,28 @@ fun CalibrationConfigScreen(
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
                     )
 
-                    val calibrationProfileText = buildAnnotatedString {
-                        currentCalibrationProfile?.let { profile ->
-                            append(stringResource(Res.string.calibration_microphone_last_calibrated) + " ")
-                            val datetime =
-                                Instant.fromEpochMilliseconds(profile.calibrationTimestamp)
-                            append(HumanReadable.timeAgo(datetime) + "\n")
-                            append(stringResource(Res.string.calibration_microphone_current_gain) + " ")
-                            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
-                                append("${profile.compensationGain.toSignedString()} dB(A)")
+                    currentCalibrationProfile?.let { calibrationProfile ->
+                        val calibrationProfileText = buildAnnotatedString {
+                            if (calibrationProfile.isCalibrated) {
+                                append(stringResource(Res.string.calibration_microphone_last_calibrated) + " ")
+                                val datetime =
+                                    Instant.fromEpochMilliseconds(calibrationProfile.calibrationTimestamp)
+                                append(HumanReadable.timeAgo(datetime) + "\n")
+                                append(stringResource(Res.string.calibration_microphone_current_gain) + " ")
+                                withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                                    append("${calibrationProfile.compensationGain.toSignedString()} dB(A)")
+                                }
+                            } else {
+                                append(stringResource(Res.string.calibration_microphone_not_calibrated))
                             }
-                        } ?: run {
-                            append(stringResource(Res.string.calibration_microphone_not_calibrated))
                         }
+                        Text(
+                            text = calibrationProfileText,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 12.dp)
+                        )
                     }
-                    Text(
-                        text = calibrationProfileText,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 12.dp)
-                    )
                 }
 
                 // Duration and frequency band select section
