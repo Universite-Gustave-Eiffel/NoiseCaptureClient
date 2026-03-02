@@ -25,6 +25,7 @@ import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
 import org.noiseplanet.noisecapture.util.dbAverage
 import org.noiseplanet.noisecapture.util.roundTo
+import kotlin.math.absoluteValue
 import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -37,10 +38,15 @@ class CalibrationScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
 
     companion object {
 
-        val DEFAULT_CALIBRATION_DURATION: Duration = 10.seconds
+        private val DEFAULT_CALIBRATION_DURATION: Duration = 10.seconds
 
         private val COUNTDOWN_DURATION: Duration = 3.seconds
         private val COUNTDOWN_REFRESH_RATE: Duration = 125.milliseconds
+
+        /**
+         * If the absolute suggested gain is above this value, show a warning state.
+         */
+        private val CALIBRATION_WARNING_THRESHOLD: Double = 20.0
     }
 
 
@@ -69,6 +75,7 @@ class CalibrationScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
             val currentGain: Double,
             val difference: Double? = null,
             val suggestedGain: Double? = null,
+            val isWarning: Boolean = false,
         ) : ViewState
     }
 
@@ -150,14 +157,18 @@ class CalibrationScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
 
     fun onReferenceValueChange(newReferenceValue: Double?) {
         val state = viewState.value as ViewState.Results
+        val suggestedGain = newReferenceValue?.let {
+            (it - (state.measuredValue - state.currentGain)).roundTo(1)
+        }
+        val isWarning = (suggestedGain?.absoluteValue ?: 0.0) >= CALIBRATION_WARNING_THRESHOLD
+
         _viewState.tryEmit(
             state.copy(
                 difference = newReferenceValue?.let {
                     (it - state.measuredValue).roundTo(1)
                 },
-                suggestedGain = newReferenceValue?.let {
-                    (it - (state.measuredValue - state.currentGain)).roundTo(1)
-                }
+                suggestedGain = suggestedGain,
+                isWarning = isWarning,
             )
         )
     }

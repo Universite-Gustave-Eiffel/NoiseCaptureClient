@@ -9,16 +9,19 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
@@ -58,6 +61,7 @@ import noisecapture.composeapp.generated.resources.calibration_results_reference
 import noisecapture.composeapp.generated.resources.calibration_results_reference_value_placeholder
 import noisecapture.composeapp.generated.resources.calibration_results_save_gain
 import noisecapture.composeapp.generated.resources.calibration_results_suggested_gain
+import noisecapture.composeapp.generated.resources.calibration_results_suggested_gain_warning
 import noisecapture.composeapp.generated.resources.calibration_results_your_device_value
 import noisecapture.composeapp.generated.resources.cancel
 import org.jetbrains.compose.resources.stringResource
@@ -101,7 +105,9 @@ fun CalibrationResultsView(
     // - Layout
 
     Column(
-        modifier = Modifier.widthIn(max = AdaptiveUtil.MAX_FULL_SCREEN_WIDTH)
+        modifier = Modifier.fillMaxHeight()
+            .verticalScroll(rememberScrollState())
+            .widthIn(max = AdaptiveUtil.MAX_FULL_SCREEN_WIDTH)
             .padding(top = 24.dp)
             .pointerInput(Unit) {
                 detectTapGestures(onTap = {
@@ -209,15 +215,22 @@ fun CalibrationResultsView(
             )
         }
 
+        Spacer(modifier = Modifier.height(24.dp))
         Spacer(modifier = Modifier.weight(1f))
 
         // Suggested compensation gain
         viewState.suggestedGain?.let { suggestedGain ->
+            val (containerColor, contentColor) = if (viewState.isWarning) {
+                Pair(NoiseLevelColorRamp.level6Dark, NoiseLevelColorRamp.level6Light)
+            } else {
+                Pair(NoiseLevelColorRamp.level1Dark, NoiseLevelColorRamp.level1Light)
+            }
+
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .background(
-                        color = NoiseLevelColorRamp.level1Dark,
+                        color = containerColor,
                         shape = MaterialTheme.shapes.large.copy(
                             bottomStart = ZeroCornerSize,
                             bottomEnd = ZeroCornerSize
@@ -230,7 +243,7 @@ fun CalibrationResultsView(
                 Text(
                     text = stringResource(Res.string.calibration_results_suggested_gain),
                     style = MaterialTheme.typography.titleMedium,
-                    color = NoiseLevelColorRamp.level1Light,
+                    color = contentColor,
                 )
                 Text(
                     text = buildAnnotatedString {
@@ -241,8 +254,17 @@ fun CalibrationResultsView(
                     },
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Black,
-                    color = NoiseLevelColorRamp.level1Light,
+                    color = contentColor,
                 )
+
+                if (viewState.isWarning) {
+                    Text(
+                        text = stringResource(Res.string.calibration_results_suggested_gain_warning),
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center,
+                        color = contentColor,
+                    )
+                }
 
                 Row(
                     modifier = Modifier.padding(top = 24.dp).fillMaxWidth()
@@ -253,7 +275,7 @@ fun CalibrationResultsView(
                             style = NCButtonStyle.TEXT,
                             colors = {
                                 NCButtonColors.Defaults.text()
-                                    .copy(contentColor = NoiseLevelColorRamp.level1Light)
+                                    .copy(contentColor = contentColor)
                             }
                         ),
                         onClick = { viewModel.cancelCalibration() },
@@ -264,8 +286,8 @@ fun CalibrationResultsView(
                             title = Res.string.calibration_results_save_gain,
                             colors = {
                                 NCButtonColors(
-                                    contentColor = NoiseLevelColorRamp.level1Dark,
-                                    containerColor = NoiseLevelColorRamp.level1Light
+                                    contentColor = containerColor,
+                                    containerColor = contentColor,
                                 )
                             },
                             hasDropShadow = true,
