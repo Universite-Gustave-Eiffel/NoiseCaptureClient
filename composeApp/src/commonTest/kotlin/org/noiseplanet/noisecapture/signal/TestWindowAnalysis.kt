@@ -246,7 +246,7 @@ class TestWindowAnalysis {
             (sin(it * angularFrequency).toFloat() * peak) / 32768F
         }
 
-        val acousticIndicatorProcessing = AcousticIndicatorsProcessing(sampleRate)
+        val acousticIndicatorProcessing = AcousticIndicatorsProcessing(sampleRate, 0.0)
         val processed = acousticIndicatorProcessing.processSamples(
             AudioSamples(0, signal, sampleRate)
         )
