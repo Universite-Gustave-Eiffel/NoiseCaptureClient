@@ -40,7 +40,7 @@ class CalibrationScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
 
         private val DEFAULT_CALIBRATION_DURATION: Duration = 10.seconds
 
-        private val COUNTDOWN_DURATION: Duration = 3.seconds
+        private val COUNTDOWN_DURATION: Duration = 5.seconds
         private val COUNTDOWN_REFRESH_RATE: Duration = 125.milliseconds
 
         /**
@@ -126,6 +126,9 @@ class CalibrationScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
 
         _viewState.tryEmit(ViewState.Countdown(COUNTDOWN_DURATION, COUNTDOWN_DURATION))
 
+        // Start audio source to let it stabilise before collecting audio levels
+        liveAudioService.startListening()
+
         // Starts a countdown job that will periodically update UI with remaining time
         ongoingJob = viewModelScope.launch {
             var timeLeft: Duration = COUNTDOWN_DURATION
@@ -193,8 +196,7 @@ class CalibrationScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
     // - Private functions
 
     private fun startRecording() {
-        // Start audio source and collect all incoming levels
-        liveAudioService.startListening()
+        // Start collecting all incoming levels
         ongoingJob = viewModelScope.launch(Dispatchers.Default) {
             // Keep track of all recorded levels to recalculate average on every new value
             val measuredValues: MutableList<Double> = mutableListOf()
