@@ -15,6 +15,8 @@ val Measurement.Companion.VERSION: Int get() = 3
  * @param endTimestamp Time at end of measurement, in milliseconds since epoch (UTC).
  * @param duration Duration of measurement, in milliseconds.
  * @param userAgent Context of measurement (platform, device, app version)
+ * @param calibrationProfile Contains information on the microphone used to make this measurement,
+ *                           as well as potential associated calibration data.
  * @param locationSequenceIds Unique identifiers of location sequence fragments for this measurement.
  * @param leqsSequenceIds Unique identifiers of leq sequence fragments for this measurement.
  * @param recordedAudioUrl If audio recording is enabled, URL of the local audio recording.
@@ -28,6 +30,7 @@ data class Measurement(
     val duration: Long,
 
     val userAgent: UserAgent,
+    val calibrationProfile: MicrophoneCalibrationProfile? = null,
 
     val locationSequenceIds: List<String> = emptyList(),
     val leqsSequenceIds: List<String> = emptyList(),

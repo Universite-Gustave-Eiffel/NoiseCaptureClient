@@ -6,7 +6,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.noiseplanet.noisecapture.audio.mic.MicrophoneProvider
 import org.noiseplanet.noisecapture.interop.MediaRecorder
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.services.storage.FileSystemService
@@ -24,7 +23,7 @@ class JSAudioRecordingService : AudioRecordingService, KoinComponent {
 
     private val logger: Logger by injectLogger()
     private val fileSystemService: FileSystemService by inject()
-    private val microphoneProvider: MicrophoneProvider by inject()
+    private val microphoneProvider: MicrophoneProviderService by inject()
 
     private val scope = CoroutineScope(Dispatchers.Default)
     private var mediaRecorder: MediaRecorder? = null

@@ -13,8 +13,8 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
-import org.noiseplanet.noisecapture.audio.mic.MicrophoneProvider
 import org.noiseplanet.noisecapture.log.Logger
+import org.noiseplanet.noisecapture.services.audio.MicrophoneProviderService
 import org.noiseplanet.noisecapture.util.injectLogger
 
 /**
@@ -58,7 +58,7 @@ abstract class AudioSource : KoinComponent {
 
     protected val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
-    protected val microphoneProvider: MicrophoneProvider = get()
+    protected val microphoneProvider: MicrophoneProviderService = get()
     protected val logger: Logger by injectLogger()
 
     private val _audioSamples = MutableSharedFlow<AudioSamples>(
@@ -203,7 +203,7 @@ abstract class AudioSource : KoinComponent {
     protected abstract suspend fun releaseInternal()
 
     /**
-     * Called when [MicrophoneProvider]'s preferred input source is updated,
+     * Called when [MicrophoneProviderService]'s preferred input source is updated,
      * either due to manual user input or system notification.
      */
     protected fun onSelectedMicrophoneChange() {

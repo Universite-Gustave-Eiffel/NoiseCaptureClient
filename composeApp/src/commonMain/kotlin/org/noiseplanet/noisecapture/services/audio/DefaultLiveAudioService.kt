@@ -54,6 +54,7 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
     private val audioSource: AudioSource by inject()
     private val permissionService: PermissionService by inject()
     private val settingsService: UserSettingsService by inject()
+    private val microphoneProvider: MicrophoneProviderService by inject()
 
     private var startOnReady: Boolean = false
 
@@ -62,19 +63,22 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
+    private val currentCompensationGain: Double
+        get() = microphoneProvider.currentCalibrationProfile.value?.compensationGain ?: 0.0
+
     private val leqRecordsFlow = audioSource.audioSamples
         .flatMapConcat {
             val processedSamples = processRawSamples(it)
             flowOf(*processedSamples.toTypedArray())
         }
-        .shareIn(scope = scope, started = SharingStarted.WhileSubscribed(), replay = 1)
+        .shareIn(scope = scope, started = SharingStarted.WhileSubscribed(1_000))
 
     private val spectrogramDataFlow = audioSource.audioSamples
         .flatMapConcat {
             val processedSamples = processSpectrogramData(it)
             flowOf(*processedSamples.toTypedArray())
         }
-        .shareIn(scope = scope, started = SharingStarted.WhileSubscribed(), replay = 1)
+        .shareIn(scope = scope, started = SharingStarted.WhileSubscribed(1_000))
 
 
     // - LiveAudioService
@@ -116,6 +120,7 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
         if (audioSourceState.value == AudioSource.State.UNINITIALIZED) {
             startOnReady = true
         } else {
+            indicatorsProcessing?.flush()
             audioSource.start()
         }
     }
@@ -170,9 +175,14 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
     // - Private functions
 
     private suspend fun processRawSamples(audioSamples: AudioSamples): List<LeqRecord> {
-        if (indicatorsProcessing?.sampleRate != audioSamples.sampleRate) {
+        if (indicatorsProcessing?.sampleRate != audioSamples.sampleRate
+            || indicatorsProcessing?.compensationGain != currentCompensationGain
+        ) {
             logger.debug("Processing audio indicators with sample rate of ${audioSamples.sampleRate}")
-            indicatorsProcessing = AcousticIndicatorsProcessing(audioSamples.sampleRate)
+            indicatorsProcessing = AcousticIndicatorsProcessing(
+                sampleRate = audioSamples.sampleRate,
+                compensationGain = currentCompensationGain
+            )
         }
 
         return indicatorsProcessing?.processSamples(audioSamples).orEmpty()

@@ -1,18 +1,31 @@
-package org.noiseplanet.noisecapture.audio.mic
+package org.noiseplanet.noisecapture.services.audio
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.stateIn
 import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.log.Logger
+import org.noiseplanet.noisecapture.model.dao.MicrophoneCalibrationProfile
+import org.noiseplanet.noisecapture.model.dao.MicrophoneInfo
+import org.noiseplanet.noisecapture.model.dao.MicrophoneType
+import org.noiseplanet.noisecapture.services.storage.StorageService
+import org.noiseplanet.noisecapture.services.storage.injectStorageService
 import org.noiseplanet.noisecapture.util.injectLogger
 import kotlin.jvm.JvmStatic
-
 
 /**
  * Cross platform interface that abstracts getting available input sources and letting the user
  * manually select their preferred microphone.
  */
-abstract class MicrophoneProvider : KoinComponent {
+@OptIn(ExperimentalCoroutinesApi::class)
+abstract class MicrophoneProviderService : KoinComponent {
 
     // - Constants
 
@@ -30,7 +43,10 @@ abstract class MicrophoneProvider : KoinComponent {
     // - Properties
 
     protected val logger: Logger by injectLogger()
+    private val calibrationService: StorageService<MicrophoneCalibrationProfile>
+        by injectStorageService()
 
+    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private val _availableInputs = MutableStateFlow<List<MicrophoneInfo>>(emptyList())
     private val _preferredInput = MutableStateFlow<MicrophoneInfo?>(null)
 
@@ -51,6 +67,27 @@ abstract class MicrophoneProvider : KoinComponent {
      */
     val preferredInput: StateFlow<MicrophoneInfo?> = _preferredInput
 
+    /**
+     * Calibration profile of the currently used microphone, if found in local storage.
+     */
+    val currentCalibrationProfile: StateFlow<MicrophoneCalibrationProfile?> = _preferredInput
+        .flatMapLatest {
+            it?.let { mic ->
+                if (calibrationService.get(mic.calibrationProfileIdentifier()) == null) {
+                    calibrationService.set(
+                        mic.calibrationProfileIdentifier(),
+                        MicrophoneCalibrationProfile(mic),
+                    )
+                }
+                calibrationService.subscribeOne(mic.calibrationProfileIdentifier())
+            } ?: flowOf(null)
+        }
+        .stateIn(
+            scope = scope,
+            started = SharingStarted.Eagerly,
+            initialValue = null
+        )
+
 
     // - Public functions
 
@@ -66,6 +103,18 @@ abstract class MicrophoneProvider : KoinComponent {
         }
         userSelectedDevice = targetDevice
         refresh()
+    }
+
+    /**
+     * Stores the given calibration profile.
+     *
+     * @param calibrationProfile Microphone calibration profile.
+     */
+    suspend fun saveCalibrationProfile(calibrationProfile: MicrophoneCalibrationProfile) {
+        calibrationService.set(
+            uuid = calibrationProfile.uuid,
+            newValue = calibrationProfile
+        )
     }
 
 

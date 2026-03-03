@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.audio.mic
+package org.noiseplanet.noisecapture.services.audio
 
 import kotlinx.browser.window
 import kotlinx.coroutines.CoroutineScope
@@ -7,6 +7,8 @@ import kotlinx.coroutines.await
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.noiseplanet.noisecapture.model.dao.MicrophoneInfo
+import org.noiseplanet.noisecapture.model.dao.MicrophoneType
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.services.permission.PermissionService
@@ -17,7 +19,7 @@ import org.w3c.dom.mediacapture.MediaStream
 import org.w3c.dom.mediacapture.MediaStreamConstraints
 
 @OptIn(ExperimentalWasmJsInterop::class)
-class JSMicrophoneProvider : MicrophoneProvider(), KoinComponent {
+class JSMicrophoneProviderService : MicrophoneProviderService(), KoinComponent {
 
     // - Properties
 
@@ -62,7 +64,7 @@ class JSMicrophoneProvider : MicrophoneProvider(), KoinComponent {
         return window.navigator.mediaDevices.enumerateDevices()
             .await<JsArray<MediaDeviceInfo>>()
             .toList()
-            .filter { it.kind == MediaDeviceKind.AUDIOINPUT }
+            .filter { it.kind == MediaDeviceKind.Companion.AUDIOINPUT }
             .map {
                 MicrophoneInfo(
                     id = it.deviceId,

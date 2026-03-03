@@ -1,5 +1,6 @@
-package org.noiseplanet.noisecapture.audio.mic
+package org.noiseplanet.noisecapture.model.dao
 
+import kotlinx.serialization.Serializable
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.microphone_type_bluetooth
 import noisecapture.composeapp.generated.resources.microphone_type_builtin
@@ -7,6 +8,7 @@ import noisecapture.composeapp.generated.resources.microphone_type_unknown
 import noisecapture.composeapp.generated.resources.microphone_type_wired_aux
 import noisecapture.composeapp.generated.resources.microphone_type_wired_usb
 import org.jetbrains.compose.resources.StringResource
+import org.noiseplanet.noisecapture.util.slugify
 
 
 /**
@@ -19,16 +21,28 @@ import org.jetbrains.compose.resources.StringResource
  * @param type Microphone type (builtin, wired, bluetooth, ...). We expect only one microphone of
  *             each type to be available at the same time.
  */
+@Serializable
 data class MicrophoneInfo(
     val id: String,
     val label: String,
     val type: MicrophoneType,
-)
+) {
+
+    /**
+     * Identifier of the calibration profile that will be associated to this microphone.
+     * Currently it is a combination of microphone type + label, allowing for instance for two
+     * different USB microphones to each have their own calibration profile.
+     */
+    fun calibrationProfileIdentifier(): String {
+        return "${type.name}_$label".slugify()
+    }
+}
 
 
 /**
  * Possible supported microphone types
  */
+@Serializable
 enum class MicrophoneType {
 
     // - Cases

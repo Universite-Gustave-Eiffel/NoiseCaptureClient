@@ -30,6 +30,7 @@ import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.model.enums.SpectrogramScaleMode
 import org.noiseplanet.noisecapture.services.audio.DefaultLiveAudioService.Companion.FFT_SIZE
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
+import org.noiseplanet.noisecapture.services.audio.MicrophoneProviderService
 import org.noiseplanet.noisecapture.services.settings.SettingsKey
 import org.noiseplanet.noisecapture.services.settings.UserSettingsService
 import org.noiseplanet.noisecapture.ui.components.plot.AxisTick
@@ -62,22 +63,22 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
         private const val RANGE_DB = 90.0
         private const val MIN_DB = 0.0
 
-        // TODO: Platform dependant gain?
-        private const val DB_GAIN = AcousticIndicatorsProcessing.ANDROID_GAIN
+        private const val BASE_GAIN = AcousticIndicatorsProcessing.BASE_COMPENSATION_GAIN
 
         private val FRAME_RATE: Duration = (1.0 / 30.0 * 1_000).milliseconds
 
         // TODO: Make this a user settings property?
-        val DISPLAYED_TIME_RANGE: Duration = 20.seconds
-        val TICK_SPACING_TIME_RANGE: Duration = 5.seconds
-        val X_TICKS_COUNT: Int = (DISPLAYED_TIME_RANGE / TICK_SPACING_TIME_RANGE).toInt()
+        private val DISPLAYED_TIME_RANGE: Duration = 20.seconds
+        private val TICK_SPACING_TIME_RANGE: Duration = 5.seconds
 
-        val Y_AXIS_TICKS_LOG = intArrayOf(
+        // TODO: Use Koalaplot to handle dynamic chart axis scaling
+        private val X_TICKS_COUNT: Int = (DISPLAYED_TIME_RANGE / TICK_SPACING_TIME_RANGE).toInt()
+        private val Y_AXIS_TICKS_LOG = intArrayOf(
             63, 100, 160, 250, 400, 630, 1000, 1600, 2500, 4000, 6300, 10000, 16000, 24000
         )
 
         // In linear mode, show a tick every 4kHz starting from 0 up to 24kHz
-        val Y_AXIS_TICKS_LINEAR = IntArray(7) { it * 4000 }
+        private val Y_AXIS_TICKS_LINEAR = IntArray(7) { it * 4000 }
     }
 
 
@@ -85,8 +86,13 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
 
     private val liveAudioService: LiveAudioService by inject()
     private val settingsService: UserSettingsService by inject()
+    private val microphoneProvider: MicrophoneProviderService by inject()
     private val platform: Platform by inject()
     private val logger: Logger by injectLogger()
+
+    private val currentCompensationGain: Double
+        get() = (microphoneProvider.currentCalibrationProfile.value?.compensationGain ?: 0.0) +
+            BASE_GAIN
 
     private var canvasSize: IntSize = IntSize.Zero
     private var canvasDensity: Density = Density(1f)
@@ -249,8 +255,7 @@ class SpectrogramPlotViewModel : ViewModel(), KoinComponent {
             for (idFreq in freqStart..<freqEnd) {
                 sumVal += 10.0.pow(spectrogramData.spectrum[idFreq] / 10.0)
             }
-            sumVal = max(0.0, 10 * log10(sumVal / (freqEnd - freqStart)) + DB_GAIN)
-
+            sumVal = max(0.0, 10 * log10(sumVal / (freqEnd - freqStart)) + currentCompensationGain)
             SpectrogramColorRamp.getColorForValue(
                 value = sumVal,
                 min = MIN_DB,

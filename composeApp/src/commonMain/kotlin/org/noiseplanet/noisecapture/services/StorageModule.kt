@@ -3,6 +3,7 @@ package org.noiseplanet.noisecapture.services
 import org.koin.dsl.module
 import org.noiseplanet.noisecapture.model.dao.LeqSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.LocationSequenceFragment
+import org.noiseplanet.noisecapture.model.dao.MicrophoneCalibrationProfile
 import org.noiseplanet.noisecapture.model.dao.UserStatistics
 import org.noiseplanet.noisecapture.services.storage.MeasurementStorageService
 import org.noiseplanet.noisecapture.services.storage.kstore.KStoreStorageService
@@ -32,6 +33,13 @@ val storageModule = module {
         KStoreStorageService(
             prefix = "statistics",
             type = UserStatistics::class,
+        )
+    }
+
+    singleStorageService {
+        KStoreStorageService(
+            prefix = "calibration",
+            type = MicrophoneCalibrationProfile::class,
         )
     }
 }

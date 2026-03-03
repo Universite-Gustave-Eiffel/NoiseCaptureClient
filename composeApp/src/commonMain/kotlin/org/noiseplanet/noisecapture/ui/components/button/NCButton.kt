@@ -1,9 +1,5 @@
 package org.noiseplanet.noisecapture.ui.components.button
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -59,113 +55,106 @@ fun NCButton(
 
     // - Layout
 
-    AnimatedContent(
-        targetState = viewModel,
-        transitionSpec = {
-            fadeIn() togetherWith fadeOut()
-        }
-    ) { viewModel ->
-        if (viewModel.icon != null && title == null) {
-            // If only icon is provided, use IconButton as a base
-            when (viewModel.style) {
-                NCButtonStyle.FILLED -> FilledIconButton(
-                    onClick,
-                    colors = colors.toIconButtonColors(),
-                    modifier = finalModifier
-                ) {
-                    NCButtonContents(
-                        viewModel.icon,
-                        viewModel.iconPlacement,
-                        null,
-                        colors.contentColor
-                    )
-                }
-
-                NCButtonStyle.OUTLINED -> OutlinedIconButton(
-                    onClick,
-                    colors = colors.toIconButtonColors()
-                        .copy(
-                            containerColor = Color.Transparent,
-                            disabledContainerColor = Color.Transparent
-                        ),
-                    border = BorderStroke(width = 2.dp, color = colors.containerColor),
-                    modifier = finalModifier
-                ) {
-                    NCButtonContents(
-                        viewModel.icon,
-                        viewModel.iconPlacement,
-                        null,
-                        colors.contentColor
-                    )
-                }
-
-                NCButtonStyle.TEXT -> IconButton(
-                    onClick,
-                    colors = colors.toIconButtonColors()
-                        .copy(
-                            containerColor = Color.Transparent,
-                            disabledContainerColor = Color.Transparent
-                        ),
-                    modifier = finalModifier
-                ) {
-                    NCButtonContents(
-                        viewModel.icon,
-                        viewModel.iconPlacement,
-                        null,
-                        colors.contentColor
-                    )
-                }
+    if (viewModel.icon != null && title == null) {
+        // If only icon is provided, use IconButton as a base
+        when (viewModel.style) {
+            NCButtonStyle.FILLED -> FilledIconButton(
+                onClick,
+                colors = colors.toIconButtonColors(),
+                modifier = finalModifier
+            ) {
+                NCButtonContents(
+                    viewModel.icon,
+                    viewModel.iconPlacement,
+                    null,
+                    colors.contentColor
+                )
             }
-        } else {
-            // Otherwise use a regular button
-            when (viewModel.style) {
-                NCButtonStyle.FILLED -> Button(
-                    onClick,
-                    colors = colors.toButtonColors(),
-                    modifier = finalModifier,
-                ) {
-                    NCButtonContents(
-                        viewModel.icon,
-                        viewModel.iconPlacement,
-                        title,
-                        colors.contentColor
-                    )
-                }
 
-                NCButtonStyle.OUTLINED -> OutlinedButton(
-                    onClick,
-                    colors = colors.toButtonColors()
-                        .copy(
-                            containerColor = Color.Transparent,
-                            disabledContainerColor = Color.Transparent
-                        ),
-                    border = BorderStroke(width = 2.dp, color = colors.containerColor),
-                    modifier = finalModifier,
-                ) {
-                    NCButtonContents(
-                        viewModel.icon,
-                        viewModel.iconPlacement,
-                        title,
-                        colors.contentColor
-                    )
-                }
+            NCButtonStyle.OUTLINED -> OutlinedIconButton(
+                onClick,
+                colors = colors.toIconButtonColors()
+                    .copy(
+                        containerColor = Color.Transparent,
+                        disabledContainerColor = Color.Transparent
+                    ),
+                border = BorderStroke(width = 2.dp, color = colors.containerColor),
+                modifier = finalModifier
+            ) {
+                NCButtonContents(
+                    viewModel.icon,
+                    viewModel.iconPlacement,
+                    null,
+                    colors.contentColor
+                )
+            }
 
-                NCButtonStyle.TEXT -> TextButton(
-                    onClick,
-                    colors = colors.toButtonColors()
-                        .copy(
-                            containerColor = Color.Transparent,
-                            disabledContainerColor = Color.Transparent
-                        ),
-                    modifier = finalModifier
-                ) {
-                    NCButtonContents(
-                        viewModel.icon,
-                        viewModel.iconPlacement,
-                        title,
-                        colors.contentColor
-                    )
-                }
+            NCButtonStyle.TEXT -> IconButton(
+                onClick,
+                colors = colors.toIconButtonColors()
+                    .copy(
+                        containerColor = Color.Transparent,
+                        disabledContainerColor = Color.Transparent
+                    ),
+                modifier = finalModifier
+            ) {
+                NCButtonContents(
+                    viewModel.icon,
+                    viewModel.iconPlacement,
+                    null,
+                    colors.contentColor
+                )
+            }
+        }
+    } else {
+        // Otherwise use a regular button
+        when (viewModel.style) {
+            NCButtonStyle.FILLED -> Button(
+                onClick,
+                colors = colors.toButtonColors(),
+                modifier = finalModifier,
+            ) {
+                NCButtonContents(
+                    viewModel.icon,
+                    viewModel.iconPlacement,
+                    title,
+                    colors.contentColor
+                )
+            }
+
+            NCButtonStyle.OUTLINED -> OutlinedButton(
+                onClick,
+                colors = colors.toButtonColors()
+                    .copy(
+                        containerColor = Color.Transparent,
+                        disabledContainerColor = Color.Transparent
+                    ),
+                border = BorderStroke(width = 2.dp, color = colors.containerColor),
+                modifier = finalModifier,
+            ) {
+                NCButtonContents(
+                    viewModel.icon,
+                    viewModel.iconPlacement,
+                    title,
+                    colors.contentColor
+                )
+            }
+
+            NCButtonStyle.TEXT -> TextButton(
+                onClick,
+                colors = colors.toButtonColors()
+                    .copy(
+                        containerColor = Color.Transparent,
+                        disabledContainerColor = Color.Transparent
+                    ),
+                modifier = finalModifier
+            ) {
+                NCButtonContents(
+                    viewModel.icon,
+                    viewModel.iconPlacement,
+                    title,
+                    colors.contentColor
+                )
             }
         }
     }

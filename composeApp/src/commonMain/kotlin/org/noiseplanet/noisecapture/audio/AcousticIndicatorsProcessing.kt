@@ -15,11 +15,11 @@ import kotlin.math.sqrt
  * Calculates acoustic indicators from raw incoming audio samples.
  *
  * @param sampleRate Incoming audio data sample rate
- * @param dbGain Gain compensation
+ * @param compensationGain Gain compensation
  */
 class AcousticIndicatorsProcessing(
     val sampleRate: Int,
-    val dbGain: Double = ANDROID_GAIN,
+    val compensationGain: Double,
 ) {
 
     // - Constants
@@ -35,14 +35,25 @@ class AcousticIndicatorsProcessing(
         // 90 dB Sound Pressure Level (SPL) yields a response with RMS of 2500 for 16 bit-samples
         // (or -22.35 dB Full Scale for floating point/double precision samples) for each and every
         // microphone used to record the voice recognition audio source.
-        const val ANDROID_GAIN = -(-22.35 - 90)
+        // TODO: Make this platform dependent
+        const val BASE_COMPENSATION_GAIN = -(-22.35 - 90)
     }
 
 
     // - Properties
 
+    /**
+     * Scaling factor to multiply PCM samples with in order to apply total compensation gain.
+     */
+    private val gainScalingFactor: Float = 10.0.pow(
+        (BASE_COMPENSATION_GAIN + compensationGain) / 20.0
+    ).toFloat()
+
+    private val bufferSize = (sampleRate * WINDOW_TIME_SECONDS).toInt()
+    private val scaledSamplesBuffer = FloatArray(bufferSize)
+
     private val samplesWindowing = SamplesWindowing(
-        windowSize = (sampleRate * WINDOW_TIME_SECONDS).toInt(),
+        windowSize = bufferSize,
         memoryStrategy = SamplesWindowing.MemoryStrategy.BUFFER_REFERENCE,
     )
     private val spectrumChannel: SpectrumChannel = SpectrumChannel().apply {
@@ -66,25 +77,26 @@ class AcousticIndicatorsProcessing(
     suspend fun processSamples(audioSamples: AudioSamples): List<LeqRecord> {
         val windows = samplesWindowing.pushSamples(audioSamples)
 
-        return windows.map { audioSamples ->
+        return windows.map { window ->
+            // Apply gain scaling factor to window PCM samples
+            for (i in window.samples.indices) {
+                scaledSamplesBuffer[i] = window.samples[i] * gainScalingFactor
+            }
             val rms = sqrt(
-                audioSamples.samples.fold(0.0) { acc, sample ->
-                    acc + sample * sample
-                } / audioSamples.samples.size
+                scaledSamplesBuffer.sumOf { (it * it).toDouble() } / bufferSize
             )
-            val leq = dbGain + 20 * log10(rms)
-            val laeq = dbGain + spectrumChannel.processSamplesWeightA(audioSamples.samples)
+            val leq = 20 * log10(rms)
+            val laeq = spectrumChannel.processSamplesWeightA(scaledSamplesBuffer)
 
-            val thirdOctave = spectrumChannel.processSamples(audioSamples.samples)
-            val thirdOctaveGain = 10 * log10(10.0.pow(dbGain / 10.0) / thirdOctave.size)
+            val thirdOctave = spectrumChannel.processSamples(scaledSamplesBuffer)
             val leqsPerThirdOctave = spectrumChannel.getNominalFrequencies()
                 .zip(thirdOctave.map {
                     // Clip values to -999dB to avoid -Inf in JSON exports
-                    max(it + thirdOctaveGain, -999.0).roundTo(1)
+                    max(it, -999.0).roundTo(1)
                 }).toMap()
 
             LeqRecord(
-                timestamp = audioSamples.timestamp,
+                timestamp = window.timestamp,
                 // Clip values to -999dB to avoid -Inf in JSON exports
                 lzeq = max(leq, -999.0).roundTo(1),
                 laeq = max(laeq, -999.0).roundTo(1),

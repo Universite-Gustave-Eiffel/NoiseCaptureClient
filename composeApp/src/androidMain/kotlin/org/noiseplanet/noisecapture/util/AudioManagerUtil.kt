@@ -4,8 +4,8 @@ import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.os.Build
 import androidx.annotation.RequiresApi
-import org.noiseplanet.noisecapture.audio.mic.MicrophoneInfo
-import org.noiseplanet.noisecapture.audio.mic.MicrophoneType
+import org.noiseplanet.noisecapture.model.dao.MicrophoneInfo
+import org.noiseplanet.noisecapture.model.dao.MicrophoneType
 
 
 private typealias AndroidMicrophoneInfo = android.media.MicrophoneInfo
@@ -27,7 +27,8 @@ fun AudioManager.getInputDevice(deviceId: Int): AudioDeviceInfo? {
 fun AndroidMicrophoneInfo.toMicrophoneInfo(): MicrophoneInfo {
     return MicrophoneInfo(
         id = id.toString(),
-        label = description,
+        // If device id is encoded in description, remove it
+        label = description.replace(id.toString(), ""),
         type = type.toMicrophoneType(),
     )
 }

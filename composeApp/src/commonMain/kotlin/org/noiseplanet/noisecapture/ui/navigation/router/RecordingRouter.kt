@@ -15,11 +15,6 @@ class RecordingRouter(
     // - Public functions
 
     fun openMeasurementDetails(measurementUuid: String) {
-        navController.navigate(
-            DetailsRoute(
-                measurementId = measurementUuid,
-                parentRouteId = backStackEntry.id
-            )
-        )
+        navController.navigate(DetailsRoute(measurementUuid))
     }
 }
