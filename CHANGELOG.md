@@ -24,7 +24,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Noise levels map legend now shows highest level on top (#255)
 - History screen now shows the most recent measurement on top of the list. Measurements are loaded
   on demand for faster initial loading. (#254)
-- Fixed flickering when fast scrolling in measurement history list due to reading from disk. (#265)
+- Fixed flickering when fast scrolling in measurement history list due to reading from disk. (#274)
 
 ### Changed
 
