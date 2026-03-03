@@ -42,7 +42,12 @@ class AcousticIndicatorsProcessing(
 
     // - Properties
 
-    private val totalGain = BASE_COMPENSATION_GAIN + compensationGain
+    /**
+     * Scaling factor to multiply PCM samples with in order to apply total compensation gain.
+     */
+    private val gainScalingFactor: Float = 10.0.pow(
+        (BASE_COMPENSATION_GAIN + compensationGain) / 20.0
+    ).toFloat()
 
     private val samplesWindowing = SamplesWindowing(
         windowSize = (sampleRate * WINDOW_TIME_SECONDS).toInt(),
@@ -69,25 +74,26 @@ class AcousticIndicatorsProcessing(
     suspend fun processSamples(audioSamples: AudioSamples): List<LeqRecord> {
         val windows = samplesWindowing.pushSamples(audioSamples)
 
-        return windows.map { audioSamples ->
+        return windows.map { window ->
+            // Apply gain scaling factor to window PCM samples
+            for (i in window.samples.indices) {
+                window.samples[i] *= gainScalingFactor
+            }
             val rms = sqrt(
-                audioSamples.samples.fold(0.0) { acc, sample ->
-                    acc + sample * sample
-                } / audioSamples.samples.size
+                window.samples.sumOf { (it * it).toDouble() } / window.samples.size
             )
-            val leq = totalGain + 20 * log10(rms)
-            val laeq = totalGain + spectrumChannel.processSamplesWeightA(audioSamples.samples)
+            val leq = 20 * log10(rms)
+            val laeq = spectrumChannel.processSamplesWeightA(window.samples)
 
-            val thirdOctave = spectrumChannel.processSamples(audioSamples.samples)
-            val thirdOctaveGain = 10 * log10(10.0.pow(totalGain / 10.0) / thirdOctave.size)
+            val thirdOctave = spectrumChannel.processSamples(window.samples)
             val leqsPerThirdOctave = spectrumChannel.getNominalFrequencies()
                 .zip(thirdOctave.map {
                     // Clip values to -999dB to avoid -Inf in JSON exports
-                    max(it + thirdOctaveGain, -999.0).roundTo(1)
+                    max(it, -999.0).roundTo(1)
                 }).toMap()
 
             LeqRecord(
-                timestamp = audioSamples.timestamp,
+                timestamp = window.timestamp,
                 // Clip values to -999dB to avoid -Inf in JSON exports
                 lzeq = max(leq, -999.0).roundTo(1),
                 laeq = max(laeq, -999.0).roundTo(1),
