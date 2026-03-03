@@ -72,58 +72,57 @@ fun HistoryItemView(
 
     // - Layout
 
-    measurement?.let { measurement ->
-
-        val instant = Instant.fromEpochMilliseconds(measurement.startTimestamp)
+    val startTime = measurement?.let {
+        val instant = Instant.fromEpochMilliseconds(it.startTimestamp)
         val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
-        val startTime = localDateTime.format(DateUtil.Format.MEASUREMENT_START_DATETIME)
+        localDateTime.format(DateUtil.Format.MEASUREMENT_START_DATETIME)
+    }
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = modifier.background(MaterialTheme.colorScheme.surface, shape)
-                .clip(shape)
-                .clickable { onClick(measurement) }
-                .padding(start = 16.dp, end = 0.dp, top = 16.dp, bottom = 16.dp)
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier.background(MaterialTheme.colorScheme.surface, shape)
+            .clip(shape)
+            .clickable { measurement?.let { onClick(it) } }
+            .padding(start = 16.dp, end = 0.dp, top = 16.dp, bottom = 16.dp)
+    ) {
+        Column(
+            modifier = Modifier.weight(1f)
         ) {
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = startTime,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                Text(
-                    text = HumanReadable.duration(measurement.duration.milliseconds),
-                    style = MaterialTheme.typography.bodySmall,
-                )
+            Text(
+                text = startTime ?: "",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = HumanReadable.duration((measurement?.duration ?: 0L).milliseconds),
+                style = MaterialTheme.typography.bodySmall,
+            )
 
-                Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(8.dp))
 
-                Text(
-                    // TODO: Get description from measurement
-                    text = stringResource(Res.string.measurement_no_description_placeholder),
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+            Text(
+                // TODO: Get description from measurement
+                text = stringResource(Res.string.measurement_no_description_placeholder),
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
 
-                Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(8.dp))
 
-                LAeqMetricsView(
-                    measurement.laeqMetrics,
-                    modifier = Modifier.height(IntrinsicSize.Max)
-                )
-            }
-
-            Icon(
-                imageVector = Icons.Default.ChevronRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 8.dp).size(20.dp),
+            LAeqMetricsView(
+                measurement?.laeqMetrics,
+                modifier = Modifier.height(IntrinsicSize.Max)
             )
         }
+
+        Icon(
+            imageVector = Icons.Default.ChevronRight,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 8.dp).size(20.dp),
+        )
     }
 }
