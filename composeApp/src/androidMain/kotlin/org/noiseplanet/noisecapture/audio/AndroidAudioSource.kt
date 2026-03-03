@@ -6,6 +6,9 @@ import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioRecord
 import android.media.MediaRecorder
+import android.media.audiofx.AcousticEchoCanceler
+import android.media.audiofx.AutomaticGainControl
+import android.media.audiofx.NoiseSuppressor
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -66,6 +69,8 @@ internal class AndroidAudioSource : AudioSource(), KoinComponent {
 
         // Initialise AudioRecord with the target supported configuration
         audioRecord = AudioRecord(audioSourceConfig, sampleRate, CHANNEL, ENCODING, bufferSizeBytes)
+        // Disable any pre/post processing effects that could be enabled
+        audioRecord?.let { disableEffects(it.audioSessionId) }
         // If provided target device ID is found in available input devices,
         // use it as input microphone
         microphoneProvider.preferredInput.value?.id?.toIntOrNull()
@@ -171,6 +176,30 @@ internal class AndroidAudioSource : AudioSource(), KoinComponent {
                     sampleRate = it.sampleRate,
                 )
             )
+        }
+    }
+
+    /**
+     * Ensure that AGC, noise suppression and echo canceling are all disabled (if available)
+     */
+    private fun disableEffects(audioSessionId: Int) {
+        if (AutomaticGainControl.isAvailable()) {
+            AutomaticGainControl.create(audioSessionId)?.apply {
+                enabled = false
+                release()
+            }
+        }
+        if (NoiseSuppressor.isAvailable()) {
+            NoiseSuppressor.create(audioSessionId)?.apply {
+                enabled = false
+                release()
+            }
+        }
+        if (AcousticEchoCanceler.isAvailable()) {
+            AcousticEchoCanceler.create(audioSessionId)?.apply {
+                enabled = false
+                release()
+            }
         }
     }
 }
