@@ -49,8 +49,11 @@ class AcousticIndicatorsProcessing(
         (BASE_COMPENSATION_GAIN + compensationGain) / 20.0
     ).toFloat()
 
+    private val bufferSize = (sampleRate * WINDOW_TIME_SECONDS).toInt()
+    private val scaledSamplesBuffer = FloatArray(bufferSize)
+
     private val samplesWindowing = SamplesWindowing(
-        windowSize = (sampleRate * WINDOW_TIME_SECONDS).toInt(),
+        windowSize = bufferSize,
         memoryStrategy = SamplesWindowing.MemoryStrategy.BUFFER_REFERENCE,
     )
     private val spectrumChannel: SpectrumChannel = SpectrumChannel().apply {
@@ -77,15 +80,15 @@ class AcousticIndicatorsProcessing(
         return windows.map { window ->
             // Apply gain scaling factor to window PCM samples
             for (i in window.samples.indices) {
-                window.samples[i] *= gainScalingFactor
+                scaledSamplesBuffer[i] = window.samples[i] * gainScalingFactor
             }
             val rms = sqrt(
-                window.samples.sumOf { (it * it).toDouble() } / window.samples.size
+                scaledSamplesBuffer.sumOf { (it * it).toDouble() } / bufferSize
             )
             val leq = 20 * log10(rms)
-            val laeq = spectrumChannel.processSamplesWeightA(window.samples)
+            val laeq = spectrumChannel.processSamplesWeightA(scaledSamplesBuffer)
 
-            val thirdOctave = spectrumChannel.processSamples(window.samples)
+            val thirdOctave = spectrumChannel.processSamples(scaledSamplesBuffer)
             val leqsPerThirdOctave = spectrumChannel.getNominalFrequencies()
                 .zip(thirdOctave.map {
                     // Clip values to -999dB to avoid -Inf in JSON exports
