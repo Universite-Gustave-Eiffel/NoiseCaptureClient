@@ -7,6 +7,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-03-04
+
 ### Added
 
 - Manually select the input microphone from available input sources (#245)
