@@ -253,6 +253,17 @@
     <string name="calibration_frequencies_whole_spectrum_description">All frequency bands</string>
     <string name="calibration_start_button_title">Start calibration</string>
 
+    <string name="calibration_tips_environment_title">Environment conditions</string>
+    <string name="calibration_tips_environment_distance">Microphone should be placed at least two meters away from the sound source.</string>
+    <string name="calibration_tips_environment_corners">If calibration is done indoors, avoid being in one of the room corners.</string>
+    <string name="calibration_tips_environment_direction">Microphone should not be facing the sound source.</string>
+    <string name="calibration_tips_environment_quiet">Avoid making noises close to the microphones.</string>
+    <string name="calibration_tips_environment_placement">Put the phone on a table instead of holding it in your hand.</string>
+    <string name="calibration_tips_source_title">Sound source</string>
+    <string name="calibration_tips_source_nature">Try using one of the following sound sources: pink noise, environmental noise (like cars passing in a street), or as fallback, people talking in the distance.</string>
+    <string name="calibration_tips_reference_title">Reference device</string>
+    <string name="calibration_tips_reference_preferences">Use one of the following reference devices, in order of preference: a sound level meter, a smartphone with a calibrated external microphone, a smartphone with a calibrated internal microphone, small moving objects which sound levels are known to you.</string>
+
     <string name="calibration_countdown_label">Calibration will start in</string>
     <string name="calibration_recording_countdown_label">Measuring...</string>
     <string name="calibration_recording_current_average">Current average</string>

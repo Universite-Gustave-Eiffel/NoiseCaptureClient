@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.ui.features.calibration
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,6 +13,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -41,6 +44,7 @@ import noisecapture.composeapp.generated.resources.calibration_frequencies_selec
 import noisecapture.composeapp.generated.resources.calibration_frequencies_whole_spectrum_description
 import noisecapture.composeapp.generated.resources.calibration_from_reference_intro_description
 import noisecapture.composeapp.generated.resources.calibration_from_reference_intro_title
+import noisecapture.composeapp.generated.resources.calibration_from_reference_tips_title
 import noisecapture.composeapp.generated.resources.calibration_microphone_current_gain
 import noisecapture.composeapp.generated.resources.calibration_microphone_last_calibrated
 import noisecapture.composeapp.generated.resources.calibration_microphone_not_calibrated
@@ -79,6 +83,8 @@ fun CalibrationConfigView(
     val currentCalibrationProfile: MicrophoneCalibrationProfile? by viewModel.currentCalibrationProfile
         .collectAsStateWithLifecycle()
 
+    val scrollState: ScrollState = rememberScrollState()
+
 
     // - Layout
 
@@ -90,12 +96,13 @@ fun CalibrationConfigView(
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.widthIn(max = AdaptiveUtil.MAX_FULL_SCREEN_WIDTH)
+                modifier = Modifier.verticalScroll(scrollState)
+                    .widthIn(max = AdaptiveUtil.MAX_FULL_SCREEN_WIDTH)
                     .padding(16.dp)
                     .paddingBottomWithInsets()
             ) {
                 // Introduction section
-                Column {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
                         text = stringResource(Res.string.calibration_from_reference_intro_title),
                         style = MaterialTheme.typography.titleMedium,
@@ -106,7 +113,15 @@ fun CalibrationConfigView(
                     )
                 }
 
-                // TODO: Add tips section
+                // Tips section
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        text = stringResource(Res.string.calibration_from_reference_tips_title),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    CalibrationTipsView()
+                }
+
 
                 // Microphone select section
                 Column(

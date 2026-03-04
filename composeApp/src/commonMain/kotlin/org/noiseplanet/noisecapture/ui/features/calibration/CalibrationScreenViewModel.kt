@@ -160,16 +160,17 @@ class CalibrationScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
 
     fun onReferenceValueChange(newReferenceValue: Double?) {
         val state = viewState.value as ViewState.Results
+        val difference = newReferenceValue?.let {
+            (it - state.measuredValue).roundTo(1)
+        }
         val suggestedGain = newReferenceValue?.let {
             (it - (state.measuredValue - state.currentGain)).roundTo(1)
         }
-        val isWarning = (suggestedGain?.absoluteValue ?: 0.0) >= CALIBRATION_WARNING_THRESHOLD
+        val isWarning = (difference?.absoluteValue ?: 0.0) >= CALIBRATION_WARNING_THRESHOLD
 
         _viewState.tryEmit(
             state.copy(
-                difference = newReferenceValue?.let {
-                    (it - state.measuredValue).roundTo(1)
-                },
+                difference = difference,
                 suggestedGain = suggestedGain,
                 isWarning = isWarning,
             )
