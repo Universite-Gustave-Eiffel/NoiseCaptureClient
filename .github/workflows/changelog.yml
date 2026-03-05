@@ -22,6 +22,7 @@ jobs:
         run: |
           if [[ "${{ steps.branch.outputs.BRANCH_NAME }}" =~ ^version/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "IS_VERSION_BRANCH=true" >> $GITHUB_OUTPUT
+            BRANCH_NAME="${{ steps.branch.outputs.BRANCH_NAME }}"
             VERSION_NUMBER=${BRANCH_NAME#version/}
             echo "VERSION_NUMBER=$VERSION_NUMBER" >> $GITHUB_OUTPUT
           else
