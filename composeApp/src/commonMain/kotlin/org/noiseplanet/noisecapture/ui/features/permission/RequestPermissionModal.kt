@@ -26,11 +26,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -94,13 +96,17 @@ fun RequestPermissionModal(
         },
     ) {
         // Handle back press or back gesture.
-        BackHandler {
-            if (viewState.isRequired) {
-                onGoBackButtonPress()
-            } else {
-                onSkipButtonPress(viewState.permission)
+        NavigationBackHandler(
+            state = rememberNavigationEventState(NavigationEventInfo.None),
+            isBackEnabled = true,
+            onBackCompleted = {
+                if (viewState.isRequired) {
+                    onGoBackButtonPress()
+                } else {
+                    onSkipButtonPress(viewState.permission)
+                }
             }
-        }
+        )
 
         Column(
             verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -121,7 +127,6 @@ fun RequestPermissionModal(
             Text(
                 text = stringResource(viewState.title),
                 style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.SemiBold,
                 textAlign = TextAlign.Center,
             )

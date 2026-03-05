@@ -5,22 +5,20 @@ import kotlinx.serialization.Serializable
 
 /**
  * A unique route identifier, regardless of eventual route constructor parameters
- *
- * TODO: With current compose navigation library, using an enum for this property crashes on iOS.
- *       Check with later updates if we can use an enum instead.
  */
 object RouteIds {
 
-    const val HOME = "home"
-    const val RECORDING = "recording"
-    const val HISTORY = "history"
-    const val SETTINGS = "settings"
-    const val DETAILS = "details"
-    const val COMMUNITY_MAP = "community_map"
+    const val HOME: RouteId = "home"
+    const val RECORDING: RouteId = "recording"
+    const val HISTORY: RouteId = "history"
+    const val SETTINGS: RouteId = "settings"
+    const val DETAILS: RouteId = "details"
+    const val COMMUNITY_MAP: RouteId = "map"
+    const val CALIBRATION: RouteId = "calibration"
 
     // Naming this route "DEBUG" breaks compilation on iOS because it gets interpreted as and
     // obj-C macro.
-    const val DEBUG_ROUTE = "debug"
+    const val DEBUG_ROUTE: RouteId = "debug"
 }
 typealias RouteId = String
 
@@ -35,7 +33,49 @@ typealias RouteId = String
 open class Route(
     val id: RouteId,
     val usesAudioSource: Boolean = false,
-)
+) {
+
+    // - Static constructor
+
+    companion object {
+
+        /**
+         * Builds a [Route] from URL path (e.g. `details/{id}`), if possible.
+         *
+         * @param urlPath URL path (e.g. `details/{id}`)
+         * @return Corresponding route, or null if couldn't match to any route.
+         */
+        fun fromUrlPath(urlPath: String): Route? {
+            val pathComponents = urlPath.split("/")
+            val routeId = pathComponents.firstOrNull() ?: return null
+
+            return when (routeId) {
+                RouteIds.HOME -> HomeRoute()
+                RouteIds.RECORDING -> RecordingRoute()
+                RouteIds.HISTORY -> HistoryRoute()
+                RouteIds.SETTINGS -> SettingsRoute()
+                RouteIds.COMMUNITY_MAP -> CommunityMapRoute()
+                RouteIds.DEBUG_ROUTE -> DebugRoute()
+
+                RouteIds.DETAILS -> {
+                    val measurementId = pathComponents.getOrNull(1) ?: return null
+                    DetailsRoute(measurementId)
+                }
+
+                else -> null
+            }
+        }
+    }
+
+
+    /**
+     * Represents this route as a URL path (e.g. details/242?parameter=true).
+     * By default, only returns the route's id.
+     */
+    open fun toUrlPath(): String {
+        return id
+    }
+}
 
 
 // - Routes
@@ -53,13 +93,18 @@ class HistoryRoute : Route(id = RouteIds.HISTORY)
 class SettingsRoute : Route(id = RouteIds.SETTINGS)
 
 @Serializable
-class DetailsRoute(
-    val measurementId: String,
-    val parentRouteId: String,
-) : Route(id = RouteIds.DETAILS)
+class DetailsRoute(val measurementId: String) : Route(id = RouteIds.DETAILS) {
+
+    override fun toUrlPath(): String {
+        return "$id/$measurementId"
+    }
+}
 
 @Serializable
 class CommunityMapRoute : Route(id = RouteIds.COMMUNITY_MAP)
+
+@Serializable
+class CalibrationRoute : Route(id = RouteIds.CALIBRATION)
 
 @Serializable
 class DebugRoute : Route(id = RouteIds.DEBUG_ROUTE)

@@ -10,9 +10,10 @@ androidx-preference = "1.2.1"
 build-konfig-gradle-plugin = "0.17.1"
 # compose-* library versions must be set according to the libraries table on the corresponding
 # compose verison release page (e.g. https://github.com/JetBrains/compose-multiplatform/releases/tag/v1.10.0)
-compose = "1.10.0"
-compose-androidx-lifecycle = "2.10.0-alpha06"
-compose-androidx-navigation = "2.9.1"
+compose = "1.10.1"
+compose-lifecycle = "2.10.0-alpha06"
+compose-navigation = "2.9.2"
+compose-navigationevent = "1.0.1"
 compose-material = "1.7.3"
 compose-material3 = "1.10.0-alpha05"
 compose-material3-adaptive = "1.3.0-alpha02"
@@ -20,9 +21,9 @@ coroutines = "1.10.2"
 detekt = "1.23.8"
 google-play-services-android-location = "21.3.0"
 human-readable = "1.12.3"
-koala-plot = "0.10.4"
+koala-plot = "0.11.0"
 koin = "4.1.1"
-kotlin = "2.3.0"
+kotlin = "2.3.10"
 kotlinx-datetime = "0.7.1"
 kotlinx-serialization = "1.10.0"
 kstore = "1.0.0"
@@ -33,20 +34,21 @@ zipjs = "2.8.15"
 
 [libraries]
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidx-activity-compose" }
-androidx-backhandler-compose = { group = "org.jetbrains.compose.ui", name = "ui-backhandler", version.ref = "compose" }
-androidx-navigation-compose = { group = "org.jetbrains.androidx.navigation", name = "navigation-compose", version.ref = "compose-androidx-navigation" }
 androidx-preference = { group = "androidx.preference", name = "preference-ktx", version.ref = "androidx-preference" }
-androidx-runtime-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "compose-androidx-lifecycle" }
-androidx-viewmodel-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "compose-androidx-lifecycle" }
 buildkonfig-gradle-plugin = { group = "com.codingfeline.buildkonfig", name = "buildkonfig-gradle-plugin", version.ref = "build-konfig-gradle-plugin" }
+compose-navigation = { group = "org.jetbrains.androidx.navigation", name = "navigation-compose", version.ref = "compose-navigation" }
+compose-navigationevent = { group = "org.jetbrains.androidx.navigationevent", name = "navigationevent-compose", version.ref = "compose-navigationevent" }
 compose-components-resources = { group = "org.jetbrains.compose.components", name = "components-resources", version.ref = "compose" }
 compose-foundation = { group = "org.jetbrains.compose.foundation", name = "foundation", version.ref = "compose" }
+compose-lifecycle-runtime = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "compose-lifecycle" }
+compose-lifecycle-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "compose-lifecycle" }
 compose-material-icons-extended = { group = "org.jetbrains.compose.material", name = "material-icons-extended", version.ref = "compose-material" }
 compose-material3 = { group = "org.jetbrains.compose.material3", name = "material3", version.ref = "compose-material3" }
 compose-material3-adaptive = { group = "org.jetbrains.compose.material3.adaptive", name = "adaptive", version.ref = "compose-material3-adaptive" }
 compose-material3-adaptive-layout = { group = "org.jetbrains.compose.material3.adaptive", name = "adaptive-layout", version.ref = "compose-material3-adaptive" }
 compose-runtime = { group = "org.jetbrains.compose.runtime", name = "runtime", version.ref = "compose" }
 compose-ui = { group = "org.jetbrains.compose.ui", name = "ui", version.ref = "compose" }
+compose-ui-backhandler = { group = "org.jetbrains.compose.ui", name = "ui-backhandler", version.ref = "compose" }
 compose-ui-tooling = { group = "org.jetbrains.compose.ui", name = "ui-tooling", version.ref = "compose" }
 compose-ui-tooling-preview = { group = "org.jetbrains.compose.ui", name = "ui-tooling-preview", version.ref = "compose" }
 google-play-services-android-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "google-play-services-android-location" }

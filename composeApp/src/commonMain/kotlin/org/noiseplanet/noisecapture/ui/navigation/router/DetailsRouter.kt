@@ -3,7 +3,8 @@ package org.noiseplanet.noisecapture.ui.navigation.router
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.toRoute
-import org.noiseplanet.noisecapture.ui.navigation.DetailsRoute
+import org.noiseplanet.noisecapture.ui.navigation.Route
+import org.noiseplanet.noisecapture.ui.navigation.RouteIds
 
 /**
  * Handles navigating to new screens after user takes actions on the details screen.
@@ -16,10 +17,11 @@ class DetailsRouter(
     // - Public functions
 
     fun onMeasurementDeleted() {
-        val parentRouteId = backStackEntry.toRoute<DetailsRoute>().parentRouteId
-
-        if (navController.previousBackStackEntry?.id == parentRouteId) {
-            navController.popBackStack()
+        if (navController.currentBackStackEntry?.toRoute<Route>()?.id != RouteIds.DETAILS) {
+            // Measurement deleted callback might trigger twice in some cases, so before popping
+            // backstack, assert that we are still on the details screen.
+            return
         }
+        navController.popBackStack()
     }
 }

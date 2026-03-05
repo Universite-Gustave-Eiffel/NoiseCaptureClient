@@ -49,7 +49,7 @@ fun HistoryScreen(
 
     // - Properties
 
-    val measurements by viewModel.measurementsFlow.collectAsStateWithLifecycle()
+    val measurementIds by viewModel.measurementIdsFlow.collectAsStateWithLifecycle()
 
 
     // - Layout
@@ -63,12 +63,15 @@ fun HistoryScreen(
                     .asPaddingValues(),
                 modifier = Modifier.widthIn(max = AdaptiveUtil.MAX_FULL_SCREEN_WIDTH)
             ) {
-                itemsIndexed(measurements) { index, measurement ->
+                itemsIndexed(
+                    items = measurementIds,
+                    key = { _, measurementId -> measurementId }
+                ) { index, measurementId ->
                     val isFirstInSection = index == 0
-                    val isLastInSection = index == measurements.size - 1
+                    val isLastInSection = index == measurementIds.size - 1
 
                     HistoryItemView(
-                        measurement = measurement,
+                        measurementId = measurementId,
                         onClick = router::onClickMeasurement,
                         isFirstInSection = isFirstInSection,
                         isLastInSection = isLastInSection,
@@ -84,7 +87,7 @@ fun HistoryScreen(
                 }
             }
 
-            if (measurements.isEmpty()) {
+            if (measurementIds.isEmpty()) {
                 Text(
                     text = stringResource(Res.string.history_empty_state_hint),
                     textAlign = TextAlign.Center,

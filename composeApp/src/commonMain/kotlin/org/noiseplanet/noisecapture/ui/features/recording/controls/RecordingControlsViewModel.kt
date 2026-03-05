@@ -16,14 +16,14 @@ class RecordingControlsViewModel : ViewModel(), KoinComponent {
     private val liveAudioService: LiveAudioService by inject()
 
     val isRecordingFlow: StateFlow<Boolean> = recordingService.isRecordingFlow
-    val isAudioSourceRunningFlow: StateFlow<Boolean> = liveAudioService.isRunningFlow
+    val isAudioSourceRunningFlow: StateFlow<Boolean> = liveAudioService.isRunning
     val recordingDurationFlow: StateFlow<Duration> = recordingService.recordingDurationFlow
 
 
     // - Public functions
 
     fun togglePauseResume() {
-        if (liveAudioService.isRunning) {
+        if (liveAudioService.isRunning.value) {
             recordingService.pause()
         } else {
             recordingService.resume()

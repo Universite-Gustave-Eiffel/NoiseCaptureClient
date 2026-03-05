@@ -17,10 +17,7 @@ class HistoryRouter(
 
     fun onClickMeasurement(measurement: Measurement) {
         navController.navigate(
-            route = DetailsRoute(
-                measurementId = measurement.uuid,
-                parentRouteId = backStackEntry.id,
-            )
+            route = DetailsRoute(measurement.uuid)
         )
     }
 }

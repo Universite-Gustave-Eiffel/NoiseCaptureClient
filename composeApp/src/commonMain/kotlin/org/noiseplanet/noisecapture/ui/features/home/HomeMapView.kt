@@ -55,7 +55,10 @@ fun HomeMapView(
     Column(
         modifier = modifier,
     ) {
-        ListSectionHeader(title = Res.string.home_map_section_header)
+        ListSectionHeader(
+            title = Res.string.home_map_section_header,
+            modifier = Modifier.padding(start = 12.dp),
+        )
 
         Box(
             contentAlignment = Alignment.BottomEnd,

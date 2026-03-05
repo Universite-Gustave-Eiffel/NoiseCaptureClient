@@ -14,6 +14,8 @@ import org.koin.core.component.inject
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.audio.player.AudioPlayer
 import org.noiseplanet.noisecapture.log.Logger
+import org.noiseplanet.noisecapture.model.dao.Measurement
+import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.ui.components.button.IconNCButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
@@ -23,7 +25,7 @@ import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 class AudioPlayerViewModel(
-    val filePath: String,
+    val measurement: Measurement,
 ) : ViewModel(), KoinComponent {
 
     // - Constants
@@ -40,7 +42,8 @@ class AudioPlayerViewModel(
     // - Properties
 
     private val logger: Logger by injectLogger()
-    private val audioPlayer: AudioPlayer by inject { parametersOf(filePath) }
+    private val audioPlayer: AudioPlayer by inject { parametersOf(measurement.recordedAudioUrl) }
+    private val measurementService: MeasurementService by inject()
 
     private val playPauseButtonViewModelFlow = MutableStateFlow(getButtonViewModel())
     val playPauseButtonViewModel: StateFlow<NCButtonViewModel> = playPauseButtonViewModelFlow
@@ -100,6 +103,12 @@ class AudioPlayerViewModel(
 
     fun release() {
         audioPlayer.release()
+    }
+
+    fun deleteAudioClip() {
+        viewModelScope.launch {
+            measurementService.deleteMeasurementAssociatedAudio(measurement)
+        }
     }
 
 

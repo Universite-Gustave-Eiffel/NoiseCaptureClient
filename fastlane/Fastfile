@@ -69,3 +69,17 @@ platform :android do
         gradle(task: ":composeApp:assembleRelease")
     end
 end
+
+
+lane :changelog do |options|
+    stamp_changelog(
+        section_identifier: options[:version],
+        stamp_datetime_format: "%F",
+    )
+    changelog = read_changelog(
+        section_identifier: "[" + options[:version] + "]",
+        excluded_markdown_elements: ["-----", "###"]
+    ) + "\n\nSee full changelog at https://github.com/Universite-Gustave-Eiffel/NoiseCaptureClient/blob/main/CHANGELOG.md"
+
+    print("\n\n\n", changelog, "\n\n\n")
+end

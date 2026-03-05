@@ -1,16 +1,17 @@
 package org.noiseplanet.noisecapture.audio
 
+/**
+ * A set of audio samples taken at a given timestamp, at a given sample rate.
+ *
+ * @param timestamp Timestamp of the last sample, in milliseconds since epoch.
+ * @param samples Samples array (PCM float).
+ * @param sampleRate Sample rate at which samples were taken.
+ */
 data class AudioSamples(
-    val epoch: Long,
+    val timestamp: Long,
     val samples: FloatArray,
     val sampleRate: Int,
-    val errorCode: ErrorCode? = null,
 ) {
-
-    enum class ErrorCode {
-        ABORTED,
-        DEVICE_ERROR
-    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -18,14 +19,14 @@ data class AudioSamples(
 
         other as AudioSamples
 
-        if (epoch != other.epoch) return false
+        if (timestamp != other.timestamp) return false
         if (!samples.contentEquals(other.samples)) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        var result = epoch.hashCode()
+        var result = timestamp.hashCode()
         result = 31 * result + samples.contentHashCode()
         return result
     }

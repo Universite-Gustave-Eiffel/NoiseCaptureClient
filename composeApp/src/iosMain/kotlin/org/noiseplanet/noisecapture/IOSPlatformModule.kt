@@ -14,6 +14,8 @@ import org.noiseplanet.noisecapture.audio.player.IOSAudioPlayer
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.services.audio.AudioRecordingService
 import org.noiseplanet.noisecapture.services.audio.IOSAudioRecordingService
+import org.noiseplanet.noisecapture.services.audio.IOSMicrophoneProviderService
+import org.noiseplanet.noisecapture.services.audio.MicrophoneProviderService
 import org.noiseplanet.noisecapture.services.location.IOSUserLocationProvider
 import org.noiseplanet.noisecapture.services.location.UserLocationProvider
 import org.noiseplanet.noisecapture.services.storage.FileSystemService
@@ -64,5 +66,9 @@ val platformModule: Module = module {
 
     factory<AudioPlayer> { (filePath: String) ->
         IOSAudioPlayer(filePath)
+    }
+
+    single<MicrophoneProviderService> {
+        IOSMicrophoneProviderService()
     }
 }

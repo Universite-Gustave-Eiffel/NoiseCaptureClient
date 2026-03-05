@@ -1,7 +1,8 @@
 package org.noiseplanet.noisecapture.audio.signal
 
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.noiseplanet.noisecapture.audio.signal.filter.BiquadFilter
 import org.noiseplanet.noisecapture.audio.signal.filter.DigitalFilter
 import kotlin.math.pow
@@ -96,7 +97,7 @@ class SpectrumChannel {
     /**
      * @return Nominal frequency for printing results of columns of [.processSamples]
      */
-    fun getNominalFrequency(): List<Int> {
+    fun getNominalFrequencies(): List<Int> {
         return nominalFrequencies
     }
 
@@ -130,7 +131,7 @@ class SpectrumChannel {
         for (cascadeIndex in iirFilters.indices) {
             val cascadeFilters: HashMap<Int, BiquadFilter> = iirFilters[cascadeIndex]
             if (parallel) {
-                coroutineScope {
+                withContext(Dispatchers.Default) {
                     for ((key, value) in cascadeFilters.entries) {
                         launch {
                             leqs[key] = value.filterThenLeq(lastFilterSamples)

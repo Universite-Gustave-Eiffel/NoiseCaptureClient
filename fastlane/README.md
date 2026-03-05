@@ -13,6 +13,17 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 # Available Actions
 
+### changelog
+
+```sh
+[bundle exec] fastlane changelog
+```
+
+
+
+----
+
+
 ## iOS
 
 ### ios test

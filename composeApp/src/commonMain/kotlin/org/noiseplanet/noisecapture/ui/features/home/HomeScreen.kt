@@ -1,7 +1,6 @@
 package org.noiseplanet.noisecapture.ui.features.home
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -73,6 +72,7 @@ private fun HomeScreenCompact(viewModel: HomeScreenViewModel, router: HomeRouter
     val topPadding =
         if (sizeClass.minWidthDp >= WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) 32.dp else 0.dp
 
+
     // - Layout
 
     Column(
@@ -90,6 +90,11 @@ private fun HomeScreenCompact(viewModel: HomeScreenViewModel, router: HomeRouter
             modifier = Modifier.padding(horizontal = horizontalPadding)
         )
 
+        HomeMicrophoneSetupView(
+            router = router,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+
         HomeMapView(
             router = router,
             modifier = Modifier.fillMaxWidth()
@@ -102,8 +107,6 @@ private fun HomeScreenCompact(viewModel: HomeScreenViewModel, router: HomeRouter
             onClickOpenHistoryButton = router::onClickOpenHistoryButton,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
-
-        // TODO: Add device calibration section
 
         // TODO: Add more info section
     }
@@ -145,10 +148,11 @@ private fun HomeScreenLarge(viewModel: HomeScreenViewModel, router: HomeRouter) 
                 modifier = Modifier.weight(1f).fillMaxHeight()
             )
 
-            Box(modifier = Modifier.weight(1f))
+            HomeMicrophoneSetupView(
+                router = router,
+                modifier = Modifier.weight(1f)
+            )
         }
-
-        // TODO: Add device calibration section
 
         // TODO: Add more info section
     }

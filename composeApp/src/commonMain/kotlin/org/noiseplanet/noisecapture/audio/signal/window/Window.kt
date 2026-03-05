@@ -1,6 +1,6 @@
 package org.noiseplanet.noisecapture.audio.signal.window
 
-data class Window(val epoch: Long, val samples: FloatArray) {
+data class Window(val timestamp: Long, val samples: FloatArray) {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -8,14 +8,14 @@ data class Window(val epoch: Long, val samples: FloatArray) {
 
         other as Window
 
-        if (epoch != other.epoch) return false
+        if (timestamp != other.timestamp) return false
         if (!samples.contentEquals(other.samples)) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        var result = epoch.hashCode()
+        var result = timestamp.hashCode()
         result = 31 * result + samples.contentHashCode()
         return result
     }

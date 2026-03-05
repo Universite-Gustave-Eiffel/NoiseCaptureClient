@@ -1433,7 +1433,7 @@ class SpectrumChannelTest {
             // pad with zero
             signal = signal.copyOf(signal.size + (signal.size % sc.minimumSamplesLength))
         }
-        val frequencies = sc.getNominalFrequency()
+        val frequencies = sc.getNominalFrequencies()
         val thirdOctaves = sc.processSamples(signal)
 
         assertEquals(expectedLevel, thirdOctaves[frequencies.indexOf(125)], 0.1);
@@ -1443,11 +1443,6 @@ class SpectrumChannelTest {
     }
 
     /**
-     * TODO: Fix compose test resources on iOS
-     *       For the moment the build scripts only copy the main target resources to the simulator
-     *       so accessing test resources is not possible. It seems like it could be solved by
-     *       using cocoapods for providing the shared framework on iOS builds but I didn't manage
-     *       to get it to work yet.
      * TODO: Fix compose test resources on Android
      *       Since compose KMP 1.7.0+ accessing resources require Android Context to be initialized,
      *       which is not the case for Unit tests because they are platform independent. I'm not

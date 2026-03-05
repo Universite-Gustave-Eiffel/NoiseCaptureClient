@@ -2,22 +2,22 @@ package org.noiseplanet.noisecapture.services.audio
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.audio.AcousticIndicatorsProcessing
+import org.noiseplanet.noisecapture.audio.AudioSamples
 import org.noiseplanet.noisecapture.audio.AudioSource
-import org.noiseplanet.noisecapture.audio.AudioSourceState
 import org.noiseplanet.noisecapture.audio.signal.LevelDisplayWeightedDecay
 import org.noiseplanet.noisecapture.audio.signal.window.SpectrogramData
 import org.noiseplanet.noisecapture.audio.signal.window.SpectrogramDataProcessing
@@ -36,6 +36,7 @@ import kotlin.time.Duration
  * Default [LiveAudioService] implementation.
  * Can be overridden in platforms to add specific behaviour.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class DefaultLiveAudioService : LiveAudioService, KoinComponent {
 
     // - Constants
@@ -53,75 +54,45 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
     private val audioSource: AudioSource by inject()
     private val permissionService: PermissionService by inject()
     private val settingsService: UserSettingsService by inject()
+    private val microphoneProvider: MicrophoneProviderService by inject()
 
     private var startOnReady: Boolean = false
 
     private var indicatorsProcessing: AcousticIndicatorsProcessing? = null
     private var spectrogramDataProcessing: SpectrogramDataProcessing? = null
 
-    private var audioJob: Job? = null
-    private val leqRecordsFlow = MutableSharedFlow<LeqRecord>(
-        replay = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
-    private val spectrogramDataFlow = MutableSharedFlow<SpectrogramData>(
-        replay = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
-    private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    private val _isRunningFlow = MutableStateFlow(false)
+    private val currentCompensationGain: Double
+        get() = microphoneProvider.currentCalibrationProfile.value?.compensationGain ?: 0.0
+
+    private val leqRecordsFlow = audioSource.audioSamples
+        .flatMapConcat {
+            val processedSamples = processRawSamples(it)
+            flowOf(*processedSamples.toTypedArray())
+        }
+        .shareIn(scope = scope, started = SharingStarted.WhileSubscribed(1_000))
+
+    private val spectrogramDataFlow = audioSource.audioSamples
+        .flatMapConcat {
+            val processedSamples = processSpectrogramData(it)
+            flowOf(*processedSamples.toTypedArray())
+        }
+        .shareIn(scope = scope, started = SharingStarted.WhileSubscribed(1_000))
 
 
     // - LiveAudioService
 
-    override val isRunningFlow: StateFlow<Boolean> = _isRunningFlow.asStateFlow()
-    override val isRunning: Boolean
-        get() = _isRunningFlow.value
+    override val isRunning: StateFlow<Boolean> = audioSource.state
+        .map { it == AudioSource.State.RUNNING }
+        .stateIn(scope, initialValue = false, started = SharingStarted.Eagerly)
 
-    override val audioSourceState: AudioSourceState
-        get() = audioSource.state
-    override val audioSourceStateFlow: Flow<AudioSourceState>
-        get() = audioSource.stateFlow
+    override val audioSourceState: StateFlow<AudioSource.State> = audioSource.state
 
 
     override fun setupAudioSource() {
-        // Create a job that will process incoming audio samples in a background thread
-        audioJob = coroutineScope.launch {
-            audioSource.audioSamples
-                .collect { audioSamples ->
-                    // Process acoustic indicators
-                    if (indicatorsProcessing?.sampleRate != audioSamples.sampleRate) {
-                        logger.debug("Processing audio indicators with sample rate of ${audioSamples.sampleRate}")
-                        indicatorsProcessing = AcousticIndicatorsProcessing(audioSamples.sampleRate)
-                    }
-                    indicatorsProcessing?.processSamples(audioSamples)
-                        ?.forEach {
-                            leqRecordsFlow.tryEmit(it)
-                        }
-
-                    // Process spectrogram data
-                    // TODO: Consider moving this to SpectrogramPlotViewModel so that FFT doesn't
-                    //       always run in background when we don't need it.
-                    if (spectrogramDataProcessing?.sampleRate != audioSamples.sampleRate) {
-                        logger.debug("Processing spectrum data with sample rate of ${audioSamples.sampleRate}")
-                        val windowingMode = settingsService.get(SettingsKey.SettingWindowingMode)
-                        spectrogramDataProcessing = SpectrogramDataProcessing(
-                            sampleRate = audioSamples.sampleRate,
-                            windowSize = FFT_SIZE,
-                            windowHop = FFT_HOP,
-                            applyHannWindow = windowingMode == SpectrogramWindowingMode.HANN
-                        )
-                    }
-                    spectrogramDataProcessing?.pushSamples(audioSamples.epoch, audioSamples.samples)
-                        ?.forEach {
-                            spectrogramDataFlow.tryEmit(it)
-                        }
-                }
-        }
-
         // Setup audio source whenever microphone permission is granted.
-        coroutineScope.launch {
+        scope.launch {
             permissionService.getPermissionStateFlow(Permission.RECORD_AUDIO)
                 .map { it == PermissionState.GRANTED }
                 .collect { isPermissionGranted ->
@@ -132,30 +103,25 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
         }
 
         // Listen to audio source state to start it whenever it is ready
-        coroutineScope.launch {
-            audioSourceStateFlow.collect { state ->
-                if (state == AudioSourceState.READY && startOnReady) {
+        scope.launch {
+            audioSourceState.collect { state ->
+                if (state == AudioSource.State.READY && startOnReady) {
                     audioSource.start()
-                    _isRunningFlow.tryEmit(audioSourceState == AudioSourceState.RUNNING)
                 }
             }
         }
     }
 
     override fun releaseAudioSource() {
-        // Cancel processing job
-        audioJob?.cancel()
-        // Release audio source
-        audioSource.release()
-        _isRunningFlow.tryEmit(false)
+        scope.launch { audioSource.release() }
     }
 
     override fun startListening() {
-        if (audioSourceState == AudioSourceState.UNINITIALIZED) {
+        if (audioSourceState.value == AudioSource.State.UNINITIALIZED) {
             startOnReady = true
         } else {
+            indicatorsProcessing?.flush()
             audioSource.start()
-            _isRunningFlow.tryEmit(audioSourceState == AudioSourceState.RUNNING)
         }
     }
 
@@ -163,15 +129,15 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
         // Pause audio source, or cancel delayed start if needed
         audioSource.pause()
         startOnReady = false
-        _isRunningFlow.tryEmit(false)
+        indicatorsProcessing?.flush()
     }
 
     override fun getLeqRecordsFlow(): Flow<LeqRecord> {
-        return leqRecordsFlow.asSharedFlow()
+        return leqRecordsFlow
     }
 
     override fun getSpectrogramDataFlow(): Flow<SpectrogramData> {
-        return spectrogramDataFlow.asSharedFlow()
+        return spectrogramDataFlow
     }
 
     override fun getWeightedLeqFlow(
@@ -180,10 +146,9 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
     ): Flow<Double> {
         val levelDisplay = LevelDisplayWeightedDecay(splDecayRate, windowTime)
 
-        return getLeqRecordsFlow()
-            .map {
-                levelDisplay.getWeightedValue(it.laeq)
-            }
+        return getLeqRecordsFlow().map {
+            levelDisplay.getWeightedValue(it.laeq)
+        }
     }
 
     override fun getWeightedLeqPerFrequencyBandFlow(
@@ -192,18 +157,49 @@ class DefaultLiveAudioService : LiveAudioService, KoinComponent {
     ): Flow<Map<Int, Double>> {
         var levelDisplayBands: Map<Int, LevelDisplayWeightedDecay>? = null
 
-        return getLeqRecordsFlow()
-            .map { indicators ->
-                if (levelDisplayBands == null) {
-                    levelDisplayBands = indicators.leqsPerThirdOctave.mapValues {
-                        LevelDisplayWeightedDecay(splDecayRate, windowTime)
-                    }
-                }
-                indicators.leqsPerThirdOctave.mapValues { entry ->
-                    levelDisplayBands[entry.key]
-                        ?.getWeightedValue(entry.value)
-                        ?: 0.0
+        return getLeqRecordsFlow().map { indicators ->
+            if (levelDisplayBands == null) {
+                levelDisplayBands = indicators.leqsPerThirdOctave.mapValues {
+                    LevelDisplayWeightedDecay(splDecayRate, windowTime)
                 }
             }
+            indicators.leqsPerThirdOctave.mapValues { entry ->
+                levelDisplayBands[entry.key]
+                    ?.getWeightedValue(entry.value)
+                    ?: 0.0
+            }
+        }
+    }
+
+
+    // - Private functions
+
+    private suspend fun processRawSamples(audioSamples: AudioSamples): List<LeqRecord> {
+        if (indicatorsProcessing?.sampleRate != audioSamples.sampleRate
+            || indicatorsProcessing?.compensationGain != currentCompensationGain
+        ) {
+            logger.debug("Processing audio indicators with sample rate of ${audioSamples.sampleRate}")
+            indicatorsProcessing = AcousticIndicatorsProcessing(
+                sampleRate = audioSamples.sampleRate,
+                compensationGain = currentCompensationGain
+            )
+        }
+
+        return indicatorsProcessing?.processSamples(audioSamples).orEmpty()
+    }
+
+    private fun processSpectrogramData(audioSamples: AudioSamples): List<SpectrogramData> {
+        if (spectrogramDataProcessing?.sampleRate != audioSamples.sampleRate) {
+            logger.debug("Processing spectrum data with sample rate of ${audioSamples.sampleRate}")
+            val windowingMode = settingsService.get(SettingsKey.SettingWindowingMode)
+            spectrogramDataProcessing = SpectrogramDataProcessing(
+                sampleRate = audioSamples.sampleRate,
+                windowSize = FFT_SIZE,
+                windowHop = FFT_HOP,
+                applyHannWindow = windowingMode == SpectrogramWindowingMode.HANN
+            )
+        }
+        return spectrogramDataProcessing?.pushSamples(audioSamples.timestamp, audioSamples.samples)
+            .orEmpty().toList()
     }
 }

@@ -1,0 +1,50 @@
+name: check_changelog
+
+on: workflow_call
+
+jobs:
+  check-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get PR number
+        id: pr
+        run: echo "PR_NUMBER=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+
+      - name: Get branch name
+        id: branch
+        run: echo "BRANCH_NAME=${{ github.head_ref || github.ref_name }}" >> $GITHUB_OUTPUT
+
+      - name: Check if branch is a version branch
+        id: version_branch
+        run: |
+          if [[ "${{ steps.branch.outputs.BRANCH_NAME }}" =~ ^version/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "IS_VERSION_BRANCH=true" >> $GITHUB_OUTPUT
+            BRANCH_NAME="${{ steps.branch.outputs.BRANCH_NAME }}"
+            VERSION_NUMBER=${BRANCH_NAME#version/}
+            echo "VERSION_NUMBER=$VERSION_NUMBER" >> $GITHUB_OUTPUT
+          else
+            echo "IS_VERSION_BRANCH=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check CHANGELOG for PR or version reference
+        run: |
+          if [ "${{ steps.version_branch.outputs.IS_VERSION_BRANCH }}" = "true" ]; then
+            VERSION_NUMBER="${{ steps.version_branch.outputs.VERSION_NUMBER }}"
+            if grep -q "## \[$VERSION_NUMBER\]" CHANGELOG.md; then
+              echo "Version $VERSION_NUMBER is referenced in CHANGELOG.md"
+            else
+              echo "::error::Version $VERSION_NUMBER is NOT referenced in CHANGELOG.md. Please add a section for this version."
+              exit 1
+            fi
+          else
+            PR_NUMBER="#${{ steps.pr.outputs.PR_NUMBER }}"
+            if grep -q "$PR_NUMBER" CHANGELOG.md; then
+              echo "PR $PR_NUMBER is referenced in CHANGELOG.md"
+            else
+              echo "::error::PR $PR_NUMBER is NOT referenced in CHANGELOG.md. Please add a reference to your changes in the CHANGELOG.md file."
+              exit 1
+            fi
+          fi

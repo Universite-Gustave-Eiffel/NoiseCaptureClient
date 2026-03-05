@@ -4,13 +4,19 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.permission.LocationManager
 import org.noiseplanet.noisecapture.permission.PermissionState
-import org.noiseplanet.noisecapture.permission.util.openNSUrl
+import org.noiseplanet.noisecapture.permission.util.openURL
+import org.noiseplanet.noisecapture.util.injectLogger
+import platform.UIKit.UIApplication
+import platform.UIKit.UIApplicationOpenSettingsURLString
 
 internal class LocationServicePermissionDelegate : PermissionDelegate, KoinComponent {
 
     // - Properties
+
+    private val logger: Logger by injectLogger()
 
     private val locationManager: LocationManager by inject()
 
@@ -43,6 +49,8 @@ internal class LocationServicePermissionDelegate : PermissionDelegate, KoinCompo
     override fun canOpenSettings(): Boolean = true
 
     override fun openSettingPage() {
-        openNSUrl("App-Prefs:Privacy&path=LOCATION")
+        UIApplication.sharedApplication.openURL(UIApplicationOpenSettingsURLString) { _, error ->
+            error?.let { logger.error(it) }
+        }
     }
 }

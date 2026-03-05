@@ -14,24 +14,30 @@ on:
     types: [ opened, reopened, ready_for_review, synchronize ]
 
 jobs:
+  changelog:
+    uses: ./.github/workflows/changelog.yml
+
   lint:
+    needs: changelog
     uses: ./.github/workflows/lint.yml
 
   test:
-    needs: lint
+    needs: [ changelog, lint ]
     uses: ./.github/workflows/test.yml
 
   build:
-    needs: lint
+    needs: [ changelog, lint ]
     uses: ./.github/workflows/build.yml
 
   summary:
     if: always()
     runs-on: ubuntu-latest
-    needs: [ lint, test ]
+    needs: [ changelog, lint, test, build ]
     steps:
       - run: |
-          if [ ${{ (contains(needs.lint.result, 'failure')) }} == true ]; then
+          if [ ${{ (contains(needs.changelog.result, 'failure')) }} == true ]; then
+            exit 1
+          elif [ ${{ (contains(needs.lint.result, 'failure')) }} == true ]; then
             exit 1
           elif [ ${{ (contains(needs.test.result, 'failure')) }} == true ]; then
             exit 1

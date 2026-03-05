@@ -6,7 +6,6 @@ package org.noiseplanet.noisecapture.model.dao
  * @param timestamp Record timestamp in milliseconds since epoch (UTC)
  * @param lzeq Global LZeq value
  * @param laeq Global LAeq value
- * @param lceq Global LCeq value
  * @param leqsPerThirdOctave Leq values per third octave (keyed by third octave center frequency)
  */
 data class LeqRecord(
@@ -14,7 +13,6 @@ data class LeqRecord(
 
     val lzeq: Double,
     val laeq: Double,
-    val lceq: Double,
 
     val leqsPerThirdOctave: Map<Int, Double>,
 )

@@ -14,6 +14,12 @@
     <string name="home_open_history_button_title">History</string>
     <string name="home_map_section_header">Community measurements</string>
     <string name="home_map_browse_button">Browse</string>
+    <string name="home_mic_setup_section_header">Microphone setup</string>
+    <string name="home_mic_setup_current_gain">Current gain</string>
+    <string name="home_mic_setup_last_calibrated">This microphone was last calibrated</string>
+    <string name="home_mic_setup_not_calibrated">For your measurements to be accurate, it is important that you calibrate your microphone.</string>
+    <string name="home_mic_setup_calibrate_button">Calibrate</string>
+    <string name="home_mic_setup_recalibrate_button">Recalibrate</string>
 
     <string name="home_statistics_title">Statistics</string>
     <!-- TODO: Use localisation that supports plurals -->
@@ -72,6 +78,7 @@
 
     <string name="details_audio_player_title">Recorded audio</string>
     <string name="details_audio_player_description">Listen to the audio that was recorded during your measurement.</string>
+    <string name="details_audio_player_disclaimer">This is for your ears only, audio recordings are never sent to our servers.</string>
 
     <string name="details_spl_time_plot_title">Noise level over time</string>
     <string name="details_spl_time_plot_description">Visualise the evolution of recorded noise level as a function of time.</string>
@@ -220,6 +227,56 @@
     <!-- Ongoing measurement notification -->
     <string name="ongoing_measurement_notification_title">Currently recording audio</string>
     <string name="ongoing_measurement_notification_body">The NoiseCapture app is currently recording surrounding audio to analyse acoustic parameters. Don't kill the app if you want the recording session to keep going.</string>
+
+
+    <!-- Microphone type -->
+    <string name="microphone_type_builtin">Internal microphone</string>
+    <string name="microphone_type_wired_aux">Wired microphone (Aux)</string>
+    <string name="microphone_type_wired_usb">Wired microphone (USB)</string>
+    <string name="microphone_type_bluetooth">Bluetooth microphone</string>
+    <string name="microphone_type_unknown">Audio input</string>
+
+
+    <!-- Calibration -->
+    <string name="calibration_title">Calibration</string>
+
+    <string name="calibration_from_reference_intro_title">Calibrate using a reference microphone</string>
+    <string name="calibration_from_reference_intro_description">Both microphones will measure the average surrounding noise level over a given period of time. The NoiseCapture app will apply a compensation gain to your microphone so that future measurements should match the reference output.</string>
+    <string name="calibration_from_reference_tips_title">Tips for a good calibration</string>
+    <string name="calibration_microphone_select_title">Microphone to calibrate</string>
+    <string name="calibration_microphone_last_calibrated">Last calibrated</string>
+    <string name="calibration_microphone_not_calibrated">This microphone is not yet calibrated</string>
+    <string name="calibration_microphone_current_gain">Current compensation gain:</string>
+    <string name="calibration_duration_select_title">Duration</string>
+    <string name="calibration_frequencies_select_title">Frequency band(s)</string>
+    <string name="calibration_frequencies_whole_spectrum_title">Whole spectrum</string>
+    <string name="calibration_frequencies_whole_spectrum_description">All frequency bands</string>
+    <string name="calibration_start_button_title">Start calibration</string>
+
+    <string name="calibration_tips_environment_title">Environment conditions</string>
+    <string name="calibration_tips_environment_distance">Microphone should be placed at least two meters away from the sound source.</string>
+    <string name="calibration_tips_environment_corners">If calibration is done indoors, avoid being in one of the room corners.</string>
+    <string name="calibration_tips_environment_direction">Microphone should not be facing the sound source.</string>
+    <string name="calibration_tips_environment_quiet">Avoid making noises close to the microphones.</string>
+    <string name="calibration_tips_environment_placement">Put the phone on a table instead of holding it in your hand.</string>
+    <string name="calibration_tips_source_title">Sound source</string>
+    <string name="calibration_tips_source_nature">Try using one of the following sound sources: pink noise, environmental noise (like cars passing in a street), or as fallback, people talking in the distance.</string>
+    <string name="calibration_tips_reference_title">Reference device</string>
+    <string name="calibration_tips_reference_preferences">Use one of the following reference devices, in order of preference: a sound level meter, a smartphone with a calibrated external microphone, a smartphone with a calibrated internal microphone, small moving objects which sound levels are known to you.</string>
+
+    <string name="calibration_countdown_label">Calibration will start in</string>
+    <string name="calibration_recording_countdown_label">Measuring...</string>
+    <string name="calibration_recording_current_average">Current average</string>
+    <string name="calibration_results_current_gain">With current compensation gain</string>
+    <string name="calibration_results_your_device_value">Your device measured</string>
+    <string name="calibration_results_reference_value">The reference device measured</string>
+    <string name="calibration_results_reference_value_placeholder">Enter value here</string>
+    <string name="calibration_results_difference">That's a difference of</string>
+    <string name="calibration_results_already_calibrated">Your microphone is already\nproperly calibrated!</string>
+    <string name="calibration_results_suggested_gain">Suggested compensation gain</string>
+    <string name="calibration_results_save_gain">Save gain</string>
+    <string name="calibration_results_suggested_gain_warning">The gain difference between your device and the reference is suspiciously high. We advise that you try calibrating again, following the tips. If you’re confident with your calibration method, you can still apply this suggested gain.</string>
+
 
     <!-- Misc -->
     <string name="na">N/A</string>

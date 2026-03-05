@@ -2,6 +2,7 @@ package org.noiseplanet.noisecapture.ui.features
 
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
+import org.noiseplanet.noisecapture.ui.features.calibration.CalibrationScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.debug.DebugScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.details.DetailsScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.history.HistoryScreenViewModel
@@ -37,6 +38,10 @@ val screensModule = module {
 
     viewModel {
         CommunityMapScreenViewModel()
+    }
+
+    viewModel {
+        CalibrationScreenViewModel()
     }
 
     viewModel {

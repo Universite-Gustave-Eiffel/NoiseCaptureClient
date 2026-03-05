@@ -5,11 +5,13 @@ import kotlinx.coroutines.flow.StateFlow
 import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.permission.PermissionState
-import org.noiseplanet.noisecapture.permission.util.openNSUrl
+import org.noiseplanet.noisecapture.permission.util.openURL
 import org.noiseplanet.noisecapture.util.injectLogger
 import platform.AVFAudio.AVAudioSession
 import platform.AVFAudio.AVAudioSessionRecordPermissionDenied
 import platform.AVFAudio.AVAudioSessionRecordPermissionGranted
+import platform.UIKit.UIApplication
+import platform.UIKit.UIApplicationOpenSettingsURLString
 
 
 internal class AudioRecordPermissionDelegate : PermissionDelegate, KoinComponent {
@@ -48,6 +50,8 @@ internal class AudioRecordPermissionDelegate : PermissionDelegate, KoinComponent
     override fun canOpenSettings(): Boolean = true
 
     override fun openSettingPage() {
-        openNSUrl("App-prefs:Privacy&path=MICROPHONE")
+        UIApplication.sharedApplication.openURL(UIApplicationOpenSettingsURLString) { _, error ->
+            error?.let { logger.error(it) }
+        }
     }
 }
