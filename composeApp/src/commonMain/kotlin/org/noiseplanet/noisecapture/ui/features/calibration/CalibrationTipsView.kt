@@ -9,9 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -25,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.arrow_drop_down
+import noisecapture.composeapp.generated.resources.arrow_drop_up
 import noisecapture.composeapp.generated.resources.calibration_tips_environment_corners
 import noisecapture.composeapp.generated.resources.calibration_tips_environment_direction
 import noisecapture.composeapp.generated.resources.calibration_tips_environment_distance
@@ -36,6 +35,7 @@ import noisecapture.composeapp.generated.resources.calibration_tips_reference_ti
 import noisecapture.composeapp.generated.resources.calibration_tips_source_nature
 import noisecapture.composeapp.generated.resources.calibration_tips_source_title
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 
@@ -101,7 +101,7 @@ private fun ExpandableSectionTitle(
 ) {
     // - Properties
 
-    val icon = if (isExpanded) Icons.Default.ArrowDropUp else Icons.Default.ArrowDropDown
+    val icon = if (isExpanded) Res.drawable.arrow_drop_up else Res.drawable.arrow_drop_down
 
 
     // - Layout
@@ -112,7 +112,7 @@ private fun ExpandableSectionTitle(
         modifier = modifier.background(NoiseLevelColorRamp.level1Light).padding(12.dp)
     ) {
         Icon(
-            imageVector = icon,
+            painter = painterResource(icon),
             contentDescription = null,
             tint = NoiseLevelColorRamp.level1Dark,
             modifier = Modifier.size(24.dp)

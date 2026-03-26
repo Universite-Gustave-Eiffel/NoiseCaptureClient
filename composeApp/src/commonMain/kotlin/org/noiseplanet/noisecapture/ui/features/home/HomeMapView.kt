@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -18,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.home_map_browse_button
 import noisecapture.composeapp.generated.resources.home_map_section_header
+import noisecapture.composeapp.generated.resources.map
 import org.noiseplanet.noisecapture.ui.components.ListSectionHeader
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
@@ -37,7 +36,7 @@ fun HomeMapView(
     val browseButtonViewModel = remember {
         NCButtonViewModel(
             title = Res.string.home_map_browse_button,
-            icon = Icons.Default.Map,
+            icon = Res.drawable.map,
             iconPlacement = NCButtonIconPlacement.END,
             hasDropShadow = true,
             colors = {

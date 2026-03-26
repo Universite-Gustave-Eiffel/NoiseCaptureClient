@@ -1,8 +1,5 @@
 package org.noiseplanet.noisecapture.ui.components.map
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MyLocation
-import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
@@ -19,6 +16,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.map_marker
+import noisecapture.composeapp.generated.resources.my_location
+import noisecapture.composeapp.generated.resources.question_mark
 import org.jetbrains.compose.resources.painterResource
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -222,7 +221,7 @@ class MapViewModel(
     )
 
     val recenterButtonViewModel = IconNCButtonViewModel(
-        icon = Icons.Default.MyLocation,
+        icon = Res.drawable.my_location,
         colors = {
             NCButtonColors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainer,
@@ -232,7 +231,7 @@ class MapViewModel(
     )
 
     val helpButtonViewModel = IconNCButtonViewModel(
-        icon = Icons.Default.QuestionMark,
+        icon = Res.drawable.question_mark,
         colors = {
             NCButtonColors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainer,

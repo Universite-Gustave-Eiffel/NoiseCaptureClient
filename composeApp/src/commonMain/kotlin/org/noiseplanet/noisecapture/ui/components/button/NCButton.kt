@@ -21,8 +21,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.util.conditional
 import org.noiseplanet.noisecapture.util.ncDropShadow
@@ -163,14 +164,14 @@ fun NCButton(
 
 @Composable
 private fun NCButtonContents(
-    icon: ImageVector?,
+    icon: DrawableResource?,
     iconPlacement: NCButtonIconPlacement,
     title: String?,
     contentColor: Color,
 ) {
     if (icon != null && iconPlacement == NCButtonIconPlacement.START) {
         Icon(
-            imageVector = icon,
+            painter = painterResource(icon),
             contentDescription = title,
             tint = contentColor,
             modifier = Modifier.size(18.dp),
@@ -191,7 +192,7 @@ private fun NCButtonContents(
         }
 
         Icon(
-            imageVector = icon,
+            painter = painterResource(icon),
             contentDescription = title,
             tint = contentColor,
             modifier = Modifier.size(18.dp),

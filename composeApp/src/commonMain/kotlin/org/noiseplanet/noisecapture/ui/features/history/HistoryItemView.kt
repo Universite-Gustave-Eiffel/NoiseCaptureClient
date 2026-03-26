@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -29,7 +27,9 @@ import kotlinx.datetime.format
 import kotlinx.datetime.toLocalDateTime
 import nl.jacobras.humanreadable.HumanReadable
 import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.chevron_right
 import noisecapture.composeapp.generated.resources.measurement_no_description_placeholder
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
@@ -119,7 +119,7 @@ fun HistoryItemView(
         }
 
         Icon(
-            imageVector = Icons.Default.ChevronRight,
+            painter = painterResource(Res.drawable.chevron_right),
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 8.dp).size(20.dp),

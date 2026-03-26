@@ -4,9 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -21,6 +18,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import nl.jacobras.humanreadable.HumanReadable
+import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.add
+import noisecapture.composeapp.generated.resources.remove
+import org.jetbrains.compose.resources.painterResource
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.time.Duration.Companion.seconds
@@ -63,7 +64,7 @@ fun CalibrationDurationSelectView(
             modifier = Modifier.size(24.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.Remove,
+                painter = painterResource(Res.drawable.remove),
                 contentDescription = "-",
                 tint = MaterialTheme.colorScheme.onSecondaryContainer,
             )
@@ -84,7 +85,7 @@ fun CalibrationDurationSelectView(
             modifier = Modifier.size(24.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.Add,
+                painter = painterResource(Res.drawable.add),
                 contentDescription = "+",
                 tint = MaterialTheme.colorScheme.onSecondaryContainer,
             )

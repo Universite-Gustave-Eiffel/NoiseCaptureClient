@@ -12,9 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -32,7 +29,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.add
 import noisecapture.composeapp.generated.resources.compass
+import noisecapture.composeapp.generated.resources.remove
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -130,7 +129,7 @@ fun MapView(
                             onClick = { viewModel.zoomIn() },
                         ) {
                             Icon(
-                                Icons.Default.Add,
+                                painter = painterResource(Res.drawable.add),
                                 contentDescription = "Zoom in",
                                 modifier = Modifier.size(18.dp),
                             )
@@ -140,7 +139,7 @@ fun MapView(
                             onClick = { viewModel.zoomOut() },
                         ) {
                             Icon(
-                                Icons.Default.Remove,
+                                painter = painterResource(Res.drawable.remove),
                                 contentDescription = "Zoom out",
                                 modifier = Modifier.size(18.dp),
                             )

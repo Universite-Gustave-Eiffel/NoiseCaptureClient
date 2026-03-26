@@ -2,8 +2,6 @@ package org.noiseplanet.noisecapture.ui.features.details.manage
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -13,6 +11,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.arrow_right
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 
@@ -56,7 +57,7 @@ fun ManageMeasurementMenu(
                 },
                 trailingIcon = {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowRight,
+                        painter = painterResource(Res.drawable.arrow_right),
                         contentDescription = null,
                     )
                 },
