@@ -92,3 +92,5 @@ val TertiaryFixed = Color(0xFFDEFDF7)
 val TertiaryFixedDim = Color(0xFFD0EEE9)
 val OnTertiaryFixed = Color(0xFF35504D)
 val OnTertiaryFixedVariant = Color(0xFF516D69)
+
+val LocationTint = Color(0xFF4E7EE5)

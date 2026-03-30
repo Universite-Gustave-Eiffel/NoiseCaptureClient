@@ -57,6 +57,7 @@ fun MapView(
         parametersOf(sizeClass, focusedMeasurementUuid)
     }
     val mapOrientation by viewModel.mapOrientationFlow.collectAsStateWithLifecycle()
+    val recenterButtonViewModel by viewModel.recenterButtonViewModel.collectAsStateWithLifecycle()
 
     var showHelpDialog by remember { mutableStateOf(false) }
 
@@ -149,15 +150,17 @@ fun MapView(
                     Spacer(modifier = Modifier.weight(1f))
 
                     // Recenter button
-                    NCButton(
-                        viewModel = viewModel.recenterButtonViewModel,
-                        onClick = {
-                            viewModel.recenter()
-                            viewModel.autoRecenterEnabled = true
-                        },
-                        modifier = Modifier.size(CONTROLS_SIZE)
-                            .mapControl()
-                    )
+                    recenterButtonViewModel?.let {
+                        NCButton(
+                            viewModel = it,
+                            onClick = {
+                                viewModel.recenter()
+                                viewModel.autoRecenterEnabled.tryEmit(true)
+                            },
+                            modifier = Modifier.size(CONTROLS_SIZE)
+                                .mapControl()
+                        )
+                    }
                 }
             }
 

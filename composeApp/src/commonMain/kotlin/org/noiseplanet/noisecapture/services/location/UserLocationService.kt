@@ -1,6 +1,7 @@
 package org.noiseplanet.noisecapture.services.location
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import org.noiseplanet.noisecapture.model.dao.LocationRecord
 
 /**
@@ -17,6 +18,12 @@ interface UserLocationService {
      * Tracks user location updates
      */
     val liveLocation: Flow<LocationRecord>
+
+    /**
+     * Current location permission state (combines location services on/off + location
+     * foreground permissions)
+     */
+    val isLocationAvailable: StateFlow<Boolean>
 
     /**
      * Starts monitoring location updates

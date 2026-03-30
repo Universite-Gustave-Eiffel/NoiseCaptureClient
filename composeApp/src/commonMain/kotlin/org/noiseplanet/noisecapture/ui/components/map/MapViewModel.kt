@@ -12,22 +12,27 @@ import androidx.window.core.layout.WindowSizeClass
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.location_disabled
 import noisecapture.composeapp.generated.resources.map_marker
 import noisecapture.composeapp.generated.resources.my_location
 import noisecapture.composeapp.generated.resources.question_mark
 import org.jetbrains.compose.resources.painterResource
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.noiseplanet.noisecapture.services.location.UserLocationProvider
+import org.noiseplanet.noisecapture.services.location.UserLocationService
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.ui.components.button.IconNCButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
+import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.map.MapViewModel.VisibleAreaPaddingRatio
+import org.noiseplanet.noisecapture.ui.theme.LocationTint
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.GeoUtil
+import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 import ovh.plrapps.mapcompose.api.BoundingBox
 import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.addMarker
@@ -152,7 +157,7 @@ class MapViewModel(
 
     // - Properties
 
-    private val locationProvider: UserLocationProvider by inject()
+    private val locationService: UserLocationService by inject()
     private val measurementService: MeasurementService by inject()
 
     val backgroundTilesProvider = RemoteTileStreamProvider(
@@ -214,21 +219,55 @@ class MapViewModel(
                 // automatic recenter to user location
                 viewModelScope.launch(Dispatchers.Default) {
                     addPathsForMeasurement(uuid)
-                    autoRecenterEnabled = false
+                    autoRecenterEnabled.tryEmit(false)
                 }
             }
         }
     )
 
-    val recenterButtonViewModel = IconNCButtonViewModel(
-        icon = Res.drawable.my_location,
-        colors = {
-            NCButtonColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                contentColor = MaterialTheme.colorScheme.onSurface
+    private var _mapOrientationFlow = MutableStateFlow(0f)
+    var mapOrientationFlow: StateFlow<Float> = _mapOrientationFlow
+
+    /**
+     * If enabled, automatically recenter the map on every location updates.
+     * Useful for following user movements when making a measurement.
+     */
+    val autoRecenterEnabled = MutableStateFlow(parameters.followUserLocation)
+
+    /**
+     * Holds the bounding box of the currently focused measurement, if any.
+     */
+    private var measurementPathBoundingBox: BoundingBox? = null
+
+    val recenterButtonViewModel: StateFlow<NCButtonViewModel?> = locationService.isLocationAvailable
+        .combine(autoRecenterEnabled) { isAvailable, autoRecenterEnabled ->
+            val icon = if (!parameters.followUserLocation || isAvailable) {
+                Res.drawable.my_location
+            } else {
+                Res.drawable.location_disabled
+            }
+            IconNCButtonViewModel(
+                icon = icon,
+                colors = {
+                    val tint = if (isAvailable) {
+                        if (parameters.followUserLocation && autoRecenterEnabled) {
+                            LocationTint
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        }
+                    } else {
+                        MaterialTheme.colorScheme.error
+                    }
+                    NCButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        contentColor = tint
+                    )
+                },
             )
-        },
-    )
+        }.stateInWhileSubscribed(
+            scope = viewModelScope,
+            initialValue = null,
+        )
 
     val helpButtonViewModel = IconNCButtonViewModel(
         icon = Res.drawable.question_mark,
@@ -240,27 +279,13 @@ class MapViewModel(
         },
     )
 
-    private var _mapOrientationFlow = MutableStateFlow(0f)
-    var mapOrientationFlow: StateFlow<Float> = _mapOrientationFlow
-
-    /**
-     * If enabled, automatically recenter the map on every location updates.
-     * Useful for following user movements when making a measurement.
-     */
-    var autoRecenterEnabled: Boolean = parameters.followUserLocation
-
-    /**
-     * Holds the bounding box of the currently focused measurement, if any.
-     */
-    private var measurementPathBoundingBox: BoundingBox? = null
-
 
     // - Lifecycle
 
     init {
         mapState.onTouchDown {
             // If the user manually interacts with the map, disables automatic location tracking.
-            autoRecenterEnabled = false
+            autoRecenterEnabled.tryEmit(false)
         }
 
         mapState.setStateChangeListener {
@@ -271,11 +296,11 @@ class MapViewModel(
         if (parameters.followUserLocation) {
             // Subscribe to user location update to follow the user location on the map.
             // Do this only if the map is not currently focusing on a measurement.
-            locationProvider.startUpdatingLocation()
+            locationService.startUpdatingLocation()
 
             viewModelScope.launch(Dispatchers.Default) {
                 while (isActive) {
-                    locationProvider.liveLocation.collect { locationRecord ->
+                    locationService.liveLocation.collect { locationRecord ->
                         // Map 3D coordinates to 2D normalized projection
                         val (x, y) = GeoUtil.lonLatToNormalizedWebMercator(
                             latitude = locationRecord.lat,
@@ -286,7 +311,7 @@ class MapViewModel(
                             updateUserLocationMarker(x, y)
                         }
 
-                        if (autoRecenterEnabled) {
+                        if (autoRecenterEnabled.value) {
                             recenter()
                         }
                     }
@@ -334,13 +359,13 @@ class MapViewModel(
     fun zoomIn() {
         val zoomLevel = scaleToZoomLevel(mapState.scale)
         snapToZoomLevel(zoomLevel + 1)
-        autoRecenterEnabled = false
+        autoRecenterEnabled.tryEmit(false)
     }
 
     fun zoomOut() {
         val zoomLevel = scaleToZoomLevel(mapState.scale)
         snapToZoomLevel(zoomLevel - 1)
-        autoRecenterEnabled = false
+        autoRecenterEnabled.tryEmit(false)
     }
 
 
