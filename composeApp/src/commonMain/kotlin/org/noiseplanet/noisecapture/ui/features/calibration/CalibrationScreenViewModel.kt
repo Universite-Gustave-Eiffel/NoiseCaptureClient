@@ -1,7 +1,5 @@
 package org.noiseplanet.noisecapture.ui.features.calibration
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Mic
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -14,6 +12,7 @@ import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.calibration_start_button_title
 import noisecapture.composeapp.generated.resources.calibration_title
+import noisecapture.composeapp.generated.resources.mic
 import org.jetbrains.compose.resources.StringResource
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -114,7 +113,7 @@ class CalibrationScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
     val currentCalibrationProfile = microphoneProvider.currentCalibrationProfile
     val startButtonViewModel = NCButtonViewModel(
         title = Res.string.calibration_start_button_title,
-        icon = Icons.Default.Mic,
+        icon = Res.drawable.mic,
     )
 
 

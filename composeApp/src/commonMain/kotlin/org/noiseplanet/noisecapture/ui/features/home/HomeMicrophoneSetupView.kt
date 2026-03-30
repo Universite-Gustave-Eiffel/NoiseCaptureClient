@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.ZeroCornerSize
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -33,6 +31,8 @@ import noisecapture.composeapp.generated.resources.home_mic_setup_current_gain
 import noisecapture.composeapp.generated.resources.home_mic_setup_last_calibrated
 import noisecapture.composeapp.generated.resources.home_mic_setup_not_calibrated
 import noisecapture.composeapp.generated.resources.home_mic_setup_section_header
+import noisecapture.composeapp.generated.resources.info
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.noiseplanet.noisecapture.ui.components.ListSectionHeader
@@ -120,7 +120,7 @@ fun HomeMicrophoneSetupView(
                     ) {
                         if (!calibrationProfile.isCalibrated) {
                             Icon(
-                                imageVector = Icons.Default.Info,
+                                painter = painterResource(Res.drawable.info),
                                 contentDescription = null,
                                 tint = viewState.contentColor,
                             )

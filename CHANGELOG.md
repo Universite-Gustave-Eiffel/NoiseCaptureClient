@@ -7,6 +7,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Updated icons set (#277)
+
 ## [0.8.0] - 2026-03-04
 
 ### Added

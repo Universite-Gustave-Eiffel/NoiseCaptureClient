@@ -15,9 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowRight
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -39,6 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import nl.jacobras.humanreadable.HumanReadable
 import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.arrow_drop_down
+import noisecapture.composeapp.generated.resources.arrow_right
 import noisecapture.composeapp.generated.resources.calibration_duration_select_title
 import noisecapture.composeapp.generated.resources.calibration_frequencies_select_title
 import noisecapture.composeapp.generated.resources.calibration_frequencies_whole_spectrum_description
@@ -49,6 +48,7 @@ import noisecapture.composeapp.generated.resources.calibration_microphone_curren
 import noisecapture.composeapp.generated.resources.calibration_microphone_last_calibrated
 import noisecapture.composeapp.generated.resources.calibration_microphone_not_calibrated
 import noisecapture.composeapp.generated.resources.calibration_microphone_select_title
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.model.dao.MicrophoneCalibrationProfile
@@ -211,7 +211,7 @@ fun CalibrationConfigView(
                                     modifier = Modifier.weight(1f)
                                 )
                                 Icon(
-                                    imageVector = Icons.Default.ArrowDropDown,
+                                    painter = painterResource(Res.drawable.arrow_drop_down),
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
@@ -283,7 +283,7 @@ private fun FrequencyBandSelectMenu(
                 },
                 trailingIcon = {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowRight,
+                        painter = painterResource(Res.drawable.arrow_right),
                         contentDescription = null,
                     )
                 },

@@ -1,13 +1,12 @@
 package org.noiseplanet.noisecapture.ui.features.home
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.History
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import nl.jacobras.humanreadable.HumanReadable
 import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.history
 import noisecapture.composeapp.generated.resources.home_open_history_button_title
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -47,7 +46,7 @@ class LastMeasurementsViewModel : ViewModel(), KoinComponent {
         title = Res.string.home_open_history_button_title,
         style = NCButtonStyle.OUTLINED,
         colors = { NCButtonColors.Defaults.outlined() },
-        icon = Icons.Default.History,
+        icon = Res.drawable.history,
     )
 
     val viewStateFlow: StateFlow<ViewState> = measurementService

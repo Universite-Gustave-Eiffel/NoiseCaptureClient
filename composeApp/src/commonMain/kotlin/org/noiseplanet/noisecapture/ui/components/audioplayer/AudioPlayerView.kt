@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,11 +28,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.delete
 import noisecapture.composeapp.generated.resources.details_audio_player_description
 import noisecapture.composeapp.generated.resources.details_audio_player_disclaimer
 import noisecapture.composeapp.generated.resources.details_audio_player_title
 import noisecapture.composeapp.generated.resources.details_delete_measurement_audio_dialog_text
 import noisecapture.composeapp.generated.resources.details_delete_measurement_dialog_title
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -123,7 +123,7 @@ fun AudioPlayerView(
                 modifier = Modifier.size(24.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.Delete,
+                    painter = painterResource(Res.drawable.delete),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     contentDescription = "Delete audio"
                 )

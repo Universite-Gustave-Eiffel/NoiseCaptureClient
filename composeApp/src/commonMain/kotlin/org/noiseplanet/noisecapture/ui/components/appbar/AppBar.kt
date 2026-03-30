@@ -4,8 +4,6 @@ import Platform
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -20,7 +18,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.currentBackStackEntryAsState
 import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.arrow_back
 import noisecapture.composeapp.generated.resources.back_button
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
@@ -63,7 +63,8 @@ fun AppBar(
                     }
                 }) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        painter = painterResource(Res.drawable.arrow_back),
+                        tint = MaterialTheme.colorScheme.onSurface,
                         contentDescription = stringResource(Res.string.back_button)
                     )
                 }
@@ -76,7 +77,7 @@ fun AppBar(
                 items(actions) { action ->
                     IconButton(onClick = action.onClick) {
                         Icon(
-                            imageVector = action.icon,
+                            painter = painterResource(action.icon),
                             contentDescription = action.iconContentDescription?.let {
                                 stringResource(it)
                             },

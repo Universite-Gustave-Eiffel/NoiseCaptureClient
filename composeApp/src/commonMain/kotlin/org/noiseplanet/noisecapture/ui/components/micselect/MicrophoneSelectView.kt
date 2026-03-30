@@ -6,9 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowRight
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -23,6 +20,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.arrow_drop_down
+import noisecapture.composeapp.generated.resources.arrow_right
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.noiseplanet.noisecapture.model.dao.MicrophoneInfo
@@ -60,7 +61,7 @@ fun MicrophoneSelectView(
                         modifier = Modifier.weight(1f),
                     )
                     Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
+                        painter = painterResource(Res.drawable.arrow_drop_down),
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -125,7 +126,7 @@ private fun MicrophoneSelectMenu(
                 },
                 trailingIcon = {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowRight,
+                        painter = painterResource(Res.drawable.arrow_right),
                         contentDescription = null,
                     )
                 },
