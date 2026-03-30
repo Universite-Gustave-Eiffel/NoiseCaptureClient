@@ -29,7 +29,7 @@ class AndroidUserLocationProvider :
 
     companion object {
 
-        private const val LOCATION_REQUEST_PRIORITY: Int = Priority.PRIORITY_BALANCED_POWER_ACCURACY
+        private const val LOCATION_REQUEST_PRIORITY: Int = Priority.PRIORITY_HIGH_ACCURACY
         private const val LOCATION_REQUEST_INTERVAL_SECONDS: Long = 3
     }
 
