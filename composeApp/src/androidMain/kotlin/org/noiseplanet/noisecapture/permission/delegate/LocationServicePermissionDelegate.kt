@@ -1,6 +1,9 @@
 package org.noiseplanet.noisecapture.permission.delegate
 
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.location.LocationManager
 import android.provider.Settings
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,6 +28,17 @@ internal class LocationServicePermissionDelegate(
     // - Lifecycle
 
     init {
+        // Listen for user toggling location services on or off
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                if (intent.action == LocationManager.PROVIDERS_CHANGED_ACTION) {
+                    checkPermissionState()
+                }
+            }
+        }
+        context.registerReceiver(receiver, IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION))
+
+        // Initialise with current status
         checkPermissionState()
     }
 
@@ -32,8 +46,7 @@ internal class LocationServicePermissionDelegate(
     // - Public functions
 
     override fun checkPermissionState() {
-        val granted = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
-            locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+        val granted = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
         val state = if (granted) {
             PermissionState.GRANTED
         } else {
