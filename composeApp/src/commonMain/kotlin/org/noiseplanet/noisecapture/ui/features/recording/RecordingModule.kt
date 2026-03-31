@@ -4,6 +4,7 @@ import androidx.window.core.layout.WindowSizeClass
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 import org.noiseplanet.noisecapture.ui.components.map.MapViewModel
+import org.noiseplanet.noisecapture.ui.components.map.MapViewModelParameters
 import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterViewModel
 import org.noiseplanet.noisecapture.ui.features.recording.controls.RecordingControlsViewModel
 import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrogram.SpectrogramPlotViewModel
@@ -32,6 +33,11 @@ val recordingModule = module {
     }
 
     viewModel { (windowSizeClass: WindowSizeClass) ->
-        MapViewModel(windowSizeClass)
+        MapViewModel(
+            windowSizeClass,
+            parameters = MapViewModelParameters(
+                showLocationAccuracy = true,
+            )
+        )
     }
 }

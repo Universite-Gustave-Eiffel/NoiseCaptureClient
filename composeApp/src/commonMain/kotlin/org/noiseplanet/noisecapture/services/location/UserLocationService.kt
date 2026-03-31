@@ -9,6 +9,17 @@ import org.noiseplanet.noisecapture.model.dao.LocationRecord
  */
 interface UserLocationService {
 
+    // - Constants
+
+    companion object {
+
+        // Accuracy threshold (in meters) above which GPS signal is considered to be poor
+        const val LOCATION_ACCURACY_POOR_THRESHOLD: Double = 15.0
+    }
+
+
+    // - Properties
+
     /**
      * Gets current user location, if known
      */
@@ -24,6 +35,9 @@ interface UserLocationService {
      * foreground permissions)
      */
     val isLocationAvailable: StateFlow<Boolean>
+
+
+    // - Public functions
 
     /**
      * Starts monitoring location updates

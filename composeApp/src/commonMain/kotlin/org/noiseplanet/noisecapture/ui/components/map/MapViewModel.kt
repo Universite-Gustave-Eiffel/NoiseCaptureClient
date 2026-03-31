@@ -71,6 +71,8 @@ import kotlin.math.pow
  *                               to the ones that are visible within the screen bounds. Larger values
  *                               will give smoother scrolling experience but also greater network and
  *                               performance usage. Defaults to 2.
+ * @param showLocationAccuracy If true, show a view in the top left corner that tracks the current
+ *                             location accuracy and lets user know if GPS signal is poor.
  */
 data class MapViewModelParameters(
     val focusedMeasurementUuid: String? = null,
@@ -79,6 +81,7 @@ data class MapViewModelParameters(
     val initialZoomLevel: Int = DEFAULT_INITIAL_ZOOM_LEVEL,
     val followUserLocation: Boolean = focusedMeasurementUuid == null,
     val tilesPreloadingPadding: Int = 2,
+    val showLocationAccuracy: Boolean = false,
 ) {
 
     // - Constants

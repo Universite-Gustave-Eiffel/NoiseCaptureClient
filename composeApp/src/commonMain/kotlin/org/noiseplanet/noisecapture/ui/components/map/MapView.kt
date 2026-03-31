@@ -87,6 +87,10 @@ fun MapView(
                 Column(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
+                    if (viewModel.parameters.showLocationAccuracy) {
+                        MapLocationAccuracyView()
+                    }
+
                     // Help button (shows legend and any additional info)
                     NCButton(
                         viewModel = viewModel.helpButtonViewModel,

@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.services.location
 
+import android.annotation.SuppressLint
 import android.os.Build
 import com.google.android.gms.location.LocationListener
 import com.google.android.gms.location.LocationRequest
@@ -8,6 +9,7 @@ import com.google.android.gms.location.Priority
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
@@ -63,8 +65,11 @@ class AndroidUserLocationProvider :
 
     // - UserLocationProvider
 
-    override val liveLocation: Flow<LocationRecord>
-        get() = rawLocationFlow.map { location ->
+    override val liveLocation: Flow<LocationRecord> = rawLocationFlow
+        .distinctUntilChanged { a, b ->
+            a.latitude == b.latitude && a.longitude == b.longitude
+        }
+        .map { location ->
             logger.debug("Got new location: $location")
             val locationRecord = buildLocationFromRawData(location)
             lastRecordedLocation = locationRecord
@@ -75,6 +80,7 @@ class AndroidUserLocationProvider :
     override val currentLocation: LocationRecord?
         get() = lastRecordedLocation
 
+    @SuppressLint("MissingPermission")
     override fun startUpdatingLocation() {
         try {
             // Start location updates
