@@ -74,7 +74,7 @@ fun MapView(
             var controlsModifier = modifier
             // If the view expands down to the bottom of the screen, take safe area padding into account
             if (viewModel.parameters.visibleAreaPaddingRatio.bottom == 0.0f) {
-                controlsModifier = controlsModifier.paddingBottomWithInsets()
+                controlsModifier = controlsModifier.paddingBottomWithInsets(4.dp)
             }
 
             Row(
