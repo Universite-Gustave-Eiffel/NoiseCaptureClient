@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -42,16 +43,20 @@ fun MapLocationUnavailableView(
             modifier = Modifier.size(64.dp).padding(bottom = 12.dp)
         )
 
-        Text(
-            text = stringResource(Res.string.map_location_services_unavailable_title),
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
-        )
+        Column(
+            modifier = Modifier.widthIn(max = 500.dp)
+        ) {
+            Text(
+                text = stringResource(Res.string.map_location_services_unavailable_title),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
+            )
 
-        Text(
-            text = stringResource(Res.string.map_location_services_unavailable_description),
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.fillMaxWidth()
-        )
+            Text(
+                text = stringResource(Res.string.map_location_services_unavailable_description),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 }

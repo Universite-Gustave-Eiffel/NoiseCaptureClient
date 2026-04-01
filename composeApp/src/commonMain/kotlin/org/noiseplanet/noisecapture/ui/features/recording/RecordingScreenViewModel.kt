@@ -6,6 +6,7 @@ import noisecapture.composeapp.generated.resources.measurement_title
 import org.jetbrains.compose.resources.StringResource
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.noiseplanet.noisecapture.services.location.UserLocationService
 import org.noiseplanet.noisecapture.services.measurement.RecordingService
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 
@@ -14,6 +15,7 @@ class RecordingScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
     // - Properties
 
     private val recordingService: RecordingService by inject()
+    private val locationService: UserLocationService by inject()
 
     var showEndRecordingConfirmationDialog: (() -> Unit)? = null
 
@@ -22,6 +24,8 @@ class RecordingScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
      * Will be set to false if measurement ends because user leaves the measurement screen.
      */
     var shouldOpenDetailsOnceDone: Boolean = true
+
+    val isLocationAvailable = locationService.isLocationAvailable
 
 
     // - ScreenViewModel
