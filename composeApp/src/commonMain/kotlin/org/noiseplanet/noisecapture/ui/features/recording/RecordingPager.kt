@@ -33,6 +33,7 @@ import noisecapture.composeapp.generated.resources.measurement_pager_tab_spectru
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.noiseplanet.noisecapture.services.location.UserLocationService
+import org.noiseplanet.noisecapture.ui.components.map.MapLocationUnavailableView
 import org.noiseplanet.noisecapture.ui.components.map.MapView
 import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrogram.SpectrogramPlotView
 import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrum.SpectrumPlotView
@@ -150,7 +151,11 @@ fun RecordingPager(
                 }
 
                 TabId.MAP -> Box {
-                    MapView(modifier = Modifier.fillMaxSize())
+                    if (isLocationAvailable) {
+                        MapView(modifier = Modifier.fillMaxSize())
+                    } else {
+                        MapLocationUnavailableView(modifier = Modifier.fillMaxSize())
+                    }
                 }
             }
         }
