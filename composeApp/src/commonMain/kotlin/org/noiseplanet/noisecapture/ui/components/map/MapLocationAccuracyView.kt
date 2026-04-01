@@ -40,12 +40,13 @@ fun MapLocationAccuracyView(
     val locationAccuracy: Double by locationService.liveLocation
         .map { it.horizontalAccuracy }
         .collectAsStateWithLifecycle(initialValue = -1.0)
+    val isSignalPoor: Boolean by locationService.isSignalPoor
+        .collectAsStateWithLifecycle()
 
     // Don't render this view if location is unknown
     if (locationAccuracy < 0) return
 
-    val isPoorSignal = locationAccuracy > UserLocationService.LOCATION_ACCURACY_POOR_THRESHOLD
-    val (contentColor, containerColor, icon) = if (isPoorSignal) {
+    val (contentColor, containerColor, icon) = if (isSignalPoor) {
         Triple(
             NoiseLevelColorRamp.level6Dark,
             NoiseLevelColorRamp.level6Light,
@@ -59,7 +60,7 @@ fun MapLocationAccuracyView(
         )
     }
     val text = buildAnnotatedString {
-        if (isPoorSignal) {
+        if (isSignalPoor) {
             withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
                 append("Poor GPS signal\n")
             }

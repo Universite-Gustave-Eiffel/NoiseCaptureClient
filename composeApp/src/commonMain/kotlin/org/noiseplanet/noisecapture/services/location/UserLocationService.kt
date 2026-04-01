@@ -36,6 +36,12 @@ interface UserLocationService {
      */
     val isLocationAvailable: StateFlow<Boolean>
 
+    /**
+     * True if location horizontal accuracy is above threshold.
+     * If no location data is available, defaults to false.
+     */
+    val isSignalPoor: StateFlow<Boolean>
+
 
     // - Public functions
 
