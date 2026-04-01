@@ -182,6 +182,10 @@
     <!-- Map -->
     <string name="map_legend_title">Legend</string>
     <string name="map_legend_description">The map shows recorded noise levels by steps of 5 decibels.</string>
+    <string name="map_gps_accuracy">Accuracy</string>
+    <string name="map_gps_poor_signal">Poor GPS signal</string>
+    <string name="map_location_services_unavailable_title">Location services currently unavailable</string>
+    <string name="map_location_services_unavailable_description">In order to match analysed acoustic indicators to GPS coordinates to create community noise level maps, we need to access your location. All collected data is completely anonymous and we don’t collect any location data outside of measurements. See our privacy policy for more details.</string>
 
 
     <!-- User acoustics knowledge -->

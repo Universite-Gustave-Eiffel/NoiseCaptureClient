@@ -57,6 +57,7 @@ fun MapView(
         parametersOf(sizeClass, focusedMeasurementUuid)
     }
     val mapOrientation by viewModel.mapOrientationFlow.collectAsStateWithLifecycle()
+    val recenterButtonViewModel by viewModel.recenterButtonViewModel.collectAsStateWithLifecycle()
 
     var showHelpDialog by remember { mutableStateOf(false) }
 
@@ -73,7 +74,7 @@ fun MapView(
             var controlsModifier = modifier
             // If the view expands down to the bottom of the screen, take safe area padding into account
             if (viewModel.parameters.visibleAreaPaddingRatio.bottom == 0.0f) {
-                controlsModifier = controlsModifier.paddingBottomWithInsets()
+                controlsModifier = controlsModifier.paddingBottomWithInsets(4.dp)
             }
 
             Row(
@@ -86,6 +87,10 @@ fun MapView(
                 Column(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
+                    if (viewModel.parameters.showLocationAccuracy) {
+                        MapLocationAccuracyView()
+                    }
+
                     // Help button (shows legend and any additional info)
                     NCButton(
                         viewModel = viewModel.helpButtonViewModel,
@@ -149,15 +154,17 @@ fun MapView(
                     Spacer(modifier = Modifier.weight(1f))
 
                     // Recenter button
-                    NCButton(
-                        viewModel = viewModel.recenterButtonViewModel,
-                        onClick = {
-                            viewModel.recenter()
-                            viewModel.autoRecenterEnabled = true
-                        },
-                        modifier = Modifier.size(CONTROLS_SIZE)
-                            .mapControl()
-                    )
+                    recenterButtonViewModel?.let {
+                        NCButton(
+                            viewModel = it,
+                            onClick = {
+                                viewModel.recenter()
+                                viewModel.autoRecenterEnabled.tryEmit(true)
+                            },
+                            modifier = Modifier.size(CONTROLS_SIZE)
+                                .mapControl()
+                        )
+                    }
                 }
             }
 

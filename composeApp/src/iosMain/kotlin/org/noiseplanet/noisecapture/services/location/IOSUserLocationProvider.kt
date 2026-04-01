@@ -7,7 +7,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.log.Logger
@@ -73,11 +72,11 @@ class IOSUserLocationProvider : UserLocationProvider, KoinComponent {
     override val currentLocation: LocationRecord?
         get() = locationFlow.replayCache.firstOrNull()
 
-    override val liveLocation: Flow<LocationRecord>
-        get() = locationFlow.asSharedFlow()
+    override val liveLocation: Flow<LocationRecord> = locationFlow
 
     override fun startUpdatingLocation() {
         locationManager.startUpdatingLocation()
+        locationManager.allowsBackgroundLocationUpdates = true
     }
 
     override fun stopUpdatingLocation() {

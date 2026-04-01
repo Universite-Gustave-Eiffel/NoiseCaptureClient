@@ -7,6 +7,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Visual hint of GPS accuracy while recording (#278)
+
+### Fixed
+
+- Android: switching location on or off from control center didn't trigger a state refresh in the
+  app (#278)
+
 ### Changed
 
 - Updated icons set (#277)

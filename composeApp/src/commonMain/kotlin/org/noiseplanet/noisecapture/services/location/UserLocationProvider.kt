@@ -8,6 +8,8 @@ import org.noiseplanet.noisecapture.model.dao.LocationRecord
  */
 interface UserLocationProvider {
 
+    // - Properties
+
     /**
      * Gets current user location, if known
      */
@@ -17,6 +19,9 @@ interface UserLocationProvider {
      * Tracks user location updates
      */
     val liveLocation: Flow<LocationRecord>
+
+
+    // - Public functions
 
     /**
      * Starts monitoring location updates
