@@ -22,8 +22,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.map
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.location_on
+import noisecapture.composeapp.generated.resources.map_gps_accuracy
+import noisecapture.composeapp.generated.resources.map_gps_poor_signal
 import noisecapture.composeapp.generated.resources.wrong_location
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.noiseplanet.noisecapture.services.location.UserLocationService
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
@@ -62,10 +65,10 @@ fun MapLocationAccuracyView(
     val text = buildAnnotatedString {
         if (isSignalPoor) {
             withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
-                append("Poor GPS signal\n")
+                append("${stringResource(Res.string.map_gps_poor_signal)}\n")
             }
         }
-        append("Accuracy: ${locationAccuracy.roundToInt()}m")
+        append("${stringResource(Res.string.map_gps_accuracy)}: ${locationAccuracy.roundToInt()}m")
     }
 
 
