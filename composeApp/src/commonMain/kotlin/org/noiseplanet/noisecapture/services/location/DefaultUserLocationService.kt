@@ -21,14 +21,14 @@ import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
  * Default [UserLocationService] implementation
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-class DefaultUserLocationService : UserLocationService, KoinComponent {
+open class DefaultUserLocationService : UserLocationService, KoinComponent {
 
     // - Properties
 
     private val locationProvider: UserLocationProvider by inject()
-    private val permissionService: PermissionService by inject()
 
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    protected val permissionService: PermissionService by inject()
+    protected val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
 
     // - UserLocationService
