@@ -110,6 +110,8 @@
 
     <string name="details_menu_export_audio_title">Download recorded audio</string>
     <string name="details_menu_export_audio_description">Get a copy of the associated audio file.</string>
+    <string name="details_menu_export_geojson_title">Export to GeoJson</string>
+    <string name="details_menu_export_geojson_description">Suitable for using in GIS software, but noise level will be averaged per GPS point.</string>
     <string name="details_menu_export_raw_title">Download raw data</string>
     <string name="details_menu_export_raw_description">Export all measured acoustic indicators. Refer to the app's documentation for usage instructions.</string>
 
