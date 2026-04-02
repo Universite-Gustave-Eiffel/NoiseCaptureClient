@@ -1,6 +1,7 @@
 package org.noiseplanet.noisecapture.ui.features.details.manage
 
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -36,6 +37,7 @@ import org.noiseplanet.noisecapture.services.storage.FileSystemService
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.map.SoundLevelPathBuilder
+import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.Feature
 import org.noiseplanet.noisecapture.util.FeatureCollection
 import org.noiseplanet.noisecapture.util.Point
@@ -231,12 +233,16 @@ class ManageMeasurementViewModel(
 
             // Map each point of the path to a GeoJson "Point" feature
             for (point in path) {
+                val markerColor = NoiseLevelColorRamp.getColorForSPLValue(point.level).toArgb()
                 features.add(
                     Feature(
                         geometry = Point(positionOf(point.longitude, point.latitude)),
                         properties = mapOf(
                             "laeq" to JsonPrimitive(point.level),
-                            "timestamp" to JsonPrimitive(point.timestamp)
+                            "timestamp" to JsonPrimitive(point.timestamp),
+                            // Encode marker color to GeoJson, drop the first two characters
+                            // corresponding to alpha channel
+                            "marker-color" to JsonPrimitive("#" + markerColor.toHexString().drop(2))
                         )
                     )
                 )
