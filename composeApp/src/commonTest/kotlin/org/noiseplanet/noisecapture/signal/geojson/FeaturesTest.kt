@@ -1,8 +1,8 @@
 package org.noiseplanet.noisecapture.signal.geojson
 
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
 import org.noiseplanet.noisecapture.util.Feature
+import org.noiseplanet.noisecapture.util.GeoJson
 import org.noiseplanet.noisecapture.util.LineString
 import org.noiseplanet.noisecapture.util.MultiLineString
 import org.noiseplanet.noisecapture.util.MultiPoint
@@ -19,15 +19,11 @@ import kotlin.test.assertEquals
  */
 class FeaturesTest {
 
-    val json = Json {
-        explicitNulls = false
-        prettyPrint = true
-    }
-
     @Test
     fun testPoint() {
         val expected = """
             {
+                "type": "Feature",
                 "geometry": {
                     "type": "Point",
                     "coordinates": [
@@ -38,13 +34,14 @@ class FeaturesTest {
             }
         """.trimIndent()
         val feature = Feature(geometry = Point(positionOf(100.0, 0.0)))
-        assertEquals(expected, json.encodeToString(feature))
+        assertEquals(expected, GeoJson.encodeToString(feature))
     }
 
     @Test
     fun testLineString() {
         val expected = """
             {
+                "type": "Feature",
                 "geometry": {
                     "type": "LineString",
                     "coordinates": [
@@ -63,13 +60,14 @@ class FeaturesTest {
         val feature = Feature(
             geometry = LineString(lineOf(positionOf(100.0, 0.0), positionOf(0.0, 100.0)))
         )
-        assertEquals(expected, json.encodeToString(feature))
+        assertEquals(expected, GeoJson.encodeToString(feature))
     }
 
     @Test
     fun testPolygon() {
         val expected = """
             {
+                "type": "Feature",
                 "geometry": {
                     "type": "Polygon",
                     "coordinates": [
@@ -112,13 +110,14 @@ class FeaturesTest {
                 )
             )
         )
-        assertEquals(expected, json.encodeToString(feature))
+        assertEquals(expected, GeoJson.encodeToString(feature))
     }
 
     @Test
     fun testMultipoint() {
         val expected = """
             {
+                "type": "Feature",
                 "geometry": {
                     "type": "MultiPoint",
                     "coordinates": [
@@ -142,13 +141,14 @@ class FeaturesTest {
                 )
             )
         )
-        assertEquals(expected, json.encodeToString(feature))
+        assertEquals(expected, GeoJson.encodeToString(feature))
     }
 
     @Test
     fun testMultiLineString() {
         val expected = """
             {
+                "type": "Feature",
                 "geometry": {
                     "type": "MultiLineString",
                     "coordinates": [
@@ -190,13 +190,14 @@ class FeaturesTest {
                 )
             )
         )
-        assertEquals(expected, json.encodeToString(feature))
+        assertEquals(expected, GeoJson.encodeToString(feature))
     }
 
     @Test
     fun testProperties() {
         val expected = """
             {
+                "type": "Feature",
                 "geometry": {
                     "type": "Point",
                     "coordinates": [
@@ -221,6 +222,6 @@ class FeaturesTest {
                 "boolTest" to JsonPrimitive(true)
             )
         )
-        assertEquals(expected, json.encodeToString(feature))
+        assertEquals(expected, GeoJson.encodeToString(feature))
     }
 }

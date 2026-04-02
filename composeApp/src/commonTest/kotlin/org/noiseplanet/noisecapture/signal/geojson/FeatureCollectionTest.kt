@@ -1,10 +1,10 @@
 package org.noiseplanet.noisecapture.signal.geojson
 
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import org.noiseplanet.noisecapture.util.Feature
 import org.noiseplanet.noisecapture.util.FeatureCollection
+import org.noiseplanet.noisecapture.util.GeoJson
 import org.noiseplanet.noisecapture.util.LineString
 import org.noiseplanet.noisecapture.util.Point
 import org.noiseplanet.noisecapture.util.Polygon
@@ -18,12 +18,6 @@ import kotlin.test.assertEquals
  * https://datatracker.ietf.org/doc/html/rfc7946#section-1.5
  */
 class FeatureCollectionTest {
-
-    val json = Json {
-        explicitNulls = false
-        prettyPrint = true
-        encodeDefaults = true
-    }
 
     @Test
     @Suppress("LongMethod")
@@ -151,6 +145,6 @@ class FeatureCollectionTest {
                 )
             )
         )
-        assertEquals(expected, json.encodeToString(featureCollection))
+        assertEquals(expected, GeoJson.encodeToString(featureCollection))
     }
 }

@@ -2,7 +2,19 @@ package org.noiseplanet.noisecapture.util
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
+
+/**
+ * Json serializer to be used to encode GeoJson objects.
+ * Setup to encode defaults (feature types), not encode null values (optional properties),
+ * and use pretty print for easier exploitation.
+ */
+val GeoJson = Json {
+    encodeDefaults = true
+    explicitNulls = false
+    prettyPrint = true
+}
 
 /**
  * Marker interface to indicate a GeoJson object. It can be

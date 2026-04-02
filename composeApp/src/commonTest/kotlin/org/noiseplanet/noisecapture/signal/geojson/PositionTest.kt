@@ -1,6 +1,6 @@
 package org.noiseplanet.noisecapture.signal.geojson
 
-import kotlinx.serialization.json.Json
+import org.noiseplanet.noisecapture.util.GeoJson
 import org.noiseplanet.noisecapture.util.alt
 import org.noiseplanet.noisecapture.util.lat
 import org.noiseplanet.noisecapture.util.lon
@@ -17,11 +17,6 @@ import kotlin.test.assertNull
  */
 class PositionTest {
 
-    val json = Json {
-        explicitNulls = false
-        prettyPrint = true
-    }
-
     @Test
     fun testXY() {
         val expected = """
@@ -32,7 +27,7 @@ class PositionTest {
         """.trimIndent()
 
         val position = positionOf(100.0, 0.0)
-        assertEquals(expected, json.encodeToString(position))
+        assertEquals(expected, GeoJson.encodeToString(position))
     }
 
     @Test
@@ -46,7 +41,7 @@ class PositionTest {
         """.trimIndent()
 
         val position = positionOf(100.0, 0.0, 50.0)
-        assertEquals(expected, json.encodeToString(position))
+        assertEquals(expected, GeoJson.encodeToString(position))
     }
 
     @Test
