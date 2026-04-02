@@ -1,5 +1,8 @@
 package org.noiseplanet.noisecapture.services.storage
 
+import org.noiseplanet.noisecapture.util.FeatureCollection
+
+
 interface FileSystemService {
 
     /**
@@ -23,6 +26,14 @@ interface FileSystemService {
      * @param fileUri File URI, relative to the root directory.
      */
     suspend fun downloadFile(fileUri: String)
+
+    /**
+     * Serialises and shows download options for the given GeoJson object.
+     *
+     * @param geoJson GeoJson object
+     * @param fileName Output file name
+     */
+    suspend fun downloadGeoJson(geoJson: FeatureCollection, fileName: String)
 
     /**
      * Zips the files at the given URIs into an archive in cache space, then lets the user download

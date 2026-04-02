@@ -7,6 +7,8 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.AndroidFilePickerEventBus
 import org.noiseplanet.noisecapture.FilePickerEvent
+import org.noiseplanet.noisecapture.util.FeatureCollection
+import org.noiseplanet.noisecapture.util.GeoJson
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -73,6 +75,17 @@ class AndroidFileSystemService : FileSystemService, KoinComponent {
 
         // Notify activity that a new file is ready to be downloaded through event bus
         filePickerEventBus.emitEvent(FilePickerEvent(zipFile, deleteAfterUse = true))
+    }
+
+    override suspend fun downloadGeoJson(geoJson: FeatureCollection, fileName: String) {
+        val contents = GeoJson.encodeToString(geoJson)
+        val cacheDir = context.cacheDir
+        val tempFile = File(cacheDir, fileName)
+
+        // Write GeoJson data to temporary file
+        tempFile.writeText(contents)
+        // Download created file, cleaning up after use
+        filePickerEventBus.emitEvent(FilePickerEvent(tempFile, deleteAfterUse = true))
     }
 
     override fun getRootDirectory(): String {
