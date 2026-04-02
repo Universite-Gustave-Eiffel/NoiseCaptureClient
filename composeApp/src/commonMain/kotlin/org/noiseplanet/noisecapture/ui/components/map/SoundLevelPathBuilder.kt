@@ -5,6 +5,7 @@ import org.noiseplanet.noisecapture.model.dao.LocationSequenceFragment
 import org.noiseplanet.noisecapture.util.GeoUtil
 import org.noiseplanet.noisecapture.util.dbAverage
 import org.noiseplanet.noisecapture.util.isInVuMeterRange
+import org.noiseplanet.noisecapture.util.roundTo
 
 
 /**
@@ -56,7 +57,7 @@ object SoundLevelPathBuilder {
                 timestamp = coord.key,
                 latitude = lat,
                 longitude = lon,
-                level = laeqs.map { (_, value) -> value }.dbAverage()
+                level = laeqs.map { (_, value) -> value }.dbAverage().roundTo(1)
             )
             return listOf(point)
         }
@@ -85,7 +86,7 @@ object SoundLevelPathBuilder {
                     timestamp = currTime,
                     latitude = coords[i].value.first,
                     longitude = coords[i].value.second,
-                    level = laeqsForTimeWindow.dbAverage(),
+                    level = laeqsForTimeWindow.dbAverage().roundTo(1),
                 )
                 result.add(point)
             }
