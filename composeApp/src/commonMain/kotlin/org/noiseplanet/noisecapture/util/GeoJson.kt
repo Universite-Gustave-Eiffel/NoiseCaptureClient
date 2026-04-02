@@ -17,17 +17,10 @@ val GeoJson = Json {
 }
 
 /**
- * Marker interface to indicate a GeoJson object. It can be
- * a Geometry, a Feature or a FeatureCollection
- */
-@Serializable
-sealed class GeoJsonObject
-
-/**
  * Marker for supported geometries (Point, LineString, Polygon, ...)
  */
 @Serializable
-sealed class Geometry : GeoJsonObject()
+sealed class Geometry
 
 /**
  * Position is an alias on a DoubleArray that represents the coordinates
@@ -84,12 +77,11 @@ fun lineOf(vararg positions: Position): Line = listOf(*positions)
  * Since the type is not polymorphic, we must add the "type" property manually.
  */
 @Serializable
-@SerialName("Feature")
 data class Feature(
     val type: String = "Feature",
     val geometry: Geometry,
     val properties: Map<String, JsonElement?>? = null,
-) : GeoJsonObject()
+)
 
 /**
  * A collection of features.
@@ -99,7 +91,7 @@ data class Feature(
 data class FeatureCollection(
     val type: String = "FeatureCollection",
     val features: List<Feature>,
-) : GeoJsonObject()
+)
 
 /**
  * A point is a set of Lat,Lon,(Alt) coordinates
