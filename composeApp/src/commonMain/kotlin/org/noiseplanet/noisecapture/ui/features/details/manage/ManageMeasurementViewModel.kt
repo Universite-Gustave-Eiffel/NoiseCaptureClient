@@ -1,13 +1,16 @@
 package org.noiseplanet.noisecapture.ui.features.details.manage
 
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.JsonPrimitive
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.delete
 import noisecapture.composeapp.generated.resources.details_delete_button
@@ -21,6 +24,8 @@ import noisecapture.composeapp.generated.resources.details_menu_delete_whole_des
 import noisecapture.composeapp.generated.resources.details_menu_delete_whole_title
 import noisecapture.composeapp.generated.resources.details_menu_export_audio_description
 import noisecapture.composeapp.generated.resources.details_menu_export_audio_title
+import noisecapture.composeapp.generated.resources.details_menu_export_geojson_description
+import noisecapture.composeapp.generated.resources.details_menu_export_geojson_title
 import noisecapture.composeapp.generated.resources.details_menu_export_raw_description
 import noisecapture.composeapp.generated.resources.details_menu_export_raw_title
 import noisecapture.composeapp.generated.resources.download
@@ -31,6 +36,12 @@ import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.services.storage.FileSystemService
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
+import org.noiseplanet.noisecapture.ui.components.map.SoundLevelPathBuilder
+import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
+import org.noiseplanet.noisecapture.util.Feature
+import org.noiseplanet.noisecapture.util.FeatureCollection
+import org.noiseplanet.noisecapture.util.Point
+import org.noiseplanet.noisecapture.util.positionOf
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 
 
@@ -142,7 +153,11 @@ class ManageMeasurementViewModel(
                     supportingText = Res.string.details_menu_export_raw_description,
                     onClick = { downloadRawData() },
                 ),
-                // TODO: Add GeoJSON export option
+                ManageMeasurementMenuItem(
+                    label = Res.string.details_menu_export_geojson_title,
+                    supportingText = Res.string.details_menu_export_geojson_description,
+                    onClick = { exportToGeoJson() },
+                ),
             )
             if (measurement.recordedAudioUrl != null) {
                 listOf(
@@ -205,6 +220,37 @@ class ManageMeasurementViewModel(
             viewModelScope.launch {
                 fileSystemService.downloadFile(it)
             }
+        }
+    }
+
+    fun exportToGeoJson() {
+        viewModelScope.launch(Dispatchers.Default) {
+            // Construct path sequence from measurement location and leq sequences
+            val leqs = measurementService.getLeqSequenceForMeasurement(measurementId)
+            val locations = measurementService.getLocationSequenceForMeasurement(measurementId)
+            val path = SoundLevelPathBuilder.pathForMeasurement(leqs, locations)
+            val features: MutableList<Feature> = mutableListOf()
+
+            // Map each point of the path to a GeoJson "Point" feature
+            for (point in path) {
+                val markerColor = NoiseLevelColorRamp.getColorForSPLValue(point.level).toArgb()
+                features.add(
+                    Feature(
+                        geometry = Point(positionOf(point.longitude, point.latitude)),
+                        properties = mapOf(
+                            "laeq" to JsonPrimitive(point.level),
+                            "timestamp" to JsonPrimitive(point.timestamp),
+                            // Encode marker color to GeoJson, drop the first two characters
+                            // corresponding to alpha channel
+                            "marker-color" to JsonPrimitive("#" + markerColor.toHexString().drop(2))
+                        )
+                    )
+                )
+            }
+            // Create feature collection
+            val geoJson = FeatureCollection(features = features)
+            // Download as geojson file
+            fileSystemService.downloadGeoJson(geoJson, "$measurementId.geojson")
         }
     }
 }

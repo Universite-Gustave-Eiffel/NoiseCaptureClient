@@ -1,17 +1,27 @@
 package org.noiseplanet.noisecapture.ui.components.map
 
-import org.noiseplanet.noisecapture.services.measurement.MeasurementService
+import org.noiseplanet.noisecapture.model.dao.LeqSequenceFragment
+import org.noiseplanet.noisecapture.model.dao.LocationSequenceFragment
 import org.noiseplanet.noisecapture.util.GeoUtil
 import org.noiseplanet.noisecapture.util.dbAverage
 import org.noiseplanet.noisecapture.util.isInVuMeterRange
+import org.noiseplanet.noisecapture.util.roundTo
 
 
 /**
  * Build paths from measurement location and sound level data.
  */
-class SoundLevelPathBuilder(
-    private val measurementService: MeasurementService,
-) {
+object SoundLevelPathBuilder {
+
+    // - Constants
+
+    /**
+     * Minimum distance (in meters) between two path points. If two points are too close by they
+     * will be merged in a single one.
+     */
+    const val DEFAULT_MIN_DIST_BETWEEN_POINTS: Double = 2.0
+
+
     // - Public functions
 
     /**
@@ -20,21 +30,23 @@ class SoundLevelPathBuilder(
      * and an associated LAEq value that corresponds to the energetic average of all levels between
      * the last point and this one.
      *
-     * This is a suspend function because reading measurement data from disk must be done from
-     * a coroutine scope.
-     *
      * > TODO: Test performance on larger measurements with lots of points. To avoid recalculating
      *         averages everytime, we could store the obtained mean value directly in the location
      *         sequence as an optional property?
      *
-     * @param measurementUuid Unique measurement identifier.
+     * @param leqSequence All measurement's LEq sequence fragments.
+     * @param locationSequence All measurement's location sequence fragments.
+     *
      * @return A list of [PathPoint].
      */
-    suspend fun pathForMeasurement(measurementUuid: String): List<PathPoint> {
+    fun pathForMeasurement(
+        leqSequence: List<LeqSequenceFragment>,
+        locationSequence: List<LocationSequenceFragment>,
+    ): List<PathPoint> {
         // Get all coordinates and LAEq values for the given measurement,
         // expected to be sorted in ascending order
-        val coords = getSortedLocationSequence(measurementUuid)
-        val laeqs = getSortedLaeqSequence(measurementUuid)
+        val coords = prepareLocationSequence(locationSequence)
+        val laeqs = prepareLeqSequence(leqSequence)
 
         // If we only have a single point (user is stationary), calculate average of all LAEq values
         if (coords.size == 1) {
@@ -45,7 +57,7 @@ class SoundLevelPathBuilder(
                 timestamp = coord.key,
                 latitude = lat,
                 longitude = lon,
-                level = laeqs.map { (_, value) -> value }.dbAverage()
+                level = laeqs.map { (_, value) -> value }.dbAverage().roundTo(1)
             )
             return listOf(point)
         }
@@ -74,7 +86,7 @@ class SoundLevelPathBuilder(
                     timestamp = currTime,
                     latitude = coords[i].value.first,
                     longitude = coords[i].value.second,
-                    level = laeqsForTimeWindow.dbAverage(),
+                    level = laeqsForTimeWindow.dbAverage().roundTo(1),
                 )
                 result.add(point)
             }
@@ -86,18 +98,19 @@ class SoundLevelPathBuilder(
     // - Private functions
 
     /**
-     * Reads an concatenates all lat/lon coordinates points tied to the measurement with
-     * the given unique identifier
+     * Concatenates all lat/lon coordinates points found in fragments.
+     * Strips out points that too close together.
      *
-     * @param measurementUuid Measurement unique identifier
+     * @param locationSequence All measurement's location sequence fragments.
+     *
      * @return A list of map entries with timestamp as key and coordinates as value (lat, lon),
      *         sorted in ascending order by timestamp.
      */
-    private suspend fun getSortedLocationSequence(
-        measurementUuid: String,
+    private fun prepareLocationSequence(
+        locationSequence: List<LocationSequenceFragment>,
     ): List<Map.Entry<Long, Pair<Double, Double>>> {
-        // Get all points tied to the measurement
-        val sortedPoints = measurementService.getLocationSequenceForMeasurement(measurementUuid)
+        // Match all points with their associated timestamp
+        val sortedPoints = locationSequence
             .fold(mapOf<Long, Pair<Double, Double>>()) { accumulator, fragment ->
                 val latLonPairs = fragment.lat.zip(fragment.lon)
                 val timestampedPoints = fragment.timestamp.zip(latLonPairs)
@@ -109,10 +122,7 @@ class SoundLevelPathBuilder(
         // Will hold a reference to the previous non-filtered point
         var prevPoint: Pair<Double, Double>? = null
 
-        // Minimum distance required between two points, in meters
-        val distThreshold = 2.0
-
-        val dbg = sortedPoints.filterIndexed { index, entry ->
+        return sortedPoints.filterIndexed { index, entry ->
             if (index == 0) {
                 prevPoint = entry.value
                 return@filterIndexed true
@@ -123,7 +133,7 @@ class SoundLevelPathBuilder(
             // Compute distance between last and current point
             val dist = GeoUtil.equirectangularDistance(prevLat, prevLon, currLat, currLon) * 1_000.0
 
-            if (dist < distThreshold) {
+            if (dist < DEFAULT_MIN_DIST_BETWEEN_POINTS) {
                 // If distance is under threshold, skip this point and move to the next one
                 false
             } else {
@@ -133,31 +143,28 @@ class SoundLevelPathBuilder(
                 true
             }
         }
-        return dbg
     }
 
     /**
-     * Reads an concatenates all sound level values tied to the measurement with
-     * the given unique identifier
+     * Concatenates all sound level values found in fragments.
      *
-     * @param measurementUuid Measurement unique identifier
+     * @param leqSequence Measurement unique identifier
+     *
      * @return A list of map entries with timestamp as key and LAEq as value,
      *         sorted in ascending order by timestamp.
      */
-    private suspend fun getSortedLaeqSequence(
-        measurementUuid: String,
-    ): List<Map.Entry<Long, Double>> {
-        return measurementService.getLeqSequenceForMeasurement(measurementUuid)
-            .fold(mapOf<Long, Double>()) { accumulator, fragment ->
-                val laeqs = fragment.timestamp.zip(fragment.laeq)
-                accumulator + laeqs
-            }
-            .filter { (_, laeq) ->
-                laeq.isInVuMeterRange()
-            }
-            .entries
-            .toList()
-    }
+    private fun prepareLeqSequence(
+        leqSequence: List<LeqSequenceFragment>,
+    ): List<Map.Entry<Long, Double>> = leqSequence
+        .fold(mapOf<Long, Double>()) { accumulator, fragment ->
+            val laeqs = fragment.timestamp.zip(fragment.laeq)
+            accumulator + laeqs
+        }
+        .filter { (_, laeq) ->
+            laeq.isInVuMeterRange()
+        }
+        .entries
+        .toList()
 }
 
 /**

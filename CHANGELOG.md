@@ -10,6 +10,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 
 - Visual hint of GPS accuracy while recording (#278)
+- Measurement GeoJson export (#279)
 
 ### Fixed
 

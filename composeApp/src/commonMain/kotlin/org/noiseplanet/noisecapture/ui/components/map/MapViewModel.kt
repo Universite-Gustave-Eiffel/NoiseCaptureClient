@@ -215,7 +215,7 @@ class MapViewModel(
 
             // Add both background and measurement layers.
             addLayer(backgroundTilesProvider, placement = BelowAll)
-            addLayer(measurementTilesProvider, initialOpacity = 0.5f)
+            addLayer(measurementTilesProvider, initialOpacity = 0.75f)
 
             parameters.focusedMeasurementUuid?.let { uuid ->
                 // If a measurement is focused, add its path as map markers and disable
@@ -432,9 +432,9 @@ class MapViewModel(
      * Resamples the measurement LAEq values to get one sound level value per GPS point.
      */
     private suspend fun addPathsForMeasurement(measurementUuid: String) {
-        val pathBuilder = SoundLevelPathBuilder(measurementService)
-        val pathPoints = pathBuilder.pathForMeasurement(measurementUuid)
-        var prevXY: Pair<Double, Double>? = null
+        val locationSequence = measurementService.getLocationSequenceForMeasurement(measurementUuid)
+        val leqSequence = measurementService.getLeqSequenceForMeasurement(measurementUuid)
+        val pathPoints = SoundLevelPathBuilder.pathForMeasurement(leqSequence, locationSequence)
 
         if (pathPoints.isEmpty()) {
             return
@@ -454,6 +454,7 @@ class MapViewModel(
         }
 
         // Add path data to map
+        var prevXY: Pair<Double, Double>? = null
         pathPoints.forEachIndexed { index, point ->
             if (index == 0) {
                 prevXY = GeoUtil.lonLatToNormalizedWebMercator(point.latitude, point.longitude)
