@@ -102,6 +102,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 7555FFA5242A565B00829871 /* Build configuration list for PBXNativeTarget "iosApp" */;
 			buildPhases = (
+				0E7F3F4A2FA0FEBC00D9C081 /* ShellScript */,
 				F36B1CEB2AD83DDC00CB74D5 /* Compile Kotlin Framework */,
 				7555FF77242A565900829871 /* Sources */,
 				B92378962B6B1156000C7307 /* Frameworks */,
@@ -168,6 +169,23 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		0E7F3F4A2FA0FEBC00D9C081 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Read version from version.properties\nVERSION_NAME=$(cat \"$SRCROOT/../version.properties\" | grep \"versionName\" | cut -d'=' -f2)\nVERSION_CODE=$(cat \"$SRCROOT/../version.properties\" | grep \"versionCode\" | cut -d'=' -f2)\n\n# Set Info.plist values\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $VERSION_NAME\" \"$INFOPLIST_FILE\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $VERSION_CODE\" \"$INFOPLIST_FILE\"\n";
+		};
 		F36B1CEB2AD83DDC00CB74D5 /* Compile Kotlin Framework */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;

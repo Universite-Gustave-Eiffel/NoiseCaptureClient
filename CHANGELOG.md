@@ -20,6 +20,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - Updated icons set (#277)
+- Ensure that version numbers are in sync between platforms (#281)
 
 ## [0.8.0] - 2026-03-04
 
