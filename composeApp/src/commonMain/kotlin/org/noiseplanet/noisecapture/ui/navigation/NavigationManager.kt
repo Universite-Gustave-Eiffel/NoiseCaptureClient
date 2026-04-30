@@ -168,7 +168,10 @@ fun NavigationManager(
             val screenViewModel: OnboardingScreenViewModel = koinViewModel()
             appBarState.setCurrentScreenViewModel(screenViewModel)
 
-            OnboardingAcousticsKnowledgeScreen(router = onboardingRouter)
+            OnboardingAcousticsKnowledgeScreen(
+                viewModel = screenViewModel,
+                router = onboardingRouter,
+            )
         }
 
         composable<OnboardingMicPermissionRoute> {

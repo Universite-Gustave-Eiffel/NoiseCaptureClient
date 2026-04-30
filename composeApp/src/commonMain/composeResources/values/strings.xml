@@ -80,6 +80,10 @@
         - **Contribute to the community:** Your recordings join others to show how sound shapes our cities, parks, and streets.
         - **Privacy and transparency come first**: Sharing your measurements is always optional. All the data you decide to send is **completely anonymised**, then made available to everyone in open-access.
     </string>
+    <string name="onboarding_acoustics_knowledge_title">How familiar are you with acoustics?</string>
+    <string name="onboarding_acoustics_knowledge_body">
+        This helps us contextualise measurements (e.g., flagging unusual readings for beginners), and offer helpful tips along the way if needed. You can change this anytime in **Settings**.
+    </string>
 
 
     <!-- HistoryScreen -->
