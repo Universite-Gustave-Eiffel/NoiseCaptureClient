@@ -84,6 +84,10 @@
     <string name="onboarding_acoustics_knowledge_body">
         This helps us contextualise measurements (e.g., flagging unusual readings for beginners), and offer helpful tips along the way if needed. You can change this anytime in **Settings**.
     </string>
+    <string name="onboarding_mic_permission_title">Accessing your microphone</string>
+    <string name="onboarding_mic_permission_body">
+        To measure the sounds around you, NoiseCapture needs access to your microphone. **Don’t worry, we never store or send your actual recordings.** Only anonymous acoustic indicators (like volume levels) are processed. For more details, check out our [privacy policy](https://noise-planet.org/NoiseCapture_privacy_policy.html).
+    </string>
 
 
     <!-- HistoryScreen -->
