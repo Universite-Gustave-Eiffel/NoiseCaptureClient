@@ -1,6 +1,5 @@
 package org.noiseplanet.noisecapture.ui.navigation.router
 
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.permission.Permission
@@ -17,9 +16,8 @@ import org.noiseplanet.noisecapture.ui.navigation.SettingsRoute
  */
 class HomeRouter(
     navController: NavHostController,
-    backStackEntry: NavBackStackEntry,
     val showPermissionPrompt: (Permission) -> Unit,
-) : Router(navController, backStackEntry) {
+) : Router(navController) {
 
     // - Public functions
 

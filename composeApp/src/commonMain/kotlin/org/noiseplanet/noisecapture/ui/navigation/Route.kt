@@ -16,6 +16,12 @@ object RouteIds {
     const val COMMUNITY_MAP: RouteId = "map"
     const val CALIBRATION: RouteId = "calibration"
 
+    const val ONBOARDING_WELCOME: RouteId = "onboarding_welcome"
+    const val ONBOARDING_HOW_IT_WORKS: RouteId = "onboarding_how_it_works"
+    const val ONBOARDING_ACOUSTICS_KNOWLEDGE: RouteId = "onboarding_acoustics_knowledge"
+    const val ONBOARDING_MIC_PERMISSION: RouteId = "onboarding_mic_permission"
+    const val ONBOARDING_LOCATION_PERMISSION: RouteId = "onboarding_location_permission"
+
     // Naming this route "DEBUG" breaks compilation on iOS because it gets interpreted as and
     // obj-C macro.
     const val DEBUG_ROUTE: RouteId = "debug"
@@ -105,6 +111,21 @@ class CommunityMapRoute : Route(id = RouteIds.COMMUNITY_MAP)
 
 @Serializable
 class CalibrationRoute : Route(id = RouteIds.CALIBRATION)
+
+@Serializable
+class OnboardingWelcomeRoute : Route(id = RouteIds.ONBOARDING_WELCOME)
+
+@Serializable
+class OnboardingHowItWorksRoute : Route(id = RouteIds.ONBOARDING_HOW_IT_WORKS)
+
+@Serializable
+class OnboardingAcousticsKnowledgeRoute : Route(id = RouteIds.ONBOARDING_ACOUSTICS_KNOWLEDGE)
+
+@Serializable
+class OnboardingMicPermissionRoute : Route(id = RouteIds.ONBOARDING_MIC_PERMISSION)
+
+@Serializable
+class OnboardingLocationPermissionRoute : Route(id = RouteIds.ONBOARDING_LOCATION_PERMISSION)
 
 @Serializable
 class DebugRoute : Route(id = RouteIds.DEBUG_ROUTE)
