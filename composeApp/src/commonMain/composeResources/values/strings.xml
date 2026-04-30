@@ -68,6 +68,14 @@
     <!-- OnboardingScreen -->
     <string name="onboarding_title">Welcome</string>
     <string name="onboarding_continue">Continue</string>
+    <string name="onboarding_welcome_title">What is NoiseCapture?</string>
+    <string name="onboarding_welcome_body">
+        NoiseCapture is a free, **open-source** app for anyone curious about the sounds in their surroundings. By recording and sharing your local sound environment, you help build a living, **open noise map**, helping communities, researchers, and policymakers understand and improve our acoustic landscapes.
+
+        Join a growing community of citizen scientists. Whether you’re in a bustling city or a quiet village, your data helps build a clearer picture of our sonic world.
+    </string>
+    <string name="onboarding_how_it_works_title">How it works</string>
+    <string name="onboarding_how_it_works_body">NoiseCapture is a free, open-source app for anyone curious about the sounds in their surroundings. By recording and sharing your local sound environment, you help build a living, open noise map, helping communities, researchers, and policymakers understand and improve our acoustic landscapes.\n\nJoin a growing community of citizen scientists. Whether you’re in a bustling city or a quiet village, your data helps build a clearer picture of our sonic world.</string>
 
 
     <!-- HistoryScreen -->

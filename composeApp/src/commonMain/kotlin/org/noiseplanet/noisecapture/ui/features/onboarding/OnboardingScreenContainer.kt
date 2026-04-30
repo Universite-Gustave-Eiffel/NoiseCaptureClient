@@ -32,6 +32,7 @@ fun OnboardingScreenContainer(
         verticalArrangement = Arrangement.Bottom,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.padding(horizontal = 24.dp)
+            .padding(top = 16.dp)
             .paddingBottomWithInsets(16.dp, withoutNavBar = 48.dp),
     ) {
         content()
