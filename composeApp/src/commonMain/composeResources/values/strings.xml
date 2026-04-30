@@ -75,7 +75,11 @@
         Join a growing community of citizen scientists. Whether you’re in a bustling city or a quiet village, your data helps build a clearer picture of our sonic world.
     </string>
     <string name="onboarding_how_it_works_title">How it works</string>
-    <string name="onboarding_how_it_works_body">NoiseCapture is a free, open-source app for anyone curious about the sounds in their surroundings. By recording and sharing your local sound environment, you help build a living, open noise map, helping communities, researchers, and policymakers understand and improve our acoustic landscapes.\n\nJoin a growing community of citizen scientists. Whether you’re in a bustling city or a quiet village, your data helps build a clearer picture of our sonic world.</string>
+    <string name="onboarding_how_it_works_body">
+        - **Record and analyse:** Capture the sounds around you with your smartphone. Just hit record and let the app do the rest.
+        - **Contribute to the community:** Your recordings join others to show how sound shapes our cities, parks, and streets.
+        - **Privacy and transparency come first**: Sharing your measurements is always optional. All the data you decide to send is **completely anonymised**, then made available to everyone in open-access.
+    </string>
 
 
     <!-- HistoryScreen -->
