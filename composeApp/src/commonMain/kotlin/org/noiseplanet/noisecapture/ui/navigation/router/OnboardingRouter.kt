@@ -2,6 +2,7 @@ package org.noiseplanet.noisecapture.ui.navigation.router
 
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.toRoute
 import org.noiseplanet.noisecapture.ui.navigation.HomeRoute
 import org.noiseplanet.noisecapture.ui.navigation.OnboardingAcousticsKnowledgeRoute
 import org.noiseplanet.noisecapture.ui.navigation.OnboardingHowItWorksRoute
@@ -23,27 +24,22 @@ class OnboardingRouter(navController: NavHostController) : Router(navController)
         OnboardingLocationPermissionRoute(),
     )
 
-    private var currentStep: Int = 0
-
 
     // - Public functions
 
     fun goToNextStep() {
-        currentStep += 1
+        val currentRoute = navController.currentBackStackEntry?.toRoute<Route>() ?: return
+        val currentStepIndex = steps.indexOfFirst { it.id == currentRoute.id }
+        val nextStepIndex = currentStepIndex + 1
 
-        if (currentStep == steps.size) {
+        if (nextStepIndex == steps.size) {
             // If onboarding is over, navigate to home screen
             navController.navigate(HomeRoute()) {
                 popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
                 launchSingleTop = true
             }
         } else {
-            navController.navigate(steps[currentStep])
+            navController.navigate(steps[nextStepIndex])
         }
-    }
-
-    override fun popBackStack(): Boolean {
-        currentStep -= 1
-        return super.popBackStack()
     }
 }
