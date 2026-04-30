@@ -113,6 +113,9 @@ kotlin {
             implementation(libs.humanreadable)
             implementation(libs.maps.compose)
 
+            implementation(libs.markdown.renderer)
+            implementation(libs.markdown.renderer.m3)
+
             implementation(libs.settings.multiplatform)
             implementation(libs.settings.multiplatform.serialization)
             implementation(libs.settings.multiplatform.coroutines)

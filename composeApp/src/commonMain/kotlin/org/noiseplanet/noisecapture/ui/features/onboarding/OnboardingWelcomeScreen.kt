@@ -12,6 +12,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.mikepenz.markdown.m3.Markdown
+import com.mikepenz.markdown.m3.markdownTypography
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.map_template
 import noisecapture.composeapp.generated.resources.onboarding_continue
@@ -56,9 +58,9 @@ fun OnboardingWelcomeScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Text(
-            text = stringResource(Res.string.onboarding_welcome_body).trimIndent(),
-            style = MaterialTheme.typography.bodyMedium,
+        Markdown(
+            content = stringResource(Res.string.onboarding_welcome_body).trimIndent(),
+            typography = markdownTypography(paragraph = MaterialTheme.typography.bodyMedium),
             modifier = Modifier.fillMaxWidth()
         )
     }

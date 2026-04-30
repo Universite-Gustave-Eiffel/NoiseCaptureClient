@@ -28,6 +28,7 @@ kotlinx-serialization = "1.10.0"
 kstore = "1.0.0"
 ktor = "3.4.0"
 maps-compose = "0.12.0"
+markdown-renderer = "0.40.2"
 settings-multiplatform = "1.3.0"
 zipjs = "2.8.15"
 
@@ -68,6 +69,8 @@ ktor-client-android = { group = "io.ktor", name = "ktor-client-android", version
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
 ktor-client-darwin = { group = "io.ktor", name = "ktor-client-darwin", version.ref = "ktor" }
 maps-compose = { group = "ovh.plrapps", name = "mapcompose-mp", version.ref = "maps-compose" }
+markdown-renderer = { group = "com.mikepenz", name = "multiplatform-markdown-renderer", version.ref = "markdown-renderer" }
+markdown-renderer-m3 = { group = "com.mikepenz", name = "multiplatform-markdown-renderer-m3", version.ref = "markdown-renderer" }
 settings-multiplatform = { group = "com.russhwolf", name = "multiplatform-settings", version.ref = "settings-multiplatform" }
 settings-multiplatform-coroutines = { group = "com.russhwolf", name = "multiplatform-settings-coroutines", version.ref = "settings-multiplatform" }
 settings-multiplatform-serialization = { group = "com.russhwolf", name = "multiplatform-settings-serialization", version.ref = "settings-multiplatform" }
