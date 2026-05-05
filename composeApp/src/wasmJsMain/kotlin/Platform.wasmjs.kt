@@ -33,7 +33,7 @@ class WasmJSPlatform : Platform {
         // location background permission check.
         get() = super.optionalPermissions + mapOf(
             RouteIds.RECORDING to listOf(
-                Permission.LOCATION_BACKGROUND,
+                Permission.LOCATION,
             )
         )
 

@@ -40,7 +40,7 @@ open class DefaultUserLocationService : UserLocationService, KoinComponent {
 
     override val isLocationAvailable: StateFlow<Boolean> = permissionService
         .getPermissionStateFlow(Permission.LOCATION_SERVICE_ON)
-        .combine(permissionService.getPermissionStateFlow(Permission.LOCATION_FOREGROUND)) { services, foreground ->
+        .combine(permissionService.getPermissionStateFlow(Permission.LOCATION)) { services, foreground ->
             services == PermissionState.GRANTED && foreground == PermissionState.GRANTED
         }
         .stateInWhileSubscribed(scope = scope, initialValue = false)

@@ -16,7 +16,7 @@ class JsUserLocationService : DefaultUserLocationService() {
      * either. So we rely solely on location background permission state.
      */
     override val isLocationAvailable: StateFlow<Boolean> = permissionService
-        .getPermissionStateFlow(Permission.LOCATION_BACKGROUND)
+        .getPermissionStateFlow(Permission.LOCATION)
         .map { it == PermissionState.GRANTED }
         .stateInWhileSubscribed(scope = scope, initialValue = false)
 }

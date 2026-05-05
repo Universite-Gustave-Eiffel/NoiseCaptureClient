@@ -139,7 +139,7 @@ class RequestPermissionModalViewModel(
     private fun getTitleForPermission(permission: Permission) = when (permission) {
         Permission.RECORD_AUDIO -> Res.string.request_permission_microphone_title
         Permission.POST_NOTIFICATIONS -> Res.string.request_permission_notifications_title
-        Permission.LOCATION_FOREGROUND, Permission.LOCATION_BACKGROUND, Permission.LOCATION_SERVICE_ON -> {
+        Permission.LOCATION, Permission.LOCATION_SERVICE_ON -> {
             Res.string.request_permission_location_title
         }
 
@@ -149,7 +149,7 @@ class RequestPermissionModalViewModel(
     private fun getDescriptionForPermission(permission: Permission) = when (permission) {
         Permission.RECORD_AUDIO -> Res.string.request_permission_microphone_description
         Permission.POST_NOTIFICATIONS -> Res.string.request_permission_notifications_description
-        Permission.LOCATION_FOREGROUND, Permission.LOCATION_BACKGROUND, Permission.LOCATION_SERVICE_ON -> {
+        Permission.LOCATION, Permission.LOCATION_SERVICE_ON -> {
             Res.string.request_permission_location_description
         }
 
@@ -159,7 +159,7 @@ class RequestPermissionModalViewModel(
     private fun getIllustrationForPermission(permission: Permission) = when (permission) {
         Permission.RECORD_AUDIO -> Res.drawable.permission_microphone_illustration
         Permission.POST_NOTIFICATIONS -> Res.drawable.permission_notifications_illustration
-        Permission.LOCATION_FOREGROUND, Permission.LOCATION_BACKGROUND, Permission.LOCATION_SERVICE_ON -> {
+        Permission.LOCATION, Permission.LOCATION_SERVICE_ON -> {
             Res.drawable.permission_location_illustration
         }
 

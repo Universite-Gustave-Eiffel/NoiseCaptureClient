@@ -11,7 +11,7 @@ import org.noiseplanet.noisecapture.util.injectLogger
 
 @OptIn(ExperimentalWasmJsInterop::class)
 internal class LocationBackgroundPermissionDelegate : DefaultPermissionDelegate(
-    permission = Permission.LOCATION_BACKGROUND
+    permission = Permission.LOCATION
 ), KoinComponent {
 
     // - Properties

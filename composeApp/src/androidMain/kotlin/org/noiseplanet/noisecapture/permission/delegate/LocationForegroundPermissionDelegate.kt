@@ -8,7 +8,7 @@ internal class LocationForegroundPermissionDelegate(
     context: Context,
     activity: Lazy<Activity>,
 ) : DefaultAndroidPermissionDelegate(
-    permission = Permission.LOCATION_FOREGROUND,
+    permission = Permission.LOCATION,
     context = context,
     activity = activity,
 )

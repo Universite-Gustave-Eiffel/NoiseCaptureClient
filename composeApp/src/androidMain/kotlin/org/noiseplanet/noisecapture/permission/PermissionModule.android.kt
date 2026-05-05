@@ -32,7 +32,7 @@ internal actual fun platformPermissionModule(): Module = module {
         )
     }
 
-    single<PermissionDelegate>(named(Permission.LOCATION_FOREGROUND.name)) {
+    single<PermissionDelegate>(named(Permission.LOCATION.name)) {
         LocationForegroundPermissionDelegate(
             context = get(),
             activity = inject(),

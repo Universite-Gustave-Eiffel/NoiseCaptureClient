@@ -160,7 +160,7 @@ class AndroidRecordingService : RecordingService, KoinComponent {
         // Based on the current state of location services permission, launch either the microphone
         // only FGS, or the one with both microphone and location services.
         val locationAvailable = listOf(
-            permissionService.getPermissionState(Permission.LOCATION_FOREGROUND),
+            permissionService.getPermissionState(Permission.LOCATION),
             permissionService.getPermissionState(Permission.LOCATION_SERVICE_ON),
         ).reduce() == PermissionState.GRANTED
 

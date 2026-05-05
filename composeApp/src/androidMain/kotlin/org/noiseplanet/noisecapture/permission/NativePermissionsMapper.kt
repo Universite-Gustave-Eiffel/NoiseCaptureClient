@@ -8,7 +8,7 @@ import android.os.Build
  */
 fun Permission.toAndroidPermissions(): List<String> {
     return when (this) {
-        Permission.LOCATION_FOREGROUND -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        Permission.LOCATION -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             listOf(
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -39,7 +39,7 @@ fun List<String>.toPermission(): Permission? {
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
         ),
-            -> Permission.LOCATION_FOREGROUND
+            -> Permission.LOCATION
 
         listOf(Manifest.permission.RECORD_AUDIO) -> Permission.RECORD_AUDIO
         listOf(Manifest.permission.POST_NOTIFICATIONS) -> Permission.POST_NOTIFICATIONS
