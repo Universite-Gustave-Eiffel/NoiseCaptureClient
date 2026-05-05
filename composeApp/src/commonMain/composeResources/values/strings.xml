@@ -88,6 +88,10 @@
     <string name="onboarding_mic_permission_body">
         To measure the sounds around you, NoiseCapture needs access to your microphone. **Don’t worry, we never store or send your actual recordings.** Only anonymous acoustic indicators (like volume levels) are processed. For more details, check out our [privacy policy](https://noise-planet.org/NoiseCapture_privacy_policy.html).
     </string>
+    <string name="onboarding_location_permission_title">Accessing your location</string>
+    <string name="onboarding_location_permission_body">
+        To map noise levels accurately, we’ll need your location, but only while you’re recording. **Your data is anonymized, and we never track your location outside of measurements**. It’s all about building a community noise map. For more details, check out our [privacy policy](https://noise-planet.org/NoiseCapture_privacy_policy.html).
+    </string>
 
 
     <!-- HistoryScreen -->

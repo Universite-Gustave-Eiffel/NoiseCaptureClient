@@ -33,8 +33,11 @@ class OnboardingScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
             scope = viewModelScope,
             initialValue = AcousticsKnowledgeLevel.BEGINNER
         )
+
     val microphonePermissionState: StateFlow<PermissionState> = permissionService
         .getPermissionStateFlow(Permission.RECORD_AUDIO)
+    val locationPermissionState: StateFlow<PermissionState> = permissionService
+        .getPermissionStateFlow(Permission.LOCATION)
 
 
     // - Public functions
