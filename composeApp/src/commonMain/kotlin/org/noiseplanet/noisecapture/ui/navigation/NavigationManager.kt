@@ -9,6 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -17,6 +18,8 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.permission.Permission
+import org.noiseplanet.noisecapture.services.settings.SettingsKey
+import org.noiseplanet.noisecapture.services.settings.UserSettingsService
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBarState
 import org.noiseplanet.noisecapture.ui.features.calibration.CalibrationScreen
 import org.noiseplanet.noisecapture.ui.features.calibration.CalibrationScreenViewModel
@@ -59,14 +62,17 @@ fun NavigationManager(
     // - Properties
 
     val platform: Platform = koinInject()
-    val onboardingRouter = remember { OnboardingRouter(navController) }
+    val settingsService: UserSettingsService = koinInject()
+
+    val didCompleteOnboarding = settingsService.get(SettingsKey.DidCompleteOnboarding)
+    val startDestination = if (didCompleteOnboarding) HomeRoute() else OnboardingWelcomeRoute()
 
 
     // - Navigation graph
 
     NavHost(
         navController = navController,
-        startDestination = OnboardingWelcomeRoute(),
+        startDestination = startDestination,
         enterTransition = platform.navigationTransitions.enterTransition,
         exitTransition = platform.navigationTransitions.exitTransition,
         popEnterTransition = platform.navigationTransitions.popEnterTransition,
@@ -154,23 +160,38 @@ fun NavigationManager(
             val screenViewModel: OnboardingScreenViewModel = koinViewModel()
             appBarState.setCurrentScreenViewModel(screenViewModel)
 
-            OnboardingWelcomeScreen(router = onboardingRouter)
+            val router = remember {
+                OnboardingRouter(navController) {
+                    navController.navigate(OnboardingHowItWorksRoute())
+                }
+            }
+            OnboardingWelcomeScreen(router = router)
         }
 
         composable<OnboardingHowItWorksRoute> {
             val screenViewModel: OnboardingScreenViewModel = koinViewModel()
             appBarState.setCurrentScreenViewModel(screenViewModel)
 
-            OnboardingHowItWorksScreen(router = onboardingRouter)
+            val router = remember {
+                OnboardingRouter(navController) {
+                    navController.navigate(OnboardingAcousticsKnowledgeRoute())
+                }
+            }
+            OnboardingHowItWorksScreen(router = router)
         }
 
         composable<OnboardingAcousticsKnowledgeRoute> {
             val screenViewModel: OnboardingScreenViewModel = koinViewModel()
             appBarState.setCurrentScreenViewModel(screenViewModel)
 
+            val router = remember {
+                OnboardingRouter(navController) {
+                    navController.navigate(OnboardingMicPermissionRoute())
+                }
+            }
             OnboardingAcousticsKnowledgeScreen(
                 viewModel = screenViewModel,
-                router = onboardingRouter,
+                router = router,
             )
         }
 
@@ -178,9 +199,14 @@ fun NavigationManager(
             val screenViewModel: OnboardingScreenViewModel = koinViewModel()
             appBarState.setCurrentScreenViewModel(screenViewModel)
 
+            val router = remember {
+                OnboardingRouter(navController) {
+                    navController.navigate(OnboardingLocationPermissionRoute())
+                }
+            }
             OnboardingMicPermissionScreen(
                 viewModel = screenViewModel,
-                router = onboardingRouter,
+                router = router,
             )
         }
 
@@ -188,9 +214,21 @@ fun NavigationManager(
             val screenViewModel: OnboardingScreenViewModel = koinViewModel()
             appBarState.setCurrentScreenViewModel(screenViewModel)
 
+            val settingsService: UserSettingsService = koinInject()
+            val router = remember {
+                OnboardingRouter(navController) {
+                    // Save in local storage that user did complete onboarding
+                    settingsService.set(SettingsKey.DidCompleteOnboarding, value = true)
+                    // Navigate to home screen and clear backstack
+                    navController.navigate(HomeRoute()) {
+                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            }
             OnboardingLocationPermissionScreen(
                 viewModel = screenViewModel,
-                router = onboardingRouter,
+                router = router,
             )
         }
 
