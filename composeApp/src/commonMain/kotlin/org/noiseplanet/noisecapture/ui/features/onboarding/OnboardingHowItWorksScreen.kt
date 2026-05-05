@@ -12,7 +12,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.mikepenz.markdown.m3.Markdown
-import com.mikepenz.markdown.m3.markdownTypography
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.onboarding_continue
 import noisecapture.composeapp.generated.resources.onboarding_how_it_works_body
@@ -21,6 +20,7 @@ import noisecapture.composeapp.generated.resources.onboarding_illustration_liste
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.ui.navigation.router.OnboardingRouter
+import org.noiseplanet.noisecapture.ui.theme.defaultMarkdownTypography
 
 
 @Composable
@@ -54,7 +54,7 @@ fun OnboardingHowItWorksScreen(
 
         Markdown(
             content = stringResource(Res.string.onboarding_how_it_works_body).trimIndent(),
-            typography = markdownTypography(paragraph = MaterialTheme.typography.bodyMedium),
+            typography = defaultMarkdownTypography(),
             modifier = Modifier.fillMaxWidth()
         )
     }

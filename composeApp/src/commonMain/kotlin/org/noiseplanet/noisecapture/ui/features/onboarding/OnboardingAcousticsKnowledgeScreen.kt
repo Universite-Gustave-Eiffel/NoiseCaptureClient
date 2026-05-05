@@ -28,7 +28,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mikepenz.markdown.m3.Markdown
-import com.mikepenz.markdown.m3.markdownTypography
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.acoustics_knowledge_beginner_description
 import noisecapture.composeapp.generated.resources.acoustics_knowledge_beginner_title
@@ -47,6 +46,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.model.enums.AcousticsKnowledgeLevel
 import org.noiseplanet.noisecapture.ui.navigation.router.OnboardingRouter
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
+import org.noiseplanet.noisecapture.ui.theme.defaultMarkdownTypography
 
 
 @Composable
@@ -104,7 +104,7 @@ fun OnboardingAcousticsKnowledgeScreen(
 
         Markdown(
             content = stringResource(Res.string.onboarding_acoustics_knowledge_body).trimIndent(),
-            typography = markdownTypography(paragraph = MaterialTheme.typography.bodyMedium),
+            typography = defaultMarkdownTypography(),
             modifier = Modifier.fillMaxWidth()
         )
 

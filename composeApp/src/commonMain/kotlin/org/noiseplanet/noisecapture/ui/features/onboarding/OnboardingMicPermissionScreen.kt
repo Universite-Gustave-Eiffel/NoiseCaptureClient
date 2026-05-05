@@ -11,13 +11,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mikepenz.markdown.m3.Markdown
-import com.mikepenz.markdown.m3.markdownTypography
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.onboarding_continue
 import noisecapture.composeapp.generated.resources.onboarding_mic_permission_body
@@ -30,6 +27,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.ui.navigation.router.OnboardingRouter
+import org.noiseplanet.noisecapture.ui.theme.defaultMarkdownTypography
 
 
 @Composable
@@ -90,15 +88,7 @@ fun OnboardingMicPermissionScreen(
 
         Markdown(
             content = stringResource(Res.string.onboarding_mic_permission_body).trimIndent(),
-            typography = markdownTypography(
-                paragraph = MaterialTheme.typography.bodyMedium,
-                textLink = TextLinkStyles(
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontWeight = FontWeight.SemiBold,
-                        textDecoration = TextDecoration.Underline,
-                    ).toSpanStyle()
-                )
-            ),
+            typography = defaultMarkdownTypography(),
             modifier = Modifier.fillMaxWidth()
         )
     }

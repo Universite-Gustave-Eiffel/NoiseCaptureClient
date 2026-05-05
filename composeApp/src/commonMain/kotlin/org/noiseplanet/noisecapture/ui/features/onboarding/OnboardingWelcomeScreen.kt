@@ -13,7 +13,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.mikepenz.markdown.m3.Markdown
-import com.mikepenz.markdown.m3.markdownTypography
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.map_template
 import noisecapture.composeapp.generated.resources.onboarding_continue
@@ -22,6 +21,7 @@ import noisecapture.composeapp.generated.resources.onboarding_welcome_title
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.ui.navigation.router.OnboardingRouter
+import org.noiseplanet.noisecapture.ui.theme.defaultMarkdownTypography
 import org.noiseplanet.noisecapture.util.ncDropShadow
 
 
@@ -60,7 +60,7 @@ fun OnboardingWelcomeScreen(
 
         Markdown(
             content = stringResource(Res.string.onboarding_welcome_body).trimIndent(),
-            typography = markdownTypography(paragraph = MaterialTheme.typography.bodyMedium),
+            typography = defaultMarkdownTypography(),
             modifier = Modifier.fillMaxWidth()
         )
     }
