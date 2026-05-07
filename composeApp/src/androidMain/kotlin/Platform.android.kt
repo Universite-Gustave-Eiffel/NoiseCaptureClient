@@ -23,30 +23,19 @@ class AndroidPlatform : Platform {
         // To get our foreground service to run while the app is in background we need
         // the POST_NOTIFICATIONS permission to display a persistent notification.
         get() {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                return super.requiredPermissions + mapOf(
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                super.requiredPermissions + mapOf(
                     RouteIds.RECORDING to listOf(
                         Permission.RECORD_AUDIO,
                         Permission.POST_NOTIFICATIONS,
                     )
                 )
             } else {
-                return super.requiredPermissions + mapOf(
+                super.requiredPermissions + mapOf(
                     RouteIds.RECORDING to listOf(
                         Permission.RECORD_AUDIO
                     )
                 )
             }
         }
-
-    override val optionalPermissions: Map<RouteId, List<Permission>>
-        // On Android we don't need background location, but instead we only use
-        // foreground location with a ForegroundService to keep the location
-        // updates coming.
-        get() = super.optionalPermissions + mapOf(
-            RouteIds.RECORDING to listOf(
-                Permission.LOCATION_SERVICE_ON,
-                Permission.LOCATION_FOREGROUND,
-            )
-        )
 }

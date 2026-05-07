@@ -115,4 +115,10 @@ sealed class SettingsKey<T>(
         UInt.serializer(),
         defaultValue = 500u,
     )
+
+    // Onboarding
+    data object DidCompleteOnboarding : SettingsKey<Boolean>(
+        Boolean.serializer(),
+        defaultValue = false,
+    )
 }

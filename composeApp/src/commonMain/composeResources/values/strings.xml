@@ -43,12 +43,16 @@
     <string name="request_permission_button_skip">Skip for now</string>
     <string name="request_permission_button_go_back">Go back</string>
 
-    <string name="request_permission_location_title">Location services</string>
-    <string name="request_permission_location_description">To be able to match recorded audio levels with map coordinates, we need access to your live location during the time you’re making a measurement.</string>
-    <string name="request_permission_microphone_title">Microphone</string>
-    <string name="request_permission_microphone_description">Listening to incoming audio requires you to grant permission for NoiseCapture to use your device’s microphone.</string>
-    <string name="request_permission_notifications_title">Push notifications</string>
-    <string name="request_permission_notifications_description">To keep the NoiseCapture app running in the background while you’re making a measurement, we need permission to display a persistent notification for the duration of the recording.</string>
+    <string name="request_permission_location_title">Accessing your location</string>
+    <string name="request_permission_location_description">
+        To map noise levels accurately, we’ll need your location, but only while you’re recording. **Your data is anonymized, and we never track your location outside of measurements**. It’s all about building a community noise map. For more details, check out our [privacy policy](https://noise-planet.org/NoiseCapture_privacy_policy.html).
+    </string>
+    <string name="request_permission_microphone_title">Accessing your microphone</string>
+    <string name="request_permission_microphone_description">
+        To measure the sounds around you, NoiseCapture needs access to your microphone. **Don’t worry, we never store or send your actual recordings.** Only anonymous acoustic indicators (like volume levels) are processed. For more details, check out our [privacy policy](https://noise-planet.org/NoiseCapture_privacy_policy.html).
+    </string>
+    <string name="request_permission_notifications_title">Persistent notification</string>
+    <string name="request_permission_notifications_description">To make sure the app keeps running in the background when you’re making a measurement, we need to display a persistent notification. It will only show during the measurement and **we won’t send you any push notifications**.</string>
 
 
     <!--  MeasurementScreen  -->
@@ -63,6 +67,27 @@
     <string name="measurement_end_confirmation_dialog_body">Are you sure you want to end and save the current recording? Note that the recording session can still continue in the background if you leave the app.</string>
     <string name="measurement_end_confirmation_dialog_confirm">End and save</string>
     <string name="measurement_end_confirmation_dialog_continue">Cancel</string>
+
+
+    <!-- OnboardingScreen -->
+    <string name="onboarding_title">Welcome</string>
+    <string name="onboarding_continue">Continue</string>
+    <string name="onboarding_welcome_title">What is NoiseCapture?</string>
+    <string name="onboarding_welcome_body">
+        NoiseCapture is a free, **open-source** app for anyone curious about the sounds in their surroundings. By recording and sharing your local sound environment, you help build a living, **open noise map**, helping communities, researchers, and policymakers understand and improve our acoustic landscapes.
+
+        Join a growing community of citizen scientists. Whether you’re in a bustling city or a quiet village, your data helps build a clearer picture of our sonic world.
+    </string>
+    <string name="onboarding_how_it_works_title">How it works</string>
+    <string name="onboarding_how_it_works_body">
+        - **Record and analyse:** Capture the sounds around you with your smartphone. Just hit record and let the app do the rest.
+        - **Contribute to the community:** Your recordings join others to show how sound shapes our cities, parks, and streets.
+        - **Privacy and transparency come first**: Sharing your measurements is always optional. All the data you decide to send is **completely anonymised**, then made available to everyone in open-access.
+    </string>
+    <string name="onboarding_acoustics_knowledge_title">How familiar are you with acoustics?</string>
+    <string name="onboarding_acoustics_knowledge_body">
+        This helps us contextualise measurements (e.g., flagging unusual readings for beginners), and offer helpful tips along the way if needed. You can change this anytime in **Settings**.
+    </string>
 
 
     <!-- HistoryScreen -->

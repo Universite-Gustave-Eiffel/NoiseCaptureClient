@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContent
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalBottomSheetProperties
@@ -27,18 +28,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
+import com.mikepenz.markdown.m3.Markdown
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
+import org.noiseplanet.noisecapture.ui.theme.defaultMarkdownTypography
 
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -69,7 +71,7 @@ fun RequestPermissionModal(
 
     var displaySheet by remember { mutableStateOf(isVisible) }
 
-    val actionButtonModifier = Modifier.fillMaxWidth(fraction = 0.5f).height(42.dp)
+    val actionButtonModifier = Modifier.width(200.dp).height(42.dp)
 
 
     // Show or hide sheet based on visibility property
@@ -126,15 +128,14 @@ fun RequestPermissionModal(
 
             Text(
                 text = stringResource(viewState.title),
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
-                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
             )
-            Text(
-                text = stringResource(viewState.description),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
+            Markdown(
+                content = stringResource(viewState.description).trimIndent(),
+                typography = defaultMarkdownTypography(),
+                modifier = Modifier.fillMaxWidth(),
             )
 
             Spacer(modifier = Modifier.height(32.dp))

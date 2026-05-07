@@ -16,7 +16,7 @@ internal actual fun platformPermissionModule(): Module = module {
         AudioRecordPermissionDelegate()
     }
 
-    single<PermissionDelegate>(named(Permission.LOCATION_BACKGROUND.name)) {
+    single<PermissionDelegate>(named(Permission.LOCATION.name)) {
         LocationBackgroundPermissionDelegate()
     }
 

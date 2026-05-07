@@ -1,6 +1,5 @@
 package org.noiseplanet.noisecapture.ui.navigation.router
 
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 
 /**
@@ -8,9 +7,8 @@ import androidx.navigation.NavHostController
  */
 abstract class Router(
     protected val navController: NavHostController,
-    protected val backStackEntry: NavBackStackEntry,
 ) {
     // - Public functions
 
-    fun popBackStack() = navController.popBackStack()
+    open fun popBackStack() = navController.popBackStack()
 }

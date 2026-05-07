@@ -36,7 +36,7 @@ interface Platform {
             RouteIds.HOME to listOf(Permission.RECORD_AUDIO),
             RouteIds.RECORDING to listOf(
                 Permission.LOCATION_SERVICE_ON,
-                Permission.LOCATION_BACKGROUND,
+                Permission.LOCATION,
             )
         )
 
