@@ -19,10 +19,12 @@ import io.github.koalaplot.core.bar.DefaultBarPosition
 import io.github.koalaplot.core.bar.DefaultVerticalBarPlotEntry
 import io.github.koalaplot.core.bar.VerticalBarPlot
 import io.github.koalaplot.core.util.ExperimentalKoalaPlotApi
+import io.github.koalaplot.core.xygraph.AxisContent
 import io.github.koalaplot.core.xygraph.CategoryAxisModel
 import io.github.koalaplot.core.xygraph.DoubleLinearAxisModel
 import io.github.koalaplot.core.xygraph.XYGraph
 import io.github.koalaplot.core.xygraph.rememberAxisStyle
+import io.github.koalaplot.core.xygraph.rememberGridStyle
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.details_avg_spl_per_freq_plot_description
 import noisecapture.composeapp.generated.resources.details_avg_spl_per_freq_plot_title
@@ -61,36 +63,45 @@ fun AverageLevelPerFreqView(
         ChartLayout(
             modifier = Modifier.padding(top = 16.dp)
         ) {
+
             XYGraph(
                 xAxisModel = CategoryAxisModel(
                     categories = avgLevelPerFreq.keys.toList(),
                 ),
-                xAxisLabels = @Composable { x ->
-                    if (avgLevelPerFreq.keys.toList().indexOf(x) % 5 == 0) {
-                        PlotAxisLabel(
-                            text = x.toFrequencyString(),
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                            modifier = Modifier.padding(end = 4.dp, top = 4.dp)
-                        )
-                    }
-                },
-                xAxisStyle = rememberAxisStyle(labelRotation = 30),
+                xAxisContent = AxisContent(
+                    labels = @Composable { x ->
+                        if (avgLevelPerFreq.keys.toList().indexOf(x) % 5 == 0) {
+                            PlotAxisLabel(
+                                text = x.toFrequencyString(),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                modifier = Modifier.padding(end = 4.dp, top = 4.dp)
+                            )
+                        }
+                    },
+                    title = {},
+                    style = rememberAxisStyle(labelRotation = 30)
+                ),
                 yAxisModel = DoubleLinearAxisModel(
                     range = 0.0..100.0,
                     minorTickCount = 1,
                 ),
-                yAxisLabels = @Composable {
-                    PlotAxisLabel(
-                        text = it.toInt().toString(),
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                    )
-                },
-                horizontalMajorGridLineStyle = PlotGridLineStyle.majorHorizontal,
-                verticalMajorGridLineStyle = PlotGridLineStyle.majorVertical,
-                horizontalMinorGridLineStyle = PlotGridLineStyle.minorHorizontal,
-                verticalMinorGridLineStyle = PlotGridLineStyle.minorVertical,
+                yAxisContent = AxisContent(
+                    labels = @Composable { y ->
+                        PlotAxisLabel(
+                            text = y.toInt().toString(),
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                        )
+                    },
+                    title = {},
+                    style = rememberAxisStyle()
+                ),
+                gridStyle = rememberGridStyle(
+                    horizontalMajorStyle = PlotGridLineStyle.majorHorizontal,
+                    verticalMajorStyle = PlotGridLineStyle.majorVertical,
+                    horizontalMinorStyle = PlotGridLineStyle.minorHorizontal,
+                    verticalMinorStyle = PlotGridLineStyle.minorVertical,
+                ),
             ) {
-
                 VerticalBarPlot(
                     data = avgLevelPerFreq.toList().map { (freq, level) ->
                         DefaultVerticalBarPlotEntry(
@@ -98,7 +109,7 @@ fun AverageLevelPerFreqView(
                             y = DefaultBarPosition(0.0, level)
                         )
                     },
-                    bar = { index, _, entry ->
+                    bar = { _, _, entry ->
                         DefaultBar(
                             brush = SolidColor(NoiseLevelColorRamp.getColorForSPLValue(entry.y.end)),
                             shape = RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp),
