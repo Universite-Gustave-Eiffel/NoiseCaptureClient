@@ -31,7 +31,7 @@ import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.map.MapViewModel.VisibleAreaPaddingRatio
 import org.noiseplanet.noisecapture.ui.theme.LocationTint
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
-import org.noiseplanet.noisecapture.util.GeoUtil
+import org.noiseplanet.noisecapture.util.geo.GeoUtil
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 import ovh.plrapps.mapcompose.api.BoundingBox
 import ovh.plrapps.mapcompose.api.addLayer

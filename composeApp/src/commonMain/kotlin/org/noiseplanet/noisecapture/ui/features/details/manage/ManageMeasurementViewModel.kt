@@ -38,10 +38,10 @@ import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.map.SoundLevelPathBuilder
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
-import org.noiseplanet.noisecapture.util.Feature
-import org.noiseplanet.noisecapture.util.FeatureCollection
-import org.noiseplanet.noisecapture.util.Point
-import org.noiseplanet.noisecapture.util.positionOf
+import org.noiseplanet.noisecapture.util.geo.Feature
+import org.noiseplanet.noisecapture.util.geo.FeatureCollection
+import org.noiseplanet.noisecapture.util.geo.Point
+import org.noiseplanet.noisecapture.util.geo.positionOf
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 
 

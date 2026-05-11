@@ -1,6 +1,6 @@
 package org.noiseplanet.noisecapture.services.storage
 
-import org.noiseplanet.noisecapture.util.FeatureCollection
+import org.noiseplanet.noisecapture.util.geo.FeatureCollection
 
 
 interface FileSystemService {

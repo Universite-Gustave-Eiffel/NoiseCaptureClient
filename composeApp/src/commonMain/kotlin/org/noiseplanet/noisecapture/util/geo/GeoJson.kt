@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.util
+package org.noiseplanet.noisecapture.util.geo
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

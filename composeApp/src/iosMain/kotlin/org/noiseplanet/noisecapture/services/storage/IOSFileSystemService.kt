@@ -8,10 +8,10 @@ import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.log.Logger
-import org.noiseplanet.noisecapture.util.FeatureCollection
 import org.noiseplanet.noisecapture.util.FilePickerEvent
-import org.noiseplanet.noisecapture.util.GeoJson
 import org.noiseplanet.noisecapture.util.IOSFilePickerEventBus
+import org.noiseplanet.noisecapture.util.geo.FeatureCollection
+import org.noiseplanet.noisecapture.util.geo.GeoJson
 import org.noiseplanet.noisecapture.util.injectLogger
 import org.noiseplanet.noisecapture.util.runCatchingNSError
 import platform.Foundation.NSApplicationSupportDirectory

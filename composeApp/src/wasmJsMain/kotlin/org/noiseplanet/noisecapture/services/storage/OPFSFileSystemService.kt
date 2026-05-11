@@ -4,9 +4,9 @@ import kotlinx.browser.document
 import kotlinx.coroutines.await
 import org.noiseplanet.noisecapture.interop.ZipJs
 import org.noiseplanet.noisecapture.interop.storage.FileSystemWritableFileStream
-import org.noiseplanet.noisecapture.util.FeatureCollection
-import org.noiseplanet.noisecapture.util.GeoJson
 import org.noiseplanet.noisecapture.util.OPFSHelper
+import org.noiseplanet.noisecapture.util.geo.FeatureCollection
+import org.noiseplanet.noisecapture.util.geo.GeoJson
 import org.w3c.dom.HTMLAnchorElement
 import org.w3c.dom.url.URL
 import org.w3c.files.Blob

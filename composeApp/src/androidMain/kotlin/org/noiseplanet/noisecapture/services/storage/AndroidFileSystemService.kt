@@ -7,8 +7,8 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.AndroidFilePickerEventBus
 import org.noiseplanet.noisecapture.FilePickerEvent
-import org.noiseplanet.noisecapture.util.FeatureCollection
-import org.noiseplanet.noisecapture.util.GeoJson
+import org.noiseplanet.noisecapture.util.geo.FeatureCollection
+import org.noiseplanet.noisecapture.util.geo.GeoJson
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream

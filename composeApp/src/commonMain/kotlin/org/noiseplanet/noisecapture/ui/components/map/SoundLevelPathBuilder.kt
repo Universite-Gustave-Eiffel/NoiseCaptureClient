@@ -2,8 +2,8 @@ package org.noiseplanet.noisecapture.ui.components.map
 
 import org.noiseplanet.noisecapture.model.dao.LeqSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.LocationSequenceFragment
-import org.noiseplanet.noisecapture.util.GeoUtil
 import org.noiseplanet.noisecapture.util.dbAverage
+import org.noiseplanet.noisecapture.util.geo.GeoUtil
 import org.noiseplanet.noisecapture.util.isInVuMeterRange
 import org.noiseplanet.noisecapture.util.roundTo
 

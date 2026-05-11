@@ -1,10 +1,10 @@
 package org.noiseplanet.noisecapture.signal.geojson
 
-import org.noiseplanet.noisecapture.util.GeoJson
-import org.noiseplanet.noisecapture.util.alt
-import org.noiseplanet.noisecapture.util.lat
-import org.noiseplanet.noisecapture.util.lon
-import org.noiseplanet.noisecapture.util.positionOf
+import org.noiseplanet.noisecapture.util.geo.GeoJson
+import org.noiseplanet.noisecapture.util.geo.alt
+import org.noiseplanet.noisecapture.util.geo.lat
+import org.noiseplanet.noisecapture.util.geo.lon
+import org.noiseplanet.noisecapture.util.geo.positionOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
