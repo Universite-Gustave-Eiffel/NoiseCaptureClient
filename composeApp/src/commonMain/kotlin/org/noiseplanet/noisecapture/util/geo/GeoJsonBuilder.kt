@@ -8,6 +8,7 @@ import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.dbAverage
 import org.noiseplanet.noisecapture.util.isInVuMeterRange
 import org.noiseplanet.noisecapture.util.roundTo
+import kotlin.math.min
 
 
 private typealias LocationSequence = List<Map.Entry<Long, Pair<Double, Double>>>
@@ -48,6 +49,11 @@ object GeoJsonBuilder {
         val coords = prepareLocationSequence(locationSequence)
         val laeqs = prepareLeqSequence(leqSequence)
 
+        // If location sequence is empty, return empty feature collection
+        if (coords.isEmpty()) {
+            return FeatureCollection(features = emptyList())
+        }
+
         // If we only have a single point (user is stationary), calculate average of all LAEq values
         if (coords.size == 1) {
             val coord = coords.first()
@@ -61,35 +67,52 @@ object GeoJsonBuilder {
             return FeatureCollection(features = listOf(feature))
         }
 
-        val result = mutableListOf<Feature>() // Will hold resampled features
-        var laeqsCursor = 0 // Current index in the sound levels list
+        val result = mutableListOf<Feature>() // Holds resampled features
+        val laeqsForFeature = mutableListOf<Double>() // Holds the LAEqs of the current feature
+        var locationsCursor = 0 // Current index in the locations list
 
-        for (i in 1 until coords.size) {
+        for (i in 0 until laeqs.size) {
             // Get timestamps of previous point and current point
-            val prevTime = coords[i - 1].key
-            val currTime = coords[i].key
-            val laeqsForTimeWindow = mutableListOf<Double>()
+            val currLaeq = laeqs[i]
+            val currLoc = coords[locationsCursor]
+            val nextLoc = coords.getOrNull(locationsCursor + 1)
 
-            // Process all sound entries in [prevTime, currTime)
-            while (laeqsCursor < laeqs.size && laeqs[laeqsCursor].key < currTime) {
-                val laeqEntry = laeqs[laeqsCursor]
-                if (laeqEntry.key >= prevTime) {
-                    laeqsForTimeWindow.add(laeqEntry.value)
+            // If the current LAEq record is closer to the next location record than to the current
+            // one, create a new feature from current location and associated LAEq records,
+            // clear the list and increment location cursor
+            if (nextLoc != null && (currLaeq.key - currLoc.key > nextLoc.key - currLaeq.key)) {
+                // Otherwise, create a new feature from current location and associated records,
+                // clear the list and increment location cursor
+                if (laeqsForFeature.isNotEmpty()) {
+                    result.add(
+                        pointFeatureFromValues(
+                            lat = currLoc.value.first,
+                            lon = currLoc.value.second,
+                            timestamp = currLoc.key,
+                            laeq = laeqsForFeature.dbAverage().roundTo(1),
+                        )
+                    )
                 }
-                laeqsCursor++
+                locationsCursor = min(locationsCursor + 1, coords.lastIndex)
+                laeqsForFeature.clear()
             }
 
-            // Calculate energetic mean and push new point to path data
-            if (laeqsForTimeWindow.isNotEmpty()) {
-                val point = pointFeatureFromValues(
-                    lat = coords[i].value.first,
-                    lon = coords[i].value.second,
-                    timestamp = currTime,
-                    laeq = laeqsForTimeWindow.dbAverage().roundTo(1),
-                )
-                result.add(point)
-            }
+            // Add current LAEq record to the list
+            laeqsForFeature.add(currLaeq.value)
         }
+
+        // Add the last feature with remaining elements in the list
+        if (laeqsForFeature.isNotEmpty()) {
+            result.add(
+                pointFeatureFromValues(
+                    lat = coords[locationsCursor].value.first,
+                    lon = coords[locationsCursor].value.second,
+                    timestamp = coords[locationsCursor].key,
+                    laeq = laeqsForFeature.dbAverage().roundTo(1),
+                )
+            )
+        }
+
         return FeatureCollection(features = result)
     }
 
