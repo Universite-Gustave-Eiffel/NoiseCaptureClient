@@ -1,9 +1,8 @@
-package org.noiseplanet.noisecapture.ui.components.map
+package org.noiseplanet.noisecapture.util.geo
 
 import org.noiseplanet.noisecapture.model.dao.LeqSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.LocationSequenceFragment
 import org.noiseplanet.noisecapture.util.dbAverage
-import org.noiseplanet.noisecapture.util.geo.GeoUtil
 import org.noiseplanet.noisecapture.util.isInVuMeterRange
 import org.noiseplanet.noisecapture.util.roundTo
 
@@ -11,7 +10,7 @@ import org.noiseplanet.noisecapture.util.roundTo
 /**
  * Build paths from measurement location and sound level data.
  */
-object SoundLevelPathBuilder {
+object GeoJsonBuilder {
 
     // - Constants
 

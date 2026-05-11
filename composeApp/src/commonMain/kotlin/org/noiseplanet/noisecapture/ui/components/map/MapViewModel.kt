@@ -31,7 +31,9 @@ import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.map.MapViewModel.VisibleAreaPaddingRatio
 import org.noiseplanet.noisecapture.ui.theme.LocationTint
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
+import org.noiseplanet.noisecapture.util.geo.GeoJsonBuilder
 import org.noiseplanet.noisecapture.util.geo.GeoUtil
+import org.noiseplanet.noisecapture.util.geo.PathPoint
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 import ovh.plrapps.mapcompose.api.BoundingBox
 import ovh.plrapps.mapcompose.api.addLayer
@@ -434,7 +436,7 @@ class MapViewModel(
     private suspend fun addPathsForMeasurement(measurementUuid: String) {
         val locationSequence = measurementService.getLocationSequenceForMeasurement(measurementUuid)
         val leqSequence = measurementService.getLeqSequenceForMeasurement(measurementUuid)
-        val pathPoints = SoundLevelPathBuilder.pathForMeasurement(leqSequence, locationSequence)
+        val pathPoints = GeoJsonBuilder.pathForMeasurement(leqSequence, locationSequence)
 
         if (pathPoints.isEmpty()) {
             return

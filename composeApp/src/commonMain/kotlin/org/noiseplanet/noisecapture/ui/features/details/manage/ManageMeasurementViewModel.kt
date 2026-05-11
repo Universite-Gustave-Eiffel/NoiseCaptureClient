@@ -36,10 +36,10 @@ import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.services.storage.FileSystemService
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
-import org.noiseplanet.noisecapture.ui.components.map.SoundLevelPathBuilder
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.geo.Feature
 import org.noiseplanet.noisecapture.util.geo.FeatureCollection
+import org.noiseplanet.noisecapture.util.geo.GeoJsonBuilder
 import org.noiseplanet.noisecapture.util.geo.Point
 import org.noiseplanet.noisecapture.util.geo.positionOf
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
@@ -228,7 +228,7 @@ class ManageMeasurementViewModel(
             // Construct path sequence from measurement location and leq sequences
             val leqs = measurementService.getLeqSequenceForMeasurement(measurementId)
             val locations = measurementService.getLocationSequenceForMeasurement(measurementId)
-            val path = SoundLevelPathBuilder.pathForMeasurement(leqs, locations)
+            val path = GeoJsonBuilder.pathForMeasurement(leqs, locations)
             val features: MutableList<Feature> = mutableListOf()
 
             // Map each point of the path to a GeoJson "Point" feature
