@@ -1,7 +1,6 @@
 package org.noiseplanet.noisecapture.ui.features.details.manage
 
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -10,7 +9,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.JsonPrimitive
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.delete
 import noisecapture.composeapp.generated.resources.details_delete_button
@@ -36,12 +34,7 @@ import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.services.storage.FileSystemService
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
-import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
-import org.noiseplanet.noisecapture.util.geo.Feature
-import org.noiseplanet.noisecapture.util.geo.FeatureCollection
 import org.noiseplanet.noisecapture.util.geo.GeoJsonBuilder
-import org.noiseplanet.noisecapture.util.geo.Point
-import org.noiseplanet.noisecapture.util.geo.positionOf
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 
 
@@ -225,30 +218,10 @@ class ManageMeasurementViewModel(
 
     fun exportToGeoJson() {
         viewModelScope.launch(Dispatchers.Default) {
-            // Construct path sequence from measurement location and leq sequences
+            // Construct feature collection from measurement location and leq sequences
             val leqs = measurementService.getLeqSequenceForMeasurement(measurementId)
             val locations = measurementService.getLocationSequenceForMeasurement(measurementId)
-            val path = GeoJsonBuilder.pathForMeasurement(leqs, locations)
-            val features: MutableList<Feature> = mutableListOf()
-
-            // Map each point of the path to a GeoJson "Point" feature
-            for (point in path) {
-                val markerColor = NoiseLevelColorRamp.getColorForSPLValue(point.level).toArgb()
-                features.add(
-                    Feature(
-                        geometry = Point(positionOf(point.longitude, point.latitude)),
-                        properties = mapOf(
-                            "laeq" to JsonPrimitive(point.level),
-                            "timestamp" to JsonPrimitive(point.timestamp),
-                            // Encode marker color to GeoJson, drop the first two characters
-                            // corresponding to alpha channel
-                            "marker-color" to JsonPrimitive("#" + markerColor.toHexString().drop(2))
-                        )
-                    )
-                )
-            }
-            // Create feature collection
-            val geoJson = FeatureCollection(features = features)
+            val geoJson = GeoJsonBuilder.fromMeasurement(leqs, locations)
             // Download as geojson file
             fileSystemService.downloadGeoJson(geoJson, "$measurementId.geojson")
         }

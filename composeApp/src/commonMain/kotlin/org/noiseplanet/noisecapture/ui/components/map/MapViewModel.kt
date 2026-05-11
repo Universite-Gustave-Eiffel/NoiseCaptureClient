@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.doubleOrNull
+import kotlinx.serialization.json.jsonPrimitive
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.location_disabled
 import noisecapture.composeapp.generated.resources.map_marker
@@ -33,7 +35,9 @@ import org.noiseplanet.noisecapture.ui.theme.LocationTint
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.geo.GeoJsonBuilder
 import org.noiseplanet.noisecapture.util.geo.GeoUtil
-import org.noiseplanet.noisecapture.util.geo.PathPoint
+import org.noiseplanet.noisecapture.util.geo.Point
+import org.noiseplanet.noisecapture.util.geo.lat
+import org.noiseplanet.noisecapture.util.geo.lon
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 import ovh.plrapps.mapcompose.api.BoundingBox
 import ovh.plrapps.mapcompose.api.addLayer
@@ -436,7 +440,20 @@ class MapViewModel(
     private suspend fun addPathsForMeasurement(measurementUuid: String) {
         val locationSequence = measurementService.getLocationSequenceForMeasurement(measurementUuid)
         val leqSequence = measurementService.getLeqSequenceForMeasurement(measurementUuid)
-        val pathPoints = GeoJsonBuilder.pathForMeasurement(leqSequence, locationSequence)
+
+        // Map GeoJson features to simpler data structure to manipulate
+        // TODO: Read from file instead of regenerating on every recomposition
+        val pathPoints = GeoJsonBuilder.fromMeasurement(leqSequence, locationSequence).features
+            .mapNotNull { feature ->
+                val geom = feature.geometry as? Point ?: return@mapNotNull null
+                val laeq = feature.properties?.get("laeq")?.jsonPrimitive?.doubleOrNull
+                    ?: return@mapNotNull null
+                PathPoint(
+                    latitude = geom.coordinates.lat,
+                    longitude = geom.coordinates.lon,
+                    level = laeq,
+                )
+            }
 
         if (pathPoints.isEmpty()) {
             return
@@ -533,3 +550,17 @@ class MapViewModel(
         mapState.setVisibleAreaPadding(0f)
     }
 }
+
+
+/**
+ * A point of a sound level path.
+ *
+ * @param latitude Latitude (WGS:84)
+ * @param longitude Longitude (WGS:84)
+ * @param level Average LAEq from last the path point to this one.
+ */
+private data class PathPoint(
+    val latitude: Double,
+    val longitude: Double,
+    val level: Double,
+)

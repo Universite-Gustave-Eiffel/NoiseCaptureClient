@@ -1,11 +1,17 @@
 package org.noiseplanet.noisecapture.util.geo
 
+import androidx.compose.ui.graphics.toArgb
+import kotlinx.serialization.json.JsonPrimitive
 import org.noiseplanet.noisecapture.model.dao.LeqSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.LocationSequenceFragment
+import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.dbAverage
 import org.noiseplanet.noisecapture.util.isInVuMeterRange
 import org.noiseplanet.noisecapture.util.roundTo
 
+
+private typealias LocationSequence = List<Map.Entry<Long, Pair<Double, Double>>>
+private typealias LeqsSequence = List<Map.Entry<Long, Double>>
 
 /**
  * Build paths from measurement location and sound level data.
@@ -24,24 +30,19 @@ object GeoJsonBuilder {
     // - Public functions
 
     /**
-     * For a measurement with the given identifier, retrieves both location and LAEq values and
-     * returns a list of points with lat/lon coordinates, a timestamp in milliseconds since epoch,
-     * and an associated LAEq value that corresponds to the energetic average of all levels between
-     * the last point and this one.
-     *
-     * > TODO: Test performance on larger measurements with lots of points. To avoid recalculating
-     *         averages everytime, we could store the obtained mean value directly in the location
-     *         sequence as an optional property?
+     * Turns given LEq and location sequences into a GeoJson representation by mapping each acoustic
+     * data points to their closest equivalent in the location track, then calculating the energetic
+     * mean for each of those points. Lastly turns the result into a GeoJson [FeatureCollection] of [Point].
      *
      * @param leqSequence All measurement's LEq sequence fragments.
      * @param locationSequence All measurement's location sequence fragments.
      *
-     * @return A list of [PathPoint].
+     * @return A serializable GeoJson [FeatureCollection].
      */
-    fun pathForMeasurement(
+    fun fromMeasurement(
         leqSequence: List<LeqSequenceFragment>,
         locationSequence: List<LocationSequenceFragment>,
-    ): List<PathPoint> {
+    ): FeatureCollection {
         // Get all coordinates and LAEq values for the given measurement,
         // expected to be sorted in ascending order
         val coords = prepareLocationSequence(locationSequence)
@@ -51,17 +52,16 @@ object GeoJsonBuilder {
         if (coords.size == 1) {
             val coord = coords.first()
             val (lat, lon) = coord.value
-
-            val point = PathPoint(
+            val feature = pointFeatureFromValues(
+                lat = lat,
+                lon = lon,
                 timestamp = coord.key,
-                latitude = lat,
-                longitude = lon,
-                level = laeqs.map { (_, value) -> value }.dbAverage().roundTo(1)
+                laeq = laeqs.map { (_, value) -> value }.dbAverage().roundTo(1)
             )
-            return listOf(point)
+            return FeatureCollection(features = listOf(feature))
         }
 
-        val result = mutableListOf<PathPoint>() // Will hold resampled data points
+        val result = mutableListOf<Feature>() // Will hold resampled features
         var laeqsCursor = 0 // Current index in the sound levels list
 
         for (i in 1 until coords.size) {
@@ -81,20 +81,51 @@ object GeoJsonBuilder {
 
             // Calculate energetic mean and push new point to path data
             if (laeqsForTimeWindow.isNotEmpty()) {
-                val point = PathPoint(
+                val point = pointFeatureFromValues(
+                    lat = coords[i].value.first,
+                    lon = coords[i].value.second,
                     timestamp = currTime,
-                    latitude = coords[i].value.first,
-                    longitude = coords[i].value.second,
-                    level = laeqsForTimeWindow.dbAverage().roundTo(1),
+                    laeq = laeqsForTimeWindow.dbAverage().roundTo(1),
                 )
                 result.add(point)
             }
         }
-        return result
+        return FeatureCollection(features = result)
     }
 
 
     // - Private functions
+
+    /**
+     * Creates a GeoJson [Feature] object with [Point] geometry and given `laeq` and `timestamp`
+     * properties.
+     * Also adds a `marker-color` property with the corresponding noise level palette color.
+     *
+     * @param lat Latitude
+     * @param lon Longitude
+     * @param laeq LAEq
+     * @param timestamp Timestamp (ms since epoch)
+     *
+     * @return GeoJson [Feature]
+     */
+    private fun pointFeatureFromValues(
+        lat: Double,
+        lon: Double,
+        laeq: Double,
+        timestamp: Long,
+    ): Feature {
+        val markerColor = NoiseLevelColorRamp.getColorForSPLValue(laeq).toArgb()
+        return Feature(
+            geometry = Point(positionOf(lon, lat)),
+            properties = mapOf(
+                "laeq" to JsonPrimitive(laeq),
+                "timestamp" to JsonPrimitive(timestamp),
+                // Encode marker color to GeoJson, drop the first two characters
+                // corresponding to alpha channel
+                "marker-color" to JsonPrimitive("#" + markerColor.toHexString().drop(2))
+            )
+        )
+    }
 
     /**
      * Concatenates all lat/lon coordinates points found in fragments.
@@ -107,7 +138,7 @@ object GeoJsonBuilder {
      */
     private fun prepareLocationSequence(
         locationSequence: List<LocationSequenceFragment>,
-    ): List<Map.Entry<Long, Pair<Double, Double>>> {
+    ): LocationSequence {
         // Match all points with their associated timestamp
         val sortedPoints = locationSequence
             .fold(mapOf<Long, Pair<Double, Double>>()) { accumulator, fragment ->
@@ -154,7 +185,7 @@ object GeoJsonBuilder {
      */
     private fun prepareLeqSequence(
         leqSequence: List<LeqSequenceFragment>,
-    ): List<Map.Entry<Long, Double>> = leqSequence
+    ): LeqsSequence = leqSequence
         .fold(mapOf<Long, Double>()) { accumulator, fragment ->
             val laeqs = fragment.timestamp.zip(fragment.laeq)
             accumulator + laeqs
@@ -165,18 +196,3 @@ object GeoJsonBuilder {
         .entries
         .toList()
 }
-
-/**
- * A point of a sound level path.
- *
- * @param timestamp Timestamp in milliseconds since epoch
- * @param latitude Latitude (WGS:84)
- * @param longitude Longitude (WGS:84)
- * @param level Average LAEq from last the path point to this one.
- */
-data class PathPoint(
-    val timestamp: Long,
-    val latitude: Double,
-    val longitude: Double,
-    val level: Double,
-)
