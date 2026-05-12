@@ -21,14 +21,14 @@ class OPFSFileSystemService : FileSystemService {
 
     // - Public functions
 
-    override suspend fun getFileSize(fileUri: String): Long? {
+    override suspend fun size(fileUri: String): Long? {
         val (fileHandle, _) = OPFSHelper.getFileHandle(fileUri) ?: return null
         val file: File = fileHandle.getFile().await()
 
         return file.size.toInt().toLong()
     }
 
-    override suspend fun deleteFile(fileUri: String) {
+    override suspend fun delete(fileUri: String) {
         val (fileHandle, directoryHandle) = OPFSHelper.getFileHandle(fileUri) ?: return
         directoryHandle.removeEntry(fileHandle.name).await<Unit>()
     }
@@ -38,7 +38,7 @@ class OPFSFileSystemService : FileSystemService {
      */
     override fun getRootDirectory(): String = ""
 
-    override suspend fun downloadFile(fileUri: String) {
+    override suspend fun download(fileUri: String) {
         // Get file blob
         val (fileHandle, _) = OPFSHelper.getFileHandle(fileUri) ?: return
         val file: File = fileHandle.getFile().await()
@@ -50,7 +50,7 @@ class OPFSFileSystemService : FileSystemService {
     /**
      * Download files using Zip.js library: https://jsr.io/@zip-js/zip-js
      */
-    override suspend fun downloadFiles(fileUris: List<String>, archiveName: String) {
+    override suspend fun download(fileUris: List<String>, archiveName: String) {
         val writer = ZipJs.BlobWriter("applications/zip")
         val zipWriter = ZipJs.ZipWriter(writer)
 

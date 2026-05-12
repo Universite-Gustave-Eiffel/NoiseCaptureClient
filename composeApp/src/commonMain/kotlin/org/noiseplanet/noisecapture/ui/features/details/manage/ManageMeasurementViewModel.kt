@@ -172,7 +172,7 @@ class ManageMeasurementViewModel(
                 measurement,
                 measurementSize = measurementService.getMeasurementSize(measurement.uuid),
                 audioFileSize = measurement.recordedAudioUrl?.let {
-                    fileSystemService.getFileSize(it)
+                    fileSystemService.size(it)
                 },
             )
         }
@@ -211,7 +211,7 @@ class ManageMeasurementViewModel(
     fun downloadAudio() {
         measurement?.recordedAudioUrl?.let {
             viewModelScope.launch {
-                fileSystemService.downloadFile(it)
+                fileSystemService.download(it)
             }
         }
     }

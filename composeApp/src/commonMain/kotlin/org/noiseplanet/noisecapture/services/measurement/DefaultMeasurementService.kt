@@ -122,7 +122,7 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
                 accumulator + (locationSequenceStorageService.getSize(sequenceId) ?: 0L)
             }
         val audioSize = measurement.recordedAudioUrl
-            ?.let { fileSystemService.getFileSize(it) }
+            ?.let { fileSystemService.size(it) }
             ?: 0L
 
         return measurementSize + leqSequenceSize + locationSequenceSize + audioSize
@@ -323,7 +323,7 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
     override suspend fun deleteMeasurementAssociatedAudio(measurement: Measurement) {
         measurement.recordedAudioUrl?.let { fileUri ->
             // Delete audio file
-            fileSystemService.deleteFile(fileUri)
+            fileSystemService.delete(fileUri)
             // And update measurement with null url
             measurementStorageService.set(
                 uuid = measurement.uuid,

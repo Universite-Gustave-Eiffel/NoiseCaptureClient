@@ -75,6 +75,6 @@ internal actual class KStoreProvider : KoinComponent {
      * @return File size in bytes, null if not found.
      */
     actual suspend fun sizeOf(fileName: String): Long? {
-        return fileSystemService.getFileSize(fileName)
+        return fileSystemService.size(fileName)
     }
 }
