@@ -19,10 +19,6 @@ val detailsModule = module {
         ManageMeasurementViewModel(measurementId)
     }
 
-    viewModel { (measurementId: String) ->
-        SplTimePlotViewModel(measurementId)
-    }
-
     viewModel { (windowsSizeClass: WindowSizeClass, measurementId: String) ->
         MapViewModel(
             windowsSizeClass,
