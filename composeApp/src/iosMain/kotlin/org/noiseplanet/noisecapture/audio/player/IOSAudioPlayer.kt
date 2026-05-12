@@ -50,7 +50,7 @@ class IOSAudioPlayer(filePath: String) : AudioPlayer(filePath), KoinComponent {
 
     override suspend fun prepare() {
         val absolutePath = fileSystemService.getAbsolutePath(filePath) ?: return
-        val url = NSURL.URLWithString(absolutePath) ?: return
+        val url = NSURL.URLWithString(absolutePath.toString()) ?: return
 
         audioPlayer = runCatching {
             check(url.path?.let { NSFileManager.defaultManager.fileExistsAtPath(it) } == true) {
