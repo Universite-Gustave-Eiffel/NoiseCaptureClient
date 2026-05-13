@@ -10,13 +10,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 
 - Visual hint of GPS accuracy while recording (#278)
-- Measurement GeoJson export (#279)
+- Measurement GeoJson export (#279, #290)
 - Onboarding flow (#282)
 
 ### Fixed
 
 - Android: switching location on or off from control center didn't trigger a state refresh in the
   app (#278)
+- iOS: Sometimes measurement path would not show up on map (#290)
 
 ### Changed
 
