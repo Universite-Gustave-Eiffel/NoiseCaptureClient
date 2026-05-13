@@ -454,30 +454,31 @@ class MapViewModel(
                     contentDescription = "marker",
                     painter = painterResource(Res.drawable.map_marker),
                     tint = NoiseLevelColorRamp.getColorForSPLValue(value = point.level),
+                    modifier = Modifier.size(32.dp)
                 )
             }
-        }
-
-        // Add path data to map
-        pathPoints.forEachIndexed { index, point ->
-            val (x, y) = GeoUtil.lonLatToNormalizedWebMercator(
-                latitude = point.latitude,
-                longitude = point.longitude
-            )
-
-            mapState.addMarker(
-                id = "path-$index",
-                x = x,
-                y = y,
-                relativeOffset = Offset(x = 0.5f, y = 0.5f),
-            ) {
-                Box(
-                    modifier = Modifier.size(6.dp)
-                        .background(
-                            color = NoiseLevelColorRamp.getColorForSPLValue(value = point.level),
-                            shape = CircleShape
-                        )
+        } else {
+            // Add path data to map
+            pathPoints.forEachIndexed { index, point ->
+                val (x, y) = GeoUtil.lonLatToNormalizedWebMercator(
+                    latitude = point.latitude,
+                    longitude = point.longitude
                 )
+
+                mapState.addMarker(
+                    id = "path-$index",
+                    x = x,
+                    y = y,
+                    relativeOffset = Offset(x = 0.5f, y = 0.5f),
+                ) {
+                    Box(
+                        modifier = Modifier.size(6.dp)
+                            .background(
+                                color = NoiseLevelColorRamp.getColorForSPLValue(value = point.level),
+                                shape = CircleShape
+                            )
+                    )
+                }
             }
         }
 
