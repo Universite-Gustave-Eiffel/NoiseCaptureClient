@@ -43,7 +43,7 @@ interface FileSystemService {
      * @return File contents as [String], null if file doesn't exist.
      */
     suspend fun readString(fileUri: String): String? = with(dispatcher) {
-        return@with read(fileUri)?.decodeToString()
+        read(fileUri)?.decodeToString()
     }
 
     /**
@@ -84,7 +84,7 @@ interface FileSystemService {
     suspend fun size(fileUri: String): Long? = with(dispatcher) {
         val path = getAbsolutePath(fileUri) ?: return@with null
 
-        return@with SystemFileSystem.metadataOrNull(path)?.size
+        SystemFileSystem.metadataOrNull(path)?.size
     }
 
     /**
@@ -95,7 +95,7 @@ interface FileSystemService {
     suspend fun delete(fileUri: String) = with(dispatcher) {
         val path = getAbsolutePath(fileUri) ?: return@with
 
-        return@with SystemFileSystem.delete(path, mustExist = false)
+        SystemFileSystem.delete(path, mustExist = false)
     }
 
     /**

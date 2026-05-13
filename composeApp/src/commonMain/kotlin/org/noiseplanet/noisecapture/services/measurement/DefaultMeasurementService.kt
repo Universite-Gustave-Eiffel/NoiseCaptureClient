@@ -370,6 +370,8 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
         measurement.locationSequenceIds.forEach {
             locationSequenceStorageService.delete(it)
         }
+        // Delete geojson representation
+        fileSystemService.delete("measurement/geojson/${measurement.uuid}.geojson")
         // Delete measurement itself
         measurementStorageService.delete(measurement.uuid)
         // Remove it from user statistics
