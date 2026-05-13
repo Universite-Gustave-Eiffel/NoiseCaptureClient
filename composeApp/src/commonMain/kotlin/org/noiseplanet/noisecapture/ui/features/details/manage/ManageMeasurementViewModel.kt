@@ -34,7 +34,6 @@ import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.services.storage.FileSystemService
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
-import org.noiseplanet.noisecapture.util.geo.GeoJsonBuilder
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 
 
@@ -218,12 +217,8 @@ class ManageMeasurementViewModel(
 
     fun exportToGeoJson() {
         viewModelScope.launch(Dispatchers.Default) {
-            // Construct feature collection from measurement location and leq sequences
-            val leqs = measurementService.getLeqSequenceForMeasurement(measurementId)
-            val locations = measurementService.getLocationSequenceForMeasurement(measurementId)
-            val geoJson = GeoJsonBuilder.fromMeasurement(leqs, locations)
             // Download as geojson file
-            fileSystemService.downloadGeoJson(geoJson, "$measurementId.geojson")
+            fileSystemService.download("measurement/geojson/$measurementId.geojson")
         }
     }
 }
