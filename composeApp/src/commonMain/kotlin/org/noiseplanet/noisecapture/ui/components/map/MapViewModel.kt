@@ -1,9 +1,14 @@
 package org.noiseplanet.noisecapture.ui.components.map
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -41,7 +46,6 @@ import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 import ovh.plrapps.mapcompose.api.BoundingBox
 import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.addMarker
-import ovh.plrapps.mapcompose.api.addPath
 import ovh.plrapps.mapcompose.api.centroidX
 import ovh.plrapps.mapcompose.api.centroidY
 import ovh.plrapps.mapcompose.api.enableRotation
@@ -388,7 +392,12 @@ class MapViewModel(
             mapState.moveMarker(id = USER_LOCATION_MARKER_ID, x = x, y = y)
         } else {
             // Otherwise, create and add marker
-            mapState.addMarker(id = USER_LOCATION_MARKER_ID, x = x, y = y) {
+            mapState.addMarker(
+                id = USER_LOCATION_MARKER_ID,
+                x = x,
+                y = y,
+                relativeOffset = Offset(x = 0.5f, y = 0.5f),
+            ) {
                 UserLocationMarker(mapRotationDegrees = mapState.rotation)
             }
         }
@@ -481,13 +490,27 @@ class MapViewModel(
                 longitude = point.longitude
             )
 
-            mapState.addPath(
+//            mapState.addPath(
+//                id = "path-$index",
+//                color = NoiseLevelColorRamp.getColorForSPLValue(value = point.level),
+//                width = 6.dp,
+//                zIndex = pathPoints.size - index.toFloat(),
+//            ) {
+//                addPoints(listOfNotNull(prevXY, currXY))
+//            }
+            mapState.addMarker(
                 id = "path-$index",
-                color = NoiseLevelColorRamp.getColorForSPLValue(value = point.level),
-                width = 6.dp,
-                zIndex = pathPoints.size - index.toFloat(),
+                x = currXY.first,
+                y = currXY.second,
+                relativeOffset = Offset(x = 0.5f, y = 0.5f),
             ) {
-                addPoints(listOfNotNull(prevXY, currXY))
+                Box(
+                    modifier = Modifier.size(6.dp)
+                        .background(
+                            color = NoiseLevelColorRamp.getColorForSPLValue(value = point.level),
+                            shape = CircleShape
+                        )
+                )
             }
             prevXY = currXY
         }
