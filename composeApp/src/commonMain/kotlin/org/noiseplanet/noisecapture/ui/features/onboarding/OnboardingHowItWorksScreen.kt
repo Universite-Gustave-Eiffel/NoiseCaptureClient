@@ -1,12 +1,14 @@
 package org.noiseplanet.noisecapture.ui.features.onboarding
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -36,11 +38,16 @@ fun OnboardingHowItWorksScreen(
         primaryButtonAction = { router.goToNextStep() },
         modifier = modifier,
     ) {
-        Image(
-            painter = painterResource(Res.drawable.onboarding_illustration_listening),
-            contentScale = ContentScale.Inside,
-            contentDescription = null,
-        )
+        Box(
+            contentAlignment = Alignment.BottomCenter,
+            modifier = Modifier.weight(1f),
+        ) {
+            Image(
+                painter = painterResource(Res.drawable.onboarding_illustration_listening),
+                contentScale = ContentScale.Inside,
+                contentDescription = null,
+            )
+        }
 
         Spacer(modifier = Modifier.height(32.dp))
 

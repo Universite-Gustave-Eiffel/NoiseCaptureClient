@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -86,11 +87,16 @@ fun OnboardingAcousticsKnowledgeScreen(
         primaryButtonAction = { router.goToNextStep() },
         modifier = modifier,
     ) {
-        Image(
-            painter = painterResource(Res.drawable.onboarding_illustration_knowledge),
-            contentScale = ContentScale.Inside,
-            contentDescription = null,
-        )
+        Box(
+            contentAlignment = Alignment.BottomCenter,
+            modifier = Modifier.weight(1f),
+        ) {
+            Image(
+                painter = painterResource(Res.drawable.onboarding_illustration_knowledge),
+                contentScale = ContentScale.Inside,
+                contentDescription = null,
+            )
+        }
 
         Spacer(modifier = Modifier.height(32.dp))
 

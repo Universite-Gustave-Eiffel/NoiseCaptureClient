@@ -3,7 +3,7 @@ package org.noiseplanet.noisecapture
 import IOSPlatform
 import Platform
 import com.russhwolf.settings.ExperimentalSettingsImplementation
-import com.russhwolf.settings.KeychainSettings
+import com.russhwolf.settings.NSUserDefaultsSettings
 import com.russhwolf.settings.Settings
 import org.koin.core.module.Module
 import org.koin.dsl.module
@@ -21,7 +21,7 @@ import org.noiseplanet.noisecapture.services.location.UserLocationProvider
 import org.noiseplanet.noisecapture.services.storage.FileSystemService
 import org.noiseplanet.noisecapture.services.storage.IOSFileSystemService
 import org.noiseplanet.noisecapture.util.IOSFilePickerEventBus
-import platform.Foundation.NSBundle
+import platform.Foundation.NSUserDefaults
 
 /**
  * Registers koin components specific to this platform
@@ -47,9 +47,7 @@ val platformModule: Module = module {
     }
 
     single<Settings> {
-        NSBundle.mainBundle.bundleIdentifier
-            ?.let { KeychainSettings(it) }
-            ?: KeychainSettings()
+        NSUserDefaultsSettings(NSUserDefaults.standardUserDefaults)
     }
 
     single<AudioRecordingService> {

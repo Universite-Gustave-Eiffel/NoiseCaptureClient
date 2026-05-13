@@ -1,6 +1,7 @@
 package org.noiseplanet.noisecapture.ui.features.onboarding
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -9,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -71,11 +73,16 @@ fun OnboardingLocationPermissionScreen(
         secondaryButtonAction = { router.goToNextStep() },
         modifier = modifier,
     ) {
-        Image(
-            painter = painterResource(Res.drawable.permission_location_illustration),
-            contentScale = ContentScale.Inside,
-            contentDescription = null,
-        )
+        Box(
+            contentAlignment = Alignment.BottomCenter,
+            modifier = Modifier.weight(1f),
+        ) {
+            Image(
+                painter = painterResource(Res.drawable.permission_location_illustration),
+                contentScale = ContentScale.Inside,
+                contentDescription = null,
+            )
+        }
 
         Spacer(modifier = Modifier.height(64.dp))
 
