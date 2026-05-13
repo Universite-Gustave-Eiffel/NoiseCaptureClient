@@ -12,6 +12,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Visual hint of GPS accuracy while recording (#278)
 - Measurement GeoJson export (#279, #290)
 - Onboarding flow (#282, #293)
+- Added wiki and issue reporting capabilities (#294)
 
 ### Fixed
 
