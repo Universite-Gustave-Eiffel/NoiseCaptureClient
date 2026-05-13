@@ -479,29 +479,16 @@ class MapViewModel(
         }
 
         // Add path data to map
-        var prevXY: Pair<Double, Double>? = null
         pathPoints.forEachIndexed { index, point ->
-            if (index == 0) {
-                prevXY = GeoUtil.lonLatToNormalizedWebMercator(point.latitude, point.longitude)
-                return@forEachIndexed
-            }
-            val currXY = GeoUtil.lonLatToNormalizedWebMercator(
+            val (x, y) = GeoUtil.lonLatToNormalizedWebMercator(
                 latitude = point.latitude,
                 longitude = point.longitude
             )
 
-//            mapState.addPath(
-//                id = "path-$index",
-//                color = NoiseLevelColorRamp.getColorForSPLValue(value = point.level),
-//                width = 6.dp,
-//                zIndex = pathPoints.size - index.toFloat(),
-//            ) {
-//                addPoints(listOfNotNull(prevXY, currXY))
-//            }
             mapState.addMarker(
                 id = "path-$index",
-                x = currXY.first,
-                y = currXY.second,
+                x = x,
+                y = y,
                 relativeOffset = Offset(x = 0.5f, y = 0.5f),
             ) {
                 Box(
@@ -512,7 +499,6 @@ class MapViewModel(
                         )
                 )
             }
-            prevXY = currXY
         }
 
         // Save bounding box and recenter
