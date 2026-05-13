@@ -31,7 +31,9 @@ interface FileSystemService {
         val path = getAbsolutePath(fileUri) ?: return@with null
         if (!SystemFileSystem.exists(path)) return@with null
 
-        SystemFileSystem.source(path).buffered().readByteArray()
+        runCatching {
+            SystemFileSystem.source(path).buffered().readByteArray()
+        }.getOrNull()
     }
 
     /**
@@ -54,7 +56,11 @@ interface FileSystemService {
     suspend fun write(fileUri: String, bytes: ByteArray, append: Boolean = false) =
         with(dispatcher) {
             val path = getAbsolutePath(fileUri) ?: return@with
-            SystemFileSystem.sink(path, append).buffered().write(bytes)
+            path.parent?.let { SystemFileSystem.createDirectories(it) }
+
+            SystemFileSystem.sink(path, append)
+                .buffered()
+                .use { sink -> sink.write(bytes) }
         }
 
     /**
