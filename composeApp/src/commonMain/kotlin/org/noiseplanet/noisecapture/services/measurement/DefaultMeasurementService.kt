@@ -21,6 +21,9 @@ import org.noiseplanet.noisecapture.services.storage.StorageService
 import org.noiseplanet.noisecapture.services.storage.injectStorageService
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.dbAverage
+import org.noiseplanet.noisecapture.util.geo.FeatureCollection
+import org.noiseplanet.noisecapture.util.geo.GeoJson
+import org.noiseplanet.noisecapture.util.geo.GeoJsonBuilder
 import org.noiseplanet.noisecapture.util.injectLogger
 import org.noiseplanet.noisecapture.util.isInVuMeterRange
 import org.noiseplanet.noisecapture.util.roundTo
@@ -247,11 +250,10 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
      */
     override suspend fun calculateSummary(measurement: Measurement): Measurement {
         // Read all sequence fragments to summarize data
-        val allSequenceFragments: List<LeqSequenceFragment> = measurement.leqsSequenceIds
-            .mapNotNull { leqSequenceStorageService.get(it) }
+        val leqSequence = getLeqSequenceForMeasurement(measurement.uuid)
 
         // Get a map of all LAEq values with their associated timestamp
-        val allMeasurementLaeq: Map<Long, Double> = allSequenceFragments
+        val allMeasurementLaeq: Map<Long, Double> = leqSequence
             .fold(mapOf<Long, Double>()) { accumulator, sequence ->
                 accumulator + sequence.let { it.timestamp.zip(it.laeq) }
             }.filter { (_, laeq) ->
@@ -282,7 +284,7 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
             }.toMap()
 
         // Do the same for each frequency band to compute the average level
-        val averageLeqPerFrequencyBand: Map<Int, Double> = allSequenceFragments
+        val averageLeqPerFrequencyBand: Map<Int, Double> = leqSequence
             .map { it.leqsPerThirdOctaveBand }
             .fold(mutableMapOf<Int, List<Double>>()) { accumulator, element ->
                 element.forEach { (key, values) ->
@@ -314,6 +316,30 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
         measurementStorageService.set(measurement.uuid, newValue)
         // Return that new value.
         return newValue
+    }
+
+    override suspend fun getMeasurementAsGeoJson(uuid: String): FeatureCollection {
+        val fileUri = "measurement/geojson/${uuid}.geojson"
+
+        return fileSystemService.readString(fileUri)?.let {
+            // If already found in filesystem, just decode locally stored representation.
+            GeoJson.decodeFromString<FeatureCollection>(it)
+        } ?: run {
+            // Calculate GeoJson representation of measurement and store it for further access
+            val leqSequence = getLeqSequenceForMeasurement(uuid)
+            val locationSequence = getLocationSequenceForMeasurement(uuid)
+            val geojson = GeoJsonBuilder.fromMeasurement(
+                leqSequence = leqSequence,
+                locationSequence = locationSequence
+            )
+            fileSystemService.writeString(
+                fileUri = fileUri,
+                text = GeoJson.encodeToString(geojson),
+            )
+            // Then return value
+            return geojson
+        }
+
     }
 
     override suspend fun downloadRawMeasurement(uuid: String) {
