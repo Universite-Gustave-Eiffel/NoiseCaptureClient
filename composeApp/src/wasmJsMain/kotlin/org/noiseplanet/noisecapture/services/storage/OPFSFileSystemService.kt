@@ -5,12 +5,9 @@ import kotlinx.coroutines.await
 import org.noiseplanet.noisecapture.interop.ZipJs
 import org.noiseplanet.noisecapture.interop.storage.FileSystemWritableFileStream
 import org.noiseplanet.noisecapture.util.OPFSHelper
-import org.noiseplanet.noisecapture.util.geo.FeatureCollection
-import org.noiseplanet.noisecapture.util.geo.GeoJson
 import org.w3c.dom.HTMLAnchorElement
 import org.w3c.dom.url.URL
 import org.w3c.files.Blob
-import org.w3c.files.BlobPropertyBag
 import org.w3c.files.File
 
 /**
@@ -20,6 +17,14 @@ import org.w3c.files.File
 class OPFSFileSystemService : FileSystemService {
 
     // - Public functions
+
+    override suspend fun read(fileUri: String): ByteArray? {
+        return OPFSHelper.read(fileUri)
+    }
+
+    override suspend fun write(fileUri: String, bytes: ByteArray, append: Boolean) {
+        OPFSHelper.write(fileUri, bytes)
+    }
 
     override suspend fun size(fileUri: String): Long? {
         val (fileHandle, _) = OPFSHelper.getFileHandle(fileUri) ?: return null
@@ -68,16 +73,6 @@ class OPFSFileSystemService : FileSystemService {
 
         // Download zip file
         downloadBlob(blob, "$archiveName.zip")
-    }
-
-    override suspend fun downloadGeoJson(geoJson: FeatureCollection, fileName: String) {
-        val contents = GeoJson.encodeToString(geoJson)
-        // Write data to blob
-        val blob = Blob(
-            blobParts = arrayOf<JsAny?>(contents.toJsString()).toJsArray(),
-            options = BlobPropertyBag(type = "application/geo+json")
-        )
-        downloadBlob(blob, fileName)
     }
 
     /**
