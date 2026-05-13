@@ -17,6 +17,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Android: switching location on or off from control center didn't trigger a state refresh in the
   app (#278)
+- A measurement with empty or single element LAEq sequence would cause the app to crash when opening
+  its details page (#288)
 
 ### Changed
 
