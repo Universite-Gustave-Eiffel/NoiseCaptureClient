@@ -339,12 +339,12 @@ class MapViewModel(
         viewModelScope.launch(Dispatchers.Default) {
             // If a measurement is focused, center its path in the viewport.
             measurementPathBoundingBox?.let { boundingBox ->
-                withVisibleAreaPaddingRatio(parameters.visibleAreaPaddingRatio) {
-                    mapState.scrollTo(
-                        area = boundingBox,
-                        padding = Offset(x = 0.1f, y = 0.1f)
-                    )
-                }
+//                withVisibleAreaPaddingRatio(parameters.visibleAreaPaddingRatio) {
+                mapState.scrollTo(
+                    area = boundingBox,
+                    padding = Offset(x = 0.2f, y = 0.2f)
+                )
+//                }
             } ?: run {
                 // Otherwise, if user location is known, center it in the viewport.
                 mapState.getMarkerInfo(id = USER_LOCATION_MARKER_ID)?.let {
@@ -522,7 +522,7 @@ class MapViewModel(
 
         // Ensure minimum bbox size
         val width = xRight - xLeft
-        val height = yBottom - yTop
+        val height = yTop - yBottom
         if (width < MIN_BBOX_SIZE) {
             xLeft -= (MIN_BBOX_SIZE - width) / 2.0
             xRight += (MIN_BBOX_SIZE - width) / 2.0
