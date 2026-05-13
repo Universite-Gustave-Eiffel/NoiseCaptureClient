@@ -1,0 +1,63 @@
+name: Bug Report
+description: File a bug report.
+title: ""
+labels:
+  - needs triage
+assignees:
+  - tonelli-m
+type: bug
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear and concise description of the problem.
+      placeholder: Tell us what happened (and what you would expect happened instead).
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: List the steps someone else needs to take to reproduce this issue.
+      placeholder: |
+        Try to be exhaustive
+    validations:
+      required: true
+  - type: textarea
+    id: platform
+    attributes:
+      label: Environment
+      description: If in doubt, this information can be found at the bottom of the app's settings page!
+      placeholder: Leave a comment
+      value: |
+        - **NoiseCapture app version:** 
+        - **Platform (Android, iOS, Web):** 
+        - **OS version (e.g. iOS 26.4):**
+        - **Device model (or browser name):**
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output or stack trace
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
+  - type: upload
+    id: screenshots
+    attributes:
+      label: Upload screenshots
+      description: If applicable, add screenshots to help explain your problem.
+    validations:
+      required: false
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Was this bug already reported?
+      description: If your issue was already reported, please add a comment on the existing issue instead of opening a new one.
+      options:
+        - label: I checked the issue board for duplicate before filing this bug report
+          required: true
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to help us improve NoiseCapture!
