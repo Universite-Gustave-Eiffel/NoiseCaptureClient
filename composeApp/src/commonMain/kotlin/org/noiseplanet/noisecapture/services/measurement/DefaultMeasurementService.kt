@@ -459,6 +459,11 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
             downsampledMap.getOrPut(intervalKey) { mutableListOf() }.add(level)
         }
 
+        // Ensure at least two values in downsampled sequence, otherwise return an empty map
+        if (downsampledMap.size <= 1) {
+            return emptyMap()
+        }
+
         // Calculate the average for each interval
         return downsampledMap.mapValues { (_, levels) ->
             levels.dbAverage()
