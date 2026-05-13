@@ -29,3 +29,8 @@ fastlane/*.xml
 *.ipa
 *.app
 *.app.dSYM
+
+# Android builds
+*.apk
+*.aab
+*.aar
