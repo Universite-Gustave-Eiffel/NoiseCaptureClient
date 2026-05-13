@@ -7,7 +7,6 @@ import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import kotlinx.io.readByteArray
-import org.noiseplanet.noisecapture.util.geo.FeatureCollection
 
 
 @Suppress("TooManyFunctions")
@@ -104,14 +103,6 @@ interface FileSystemService {
      * @param fileUri File URI, relative to the root directory.
      */
     suspend fun download(fileUri: String)
-
-    /**
-     * Serialises and shows download options for the given GeoJson object.
-     *
-     * @param geoJson GeoJson object
-     * @param fileName Output file name
-     */
-    suspend fun downloadGeoJson(geoJson: FeatureCollection, fileName: String)
 
     /**
      * Zips the files at the given URIs into an archive in cache space, then lets the user download

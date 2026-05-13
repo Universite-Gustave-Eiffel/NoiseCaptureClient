@@ -10,20 +10,15 @@ import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.util.FilePickerEvent
 import org.noiseplanet.noisecapture.util.IOSFilePickerEventBus
-import org.noiseplanet.noisecapture.util.geo.FeatureCollection
-import org.noiseplanet.noisecapture.util.geo.GeoJson
 import org.noiseplanet.noisecapture.util.injectLogger
 import org.noiseplanet.noisecapture.util.runCatchingNSError
 import platform.Foundation.NSApplicationSupportDirectory
 import platform.Foundation.NSFileCoordinator
 import platform.Foundation.NSFileCoordinatorReadingForUploading
 import platform.Foundation.NSFileManager
-import platform.Foundation.NSString
 import platform.Foundation.NSURL
-import platform.Foundation.NSUTF8StringEncoding
 import platform.Foundation.NSUserDomainMask
 import platform.Foundation.temporaryDirectory
-import platform.Foundation.writeToURL
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -54,45 +49,6 @@ class IOSFileSystemService : FileSystemService, KoinComponent {
         val zipUrl = createZipInTmp(zipFileName = archiveName, filePathsToZip = fileUris) ?: return
 
         downloadFileAtUrl(zipUrl, deleteAfterUse = true)
-    }
-
-    override suspend fun downloadGeoJson(geoJson: FeatureCollection, fileName: String) {
-        val contents = GeoJson.encodeToString(geoJson)
-        val timestamp = Clock.System.now().toEpochMilliseconds().toString()
-        val tempDirectory = fileManager.temporaryDirectory
-            .URLByAppendingPathComponent(timestamp) // To avoid possible name clash, use unique timestamp
-            ?: return
-        val tempFile = tempDirectory.URLByAppendingPathComponent(fileName) ?: return
-
-        // Create temporary directory
-        runCatchingNSError { nsError ->
-            fileManager.createDirectoryAtURL(
-                tempDirectory, withIntermediateDirectories = true, null, nsError.ptr
-            )
-        }.onFailure {
-            logger.error("Couldn't create temporary directory at path $tempDirectory", it)
-            return
-        }
-
-        // Write contents to temporary file
-        runCatchingNSError { nsError ->
-            // Compiler warns about cast never succeeding but under the hood kotlin String maps to NSString
-            @Suppress("CAST_NEVER_SUCCEEDS")
-            (contents as? NSString)?.writeToURL(
-                url = tempFile,
-                atomically = true,
-                encoding = NSUTF8StringEncoding,
-                error = nsError.ptr
-            )
-        }.onFailure {
-            logger.error("Couldn't write contents to file at path $tempFile", it)
-            return
-        }
-
-        // Download created file, cleaning up after use
-        withContext(Dispatchers.Main) {
-            downloadFileAtUrl(tempFile, deleteAfterUse = true)
-        }
     }
 
     /**
