@@ -35,7 +35,6 @@ import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.ui.components.button.IconNCButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
-import org.noiseplanet.noisecapture.ui.components.map.MapViewModel.VisibleAreaPaddingRatio
 import org.noiseplanet.noisecapture.ui.theme.LocationTint
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.geo.GeoUtil
@@ -58,7 +57,6 @@ import ovh.plrapps.mapcompose.api.rotation
 import ovh.plrapps.mapcompose.api.scale
 import ovh.plrapps.mapcompose.api.scrollTo
 import ovh.plrapps.mapcompose.api.setStateChangeListener
-import ovh.plrapps.mapcompose.api.setVisibleAreaPadding
 import ovh.plrapps.mapcompose.core.BelowAll
 import ovh.plrapps.mapcompose.ui.state.MapState
 import kotlin.math.log2
@@ -70,7 +68,6 @@ import kotlin.math.pow
  *
  * @param focusedMeasurementUuid UUID of the focused measurement. If given, the map will show the
  *                               path of the given measurement colored with noise level values.
- * @param visibleAreaPaddingRatio Map content padding relative to the screen dimensions.
  * @param showControls Whether or not to show map controls (compass, zoom, recenter, ...)
  * @param initialZoomLevel Initial zoom level upon opening the map.
  * @param followUserLocation If true, the map will automatically recenter to follow the user
@@ -85,7 +82,6 @@ import kotlin.math.pow
  */
 data class MapViewModelParameters(
     val focusedMeasurementUuid: String? = null,
-    val visibleAreaPaddingRatio: VisibleAreaPaddingRatio = VisibleAreaPaddingRatio(),
     val showControls: Boolean = true,
     val initialZoomLevel: Int = DEFAULT_INITIAL_ZOOM_LEVEL,
     val followUserLocation: Boolean = focusedMeasurementUuid == null,
@@ -155,16 +151,6 @@ class MapViewModel(
 
         private const val USER_LOCATION_MARKER_ID = "user_location"
     }
-
-
-    // - Associated types
-
-    data class VisibleAreaPaddingRatio(
-        val left: Float = 0f,
-        val right: Float = 0f,
-        val top: Float = 0f,
-        val bottom: Float = 0f,
-    )
 
 
     // - Properties
@@ -339,12 +325,10 @@ class MapViewModel(
         viewModelScope.launch(Dispatchers.Default) {
             // If a measurement is focused, center its path in the viewport.
             measurementPathBoundingBox?.let { boundingBox ->
-//                withVisibleAreaPaddingRatio(parameters.visibleAreaPaddingRatio) {
                 mapState.scrollTo(
                     area = boundingBox,
                     padding = Offset(x = 0.2f, y = 0.2f)
                 )
-//                }
             } ?: run {
                 // Otherwise, if user location is known, center it in the viewport.
                 mapState.getMarkerInfo(id = USER_LOCATION_MARKER_ID)?.let {
@@ -352,10 +336,6 @@ class MapViewModel(
                         it.x,
                         it.y,
                         destScale = zoomLevelToScale(parameters.initialZoomLevel),
-                        screenOffset = Offset(
-                            x = -0.5f,
-                            y = -0.5f + parameters.visibleAreaPaddingRatio.bottom / 2
-                        )
                     )
                 }
             }
@@ -533,27 +513,6 @@ class MapViewModel(
         }
 
         return BoundingBox(xLeft = xLeft, xRight = xRight, yTop = yTop, yBottom = yBottom)
-    }
-
-    /**
-     * Sets map state's visible area padding ratio to the given values, runs the given block and
-     * sets visible padding ratio back to its original value.
-     *
-     * @param paddingRatio Visible padding ratio to apply before running the block
-     * @param block Closure to execute
-     */
-    private suspend fun withVisibleAreaPaddingRatio(
-        paddingRatio: VisibleAreaPaddingRatio,
-        block: suspend (VisibleAreaPaddingRatio) -> Unit,
-    ) {
-        mapState.setVisibleAreaPadding(
-            leftRatio = paddingRatio.left,
-            rightRatio = paddingRatio.right,
-            bottomRatio = paddingRatio.bottom,
-            topRatio = paddingRatio.top
-        )
-        block(paddingRatio)
-        mapState.setVisibleAreaPadding(0f)
     }
 }
 
