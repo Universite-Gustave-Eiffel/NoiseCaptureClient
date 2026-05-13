@@ -1,9 +1,14 @@
 package org.noiseplanet.noisecapture.ui.components.map
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -15,6 +20,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.doubleOrNull
+import kotlinx.serialization.json.jsonPrimitive
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.location_disabled
 import noisecapture.composeapp.generated.resources.map_marker
@@ -28,15 +35,16 @@ import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.ui.components.button.IconNCButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
-import org.noiseplanet.noisecapture.ui.components.map.MapViewModel.VisibleAreaPaddingRatio
 import org.noiseplanet.noisecapture.ui.theme.LocationTint
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
-import org.noiseplanet.noisecapture.util.GeoUtil
+import org.noiseplanet.noisecapture.util.geo.GeoUtil
+import org.noiseplanet.noisecapture.util.geo.Point
+import org.noiseplanet.noisecapture.util.geo.lat
+import org.noiseplanet.noisecapture.util.geo.lon
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 import ovh.plrapps.mapcompose.api.BoundingBox
 import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.addMarker
-import ovh.plrapps.mapcompose.api.addPath
 import ovh.plrapps.mapcompose.api.centroidX
 import ovh.plrapps.mapcompose.api.centroidY
 import ovh.plrapps.mapcompose.api.enableRotation
@@ -49,7 +57,6 @@ import ovh.plrapps.mapcompose.api.rotation
 import ovh.plrapps.mapcompose.api.scale
 import ovh.plrapps.mapcompose.api.scrollTo
 import ovh.plrapps.mapcompose.api.setStateChangeListener
-import ovh.plrapps.mapcompose.api.setVisibleAreaPadding
 import ovh.plrapps.mapcompose.core.BelowAll
 import ovh.plrapps.mapcompose.ui.state.MapState
 import kotlin.math.log2
@@ -61,7 +68,6 @@ import kotlin.math.pow
  *
  * @param focusedMeasurementUuid UUID of the focused measurement. If given, the map will show the
  *                               path of the given measurement colored with noise level values.
- * @param visibleAreaPaddingRatio Map content padding relative to the screen dimensions.
  * @param showControls Whether or not to show map controls (compass, zoom, recenter, ...)
  * @param initialZoomLevel Initial zoom level upon opening the map.
  * @param followUserLocation If true, the map will automatically recenter to follow the user
@@ -76,7 +82,6 @@ import kotlin.math.pow
  */
 data class MapViewModelParameters(
     val focusedMeasurementUuid: String? = null,
-    val visibleAreaPaddingRatio: VisibleAreaPaddingRatio = VisibleAreaPaddingRatio(),
     val showControls: Boolean = true,
     val initialZoomLevel: Int = DEFAULT_INITIAL_ZOOM_LEVEL,
     val followUserLocation: Boolean = focusedMeasurementUuid == null,
@@ -148,16 +153,6 @@ class MapViewModel(
     }
 
 
-    // - Associated types
-
-    data class VisibleAreaPaddingRatio(
-        val left: Float = 0f,
-        val right: Float = 0f,
-        val top: Float = 0f,
-        val bottom: Float = 0f,
-    )
-
-
     // - Properties
 
     private val locationService: UserLocationService by inject()
@@ -210,22 +205,7 @@ class MapViewModel(
                 // impact and network usage.
                 preloadingPadding(tileSizePx * parameters.tilesPreloadingPadding)
             }
-        ).apply {
-            enableRotation()
-
-            // Add both background and measurement layers.
-            addLayer(backgroundTilesProvider, placement = BelowAll)
-            addLayer(measurementTilesProvider, initialOpacity = 0.75f)
-
-            parameters.focusedMeasurementUuid?.let { uuid ->
-                // If a measurement is focused, add its path as map markers and disable
-                // automatic recenter to user location
-                viewModelScope.launch(Dispatchers.Default) {
-                    addPathsForMeasurement(uuid)
-                    autoRecenterEnabled.tryEmit(false)
-                }
-            }
-        }
+        )
     )
 
     private var _mapOrientationFlow = MutableStateFlow(0f)
@@ -286,6 +266,12 @@ class MapViewModel(
     // - Lifecycle
 
     init {
+        mapState.enableRotation()
+
+        // Add both background and measurement layers.
+        mapState.addLayer(backgroundTilesProvider, placement = BelowAll)
+        mapState.addLayer(measurementTilesProvider, initialOpacity = 0.75f)
+
         mapState.onTouchDown {
             // If the user manually interacts with the map, disables automatic location tracking.
             autoRecenterEnabled.tryEmit(false)
@@ -321,6 +307,15 @@ class MapViewModel(
                 }
             }
         }
+
+        parameters.focusedMeasurementUuid?.let { uuid ->
+            // If a measurement is focused, add its path as map markers and disable
+            // automatic recenter to user location
+            viewModelScope.launch(Dispatchers.Main) {
+                addPathsForMeasurement(uuid)
+                autoRecenterEnabled.tryEmit(false)
+            }
+        }
     }
 
 
@@ -330,12 +325,10 @@ class MapViewModel(
         viewModelScope.launch(Dispatchers.Default) {
             // If a measurement is focused, center its path in the viewport.
             measurementPathBoundingBox?.let { boundingBox ->
-                withVisibleAreaPaddingRatio(parameters.visibleAreaPaddingRatio) {
-                    mapState.scrollTo(
-                        area = boundingBox,
-                        padding = Offset(x = 0.1f, y = 0.1f)
-                    )
-                }
+                mapState.scrollTo(
+                    area = boundingBox,
+                    padding = Offset(x = 0.2f, y = 0.2f)
+                )
             } ?: run {
                 // Otherwise, if user location is known, center it in the viewport.
                 mapState.getMarkerInfo(id = USER_LOCATION_MARKER_ID)?.let {
@@ -343,10 +336,6 @@ class MapViewModel(
                         it.x,
                         it.y,
                         destScale = zoomLevelToScale(parameters.initialZoomLevel),
-                        screenOffset = Offset(
-                            x = -0.5f,
-                            y = -0.5f + parameters.visibleAreaPaddingRatio.bottom / 2
-                        )
                     )
                 }
             }
@@ -383,7 +372,12 @@ class MapViewModel(
             mapState.moveMarker(id = USER_LOCATION_MARKER_ID, x = x, y = y)
         } else {
             // Otherwise, create and add marker
-            mapState.addMarker(id = USER_LOCATION_MARKER_ID, x = x, y = y) {
+            mapState.addMarker(
+                id = USER_LOCATION_MARKER_ID,
+                x = x,
+                y = y,
+                relativeOffset = Offset(x = 0.5f, y = 0.5f),
+            ) {
                 UserLocationMarker(mapRotationDegrees = mapState.rotation)
             }
         }
@@ -432,9 +426,20 @@ class MapViewModel(
      * Resamples the measurement LAEq values to get one sound level value per GPS point.
      */
     private suspend fun addPathsForMeasurement(measurementUuid: String) {
-        val locationSequence = measurementService.getLocationSequenceForMeasurement(measurementUuid)
-        val leqSequence = measurementService.getLeqSequenceForMeasurement(measurementUuid)
-        val pathPoints = SoundLevelPathBuilder.pathForMeasurement(leqSequence, locationSequence)
+        val geojson = measurementService.getMeasurementAsGeoJson(measurementUuid)
+
+        // Map GeoJson features to simpler data structure to manipulate
+        val pathPoints = geojson.features
+            .mapNotNull { feature ->
+                val geom = feature.geometry as? Point ?: return@mapNotNull null
+                val laeq = feature.properties?.get("laeq")?.jsonPrimitive?.doubleOrNull
+                    ?: return@mapNotNull null
+                PathPoint(
+                    latitude = geom.coordinates.lat,
+                    longitude = geom.coordinates.lon,
+                    level = laeq,
+                )
+            }
 
         if (pathPoints.isEmpty()) {
             return
@@ -449,31 +454,32 @@ class MapViewModel(
                     contentDescription = "marker",
                     painter = painterResource(Res.drawable.map_marker),
                     tint = NoiseLevelColorRamp.getColorForSPLValue(value = point.level),
+                    modifier = Modifier.size(32.dp)
                 )
             }
-        }
+        } else {
+            // Add path data to map
+            pathPoints.forEachIndexed { index, point ->
+                val (x, y) = GeoUtil.lonLatToNormalizedWebMercator(
+                    latitude = point.latitude,
+                    longitude = point.longitude
+                )
 
-        // Add path data to map
-        var prevXY: Pair<Double, Double>? = null
-        pathPoints.forEachIndexed { index, point ->
-            if (index == 0) {
-                prevXY = GeoUtil.lonLatToNormalizedWebMercator(point.latitude, point.longitude)
-                return@forEachIndexed
+                mapState.addMarker(
+                    id = "path-$index",
+                    x = x,
+                    y = y,
+                    relativeOffset = Offset(x = 0.5f, y = 0.5f),
+                ) {
+                    Box(
+                        modifier = Modifier.size(6.dp)
+                            .background(
+                                color = NoiseLevelColorRamp.getColorForSPLValue(value = point.level),
+                                shape = CircleShape
+                            )
+                    )
+                }
             }
-            val currXY = GeoUtil.lonLatToNormalizedWebMercator(
-                latitude = point.latitude,
-                longitude = point.longitude
-            )
-
-            mapState.addPath(
-                id = "path-$index",
-                color = NoiseLevelColorRamp.getColorForSPLValue(value = point.level),
-                width = 6.dp,
-                zIndex = pathPoints.size - index.toFloat(),
-            ) {
-                addPoints(listOfNotNull(prevXY, currXY))
-            }
-            prevXY = currXY
         }
 
         // Save bounding box and recenter
@@ -497,7 +503,7 @@ class MapViewModel(
 
         // Ensure minimum bbox size
         val width = xRight - xLeft
-        val height = yBottom - yTop
+        val height = yTop - yBottom
         if (width < MIN_BBOX_SIZE) {
             xLeft -= (MIN_BBOX_SIZE - width) / 2.0
             xRight += (MIN_BBOX_SIZE - width) / 2.0
@@ -509,25 +515,18 @@ class MapViewModel(
 
         return BoundingBox(xLeft = xLeft, xRight = xRight, yTop = yTop, yBottom = yBottom)
     }
-
-    /**
-     * Sets map state's visible area padding ratio to the given values, runs the given block and
-     * sets visible padding ratio back to its original value.
-     *
-     * @param paddingRatio Visible padding ratio to apply before running the block
-     * @param block Closure to execute
-     */
-    private suspend fun withVisibleAreaPaddingRatio(
-        paddingRatio: VisibleAreaPaddingRatio,
-        block: suspend (VisibleAreaPaddingRatio) -> Unit,
-    ) {
-        mapState.setVisibleAreaPadding(
-            leftRatio = paddingRatio.left,
-            rightRatio = paddingRatio.right,
-            bottomRatio = paddingRatio.bottom,
-            topRatio = paddingRatio.top
-        )
-        block(paddingRatio)
-        mapState.setVisibleAreaPadding(0f)
-    }
 }
+
+
+/**
+ * A point of a sound level path.
+ *
+ * @param latitude Latitude (WGS:84)
+ * @param longitude Longitude (WGS:84)
+ * @param level Average LAEq from last the path point to this one.
+ */
+private data class PathPoint(
+    val latitude: Double,
+    val longitude: Double,
+    val level: Double,
+)

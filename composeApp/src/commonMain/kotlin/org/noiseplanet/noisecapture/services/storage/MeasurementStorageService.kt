@@ -53,7 +53,7 @@ class MeasurementStorageService : KStoreStorageService<Measurement>(
     /**
      * Since a measurement is composed of multiple files (root measurement file + Leq and location
      * sequences fragments), we need to gather the paths to all of these sub files and download
-     * them all at once as zip using [FileSystemService.downloadFiles].
+     * them all at once as zip using [FileSystemService.download].
      */
     override suspend fun download(uuid: String) {
         val measurement = get(uuid) ?: return
@@ -84,6 +84,6 @@ class MeasurementStorageService : KStoreStorageService<Measurement>(
         measurementFiles.add(getFileNameForRecord(measurement.uuid))
 
         // Then zip and download
-        fileSystemService.downloadFiles(measurementFiles, archiveName = "${uuid}_raw_export")
+        fileSystemService.download(measurementFiles, archiveName = "${uuid}_raw_export")
     }
 }

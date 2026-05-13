@@ -10,7 +10,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 
 - Visual hint of GPS accuracy while recording (#278)
-- Measurement GeoJson export (#279)
+- Measurement GeoJson export (#279, #290)
 - Onboarding flow (#282)
 
 ### Fixed
@@ -19,6 +19,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   app (#278)
 - A measurement with empty or single element LAEq sequence would cause the app to crash when opening
   its details page (#288)
+- iOS: Sometimes measurement path would not show up on map (#290)
 
 ### Changed
 

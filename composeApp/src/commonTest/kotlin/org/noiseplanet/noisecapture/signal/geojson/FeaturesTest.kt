@@ -1,15 +1,15 @@
 package org.noiseplanet.noisecapture.signal.geojson
 
 import kotlinx.serialization.json.JsonPrimitive
-import org.noiseplanet.noisecapture.util.Feature
-import org.noiseplanet.noisecapture.util.GeoJson
-import org.noiseplanet.noisecapture.util.LineString
-import org.noiseplanet.noisecapture.util.MultiLineString
-import org.noiseplanet.noisecapture.util.MultiPoint
-import org.noiseplanet.noisecapture.util.Point
-import org.noiseplanet.noisecapture.util.Polygon
-import org.noiseplanet.noisecapture.util.lineOf
-import org.noiseplanet.noisecapture.util.positionOf
+import org.noiseplanet.noisecapture.util.geo.Feature
+import org.noiseplanet.noisecapture.util.geo.GeoJson
+import org.noiseplanet.noisecapture.util.geo.LineString
+import org.noiseplanet.noisecapture.util.geo.MultiLineString
+import org.noiseplanet.noisecapture.util.geo.MultiPoint
+import org.noiseplanet.noisecapture.util.geo.Point
+import org.noiseplanet.noisecapture.util.geo.Polygon
+import org.noiseplanet.noisecapture.util.geo.lineOf
+import org.noiseplanet.noisecapture.util.geo.positionOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

@@ -7,6 +7,7 @@ import org.noiseplanet.noisecapture.model.dao.LeqSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.LocationRecord
 import org.noiseplanet.noisecapture.model.dao.LocationSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.Measurement
+import org.noiseplanet.noisecapture.util.geo.FeatureCollection
 
 
 /**
@@ -167,6 +168,14 @@ interface MeasurementService {
      * @return Updated measurement with summary property.
      */
     suspend fun calculateSummary(measurement: Measurement): Measurement
+
+    /**
+     * Gets the GeoJson representation of this measurement.
+     * See [org.noiseplanet.noisecapture.util.geo.GeoJsonBuilder] for implementation details.
+     * The first time this method is called, calculates and stores the result, then for further
+     * calls, just returns the precalculated representation.
+     */
+    suspend fun getMeasurementAsGeoJson(uuid: String): FeatureCollection
 
     /**
      * Offers to the end user to download the raw measurement data with the given ID as a zip archive.

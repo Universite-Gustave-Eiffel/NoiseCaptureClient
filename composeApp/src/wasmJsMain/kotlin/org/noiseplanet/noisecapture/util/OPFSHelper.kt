@@ -1,12 +1,21 @@
 package org.noiseplanet.noisecapture.util
 
+import io.ktor.util.toJsArray
 import kotlinx.coroutines.await
+import org.khronos.webgl.ArrayBuffer
+import org.khronos.webgl.Uint8Array
+import org.khronos.webgl.get
 import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.interop.navigator
 import org.noiseplanet.noisecapture.interop.storage.FileSystemDirectoryHandle
 import org.noiseplanet.noisecapture.interop.storage.FileSystemFileHandle
+import org.noiseplanet.noisecapture.interop.storage.FileSystemWritableFileStream
 import org.noiseplanet.noisecapture.interop.storage.fileSystemHandleOptions
 import org.noiseplanet.noisecapture.log.Logger
+import org.w3c.files.File
+import org.w3c.files.FileReader
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 
 /**
@@ -99,5 +108,52 @@ object OPFSHelper : KoinComponent {
             logger.error(message = "An error occurred while access file storage", throwable = error)
             null
         }
+    }
+
+    /**
+     * Reads contents of file at given path as [ByteArray].
+     *
+     * @param filePath
+     * @return File contents or null if file not found.
+     */
+    suspend fun read(filePath: String): ByteArray? {
+        // Get file and directory handles
+        val (fileHandle, _) = getFileHandle(filePath) ?: return null
+        val file = fileHandle.getFile().await<File>()
+
+        // Create file reader
+        val reader = FileReader()
+        // Read contents from file. Since FileReader relies on a callback to get the contents
+        // after reading, we wrap this in a suspendCoroutine to synchronise the result
+        return suspendCoroutine { continuation ->
+            reader.readAsArrayBuffer(file)
+            reader.addEventListener("load") {
+                // Continue execution when contents are available.
+                (reader.result as? ArrayBuffer)?.let { arrayBuffer ->
+                    val uint8Array = Uint8Array(arrayBuffer)
+                    val byteArray = ByteArray(uint8Array.length) { index ->
+                        uint8Array[index]
+                    }
+                    continuation.resume(byteArray)
+                }
+            }
+        }
+    }
+
+    /**
+     * Writes given data to file, creating it if it doesn't exist.
+     *
+     * @param filePath File path.
+     * @param data Bytes to write.
+     */
+    suspend fun write(filePath: String, data: ByteArray) {
+        // Get file handle, create it if not found
+        val (fileHandle, _) = getFileHandle(filePath, createIfNotFound = true) ?: return
+        // Get writer handle
+        val stream: FileSystemWritableFileStream = fileHandle.createWritable().await()
+        // Write data to file
+        stream.write(data.toJsArray()).await<Unit>()
+        // Close writer handle
+        stream.close().await<Unit>()
     }
 }

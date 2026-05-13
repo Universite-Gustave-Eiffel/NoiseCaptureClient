@@ -8,9 +8,7 @@ import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.log.Logger
-import org.noiseplanet.noisecapture.util.FeatureCollection
 import org.noiseplanet.noisecapture.util.FilePickerEvent
-import org.noiseplanet.noisecapture.util.GeoJson
 import org.noiseplanet.noisecapture.util.IOSFilePickerEventBus
 import org.noiseplanet.noisecapture.util.injectLogger
 import org.noiseplanet.noisecapture.util.runCatchingNSError
@@ -18,13 +16,9 @@ import platform.Foundation.NSApplicationSupportDirectory
 import platform.Foundation.NSFileCoordinator
 import platform.Foundation.NSFileCoordinatorReadingForUploading
 import platform.Foundation.NSFileManager
-import platform.Foundation.NSFileSize
-import platform.Foundation.NSString
 import platform.Foundation.NSURL
-import platform.Foundation.NSUTF8StringEncoding
 import platform.Foundation.NSUserDomainMask
 import platform.Foundation.temporaryDirectory
-import platform.Foundation.writeToURL
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -42,80 +36,19 @@ class IOSFileSystemService : FileSystemService, KoinComponent {
 
     // - FileSystemService
 
-    override suspend fun getFileSize(fileUri: String): Long? {
-        val filePath = getAbsolutePath(fileUri) ?: return null
-
-        return runCatchingNSError { nsError ->
-            fileManager.attributesOfItemAtPath(filePath, nsError.ptr)
-        }.map {
-            it?.get(NSFileSize) as? Long
-        }.onFailure {
-            logger.error("Could not get size of file at path $filePath")
-        }.getOrNull()
-    }
-
-    override suspend fun deleteFile(fileUri: String) {
-        val absolutePath = getAbsolutePath(fileUri) ?: return
-
-        runCatchingNSError { nsError ->
-            fileManager.removeItemAtPath(absolutePath, nsError.ptr)
-        }.onFailure {
-            logger.error("Error while deleting file at path $absolutePath")
-        }
-    }
-
-    override suspend fun downloadFile(fileUri: String) {
+    override suspend fun download(fileUri: String) {
         val absoluteUrl = getAbsolutePath(fileUri) ?: return
-        val fileUrl = NSURL.fileURLWithPath(absoluteUrl)
+        val fileUrl = NSURL.fileURLWithPath(absoluteUrl.toString())
 
         withContext(Dispatchers.Main) {
             downloadFileAtUrl(fileUrl)
         }
     }
 
-    override suspend fun downloadFiles(fileUris: List<String>, archiveName: String) {
+    override suspend fun download(fileUris: List<String>, archiveName: String) {
         val zipUrl = createZipInTmp(zipFileName = archiveName, filePathsToZip = fileUris) ?: return
 
         downloadFileAtUrl(zipUrl, deleteAfterUse = true)
-    }
-
-    override suspend fun downloadGeoJson(geoJson: FeatureCollection, fileName: String) {
-        val contents = GeoJson.encodeToString(geoJson)
-        val timestamp = Clock.System.now().toEpochMilliseconds().toString()
-        val tempDirectory = fileManager.temporaryDirectory
-            .URLByAppendingPathComponent(timestamp) // To avoid possible name clash, use unique timestamp
-            ?: return
-        val tempFile = tempDirectory.URLByAppendingPathComponent(fileName) ?: return
-
-        // Create temporary directory
-        runCatchingNSError { nsError ->
-            fileManager.createDirectoryAtURL(
-                tempDirectory, withIntermediateDirectories = true, null, nsError.ptr
-            )
-        }.onFailure {
-            logger.error("Couldn't create temporary directory at path $tempDirectory", it)
-            return
-        }
-
-        // Write contents to temporary file
-        runCatchingNSError { nsError ->
-            // Compiler warns about cast never succeeding but under the hood kotlin String maps to NSString
-            @Suppress("CAST_NEVER_SUCCEEDS")
-            (contents as? NSString)?.writeToURL(
-                url = tempFile,
-                atomically = true,
-                encoding = NSUTF8StringEncoding,
-                error = nsError.ptr
-            )
-        }.onFailure {
-            logger.error("Couldn't write contents to file at path $tempFile", it)
-            return
-        }
-
-        // Download created file, cleaning up after use
-        withContext(Dispatchers.Main) {
-            downloadFileAtUrl(tempFile, deleteAfterUse = true)
-        }
     }
 
     /**
@@ -192,7 +125,7 @@ class IOSFileSystemService : FileSystemService, KoinComponent {
         // Copy files to download in temporary directory
         filePathsToZip.forEach { filePath ->
             val absolutePath = getAbsolutePath(filePath) ?: return null
-            val srcUrl = NSURL.fileURLWithPath(absolutePath)
+            val srcUrl = NSURL.fileURLWithPath(absolutePath.toString())
             val toUrl = directoryToZipUrl.URLByAppendingPathComponent(filePath) ?: return null
 
             // Create intermediary directories if needed

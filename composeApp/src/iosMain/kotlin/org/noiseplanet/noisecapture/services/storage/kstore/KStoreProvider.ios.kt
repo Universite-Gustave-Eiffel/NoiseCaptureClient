@@ -8,13 +8,12 @@ import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.files.Path
+import kotlinx.io.files.SystemFileSystem
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.services.storage.FileSystemService
-import org.noiseplanet.noisecapture.util.createDirectoriesAtPath
-import platform.Foundation.NSFileManager
 
 /**
  * iOS KStoreProvider using local file storage and JSON encoding/decoding
@@ -50,7 +49,7 @@ internal actual class KStoreProvider : KoinComponent {
         checkNotNull(filePath) { "Could not get documents directory URL" }
 
         // Create enclosing directories if they doesn't exist
-        NSFileManager.defaultManager.createDirectoriesAtPath(filePath.parent.toString())
+        filePath.parent?.let { SystemFileSystem.createDirectories(it) }
 
         // Return KStore handle
         return storeOf(
@@ -75,6 +74,6 @@ internal actual class KStoreProvider : KoinComponent {
      * @return File size in bytes, null if not found.
      */
     actual suspend fun sizeOf(fileName: String): Long? {
-        return fileSystemService.getFileSize(fileName)
+        return fileSystemService.size(fileName)
     }
 }

@@ -4,13 +4,10 @@ import kotlinx.browser.document
 import kotlinx.coroutines.await
 import org.noiseplanet.noisecapture.interop.ZipJs
 import org.noiseplanet.noisecapture.interop.storage.FileSystemWritableFileStream
-import org.noiseplanet.noisecapture.util.FeatureCollection
-import org.noiseplanet.noisecapture.util.GeoJson
 import org.noiseplanet.noisecapture.util.OPFSHelper
 import org.w3c.dom.HTMLAnchorElement
 import org.w3c.dom.url.URL
 import org.w3c.files.Blob
-import org.w3c.files.BlobPropertyBag
 import org.w3c.files.File
 
 /**
@@ -21,14 +18,22 @@ class OPFSFileSystemService : FileSystemService {
 
     // - Public functions
 
-    override suspend fun getFileSize(fileUri: String): Long? {
+    override suspend fun read(fileUri: String): ByteArray? {
+        return OPFSHelper.read(fileUri)
+    }
+
+    override suspend fun write(fileUri: String, bytes: ByteArray, append: Boolean) {
+        OPFSHelper.write(fileUri, bytes)
+    }
+
+    override suspend fun size(fileUri: String): Long? {
         val (fileHandle, _) = OPFSHelper.getFileHandle(fileUri) ?: return null
         val file: File = fileHandle.getFile().await()
 
         return file.size.toInt().toLong()
     }
 
-    override suspend fun deleteFile(fileUri: String) {
+    override suspend fun delete(fileUri: String) {
         val (fileHandle, directoryHandle) = OPFSHelper.getFileHandle(fileUri) ?: return
         directoryHandle.removeEntry(fileHandle.name).await<Unit>()
     }
@@ -38,7 +43,7 @@ class OPFSFileSystemService : FileSystemService {
      */
     override fun getRootDirectory(): String = ""
 
-    override suspend fun downloadFile(fileUri: String) {
+    override suspend fun download(fileUri: String) {
         // Get file blob
         val (fileHandle, _) = OPFSHelper.getFileHandle(fileUri) ?: return
         val file: File = fileHandle.getFile().await()
@@ -50,7 +55,7 @@ class OPFSFileSystemService : FileSystemService {
     /**
      * Download files using Zip.js library: https://jsr.io/@zip-js/zip-js
      */
-    override suspend fun downloadFiles(fileUris: List<String>, archiveName: String) {
+    override suspend fun download(fileUris: List<String>, archiveName: String) {
         val writer = ZipJs.BlobWriter("applications/zip")
         val zipWriter = ZipJs.ZipWriter(writer)
 
@@ -68,16 +73,6 @@ class OPFSFileSystemService : FileSystemService {
 
         // Download zip file
         downloadBlob(blob, "$archiveName.zip")
-    }
-
-    override suspend fun downloadGeoJson(geoJson: FeatureCollection, fileName: String) {
-        val contents = GeoJson.encodeToString(geoJson)
-        // Write data to blob
-        val blob = Blob(
-            blobParts = arrayOf<JsAny?>(contents.toJsString()).toJsArray(),
-            options = BlobPropertyBag(type = "application/geo+json")
-        )
-        downloadBlob(blob, fileName)
     }
 
     /**

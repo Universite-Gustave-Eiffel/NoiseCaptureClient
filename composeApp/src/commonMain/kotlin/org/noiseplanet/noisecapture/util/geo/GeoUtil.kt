@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.util
+package org.noiseplanet.noisecapture.util.geo
 
 import io.github.koalaplot.core.util.Degrees
 import io.github.koalaplot.core.util.toRadians

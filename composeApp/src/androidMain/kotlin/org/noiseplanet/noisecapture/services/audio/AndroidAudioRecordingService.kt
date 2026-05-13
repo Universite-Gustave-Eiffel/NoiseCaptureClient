@@ -4,6 +4,7 @@ import android.content.Context
 import android.media.AudioManager
 import android.media.MediaRecorder
 import android.os.Build
+import kotlinx.io.files.SystemFileSystem
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.log.Logger
@@ -38,7 +39,7 @@ class AndroidAudioRecordingService : AudioRecordingService, KoinComponent {
         val relativePath = "measurement/audio/$outputFileName.mp3"
         val absolutePath = fileSystemService.getAbsolutePath(relativePath) ?: return
         // Create parent directories if needed
-        File(absolutePath).parentFile?.mkdirs()
+        absolutePath.parent?.let { SystemFileSystem.createDirectories(it) }
 
         // Initialize media recorder for given output file name
         mediaRecorder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -51,7 +52,7 @@ class AndroidAudioRecordingService : AudioRecordingService, KoinComponent {
             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
             setAudioEncoder(MediaRecorder.AudioEncoder.HE_AAC)
             setAudioSamplingRate(44_100)
-            setOutputFile(absolutePath)
+            setOutputFile(absolutePath.toString())
 
             // If preferred device is specified and available, use it as input source
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {

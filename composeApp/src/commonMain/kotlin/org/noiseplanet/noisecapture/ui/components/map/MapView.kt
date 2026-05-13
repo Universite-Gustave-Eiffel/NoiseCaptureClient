@@ -6,8 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -37,7 +36,6 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
 import org.noiseplanet.noisecapture.util.ncDropShadow
-import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 import ovh.plrapps.mapcompose.ui.MapUI
 
 
@@ -70,18 +68,10 @@ fun MapView(
         )
 
         if (viewModel.parameters.showControls) {
-
-            var controlsModifier = modifier
-            // If the view expands down to the bottom of the screen, take safe area padding into account
-            if (viewModel.parameters.visibleAreaPaddingRatio.bottom == 0.0f) {
-                controlsModifier = controlsModifier.paddingBottomWithInsets(4.dp)
-            }
-
             Row(
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.Top,
-                modifier = controlsModifier.fillMaxWidth()
-                    .fillMaxHeight(fraction = 1f - viewModel.parameters.visibleAreaPaddingRatio.bottom)
+                modifier = modifier.fillMaxSize()
                     .padding(16.dp)
             ) {
                 Column(
