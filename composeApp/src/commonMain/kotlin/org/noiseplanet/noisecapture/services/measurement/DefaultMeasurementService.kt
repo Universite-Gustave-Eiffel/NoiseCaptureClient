@@ -127,8 +127,9 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
         val audioSize = measurement.recordedAudioUrl
             ?.let { fileSystemService.size(it) }
             ?: 0L
+        val geoJsonSize = fileSystemService.size("measurement/geojson/${uuid}.geojson") ?: 0L
 
-        return measurementSize + leqSequenceSize + locationSequenceSize + audioSize
+        return measurementSize + leqSequenceSize + locationSequenceSize + audioSize + geoJsonSize
     }
 
     override fun getMeasurementFlow(uuid: String): Flow<Measurement?> {
