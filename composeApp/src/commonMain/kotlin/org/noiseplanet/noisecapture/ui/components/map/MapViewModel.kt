@@ -33,7 +33,6 @@ import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.map.MapViewModel.VisibleAreaPaddingRatio
 import org.noiseplanet.noisecapture.ui.theme.LocationTint
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
-import org.noiseplanet.noisecapture.util.geo.GeoJsonBuilder
 import org.noiseplanet.noisecapture.util.geo.GeoUtil
 import org.noiseplanet.noisecapture.util.geo.Point
 import org.noiseplanet.noisecapture.util.geo.lat
@@ -216,22 +215,7 @@ class MapViewModel(
                 // impact and network usage.
                 preloadingPadding(tileSizePx * parameters.tilesPreloadingPadding)
             }
-        ).apply {
-            enableRotation()
-
-            // Add both background and measurement layers.
-            addLayer(backgroundTilesProvider, placement = BelowAll)
-            addLayer(measurementTilesProvider, initialOpacity = 0.75f)
-
-            parameters.focusedMeasurementUuid?.let { uuid ->
-                // If a measurement is focused, add its path as map markers and disable
-                // automatic recenter to user location
-                viewModelScope.launch(Dispatchers.Default) {
-                    addPathsForMeasurement(uuid)
-                    autoRecenterEnabled.tryEmit(false)
-                }
-            }
-        }
+        )
     )
 
     private var _mapOrientationFlow = MutableStateFlow(0f)
@@ -292,6 +276,12 @@ class MapViewModel(
     // - Lifecycle
 
     init {
+        mapState.enableRotation()
+
+        // Add both background and measurement layers.
+        mapState.addLayer(backgroundTilesProvider, placement = BelowAll)
+        mapState.addLayer(measurementTilesProvider, initialOpacity = 0.75f)
+
         mapState.onTouchDown {
             // If the user manually interacts with the map, disables automatic location tracking.
             autoRecenterEnabled.tryEmit(false)
@@ -325,6 +315,15 @@ class MapViewModel(
                         }
                     }
                 }
+            }
+        }
+
+        parameters.focusedMeasurementUuid?.let { uuid ->
+            // If a measurement is focused, add its path as map markers and disable
+            // automatic recenter to user location
+            viewModelScope.launch(Dispatchers.Main) {
+                addPathsForMeasurement(uuid)
+                autoRecenterEnabled.tryEmit(false)
             }
         }
     }
@@ -438,12 +437,10 @@ class MapViewModel(
      * Resamples the measurement LAEq values to get one sound level value per GPS point.
      */
     private suspend fun addPathsForMeasurement(measurementUuid: String) {
-        val locationSequence = measurementService.getLocationSequenceForMeasurement(measurementUuid)
-        val leqSequence = measurementService.getLeqSequenceForMeasurement(measurementUuid)
+        val geojson = measurementService.getMeasurementAsGeoJson(measurementUuid)
 
         // Map GeoJson features to simpler data structure to manipulate
-        // TODO: Read from file instead of regenerating on every recomposition
-        val pathPoints = GeoJsonBuilder.fromMeasurement(leqSequence, locationSequence).features
+        val pathPoints = geojson.features
             .mapNotNull { feature ->
                 val geom = feature.geometry as? Point ?: return@mapNotNull null
                 val laeq = feature.properties?.get("laeq")?.jsonPrimitive?.doubleOrNull
