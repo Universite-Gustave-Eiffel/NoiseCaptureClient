@@ -38,11 +38,11 @@ fun OnboardingScreenContainer(
             modifier = modifier.widthIn(max = AdaptiveUtil.MAX_FULL_SCREEN_WIDTH)
                 .padding(horizontal = 24.dp)
                 .padding(top = 16.dp)
-                .paddingBottomWithInsets(16.dp, withoutNavBar = 48.dp),
+                .paddingBottomWithInsets(16.dp, withoutNavBar = 32.dp),
         ) {
             content()
 
-            Spacer(modifier = Modifier.height(64.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
             NCButton(
                 viewModel = NCButtonViewModel(title = primaryButtonTitle, hasDropShadow = true),
