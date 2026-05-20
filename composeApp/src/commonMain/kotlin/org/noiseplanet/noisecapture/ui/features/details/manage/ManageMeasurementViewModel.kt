@@ -1,17 +1,16 @@
 package org.noiseplanet.noisecapture.ui.features.details.manage
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.MaterialTheme
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.delete
 import noisecapture.composeapp.generated.resources.details_delete_button
 import noisecapture.composeapp.generated.resources.details_delete_measurement_audio_dialog_text
 import noisecapture.composeapp.generated.resources.details_delete_measurement_dialog_text
@@ -23,8 +22,11 @@ import noisecapture.composeapp.generated.resources.details_menu_delete_whole_des
 import noisecapture.composeapp.generated.resources.details_menu_delete_whole_title
 import noisecapture.composeapp.generated.resources.details_menu_export_audio_description
 import noisecapture.composeapp.generated.resources.details_menu_export_audio_title
+import noisecapture.composeapp.generated.resources.details_menu_export_geojson_description
+import noisecapture.composeapp.generated.resources.details_menu_export_geojson_title
 import noisecapture.composeapp.generated.resources.details_menu_export_raw_description
 import noisecapture.composeapp.generated.resources.details_menu_export_raw_title
+import noisecapture.composeapp.generated.resources.download
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.model.dao.Measurement
@@ -69,7 +71,7 @@ class ManageMeasurementViewModel(
 
     val deleteButtonViewModel = NCButtonViewModel(
         title = Res.string.details_delete_button,
-        icon = Icons.Default.Delete,
+        icon = Res.drawable.delete,
         colors = {
             NCButtonColors(
                 containerColor = MaterialTheme.colorScheme.errorContainer,
@@ -129,7 +131,7 @@ class ManageMeasurementViewModel(
 
     val exportButtonViewModel = NCButtonViewModel(
         title = Res.string.details_export_button,
-        icon = Icons.Default.Download,
+        icon = Res.drawable.download,
         colors = {
             NCButtonColors.Defaults.secondary()
         }
@@ -143,7 +145,11 @@ class ManageMeasurementViewModel(
                     supportingText = Res.string.details_menu_export_raw_description,
                     onClick = { downloadRawData() },
                 ),
-                // TODO: Add GeoJSON export option
+                ManageMeasurementMenuItem(
+                    label = Res.string.details_menu_export_geojson_title,
+                    supportingText = Res.string.details_menu_export_geojson_description,
+                    onClick = { exportToGeoJson() },
+                ),
             )
             if (measurement.recordedAudioUrl != null) {
                 listOf(
@@ -165,7 +171,7 @@ class ManageMeasurementViewModel(
                 measurement,
                 measurementSize = measurementService.getMeasurementSize(measurement.uuid),
                 audioFileSize = measurement.recordedAudioUrl?.let {
-                    fileSystemService.getFileSize(it)
+                    fileSystemService.size(it)
                 },
             )
         }
@@ -204,8 +210,15 @@ class ManageMeasurementViewModel(
     fun downloadAudio() {
         measurement?.recordedAudioUrl?.let {
             viewModelScope.launch {
-                fileSystemService.downloadFile(it)
+                fileSystemService.download(it)
             }
+        }
+    }
+
+    fun exportToGeoJson() {
+        viewModelScope.launch(Dispatchers.Default) {
+            // Download as geojson file
+            fileSystemService.download("measurement/geojson/$measurementId.geojson")
         }
     }
 }

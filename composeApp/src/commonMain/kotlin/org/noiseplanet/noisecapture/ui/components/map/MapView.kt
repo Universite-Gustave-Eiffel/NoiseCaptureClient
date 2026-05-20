@@ -6,15 +6,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -32,13 +28,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.add
 import noisecapture.composeapp.generated.resources.compass
+import noisecapture.composeapp.generated.resources.remove
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
 import org.noiseplanet.noisecapture.util.ncDropShadow
-import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 import ovh.plrapps.mapcompose.ui.MapUI
 
 
@@ -58,6 +55,7 @@ fun MapView(
         parametersOf(sizeClass, focusedMeasurementUuid)
     }
     val mapOrientation by viewModel.mapOrientationFlow.collectAsStateWithLifecycle()
+    val recenterButtonViewModel by viewModel.recenterButtonViewModel.collectAsStateWithLifecycle()
 
     var showHelpDialog by remember { mutableStateOf(false) }
 
@@ -70,23 +68,19 @@ fun MapView(
         )
 
         if (viewModel.parameters.showControls) {
-
-            var controlsModifier = modifier
-            // If the view expands down to the bottom of the screen, take safe area padding into account
-            if (viewModel.parameters.visibleAreaPaddingRatio.bottom == 0.0f) {
-                controlsModifier = controlsModifier.paddingBottomWithInsets()
-            }
-
             Row(
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.Top,
-                modifier = controlsModifier.fillMaxWidth()
-                    .fillMaxHeight(fraction = 1f - viewModel.parameters.visibleAreaPaddingRatio.bottom)
+                modifier = modifier.fillMaxSize()
                     .padding(16.dp)
             ) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
+                    if (viewModel.parameters.showLocationAccuracy) {
+                        MapLocationAccuracyView()
+                    }
+
                     // Help button (shows legend and any additional info)
                     NCButton(
                         viewModel = viewModel.helpButtonViewModel,
@@ -130,7 +124,7 @@ fun MapView(
                             onClick = { viewModel.zoomIn() },
                         ) {
                             Icon(
-                                Icons.Default.Add,
+                                painter = painterResource(Res.drawable.add),
                                 contentDescription = "Zoom in",
                                 modifier = Modifier.size(18.dp),
                             )
@@ -140,7 +134,7 @@ fun MapView(
                             onClick = { viewModel.zoomOut() },
                         ) {
                             Icon(
-                                Icons.Default.Remove,
+                                painter = painterResource(Res.drawable.remove),
                                 contentDescription = "Zoom out",
                                 modifier = Modifier.size(18.dp),
                             )
@@ -150,15 +144,17 @@ fun MapView(
                     Spacer(modifier = Modifier.weight(1f))
 
                     // Recenter button
-                    NCButton(
-                        viewModel = viewModel.recenterButtonViewModel,
-                        onClick = {
-                            viewModel.recenter()
-                            viewModel.autoRecenterEnabled = true
-                        },
-                        modifier = Modifier.size(CONTROLS_SIZE)
-                            .mapControl()
-                    )
+                    recenterButtonViewModel?.let {
+                        NCButton(
+                            viewModel = it,
+                            onClick = {
+                                viewModel.recenter()
+                                viewModel.autoRecenterEnabled.tryEmit(true)
+                            },
+                            modifier = Modifier.size(CONTROLS_SIZE)
+                                .mapControl()
+                        )
+                    }
                 }
             }
 

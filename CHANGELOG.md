@@ -7,6 +7,29 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-05-13
+
+### Added
+
+- Visual hint of GPS accuracy while recording (#278)
+- Measurement GeoJson export (#279, #290)
+- Onboarding flow (#282, #293)
+- Added wiki and issue reporting capabilities (#294)
+
+### Fixed
+
+- Android: switching location on or off from control center didn't trigger a state refresh in the
+  app (#278)
+- A measurement with empty or single element LAEq sequence would cause the app to crash when opening
+  its details page (#288)
+- iOS: Sometimes measurement path would not show up on map (#290)
+
+### Changed
+
+- Updated icons set (#277)
+- Ensure that version numbers are in sync between platforms (#281)
+- Update dependencies to latest stable versions (#283)
+
 ## [0.8.0] - 2026-03-04
 
 ### Added

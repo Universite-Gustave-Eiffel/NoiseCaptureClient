@@ -18,10 +18,13 @@ import io.github.koalaplot.core.line.AreaPlot2
 import io.github.koalaplot.core.style.AreaStyle
 import io.github.koalaplot.core.style.LineStyle
 import io.github.koalaplot.core.util.ExperimentalKoalaPlotApi
+import io.github.koalaplot.core.xygraph.AxisContent
 import io.github.koalaplot.core.xygraph.DoubleLinearAxisModel
 import io.github.koalaplot.core.xygraph.LongLinearAxisModel
 import io.github.koalaplot.core.xygraph.Point
 import io.github.koalaplot.core.xygraph.XYGraph
+import io.github.koalaplot.core.xygraph.rememberAxisStyle
+import io.github.koalaplot.core.xygraph.rememberGridStyle
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.details_spl_time_plot_description
 import noisecapture.composeapp.generated.resources.details_spl_time_plot_title
@@ -79,29 +82,40 @@ fun SplTimePlotView(
                     range = startTimestamp..endTimestamp,
                     minorTickCount = 1,
                 ),
-                xAxisLabels = @Composable { timestamp ->
-                    val sinceStart: Duration = (timestamp - startTimestamp).milliseconds
-                    val hideHours = (endTimestamp - startTimestamp).milliseconds.inWholeHours == 0L
+                xAxisContent = AxisContent(
+                    labels = @Composable { timestamp ->
+                        val sinceStart: Duration = (timestamp - startTimestamp).milliseconds
+                        val hideHours =
+                            (endTimestamp - startTimestamp).milliseconds.inWholeHours == 0L
 
-                    PlotAxisLabel(
-                        text = sinceStart.toHhMmSs(hideHoursIfZero = hideHours),
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                    )
-                },
+                        PlotAxisLabel(
+                            text = sinceStart.toHhMmSs(hideHoursIfZero = hideHours),
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                        )
+                    },
+                    title = {},
+                    style = rememberAxisStyle()
+                ),
                 yAxisModel = DoubleLinearAxisModel(
                     range = VuMeterOptions.DB_MIN..VuMeterOptions.DB_MAX,
                     minorTickCount = 1,
                 ),
-                yAxisLabels = @Composable {
-                    PlotAxisLabel(
-                        text = it.toInt().toString(),
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                    )
-                },
-                horizontalMajorGridLineStyle = PlotGridLineStyle.majorHorizontal,
-                verticalMajorGridLineStyle = PlotGridLineStyle.majorVertical,
-                horizontalMinorGridLineStyle = PlotGridLineStyle.minorHorizontal,
-                verticalMinorGridLineStyle = PlotGridLineStyle.minorVertical,
+                yAxisContent = AxisContent(
+                    labels = @Composable {
+                        PlotAxisLabel(
+                            text = it.toInt().toString(),
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                        )
+                    },
+                    title = {},
+                    style = rememberAxisStyle()
+                ),
+                gridStyle = rememberGridStyle(
+                    horizontalMajorStyle = PlotGridLineStyle.majorHorizontal,
+                    verticalMajorStyle = PlotGridLineStyle.majorVertical,
+                    horizontalMinorStyle = PlotGridLineStyle.minorHorizontal,
+                    verticalMinorStyle = PlotGridLineStyle.minorVertical,
+                ),
             ) {
                 AreaPlot2(
                     data = leqOverTime.map { (timestamp, leq) ->
@@ -111,7 +125,7 @@ fun SplTimePlotView(
                         brush = gradientBrush,
                         strokeWidth = 2.dp
                     ),
-                    areaBaseline = AreaBaseline.ConstantLine(value = 0.0),
+                    areaBaseline = AreaBaseline.HorizontalLine(value = 0.0),
                     areaStyle = AreaStyle(
                         brush = gradientBrush,
                         alpha = 0.5f,

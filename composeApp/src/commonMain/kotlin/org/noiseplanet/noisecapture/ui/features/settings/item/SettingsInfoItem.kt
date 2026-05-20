@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -22,10 +20,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.content_copy
 import noisecapture.composeapp.generated.resources.settings_info_app_device
 import noisecapture.composeapp.generated.resources.settings_info_app_platform
 import noisecapture.composeapp.generated.resources.settings_info_app_title
 import noisecapture.composeapp.generated.resources.settings_info_app_version
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.noiseplanet.noisecapture.util.setClipEntry
@@ -85,7 +85,7 @@ fun SettingsInfoItem(
             }
         ) {
             Icon(
-                imageVector = Icons.Default.ContentCopy,
+                painter = painterResource(Res.drawable.content_copy),
                 contentDescription = "Copy",
                 tint = MaterialTheme.colorScheme.onSurface
             )

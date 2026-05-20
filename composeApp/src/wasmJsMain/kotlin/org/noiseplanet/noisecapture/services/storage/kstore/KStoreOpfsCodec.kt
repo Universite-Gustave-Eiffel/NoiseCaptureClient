@@ -10,13 +10,8 @@ import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.serializer
-import org.noiseplanet.noisecapture.interop.storage.FileSystemWritableFileStream
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.util.OPFSHelper
-import org.w3c.files.File
-import org.w3c.files.FileReader
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 
 /**
@@ -46,7 +41,7 @@ class KStoreOpfsCodec<T : @Serializable Any>(
     // - Codec
 
     override suspend fun decode(): T? {
-        val jsonString = readFileContent(filePath) ?: return null
+        val jsonString = OPFSHelper.read(filePath)?.decodeToString() ?: return null
 
         // Try to decode JSON from string
         return try {
@@ -58,8 +53,8 @@ class KStoreOpfsCodec<T : @Serializable Any>(
                 throwable = e,
             )
 
-            val previousVersion: Int? = readFileContent(versionFilePath)?.let {
-                json.decodeFromString(Int.serializer(), it)
+            val previousVersion: Int? = OPFSHelper.read(versionFilePath)?.let {
+                json.decodeFromString(Int.serializer(), it.decodeToString())
             }
             val rawJsonData: JsonElement = json.decodeFromString(jsonString)
             migration(previousVersion, rawJsonData)
@@ -71,52 +66,17 @@ class KStoreOpfsCodec<T : @Serializable Any>(
             // Serialise data to JSON
             val data = json.encodeToString(serializer, unwrappedValue)
             // Write JSON data to file
-            writeToFile(filePath, data)
+            OPFSHelper.write(filePath, data.encodeToByteArray())
             // Serialize version data
             val versionData = json.encodeToString(Int.serializer(), version)
             // Write version data to file
-            writeToFile(versionFilePath, versionData)
+            OPFSHelper.write(versionFilePath, versionData.encodeToByteArray())
         } ?: run {
             // Get file and directory handles if they exist
             val (fileHandle, directoryHandle) = OPFSHelper.getFileHandle(filePath) ?: return
             // If value is null, delete the file
             directoryHandle.removeEntry(fileHandle.name).await()
         }
-    }
-
-
-    // - Private functions
-
-    private suspend fun readFileContent(filePath: String): String? {
-        // Get file and directory handles
-        val (fileHandle, _) = OPFSHelper.getFileHandle(filePath) ?: return null
-        val file = fileHandle.getFile().await<File>()
-
-        // Create file reader
-        val reader = FileReader()
-        // Read contents from file. Since FileReader relies on a callback to get the contents
-        // after reading, we wrap this in a suspendCoroutine to synchronise the result
-        return suspendCoroutine { continuation ->
-            reader.readAsText(file)
-            reader.addEventListener("load") {
-                // Continue execution when contents are available.
-                continuation.resume(reader.result?.toString())
-            }
-        }.toString()
-    }
-
-    private suspend fun writeToFile(filePath: String, data: String) {
-        // Get file handle, create it if not found
-        val (fileHandle, _) = OPFSHelper.getFileHandle(
-            filePath,
-            createIfNotFound = true
-        ) ?: return
-        // Get writer handle
-        val stream: FileSystemWritableFileStream = fileHandle.createWritable().await()
-        // Write data to file
-        stream.write(data.toJsString()).await<Unit>()
-        // Close writer handle
-        stream.close().await<Unit>()
     }
 }
 

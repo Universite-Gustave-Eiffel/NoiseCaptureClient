@@ -16,7 +16,6 @@ import platform.Foundation.NSApplicationSupportDirectory
 import platform.Foundation.NSFileCoordinator
 import platform.Foundation.NSFileCoordinatorReadingForUploading
 import platform.Foundation.NSFileManager
-import platform.Foundation.NSFileSize
 import platform.Foundation.NSURL
 import platform.Foundation.NSUserDomainMask
 import platform.Foundation.temporaryDirectory
@@ -37,38 +36,16 @@ class IOSFileSystemService : FileSystemService, KoinComponent {
 
     // - FileSystemService
 
-    override suspend fun getFileSize(fileUri: String): Long? {
-        val filePath = getAbsolutePath(fileUri) ?: return null
-
-        return runCatchingNSError { nsError ->
-            fileManager.attributesOfItemAtPath(filePath, nsError.ptr)
-        }.map {
-            it?.get(NSFileSize) as? Long
-        }.onFailure {
-            logger.error("Could not get size of file at path $filePath")
-        }.getOrNull()
-    }
-
-    override suspend fun deleteFile(fileUri: String) {
-        val absolutePath = getAbsolutePath(fileUri) ?: return
-
-        runCatchingNSError { nsError ->
-            fileManager.removeItemAtPath(absolutePath, nsError.ptr)
-        }.onFailure {
-            logger.error("Error while deleting file at path $absolutePath")
-        }
-    }
-
-    override suspend fun downloadFile(fileUri: String) {
+    override suspend fun download(fileUri: String) {
         val absoluteUrl = getAbsolutePath(fileUri) ?: return
-        val fileUrl = NSURL.fileURLWithPath(absoluteUrl)
+        val fileUrl = NSURL.fileURLWithPath(absoluteUrl.toString())
 
         withContext(Dispatchers.Main) {
             downloadFileAtUrl(fileUrl)
         }
     }
 
-    override suspend fun downloadFiles(fileUris: List<String>, archiveName: String) {
+    override suspend fun download(fileUris: List<String>, archiveName: String) {
         val zipUrl = createZipInTmp(zipFileName = archiveName, filePathsToZip = fileUris) ?: return
 
         downloadFileAtUrl(zipUrl, deleteAfterUse = true)
@@ -148,7 +125,7 @@ class IOSFileSystemService : FileSystemService, KoinComponent {
         // Copy files to download in temporary directory
         filePathsToZip.forEach { filePath ->
             val absolutePath = getAbsolutePath(filePath) ?: return null
-            val srcUrl = NSURL.fileURLWithPath(absolutePath)
+            val srcUrl = NSURL.fileURLWithPath(absolutePath.toString())
             val toUrl = directoryToZipUrl.URLByAppendingPathComponent(filePath) ?: return null
 
             // Create intermediary directories if needed

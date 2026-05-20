@@ -1,4 +1,5 @@
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type
+import org.gradle.internal.extensions.core.extra
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -18,16 +19,17 @@ plugins {
     alias(libs.plugins.buildKonfigGradlePlugin)
 }
 
-val appNamespace: String by project
-val appVersionCode: String by project
-val appVersionName: String by project
 
 buildkonfig {
-    packageName = appNamespace
+    val appVersionName = rootProject.extra.get("versionName") as String
+    val appVersionCode = rootProject.extra.get("versionCode") as String
+    val appPackageName: String by project
+
+    packageName = appPackageName
 
     defaultConfigs {
         buildConfigField(Type.STRING, name = "versionName", value = appVersionName, const = true)
-        buildConfigField(Type.INT, name = "versionCode", value = appVersionCode)
+        buildConfigField(Type.INT, name = "versionCode", value = appVersionCode, const = true)
     }
 }
 
@@ -88,7 +90,6 @@ kotlin {
             implementation(libs.compose.material3)
             implementation(libs.compose.material3.adaptive)
             implementation(libs.compose.material3.adaptive.layout)
-            implementation(libs.compose.material.icons.extended)
             implementation(libs.compose.ui)
             implementation(libs.compose.components.resources)
             implementation(libs.compose.ui.tooling.preview)
@@ -111,6 +112,9 @@ kotlin {
             implementation(libs.ktor.client.core)
             implementation(libs.humanreadable)
             implementation(libs.maps.compose)
+
+            implementation(libs.markdown.renderer)
+            implementation(libs.markdown.renderer.m3)
 
             implementation(libs.settings.multiplatform)
             implementation(libs.settings.multiplatform.serialization)

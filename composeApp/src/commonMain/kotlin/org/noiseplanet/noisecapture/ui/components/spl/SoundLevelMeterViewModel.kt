@@ -1,13 +1,12 @@
 package org.noiseplanet.noisecapture.ui.components.spl
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.pause
+import noisecapture.composeapp.generated.resources.play_arrow
 import noisecapture.composeapp.generated.resources.sound_level_meter_current_dba
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -99,7 +98,7 @@ class SoundLevelMeterViewModel(
     // - Private functions
 
     private fun getPlayPauseButtonViewModel(isAudioSourceRunning: Boolean): NCButtonViewModel {
-        val icon = if (isAudioSourceRunning) Icons.Filled.Pause else Icons.Filled.PlayArrow
+        val icon = if (isAudioSourceRunning) Res.drawable.pause else Res.drawable.play_arrow
 
         return IconNCButtonViewModel(
             icon = icon,

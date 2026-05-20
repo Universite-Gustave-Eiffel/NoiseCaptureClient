@@ -7,6 +7,8 @@ import org.noiseplanet.noisecapture.permission.delegate.AudioRecordPermissionDel
 import org.noiseplanet.noisecapture.permission.delegate.LocationBackgroundPermissionDelegate
 import org.noiseplanet.noisecapture.permission.delegate.PermissionDelegate
 import org.noiseplanet.noisecapture.permission.delegate.PersistentLocalStoragePermissionDelegate
+import org.noiseplanet.noisecapture.services.location.JsUserLocationService
+import org.noiseplanet.noisecapture.services.location.UserLocationService
 
 internal actual fun platformPermissionModule(): Module = module {
 
@@ -14,11 +16,15 @@ internal actual fun platformPermissionModule(): Module = module {
         AudioRecordPermissionDelegate()
     }
 
-    single<PermissionDelegate>(named(Permission.LOCATION_BACKGROUND.name)) {
+    single<PermissionDelegate>(named(Permission.LOCATION.name)) {
         LocationBackgroundPermissionDelegate()
     }
 
     single<PermissionDelegate>(named(Permission.PERSISTENT_LOCAL_STORAGE.name)) {
         PersistentLocalStoragePermissionDelegate()
+    }
+
+    single<UserLocationService> {
+        JsUserLocationService()
     }
 }

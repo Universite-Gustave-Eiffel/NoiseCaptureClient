@@ -29,12 +29,14 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import androidx.window.core.layout.WindowSizeClass
 import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
+import org.noiseplanet.noisecapture.ui.components.map.MapLocationUnavailableView
 import org.noiseplanet.noisecapture.ui.components.map.MapView
 import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterView
 import org.noiseplanet.noisecapture.ui.features.recording.controls.RecordingControls
@@ -164,6 +166,15 @@ private fun RecordingScreenCompact(viewModel: RecordingScreenViewModel) {
 
 @Composable
 private fun RecordingScreenMedium(viewModel: RecordingScreenViewModel) {
+
+    // - Properties
+
+    val isLocationAvailable by viewModel.isLocationAvailable
+        .collectAsStateWithLifecycle(initialValue = true)
+
+
+    // - Layout
+
     Column(
         verticalArrangement = Arrangement.spacedBy(24.dp),
         modifier = Modifier
@@ -186,7 +197,11 @@ private fun RecordingScreenMedium(viewModel: RecordingScreenViewModel) {
                 .fillMaxHeight()
                 .clip(shape = MaterialTheme.shapes.large)
         ) {
-            MapView(modifier = Modifier.fillMaxSize())
+            if (isLocationAvailable) {
+                MapView(modifier = Modifier.fillMaxSize())
+            } else {
+                MapLocationUnavailableView(modifier = Modifier.fillMaxSize())
+            }
 
             RecordingControls(
                 onStopRecording = { viewModel.showEndRecordingConfirmationDialog?.invoke() },
@@ -199,6 +214,15 @@ private fun RecordingScreenMedium(viewModel: RecordingScreenViewModel) {
 
 @Composable
 private fun RecordingScreenLarge(viewModel: RecordingScreenViewModel) {
+
+    // - Properties
+
+    val isLocationAvailable by viewModel.isLocationAvailable
+        .collectAsStateWithLifecycle(initialValue = true)
+
+
+    // - Layout
+
     Row(
         horizontalArrangement = Arrangement.spacedBy(24.dp),
         modifier = Modifier
@@ -221,7 +245,11 @@ private fun RecordingScreenLarge(viewModel: RecordingScreenViewModel) {
                 .fillMaxHeight()
                 .clip(shape = MaterialTheme.shapes.large)
         ) {
-            MapView(modifier = Modifier.fillMaxSize())
+            if (isLocationAvailable) {
+                MapView(modifier = Modifier.fillMaxSize())
+            } else {
+                MapLocationUnavailableView(modifier = Modifier.fillMaxSize())
+            }
 
             RecordingControls(
                 onStopRecording = { viewModel.showEndRecordingConfirmationDialog?.invoke() },

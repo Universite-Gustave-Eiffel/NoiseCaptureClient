@@ -3,12 +3,11 @@ package org.noiseplanet.noisecapture.services.audio
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ptr
-import kotlinx.io.files.Path
+import kotlinx.io.files.SystemFileSystem
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.services.storage.FileSystemService
-import org.noiseplanet.noisecapture.util.createDirectoriesAtPath
 import org.noiseplanet.noisecapture.util.injectLogger
 import org.noiseplanet.noisecapture.util.runCatchingNSError
 import platform.AVFAudio.AVAudioQuality
@@ -24,7 +23,6 @@ import platform.AVFAudio.AVSampleRateKey
 import platform.AVFAudio.currentRoute
 import platform.CoreAudioTypes.AudioFormatID
 import platform.CoreAudioTypes.kAudioFormatMPEG4AAC
-import platform.Foundation.NSFileManager
 import platform.Foundation.NSURL
 
 
@@ -66,14 +64,12 @@ class IOSAudioRecordingService : AudioRecordingService, KoinComponent {
         // Get an URL pointing to the output file
         val relativePath = "measurement/audio/$outputFileName.m4a"
         val absolutePath = fileSystemService.getAbsolutePath(relativePath)
-        val fileUri = absolutePath?.let { NSURL.URLWithString(it) }
+        val fileUri = absolutePath?.let { NSURL.URLWithString(it.toString()) }
         checkNotNull(fileUri) { "Could not create URL for file with name $outputFileName" }
         logger.debug("Output file URL: $fileUri")
 
         // Create enclosing directories if needed
-        Path(absolutePath).parent?.let {
-            NSFileManager.defaultManager.createDirectoriesAtPath(it.toString())
-        }
+        absolutePath.parent?.let { SystemFileSystem.createDirectories(it) }
 
         // Audio recorder settings specifying compression strategy and properties
         val settings: Map<Any?, *> = mapOf(

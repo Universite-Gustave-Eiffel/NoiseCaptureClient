@@ -1,8 +1,5 @@
 package org.noiseplanet.noisecapture.ui.features.home
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.outlined.Settings
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -10,6 +7,8 @@ import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.app_name
 import noisecapture.composeapp.generated.resources.home_slm_button_title
 import noisecapture.composeapp.generated.resources.home_slm_hint
+import noisecapture.composeapp.generated.resources.mic
+import noisecapture.composeapp.generated.resources.settings
 import org.jetbrains.compose.resources.StringResource
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -31,7 +30,7 @@ class HomeScreenViewModel(
     val soundLevelMeterHintText = Res.string.home_slm_hint
     val soundLevelMeterButtonViewModel = NCButtonViewModel(
         title = Res.string.home_slm_button_title,
-        icon = Icons.Filled.Mic,
+        icon = Res.drawable.mic,
         colors = { NCButtonColors.Defaults.secondary() },
         hasDropShadow = true,
     )
@@ -46,7 +45,7 @@ class HomeScreenViewModel(
         get() = MutableStateFlow(
             listOf(
                 AppBarButtonViewModel(
-                    icon = Icons.Outlined.Settings,
+                    icon = Res.drawable.settings,
                     onClick = onClickSettingsButton,
                 )
             )

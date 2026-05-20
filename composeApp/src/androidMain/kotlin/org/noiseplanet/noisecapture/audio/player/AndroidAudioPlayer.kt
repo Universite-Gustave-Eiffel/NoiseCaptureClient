@@ -43,7 +43,7 @@ class AndroidAudioPlayer(
     override suspend fun prepare() {
         // Initialise media player and get clip duration.
         val absolutePath = fileSystemService.getAbsolutePath(filePath) ?: return
-        val file = File(absolutePath)
+        val file = File(absolutePath.toString())
         val uri = Uri.fromFile(file)
 
         mediaPlayer = MediaPlayer().apply {

@@ -5,13 +5,12 @@ import io.github.xxfast.kstore.KStore
 import io.github.xxfast.kstore.file.extensions.VersionedCodec
 import io.github.xxfast.kstore.storeOf
 import kotlinx.coroutines.runBlocking
-import kotlinx.io.files.Path
+import kotlinx.io.files.SystemFileSystem
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.services.storage.FileSystemService
-import java.io.File
 
 
 /**
@@ -45,14 +44,13 @@ internal actual class KStoreProvider : KoinComponent {
     ): KStore<T> {
         val absolutePath = fileSystemService.getAbsolutePath(fileName)
         checkNotNull(absolutePath) { "Couldn't get absolute path for $fileName" }
-        val file = File(absolutePath)
         // Create enclosing directory if it doesn't exist
-        file.parentFile?.mkdirs()
+        absolutePath.parent?.let { SystemFileSystem.createDirectories(it) }
 
         // Return KStore handle
         return storeOf(
             codec = VersionedCodec(
-                file = Path(file.path),
+                file = absolutePath,
                 version = version,
                 migration = { version, data ->
                     runBlocking { migration(version, data) }
@@ -72,6 +70,6 @@ internal actual class KStoreProvider : KoinComponent {
      * @return File size in bytes, null if not found.
      */
     actual suspend fun sizeOf(fileName: String): Long? {
-        return fileSystemService.getFileSize(fileName)
+        return fileSystemService.size(fileName)
     }
 }

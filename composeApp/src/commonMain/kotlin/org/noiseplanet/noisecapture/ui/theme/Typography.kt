@@ -1,10 +1,17 @@
 package org.noiseplanet.noisecapture.ui.theme
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import com.mikepenz.markdown.m3.markdownTypography
+import com.mikepenz.markdown.model.MarkdownTypography
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.noto_sans_mono_variable
 import noisecapture.composeapp.generated.resources.noto_sans_variable
@@ -68,3 +75,28 @@ fun notoSansTypography() = Typography().run {
         labelSmall = labelSmall.copy(fontFamily = fontFamily),
     )
 }
+
+
+@Composable
+fun defaultMarkdownTypography(): MarkdownTypography = markdownTypography(
+    h1 = MaterialTheme.typography.displayLarge,
+    h2 = MaterialTheme.typography.displayMedium,
+    h3 = MaterialTheme.typography.displaySmall,
+    h4 = MaterialTheme.typography.headlineMedium,
+    h5 = MaterialTheme.typography.headlineSmall,
+    h6 = MaterialTheme.typography.titleLarge,
+    text = MaterialTheme.typography.bodyMedium,
+    code = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+    inlineCode = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+    quote = MaterialTheme.typography.bodyMedium.plus(SpanStyle(fontStyle = FontStyle.Italic)),
+    paragraph = MaterialTheme.typography.bodyMedium,
+    ordered = MaterialTheme.typography.bodyMedium,
+    bullet = MaterialTheme.typography.bodyMedium,
+    list = MaterialTheme.typography.bodyMedium,
+    textLink = TextLinkStyles(
+        style = MaterialTheme.typography.bodyMedium.copy(
+            fontWeight = FontWeight.Bold,
+            textDecoration = TextDecoration.Underline,
+        ).toSpanStyle()
+    ),
+)

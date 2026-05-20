@@ -1,3 +1,4 @@
+import org.gradle.internal.extensions.core.extra
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -21,17 +22,17 @@ kotlin {
         implementation(libs.koin.android)
     }
 
-    val appNamespace: String by project
     val appPackageName: String by project
-    val appVersionCode: String by project
-    val appVersionName: String by project
+    val androidAppId: String by project
+    val appVersionName = rootProject.extra.get("versionName") as String
+    val appVersionCode = rootProject.extra.get("versionCode") as String
 
     android {
-        namespace = appNamespace
+        namespace = appPackageName
         compileSdk = libs.versions.android.compileSdk.get().toInt()
 
         defaultConfig {
-            applicationId = appPackageName
+            applicationId = androidAppId
             minSdk = libs.versions.android.minSdk.get().toInt()
             targetSdk = libs.versions.android.targetSdk.get().toInt()
             versionCode = appVersionCode.toInt()

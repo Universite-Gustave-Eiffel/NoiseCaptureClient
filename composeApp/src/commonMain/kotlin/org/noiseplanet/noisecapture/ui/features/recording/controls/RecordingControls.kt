@@ -17,11 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -40,6 +35,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.measurement_start_recording_button_title
+import noisecapture.composeapp.generated.resources.mic
+import noisecapture.composeapp.generated.resources.pause
+import noisecapture.composeapp.generated.resources.play_arrow
+import noisecapture.composeapp.generated.resources.stop
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.noiseplanet.noisecapture.ui.theme.NotoSansMono
@@ -99,11 +99,13 @@ fun RecordingControls(
                                 }
                             ) { isAudioSourceRunning ->
                                 Icon(
-                                    imageVector = if (isAudioSourceRunning) {
-                                        Icons.Filled.Pause
-                                    } else {
-                                        Icons.Filled.PlayArrow
-                                    },
+                                    painter = painterResource(
+                                        if (isAudioSourceRunning) {
+                                            Res.drawable.pause
+                                        } else {
+                                            Res.drawable.play_arrow
+                                        }
+                                    ),
                                     contentDescription = "Pause",
                                     tint = MaterialTheme.colorScheme.onSecondaryContainer,
                                     modifier = Modifier.size(18.dp),
@@ -136,7 +138,7 @@ fun RecordingControls(
                         onClick = viewModel::startRecording,
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.Mic,
+                            painter = painterResource(Res.drawable.mic),
                             contentDescription = "Start recording",
                             tint = MaterialTheme.colorScheme.onSecondaryContainer,
                             modifier = Modifier.size(18.dp)
@@ -163,10 +165,10 @@ fun RecordingControls(
                         .size(64.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Stop,
+                        painter = painterResource(Res.drawable.stop),
                         contentDescription = "End recording",
                         tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(32.dp)
                     )
                 }
             }

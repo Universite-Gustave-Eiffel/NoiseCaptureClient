@@ -3,7 +3,6 @@ package org.noiseplanet.noisecapture.services.location
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import org.koin.core.component.KoinComponent
 import org.noiseplanet.noisecapture.interop.GeolocationPosition
 import org.noiseplanet.noisecapture.interop.createGeolocationOptions
@@ -43,8 +42,7 @@ class WasmJSUserLocationProvider : KoinComponent, UserLocationProvider {
     override val currentLocation: LocationRecord?
         get() = locationsFlow.replayCache.firstOrNull()
 
-    override val liveLocation: Flow<LocationRecord>
-        get() = locationsFlow.asSharedFlow()
+    override val liveLocation: Flow<LocationRecord> = locationsFlow
 
     override fun startUpdatingLocation() {
         taskId = navigator?.geolocation?.watchPosition(

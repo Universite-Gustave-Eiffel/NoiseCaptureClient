@@ -1,5 +1,6 @@
 import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.androidApplication) apply false
@@ -31,3 +32,13 @@ allprojects {
         basePath = rootDir.absolutePath
     }
 }
+
+// Read values from version.properties and set them in rootProject.extra to be retrieved in submodules
+val versionProperties = Properties().apply {
+    val versionFile = project.rootProject.file("version.properties")
+    if (versionFile.exists()) {
+        load(versionFile.inputStream())
+    }
+}
+extra.set("versionName", versionProperties.getProperty("versionName"))
+extra.set("versionCode", versionProperties.getProperty("versionCode"))

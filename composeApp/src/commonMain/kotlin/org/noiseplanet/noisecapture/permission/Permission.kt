@@ -12,14 +12,9 @@ enum class Permission {
     LOCATION_SERVICE_ON,
 
     /**
-     * App location fine permission.
-     */
-    LOCATION_FOREGROUND,
-
-    /**
      * App location background permission.
      */
-    LOCATION_BACKGROUND,
+    LOCATION,
 
     /**
      * App audio recording permission.

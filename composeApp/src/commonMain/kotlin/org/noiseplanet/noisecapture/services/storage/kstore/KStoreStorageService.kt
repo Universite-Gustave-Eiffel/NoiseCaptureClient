@@ -144,7 +144,7 @@ open class KStoreStorageService<RecordType : @Serializable Any>(
 
     override suspend fun download(uuid: String) {
         val fileName = getFileNameForRecord(uuid)
-        fileSystemService.downloadFile(fileName)
+        fileSystemService.download(fileName)
     }
 
 

@@ -92,7 +92,7 @@ internal fun JsPermissionState.toPermissionState(): PermissionState = when (this
  * Maps internal [Permission] to Js permission strings
  */
 internal fun Permission.toJsPermission(): String = when (this) {
-    Permission.LOCATION_BACKGROUND -> "geolocation"
+    Permission.LOCATION -> "geolocation"
     Permission.RECORD_AUDIO -> "microphone"
     Permission.PERSISTENT_LOCAL_STORAGE -> "persistent-storage"
     else -> ""

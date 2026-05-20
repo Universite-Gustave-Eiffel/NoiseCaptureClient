@@ -22,8 +22,6 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -65,6 +63,8 @@ import noisecapture.composeapp.generated.resources.calibration_results_suggested
 import noisecapture.composeapp.generated.resources.calibration_results_suggested_gain_warning
 import noisecapture.composeapp.generated.resources.calibration_results_your_device_value
 import noisecapture.composeapp.generated.resources.cancel
+import noisecapture.composeapp.generated.resources.edit
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
@@ -392,7 +392,7 @@ private fun ReferenceDeviceValueField(
             },
             prefix = {
                 Icon(
-                    imageVector = Icons.Default.Edit,
+                    painter = painterResource(Res.drawable.edit),
                     contentDescription = "Edit",
                     tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(end = 12.dp).size(24.dp)
