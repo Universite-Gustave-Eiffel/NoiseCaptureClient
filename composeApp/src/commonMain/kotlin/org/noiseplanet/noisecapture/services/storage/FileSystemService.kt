@@ -41,8 +41,8 @@ interface FileSystemService {
      * @param fileUri File URI.
      * @return File contents as [String], null if file doesn't exist.
      */
-    suspend fun readString(fileUri: String): String? = with(dispatcher) {
-        read(fileUri)?.decodeToString()
+    suspend fun readString(fileUri: String): String? {
+        return read(fileUri)?.decodeToString()
     }
 
     /**
@@ -69,10 +69,9 @@ interface FileSystemService {
      * @param text String to write.
      * @param append If true, appends bytes to previously existing file contents. Defaults to false.
      */
-    suspend fun writeString(fileUri: String, text: String, append: Boolean = false) =
-        with(dispatcher) {
-            write(fileUri, text.toByteArray(), append)
-        }
+    suspend fun writeString(fileUri: String, text: String, append: Boolean = false) {
+        write(fileUri, text.toByteArray(), append)
+    }
 
     /**
      * Gets the size of the file at the given URI, in bytes.
@@ -95,6 +94,18 @@ interface FileSystemService {
         val path = getAbsolutePath(fileUri) ?: return@with
 
         SystemFileSystem.delete(path, mustExist = false)
+    }
+
+    /**
+     * True if the file at the given URI exists, false otherwise.
+     *
+     * @param fileUri File URI.
+     * @return True if the file at the given URI exists, false otherwise.
+     */
+    suspend fun exists(fileUri: String): Boolean = with(dispatcher) {
+        val path = getAbsolutePath(fileUri) ?: return@with false
+
+        SystemFileSystem.exists(path)
     }
 
     /**
