@@ -24,14 +24,14 @@ import kotlin.time.ExperimentalTime
 
 
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class, ExperimentalTime::class)
-class IOSFileSystemService : FileSystemService, KoinComponent {
+open class IOSFileSystemService : FileSystemService, KoinComponent {
 
     // - Properties
 
     private val logger: Logger by injectLogger()
     private val filePickerEventBus: IOSFilePickerEventBus by inject()
 
-    private val fileManager: NSFileManager = NSFileManager.defaultManager
+    protected val fileManager: NSFileManager = NSFileManager.defaultManager
 
 
     // - FileSystemService
