@@ -1,15 +1,13 @@
 package org.noiseplanet.noisecapture.ui.components.map
 
 import io.ktor.client.HttpClient
-import io.ktor.client.plugins.HttpRequestRetry
-import io.ktor.client.plugins.cache.HttpCache
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsBytes
 import io.ktor.http.isSuccess
 import kotlinx.io.Buffer
 import kotlinx.io.RawSource
 import org.koin.core.component.KoinComponent
-import org.noiseplanet.noisecapture.http.FilesystemHttpCacheStorage
+import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.util.injectLogger
 import ovh.plrapps.mapcompose.core.TileStreamProvider
@@ -29,18 +27,7 @@ class RemoteTileStreamProvider(
 
     // - Properties
 
-    private val httpClient = HttpClient {
-        install(HttpCache) {
-            this.privateStorage(FilesystemHttpCacheStorage())
-            this.publicStorage(FilesystemHttpCacheStorage())
-        }
-
-        install(HttpRequestRetry) {
-            retryOnServerErrors(maxRetries = 5)
-            exponentialDelay()
-        }
-    }
-
+    private val httpClient: HttpClient by inject()
     private val logger: Logger by injectLogger()
 
 

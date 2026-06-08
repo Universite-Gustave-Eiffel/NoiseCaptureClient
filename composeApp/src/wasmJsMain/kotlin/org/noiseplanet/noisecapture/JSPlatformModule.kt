@@ -4,6 +4,8 @@ import Platform
 import WasmJSPlatform
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.StorageSettings
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpRequestRetry
 import org.koin.core.module.Module
 import org.koin.dsl.module
 import org.noiseplanet.noisecapture.audio.AudioSource
@@ -57,5 +59,17 @@ val platformModule: Module = module {
 
     single<MicrophoneProviderService> {
         JSMicrophoneProviderService()
+    }
+
+    single<HttpClient> {
+        HttpClient {
+
+            // Override HttpClient configuration and let browser handle caching for WasmJS target
+
+            install(HttpRequestRetry) {
+                retryOnServerErrors(maxRetries = 5)
+                exponentialDelay()
+            }
+        }
     }
 }
