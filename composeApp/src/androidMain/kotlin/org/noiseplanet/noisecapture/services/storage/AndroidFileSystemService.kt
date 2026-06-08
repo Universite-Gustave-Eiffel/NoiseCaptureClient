@@ -14,14 +14,14 @@ import java.io.FileOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
-class AndroidFileSystemService : FileSystemService, KoinComponent {
+open class AndroidFileSystemService : FileSystemService, KoinComponent {
 
     // - Properties
 
     override val dispatcher: CoroutineDispatcher
         get() = Dispatchers.IO
 
-    private val context: Context by inject()
+    protected val context: Context by inject()
     private val filePickerEventBus: AndroidFilePickerEventBus by inject()
 
 

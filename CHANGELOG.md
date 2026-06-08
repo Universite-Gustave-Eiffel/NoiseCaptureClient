@@ -7,6 +7,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Caching of map tiles for faster loading (#298)
+
 ## [0.9.0] - 2026-05-13
 
 ### Added

@@ -18,7 +18,9 @@ import org.noiseplanet.noisecapture.services.audio.IOSMicrophoneProviderService
 import org.noiseplanet.noisecapture.services.audio.MicrophoneProviderService
 import org.noiseplanet.noisecapture.services.location.IOSUserLocationProvider
 import org.noiseplanet.noisecapture.services.location.UserLocationProvider
+import org.noiseplanet.noisecapture.services.storage.CacheFileSystemService
 import org.noiseplanet.noisecapture.services.storage.FileSystemService
+import org.noiseplanet.noisecapture.services.storage.IOSCacheFileSystemService
 import org.noiseplanet.noisecapture.services.storage.IOSFileSystemService
 import org.noiseplanet.noisecapture.util.IOSFilePickerEventBus
 import platform.Foundation.NSUserDefaults
@@ -56,6 +58,10 @@ val platformModule: Module = module {
 
     single<FileSystemService> {
         IOSFileSystemService()
+    }
+
+    single<CacheFileSystemService> {
+        IOSCacheFileSystemService()
     }
 
     single<IOSFilePickerEventBus> {
