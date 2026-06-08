@@ -3,6 +3,7 @@ package org.noiseplanet.noisecapture.services.storage
 import io.ktor.utils.io.core.toByteArray
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
@@ -26,12 +27,12 @@ interface FileSystemService {
      * @param fileUri File URI.
      * @return File contents as [ByteArray], null if file doesn't exist.
      */
-    suspend fun read(fileUri: String): ByteArray? = with(dispatcher) {
-        val path = getAbsolutePath(fileUri) ?: return@with null
-        if (!SystemFileSystem.exists(path)) return@with null
+    suspend fun read(fileUri: String): ByteArray? = withContext(dispatcher) {
+        val path = getAbsolutePath(fileUri) ?: return@withContext null
+        if (!SystemFileSystem.exists(path)) return@withContext null
 
         runCatching {
-            SystemFileSystem.source(path).buffered().readByteArray()
+            SystemFileSystem.source(path).buffered().use { it.readByteArray() }
         }.getOrNull()
     }
 
@@ -53,8 +54,8 @@ interface FileSystemService {
      * @param append If true, appends bytes to previously existing file contents. Defaults to false.
      */
     suspend fun write(fileUri: String, bytes: ByteArray, append: Boolean = false) =
-        with(dispatcher) {
-            val path = getAbsolutePath(fileUri) ?: return@with
+        withContext(dispatcher) {
+            val path = getAbsolutePath(fileUri) ?: return@withContext
             path.parent?.let { SystemFileSystem.createDirectories(it) }
 
             SystemFileSystem.sink(path, append)
@@ -79,8 +80,8 @@ interface FileSystemService {
      * @param fileUri File URI.
      * @return File size in bytes, null if not found.
      */
-    suspend fun size(fileUri: String): Long? = with(dispatcher) {
-        val path = getAbsolutePath(fileUri) ?: return@with null
+    suspend fun size(fileUri: String): Long? = withContext(dispatcher) {
+        val path = getAbsolutePath(fileUri) ?: return@withContext null
 
         SystemFileSystem.metadataOrNull(path)?.size
     }
@@ -90,8 +91,8 @@ interface FileSystemService {
      *
      * @param fileUri File URI.
      */
-    suspend fun delete(fileUri: String) = with(dispatcher) {
-        val path = getAbsolutePath(fileUri) ?: return@with
+    suspend fun delete(fileUri: String) = withContext(dispatcher) {
+        val path = getAbsolutePath(fileUri) ?: return@withContext
 
         SystemFileSystem.delete(path, mustExist = false)
     }
@@ -102,10 +103,25 @@ interface FileSystemService {
      * @param fileUri File URI.
      * @return True if the file at the given URI exists, false otherwise.
      */
-    suspend fun exists(fileUri: String): Boolean = with(dispatcher) {
-        val path = getAbsolutePath(fileUri) ?: return@with false
+    suspend fun exists(fileUri: String): Boolean = withContext(dispatcher) {
+        val path = getAbsolutePath(fileUri) ?: return@withContext false
 
         SystemFileSystem.exists(path)
+    }
+
+    /**
+     * Lists contents found at given URI.
+     *
+     * @param uri Directory URI
+     * @return URIs of directory children
+     */
+    suspend fun list(uri: String = ""): List<String> = withContext(dispatcher) {
+        val path = getAbsolutePath(uri) ?: return@withContext emptyList()
+        val root = getRootDirectory().toString()
+
+        SystemFileSystem.list(path).map { path ->
+            path.toString().replaceFirst(root, "")
+        }
     }
 
     /**

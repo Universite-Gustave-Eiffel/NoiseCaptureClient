@@ -33,6 +33,7 @@ internal data class CachedResponseMetadata(
     val expires: GMTDate,
     val headers: Map<String, List<String>>,
     val varyKeys: Map<String, String>,
+    val bodySize: Long,
 ) {
 
     override fun equals(other: Any?): Boolean {
@@ -89,7 +90,8 @@ internal fun CachedResponseData.metadata(): CachedResponseMetadata {
         headers = headers.entries().associate { it.key to it.value },
         varyKeys = varyKeys,
         version = httpProtocolVersionCopy,
-        expires = expires
+        expires = expires,
+        bodySize = body.size.toLong()
     )
 }
 
