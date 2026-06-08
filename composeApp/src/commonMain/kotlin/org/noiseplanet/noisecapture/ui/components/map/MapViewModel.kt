@@ -376,7 +376,7 @@ class MapViewModel(
                 id = USER_LOCATION_MARKER_ID,
                 x = x,
                 y = y,
-                relativeOffset = Offset(x = 0.5f, y = 0.5f),
+                relativeOffset = Offset(x = -0.5f, y = -0.5f),
             ) {
                 UserLocationMarker(mapRotationDegrees = mapState.rotation)
             }
