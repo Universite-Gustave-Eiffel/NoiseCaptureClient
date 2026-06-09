@@ -1,7 +1,9 @@
 package org.noiseplanet.noisecapture.services.settings
 
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.builtins.nullable
 import kotlinx.serialization.builtins.serializer
+import org.noiseplanet.noisecapture.model.dao.LocationRecord
 import org.noiseplanet.noisecapture.model.enums.AcousticsKnowledgeLevel
 import org.noiseplanet.noisecapture.model.enums.CalibrationTestAudioOutput
 import org.noiseplanet.noisecapture.model.enums.SpectrogramScaleMode
@@ -114,6 +116,11 @@ sealed class SettingsKey<T>(
     data object SettingMapMaxMeasurementsCount : SettingsKey<UInt>(
         UInt.serializer(),
         defaultValue = 500u,
+    )
+
+    data object MapLastKnownLocation : SettingsKey<LocationRecord?>(
+        LocationRecord.serializer().nullable,
+        defaultValue = null,
     )
 
     // Onboarding
