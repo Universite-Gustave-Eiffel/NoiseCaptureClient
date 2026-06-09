@@ -9,12 +9,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
-import nl.jacobras.humanreadable.HumanReadable
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.services.storage.CacheFileSystemService
-import org.noiseplanet.noisecapture.util.injectLogger
 
 
 class FilesystemHttpCacheStorage : CacheStorage, KoinComponent {
@@ -29,12 +26,10 @@ class FilesystemHttpCacheStorage : CacheStorage, KoinComponent {
 
     // - Properties
 
-    private val logger: Logger by injectLogger()
     private val cacheSystemService: CacheFileSystemService by inject()
+    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     private var entries: MutableMap<String, CachedResponseMetadata>? = null
-
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
 
     // - Lifecycle
@@ -106,7 +101,6 @@ class FilesystemHttpCacheStorage : CacheStorage, KoinComponent {
         url: Url,
         varyKeys: Map<String, String>,
     ) {
-        logger.info("CACHE REMOVE")
         val cacheKey = cacheKeyFromUrl(url)
         val metadataKey = "$cacheKey.meta"
         cacheSystemService.delete(cacheKey)
@@ -115,7 +109,6 @@ class FilesystemHttpCacheStorage : CacheStorage, KoinComponent {
     }
 
     override suspend fun removeAll(url: Url) {
-        logger.info("CACHE REMOVE ALL")
         remove(url, emptyMap())
     }
 
@@ -150,13 +143,5 @@ class FilesystemHttpCacheStorage : CacheStorage, KoinComponent {
                 removeAll(metadata.url)
             }
         }
-
-        logger.debug(
-            "CACHE SIZE: ${HumanReadable.fileSize(totalCacheSize)} / ${
-                HumanReadable.fileSize(
-                    MAX_CACHE_SIZE_BYTES
-                )
-            }"
-        )
     }
 }
