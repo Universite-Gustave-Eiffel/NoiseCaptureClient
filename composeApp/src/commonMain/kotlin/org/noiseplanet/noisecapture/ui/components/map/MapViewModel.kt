@@ -32,6 +32,8 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.services.location.UserLocationService
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
+import org.noiseplanet.noisecapture.services.settings.SettingsKey
+import org.noiseplanet.noisecapture.services.settings.UserSettingsService
 import org.noiseplanet.noisecapture.ui.components.button.IconNCButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
@@ -157,6 +159,7 @@ class MapViewModel(
 
     private val locationService: UserLocationService by inject()
     private val measurementService: MeasurementService by inject()
+    private val settingsService: UserSettingsService by inject()
 
     val backgroundTilesProvider = RemoteTileStreamProvider(
         tileServerUrl = BACKGROUND_TILESET_URL
@@ -280,6 +283,14 @@ class MapViewModel(
         mapState.setStateChangeListener {
             // Whenever map orientation changes, emit new value through flow to update UI.
             _mapOrientationFlow.tryEmit(this.rotation)
+        }
+
+        settingsService.get(SettingsKey.MapLastKnownLocation)?.let { locationRecord ->
+            val (x, y) = GeoUtil.lonLatToNormalizedWebMercator(
+                latitude = locationRecord.lat,
+                longitude = locationRecord.lon,
+            )
+            viewModelScope.launch { mapState.scrollTo(x, y) }
         }
 
         if (parameters.followUserLocation) {

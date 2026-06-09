@@ -8,12 +8,15 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.model.dao.LocationRecord
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.services.permission.PermissionService
+import org.noiseplanet.noisecapture.services.settings.SettingsKey
+import org.noiseplanet.noisecapture.services.settings.UserSettingsService
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 
 
@@ -26,6 +29,7 @@ open class DefaultUserLocationService : UserLocationService, KoinComponent {
     // - Properties
 
     private val locationProvider: UserLocationProvider by inject()
+    private val settingsService: UserSettingsService by inject()
 
     protected val permissionService: PermissionService by inject()
     protected val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
@@ -55,5 +59,18 @@ open class DefaultUserLocationService : UserLocationService, KoinComponent {
 
     override fun stopUpdatingLocation() {
         locationProvider.stopUpdatingLocation()
+    }
+
+
+    // - Lifecycle
+
+    init {
+        scope.launch {
+            liveLocation.collect {
+                // Listen to live location updates and store the last known user location
+                // to use as default map centroid
+                settingsService.set(SettingsKey.MapLastKnownLocation, it)
+            }
+        }
     }
 }

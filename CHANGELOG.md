@@ -11,6 +11,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Caching of map tiles for faster loading (#298)
 
+### Changed
+
+- Use last known user location as map default centroid (#300)
+
 ## [0.9.0] - 2026-05-13
 
 ### Added

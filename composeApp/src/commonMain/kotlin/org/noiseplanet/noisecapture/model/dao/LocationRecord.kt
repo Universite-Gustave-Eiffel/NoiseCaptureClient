@@ -1,5 +1,7 @@
 package org.noiseplanet.noisecapture.model.dao
 
+import kotlinx.serialization.Serializable
+
 /**
  * Location data at a given time
  *
@@ -20,6 +22,7 @@ package org.noiseplanet.noisecapture.model.dao
  * @param directionAccuracy The accuracy of the direction value, measured in degrees.
  *                          On Android, only available since SDK 26 (Oreo), hence optional.
  */
+@Serializable
 data class LocationRecord(
     val timestamp: Long,
 
