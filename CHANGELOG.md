@@ -14,6 +14,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - Use last known user location as map default centroid (#300)
+- Updated dependencies to latest stable versions (#283)
 
 ## [0.9.0] - 2026-05-13
 
