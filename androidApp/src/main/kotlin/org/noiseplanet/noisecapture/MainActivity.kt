@@ -12,7 +12,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.window.core.layout.WindowSizeClass
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -64,7 +64,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             // Lock orientation on phones only (i.e. devices with compact width or height)
-            val sizeClas = currentWindowAdaptiveInfo().windowSizeClass
+            val sizeClas = currentWindowAdaptiveInfoV2().windowSizeClass
             val isCompact = sizeClas.minWidthDp < WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND ||
                 sizeClas.minHeightDp < WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND
 
