@@ -192,7 +192,7 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
 
                 LAeqMetrics(
                     min = min(record.laeq, currentMetrics.min),
-                    average = average.roundTo(1),
+                    average = average,
                     max = max(record.laeq, currentMetrics.max),
                     recordsCount = currentMetrics.recordsCount + 1
                 )
