@@ -422,7 +422,7 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
             locationSequenceIds = ongoingMeasurement.locationSequenceIds,
             leqsSequenceIds = ongoingMeasurement.leqsSequenceIds,
             recordedAudioUrl = ongoingMeasurement.recordedAudioUrl,
-            laeqMetrics = leqMetrics,
+            laeqMetrics = leqMetrics.copy(average = leqMetrics.average.roundTo(1)),
             calibrationProfile = microphoneProvider.currentCalibrationProfile.value,
         )
         measurementStorageService.set(measurement.uuid, measurement)

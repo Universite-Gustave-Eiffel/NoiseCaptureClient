@@ -70,6 +70,7 @@ class SoundLevelMeterViewModel(
 
     val laeqMetricsFlow: StateFlow<LAeqMetrics?> = measurementService
         .getOngoingMeasurementLaeqMetricsFlow()
+        .map { it?.copy(average = it.average.roundTo(1)) }
         .stateInWhileSubscribed(
             scope = viewModelScope,
             initialValue = null,
