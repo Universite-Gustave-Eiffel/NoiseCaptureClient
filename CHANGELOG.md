@@ -16,6 +16,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Use last known user location as map default centroid (#300)
 - Updated dependencies to latest stable versions (#302)
 
+### Fixed
+
+- Deleting a measurement sometimes wouldn't exit the details screen (#303)
+
 ## [0.9.0] - 2026-05-13
 
 ### Added
