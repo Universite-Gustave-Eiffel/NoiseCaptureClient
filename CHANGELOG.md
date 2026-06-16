@@ -18,6 +18,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Deleting a measurement sometimes wouldn't exit the details screen (#303)
 - Fixed incorrect measurement average level due to rounding error (#304)
 
 ## [0.9.0] - 2026-05-13
