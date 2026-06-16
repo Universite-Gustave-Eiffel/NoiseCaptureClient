@@ -6,7 +6,6 @@ import io.github.xxfast.kstore.extensions.minus
 import io.github.xxfast.kstore.extensions.plus
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onCompletion
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import org.koin.core.component.KoinComponent
@@ -54,7 +53,7 @@ open class KStoreStorageService<RecordType : @Serializable Any>(
     /**
      * Cache references to stores that are currently subscribed to.
      */
-    private var storeCache: MutableMap<String, KStore<RecordType>> = mutableMapOf()
+    private val storeCache: MutableMap<String, KStore<RecordType>> = mutableMapOf()
 
 
     // - StorageService
@@ -114,10 +113,7 @@ open class KStoreStorageService<RecordType : @Serializable Any>(
         val store = storeCache.getOrPut(uuid) {
             getStoreForRecord(uuid)
         }
-        return store.updates.onCompletion {
-            // When unsubscribing, drop the cached reference.
-            storeCache.remove(uuid)
-        }
+        return store.updates
     }
 
     override suspend fun set(uuid: String, newValue: RecordType) {
@@ -140,6 +136,7 @@ open class KStoreStorageService<RecordType : @Serializable Any>(
         // Delete record
         val store = storeCache[uuid] ?: getStoreForRecord(uuid)
         store.delete()
+        storeCache.remove(uuid)
     }
 
     override suspend fun download(uuid: String) {
