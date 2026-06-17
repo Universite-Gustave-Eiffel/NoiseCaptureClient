@@ -21,7 +21,9 @@ import org.noiseplanet.noisecapture.services.location.AndroidUserLocationProvide
 import org.noiseplanet.noisecapture.services.location.UserLocationProvider
 import org.noiseplanet.noisecapture.services.measurement.AndroidRecordingService
 import org.noiseplanet.noisecapture.services.measurement.RecordingService
+import org.noiseplanet.noisecapture.services.storage.AndroidCacheFileSystemService
 import org.noiseplanet.noisecapture.services.storage.AndroidFileSystemService
+import org.noiseplanet.noisecapture.services.storage.CacheFileSystemService
 import org.noiseplanet.noisecapture.services.storage.FileSystemService
 
 /**
@@ -65,6 +67,10 @@ val platformModule: Module = module {
 
     single<FileSystemService> {
         AndroidFileSystemService()
+    }
+
+    single<CacheFileSystemService> {
+        AndroidCacheFileSystemService()
     }
 
     single {

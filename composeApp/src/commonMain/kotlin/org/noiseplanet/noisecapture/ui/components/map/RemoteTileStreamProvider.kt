@@ -1,14 +1,13 @@
 package org.noiseplanet.noisecapture.ui.components.map
 
 import io.ktor.client.HttpClient
-import io.ktor.client.plugins.HttpRequestRetry
-import io.ktor.client.plugins.cache.HttpCache
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsBytes
 import io.ktor.http.isSuccess
 import kotlinx.io.Buffer
 import kotlinx.io.RawSource
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.util.injectLogger
 import ovh.plrapps.mapcompose.core.TileStreamProvider
@@ -28,22 +27,7 @@ class RemoteTileStreamProvider(
 
     // - Properties
 
-    private val httpClient = HttpClient {
-        // TODO: Enable persistent storage caching for tiles up to a few megabytes
-        //       to avoid reloading the same map area everytime a user opens the app.
-        //       This would require to provide a multiplatform file storage API that is not
-        //       currently provided by Ktor, but a few tweaks to our KStore implementation should
-        //       probably do the job.
-        install(HttpCache)
-
-        install(HttpRequestRetry) {
-            retryOnServerErrors(maxRetries = 5)
-            exponentialDelay()
-        }
-
-        // TODO: Configure logging with ability to enable/disable
-    }
-
+    private val httpClient: HttpClient by inject()
     private val logger: Logger by injectLogger()
 
 

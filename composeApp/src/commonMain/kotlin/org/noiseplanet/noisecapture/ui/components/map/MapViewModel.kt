@@ -32,6 +32,8 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.services.location.UserLocationService
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
+import org.noiseplanet.noisecapture.services.settings.SettingsKey
+import org.noiseplanet.noisecapture.services.settings.UserSettingsService
 import org.noiseplanet.noisecapture.ui.components.button.IconNCButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
@@ -157,6 +159,7 @@ class MapViewModel(
 
     private val locationService: UserLocationService by inject()
     private val measurementService: MeasurementService by inject()
+    private val settingsService: UserSettingsService by inject()
 
     val backgroundTilesProvider = RemoteTileStreamProvider(
         tileServerUrl = BACKGROUND_TILESET_URL
@@ -282,6 +285,14 @@ class MapViewModel(
             _mapOrientationFlow.tryEmit(this.rotation)
         }
 
+        settingsService.get(SettingsKey.MapLastKnownLocation)?.let { locationRecord ->
+            val (x, y) = GeoUtil.lonLatToNormalizedWebMercator(
+                latitude = locationRecord.lat,
+                longitude = locationRecord.lon,
+            )
+            viewModelScope.launch { mapState.scrollTo(x, y) }
+        }
+
         if (parameters.followUserLocation) {
             // Subscribe to user location update to follow the user location on the map.
             // Do this only if the map is not currently focusing on a measurement.
@@ -376,7 +387,7 @@ class MapViewModel(
                 id = USER_LOCATION_MARKER_ID,
                 x = x,
                 y = y,
-                relativeOffset = Offset(x = 0.5f, y = 0.5f),
+                relativeOffset = Offset(x = -0.5f, y = -0.5f),
             ) {
                 UserLocationMarker(mapRotationDegrees = mapState.rotation)
             }

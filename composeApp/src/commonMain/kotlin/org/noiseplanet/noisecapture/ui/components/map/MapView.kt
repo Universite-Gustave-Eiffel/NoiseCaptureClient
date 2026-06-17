@@ -14,7 +14,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,7 +50,7 @@ fun MapView(
 
     // - Properties
 
-    val sizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    val sizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
     val viewModel: MapViewModel = koinViewModel {
         parametersOf(sizeClass, focusedMeasurementUuid)
     }
