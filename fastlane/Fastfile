@@ -37,8 +37,9 @@ platform :ios do
         # Upload to testflight, skipping the "Waiting for processing" step.
         # This will speed up the deployment but changelog will need to be entered manually
         # in AppStore Connect.
+        # Note: you must set FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD environment variable
+        # as described in https://docs.fastlane.tools/getting-started/ios/authentication/ (Method 3)
         upload_to_testflight(
-            apple_id: '6755039187',
             ipa: './build/iOS/NoiseCapture.ipa',
             skip_waiting_for_build_processing: true,
         )
