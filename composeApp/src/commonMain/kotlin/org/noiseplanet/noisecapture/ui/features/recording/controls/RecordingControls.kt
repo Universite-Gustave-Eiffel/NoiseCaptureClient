@@ -28,10 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.measurement_start_recording_button_title
@@ -42,7 +39,7 @@ import noisecapture.composeapp.generated.resources.stop
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import org.noiseplanet.noisecapture.ui.theme.NotoSansMono
+import org.noiseplanet.noisecapture.ui.theme.titleMono
 import org.noiseplanet.noisecapture.util.ncDropShadow
 import org.noiseplanet.noisecapture.util.toHhMmSs
 
@@ -117,12 +114,8 @@ fun RecordingControls(
 
                         Text(
                             text = recordingDuration.toHhMmSs(),
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                fontFamily = FontFamily.NotoSansMono,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                            ),
+                            style = MaterialTheme.typography.titleMono,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
                             modifier = Modifier.padding(horizontal = 16.dp)
                         )
                     }

@@ -102,7 +102,7 @@ fun OnboardingAcousticsKnowledgeScreen(
 
         Text(
             text = stringResource(Res.string.onboarding_acoustics_knowledge_title),
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+            style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.fillMaxWidth()
         )
 

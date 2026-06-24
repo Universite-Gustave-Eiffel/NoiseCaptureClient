@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import org.noiseplanet.noisecapture.ui.theme.titleMono
 
 @Composable
 fun ListSectionHeader(
@@ -21,7 +22,7 @@ fun ListSectionHeader(
     Box(modifier = modifier.fillMaxWidth()) {
         Text(
             text = stringResource(title).uppercase(),
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleMono,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = paddingTop, bottom = 8.dp)
         )

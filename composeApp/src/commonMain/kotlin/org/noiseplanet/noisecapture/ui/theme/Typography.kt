@@ -11,6 +11,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.sp
 import com.mikepenz.markdown.m3.markdownTypography
 import com.mikepenz.markdown.model.MarkdownTypography
 import noisecapture.composeapp.generated.resources.Res
@@ -75,53 +76,77 @@ fun noiseCaptureTypography() = Typography().run {
         headlineLarge = headlineLarge.copy(
             fontFamily = FontFamily.NotoSansMono,
             fontWeight = FontWeight.Black,
+            fontSize = 36.sp,
+            lineHeight = 40.sp,
         ),
         headlineMedium = headlineMedium.copy(
             fontFamily = FontFamily.NotoSansMono,
             fontWeight = FontWeight.SemiBold,
+            fontSize = 28.sp,
+            lineHeight = 36.sp,
         ),
         headlineSmall = headlineSmall.copy(
             fontFamily = FontFamily.NotoSansMono,
             fontWeight = FontWeight.Bold,
+            fontSize = 24.sp,
+            lineHeight = 32.sp,
         ),
 
         titleLarge = titleLarge.copy(
             fontFamily = FontFamily.NotoSans,
             fontWeight = FontWeight.SemiBold,
+            fontSize = 22.sp,
+            lineHeight = 28.sp,
         ),
         titleMedium = titleMedium.copy(
             fontFamily = FontFamily.NotoSans,
             fontWeight = FontWeight.SemiBold,
+            fontSize = 16.sp,
+            lineHeight = 24.sp,
         ),
         titleSmall = titleSmall.copy(
             fontFamily = FontFamily.NotoSans,
             fontWeight = FontWeight.Bold,
+            fontSize = 14.sp,
+            lineHeight = 20.sp,
         ),
 
         bodyLarge = bodyLarge.copy(
             fontFamily = FontFamily.NotoSans,
             fontWeight = FontWeight.Medium,
+            fontSize = 16.sp,
+            lineHeight = 24.sp,
         ),
         bodyMedium = bodyMedium.copy(
             fontFamily = FontFamily.NotoSans,
             fontWeight = FontWeight.Normal,
+            fontSize = 14.sp,
+            lineHeight = 20.sp,
         ),
         bodySmall = bodySmall.copy(
             fontFamily = FontFamily.NotoSans,
             fontWeight = FontWeight.Normal,
+            fontSize = 12.sp,
+            lineHeight = 16.sp,
         ),
 
         labelLarge = labelLarge.copy(
             fontFamily = FontFamily.NotoSans,
             fontWeight = FontWeight.SemiBold,
+            fontSize = 14.sp,
+            lineHeight = 20.sp,
         ),
         labelMedium = labelMedium.copy(
             fontFamily = FontFamily.NotoSans,
             fontWeight = FontWeight.Medium,
+            fontSize = 12.sp,
+            lineHeight = 16.sp,
         ),
         labelSmall = labelSmall.copy(
             fontFamily = FontFamily.NotoSans,
             fontWeight = FontWeight.Medium,
+            fontSize = 11.sp,
+            lineHeight = 16.sp,
         ),
     )
 }

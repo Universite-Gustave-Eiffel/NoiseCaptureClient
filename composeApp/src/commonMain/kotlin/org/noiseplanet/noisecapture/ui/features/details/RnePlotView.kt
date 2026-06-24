@@ -27,7 +27,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.github.koalaplot.core.pie.DefaultSlice
@@ -156,7 +155,7 @@ fun RnePlotView(
                                 Text(
                                     text = "RNE",
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                                    style = MaterialTheme.typography.titleSmall
                                 )
                             }
                         }
@@ -170,7 +169,7 @@ fun RnePlotView(
                             Text(
                                 text = "${percentage.roundTo(1)}%",
                                 color = foreground,
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                                style = MaterialTheme.typography.titleSmall,
                             )
                         }
                     }

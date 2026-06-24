@@ -56,7 +56,7 @@
 
 
     <!--  MeasurementScreen  -->
-    <string name="measurement_title">New measurement</string>
+    <string name="measurement_title">Measurement</string>
     <string name="measurement_start_recording_button_title">Start recording</string>
     <string name="measurement_end_recording_button_title">End recording</string>
     <string name="measurement_pager_tab_spectrum">Spectrum</string>
@@ -96,7 +96,7 @@
 
 
     <!-- MeasurementDetailsScreen -->
-    <string name="details_title">Measurement details</string>
+    <string name="details_title">Details</string>
     <string name="details_loading_hint">Calculating measurement statistics... Depending on the duration of your measurement, this can take a while.</string>
 
     <string name="details_average_level">Average dB(A)</string>

@@ -15,17 +15,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.ui.components.button.NCButton
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
-import org.noiseplanet.noisecapture.ui.theme.NotoSansMono
 import org.noiseplanet.noisecapture.util.isInVuMeterRange
 
 
@@ -70,19 +66,13 @@ fun SoundLevelMeterView(
                 Column(horizontalAlignment = Alignment.Start) {
                     Text(
                         text = stringResource(viewModel.currentDbALabel),
-                        style = MaterialTheme.typography.labelLarge.copy(
-                            fontWeight = FontWeight.SemiBold
-                        ),
+                        style = MaterialTheme.typography.labelLarge,
                     )
 
                     Text(
                         text = if (currentSpl.isInVuMeterRange()) currentSpl.toString() else "-",
-                        style = MaterialTheme.typography.headlineLarge.copy(
-                            fontWeight = FontWeight.Black,
-                            fontFamily = FontFamily.NotoSansMono,
-                            fontSize = 36.sp,
-                            color = currentSplColor
-                        )
+                        style = MaterialTheme.typography.headlineLarge,
+                        color = currentSplColor,
                     )
                 }
 
