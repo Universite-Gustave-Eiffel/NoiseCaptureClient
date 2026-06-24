@@ -37,8 +37,8 @@ import org.noiseplanet.noisecapture.services.settings.UserSettingsService
 import org.noiseplanet.noisecapture.ui.components.button.IconNCButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
 import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
-import org.noiseplanet.noisecapture.ui.theme.LocationTint
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
+import org.noiseplanet.noisecapture.ui.theme.accentBlue
 import org.noiseplanet.noisecapture.util.geo.GeoUtil
 import org.noiseplanet.noisecapture.util.geo.Point
 import org.noiseplanet.noisecapture.util.geo.lat
@@ -237,7 +237,7 @@ class MapViewModel(
                 colors = {
                     val tint = if (isAvailable) {
                         if (parameters.followUserLocation && autoRecenterEnabled) {
-                            LocationTint
+                            MaterialTheme.colorScheme.accentBlue
                         } else {
                             MaterialTheme.colorScheme.onSurface
                         }

@@ -5,6 +5,7 @@ import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontVariation
@@ -54,27 +55,82 @@ val FontFamily.Companion.NotoSansMono: FontFamily
 
 
 @Composable
-fun notoSansTypography() = Typography().run {
+fun noiseCaptureTypography() = Typography().run {
     val fontFamily: FontFamily = FontFamily.NotoSans
 
     copy(
-        displayLarge = displayLarge.copy(fontFamily = fontFamily),
-        displayMedium = displayMedium.copy(fontFamily = fontFamily),
-        displaySmall = displaySmall.copy(fontFamily = fontFamily),
-        headlineLarge = headlineLarge.copy(fontFamily = fontFamily),
-        headlineMedium = headlineMedium.copy(fontFamily = fontFamily),
-        headlineSmall = headlineSmall.copy(fontFamily = fontFamily),
-        titleLarge = titleLarge.copy(fontFamily = fontFamily),
-        titleMedium = titleMedium.copy(fontFamily = fontFamily),
-        titleSmall = titleSmall.copy(fontFamily = fontFamily),
-        bodyLarge = bodyLarge.copy(fontFamily = fontFamily),
-        bodyMedium = bodyMedium.copy(fontFamily = fontFamily),
-        bodySmall = bodySmall.copy(fontFamily = fontFamily),
-        labelLarge = labelLarge.copy(fontFamily = fontFamily),
-        labelMedium = labelMedium.copy(fontFamily = fontFamily),
-        labelSmall = labelSmall.copy(fontFamily = fontFamily),
+        displayLarge = displayLarge.copy(
+            fontFamily = FontFamily.NotoSansMono,
+            fontWeight = FontWeight.Black,
+        ),
+        displayMedium = displayMedium.copy(
+            fontFamily = FontFamily.NotoSansMono,
+            fontWeight = FontWeight.SemiBold,
+        ),
+        displaySmall = displaySmall.copy(
+            fontFamily = FontFamily.NotoSansMono,
+            fontWeight = FontWeight.Bold,
+        ),
+
+        headlineLarge = headlineLarge.copy(
+            fontFamily = FontFamily.NotoSansMono,
+            fontWeight = FontWeight.Black,
+        ),
+        headlineMedium = headlineMedium.copy(
+            fontFamily = FontFamily.NotoSansMono,
+            fontWeight = FontWeight.SemiBold,
+        ),
+        headlineSmall = headlineSmall.copy(
+            fontFamily = FontFamily.NotoSansMono,
+            fontWeight = FontWeight.Bold,
+        ),
+
+        titleLarge = titleLarge.copy(
+            fontFamily = FontFamily.NotoSans,
+            fontWeight = FontWeight.SemiBold,
+        ),
+        titleMedium = titleMedium.copy(
+            fontFamily = FontFamily.NotoSans,
+            fontWeight = FontWeight.SemiBold,
+        ),
+        titleSmall = titleSmall.copy(
+            fontFamily = FontFamily.NotoSans,
+            fontWeight = FontWeight.Bold,
+        ),
+
+        bodyLarge = bodyLarge.copy(
+            fontFamily = FontFamily.NotoSans,
+            fontWeight = FontWeight.Medium,
+        ),
+        bodyMedium = bodyMedium.copy(
+            fontFamily = FontFamily.NotoSans,
+            fontWeight = FontWeight.Normal,
+        ),
+        bodySmall = bodySmall.copy(
+            fontFamily = FontFamily.NotoSans,
+            fontWeight = FontWeight.Normal,
+        ),
+
+        labelLarge = labelLarge.copy(
+            fontFamily = FontFamily.NotoSans,
+            fontWeight = FontWeight.SemiBold,
+        ),
+        labelMedium = labelMedium.copy(
+            fontFamily = FontFamily.NotoSans,
+            fontWeight = FontWeight.Medium,
+        ),
+        labelSmall = labelSmall.copy(
+            fontFamily = FontFamily.NotoSans,
+            fontWeight = FontWeight.Medium,
+        ),
     )
 }
+
+val Typography.titleMono: TextStyle
+    @Composable get() = noiseCaptureTypography().titleMedium.copy(
+        fontFamily = FontFamily.NotoSansMono,
+        fontWeight = FontWeight.ExtraBold,
+    )
 
 
 @Composable
