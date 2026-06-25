@@ -48,12 +48,15 @@ import noisecapture.composeapp.generated.resources.calibration_microphone_curren
 import noisecapture.composeapp.generated.resources.calibration_microphone_last_calibrated
 import noisecapture.composeapp.generated.resources.calibration_microphone_not_calibrated
 import noisecapture.composeapp.generated.resources.calibration_microphone_select_title
+import noisecapture.composeapp.generated.resources.calibration_start_button_title
+import noisecapture.composeapp.generated.resources.mic
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.model.dao.MicrophoneCalibrationProfile
 import org.noiseplanet.noisecapture.model.enums.CalibrationFrequencyBand
-import org.noiseplanet.noisecapture.ui.components.button.NCButton
+import org.noiseplanet.noisecapture.ui.components.ButtonContent
+import org.noiseplanet.noisecapture.ui.components.NCButton
 import org.noiseplanet.noisecapture.ui.components.micselect.MicrophoneSelectView
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.AdaptiveUtil
@@ -230,7 +233,10 @@ fun CalibrationConfigView(
                 }
 
                 NCButton(
-                    viewModel = viewModel.startButtonViewModel,
+                    content = ButtonContent(
+                        title = Res.string.calibration_start_button_title,
+                        icon = Res.drawable.mic,
+                    ),
                     onClick = {
                         viewModel.startCalibration(
                             duration = selectedDurationSeconds.seconds,

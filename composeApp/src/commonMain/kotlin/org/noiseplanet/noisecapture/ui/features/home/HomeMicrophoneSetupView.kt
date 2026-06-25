@@ -36,8 +36,10 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.noiseplanet.noisecapture.ui.components.ListSectionHeader
-import org.noiseplanet.noisecapture.ui.components.button.NCButton
+import org.noiseplanet.noisecapture.ui.components.NCButton
 import org.noiseplanet.noisecapture.ui.components.micselect.MicrophoneSelectView
+import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
+import org.noiseplanet.noisecapture.ui.components.tertiaryContainerColors
 import org.noiseplanet.noisecapture.ui.navigation.router.HomeRouter
 import org.noiseplanet.noisecapture.util.toSignedString
 import kotlin.time.Instant
@@ -84,7 +86,7 @@ fun HomeMicrophoneSetupView(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.height(IntrinsicSize.Min)
                         .background(
-                            color = viewState.containerColor,
+                            color = viewState.colors.secondaryContainerColors().backgroundColor,
                             shape = MaterialTheme.shapes.large.copy(
                                 topStart = ZeroCornerSize,
                                 topEnd = ZeroCornerSize
@@ -109,7 +111,7 @@ fun HomeMicrophoneSetupView(
                     Text(
                         text = calibrationProfileText,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = viewState.contentColor,
+                        color = viewState.colors.secondaryContainerColors().contentColor,
                         modifier = Modifier.weight(1f),
                     )
 
@@ -122,14 +124,15 @@ fun HomeMicrophoneSetupView(
                             Icon(
                                 painter = painterResource(Res.drawable.info),
                                 contentDescription = null,
-                                tint = viewState.contentColor,
+                                tint = viewState.colors.secondaryContainerColors().contentColor,
                             )
                         }
 
                         Spacer(modifier = Modifier.height(8.dp))
 
                         NCButton(
-                            viewModel = viewState.buttonViewModel,
+                            content = viewState.buttonContent,
+                            colors = viewState.colors.tertiaryContainerColors(hasDropShadow = true),
                             onClick = router::onClickCalibrateButton,
                         )
                     }

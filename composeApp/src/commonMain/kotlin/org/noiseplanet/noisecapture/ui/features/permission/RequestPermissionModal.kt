@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -35,11 +36,19 @@ import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import com.mikepenz.markdown.m3.Markdown
 import kotlinx.coroutines.launch
+import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.request_permission_button_go_back
+import noisecapture.composeapp.generated.resources.request_permission_button_request
+import noisecapture.composeapp.generated.resources.request_permission_button_settings
+import noisecapture.composeapp.generated.resources.request_permission_button_skip
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionState
-import org.noiseplanet.noisecapture.ui.components.button.NCButton
+import org.noiseplanet.noisecapture.ui.components.ButtonContent
+import org.noiseplanet.noisecapture.ui.components.NCButton
+import org.noiseplanet.noisecapture.ui.components.transparentContainerColors
+import org.noiseplanet.noisecapture.ui.theme.Noise
 import org.noiseplanet.noisecapture.ui.theme.defaultMarkdownTypography
 
 
@@ -142,7 +151,7 @@ fun RequestPermissionModal(
 
             if (viewState.permissionState == PermissionState.NOT_DETERMINED) {
                 NCButton(
-                    viewModel = viewModel.requestPermissionButtonViewModel,
+                    content = ButtonContent(title = Res.string.request_permission_button_request),
                     modifier = actionButtonModifier,
                     onClick = {
                         viewModel.requestPermission(viewState.permission)
@@ -150,7 +159,7 @@ fun RequestPermissionModal(
                 )
             } else if (viewState.permissionState == PermissionState.DENIED && viewState.canOpenSettings) {
                 NCButton(
-                    viewModel = viewModel.openSettingsButtonViewModel,
+                    content = ButtonContent(title = Res.string.request_permission_button_settings),
                     modifier = actionButtonModifier,
                     onClick = {
                         viewModel.openSettings(viewState.permission)
@@ -160,7 +169,8 @@ fun RequestPermissionModal(
 
             if (viewState.isRequired) {
                 NCButton(
-                    viewModel = viewModel.goBackButtonViewModel,
+                    content = ButtonContent(title = Res.string.request_permission_button_go_back),
+                    colors = Color.Noise.one.transparentContainerColors(),
                     modifier = actionButtonModifier,
                     onClick = {
                         onGoBackButtonPress()
@@ -168,7 +178,8 @@ fun RequestPermissionModal(
                 )
             } else {
                 NCButton(
-                    viewModel = viewModel.skipButtonViewModel,
+                    content = ButtonContent(title = Res.string.request_permission_button_skip),
+                    colors = Color.Noise.one.transparentContainerColors(),
                     modifier = actionButtonModifier,
                     onClick = {
                         onSkipButtonPress(viewState.permission)

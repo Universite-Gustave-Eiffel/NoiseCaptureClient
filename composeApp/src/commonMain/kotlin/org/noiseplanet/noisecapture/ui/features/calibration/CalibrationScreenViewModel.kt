@@ -10,9 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
-import noisecapture.composeapp.generated.resources.calibration_start_button_title
 import noisecapture.composeapp.generated.resources.calibration_title
-import noisecapture.composeapp.generated.resources.mic
 import org.jetbrains.compose.resources.StringResource
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -21,7 +19,6 @@ import org.noiseplanet.noisecapture.model.enums.CalibrationFrequencyBand
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.services.audio.MicrophoneProviderService
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
 import org.noiseplanet.noisecapture.util.dbAverage
 import org.noiseplanet.noisecapture.util.roundTo
 import kotlin.math.absoluteValue
@@ -111,10 +108,6 @@ class CalibrationScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
     private var calibrationFrequencyBand = CalibrationFrequencyBand.WHOLE_SPECTRUM
 
     val currentCalibrationProfile = microphoneProvider.currentCalibrationProfile
-    val startButtonViewModel = NCButtonViewModel(
-        title = Res.string.calibration_start_button_title,
-        icon = Res.drawable.mic,
-    )
 
 
     // - Public functions

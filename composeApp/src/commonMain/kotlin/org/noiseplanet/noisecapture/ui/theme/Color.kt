@@ -110,8 +110,17 @@ val Color.Companion.Noise
 
 val Color.Companion.Surface get() = Color(0xFFFFFFFF)
 val Color.Companion.SurfaceContainer get() = Color(0xFFFAF9F9)
+val Color.Companion.InverseSurface get() = Color(0xFF0D0E0F)
 val Color.Companion.OnSurface get() = Color(0xFF313333)
 val Color.Companion.OnSurfaceVariant get() = Color(0xFF6A6969)
+
+val Color.Companion.Neutral
+    get() = ColorSet(
+        light = Color.Surface,
+        mediumLight = Color.SurfaceContainer,
+        medium = Color.OnSurfaceVariant,
+        dark = Color.OnSurface
+    )
 
 val Color.Companion.AccentBlue get() = Color(0xFF4E7EE5)
 

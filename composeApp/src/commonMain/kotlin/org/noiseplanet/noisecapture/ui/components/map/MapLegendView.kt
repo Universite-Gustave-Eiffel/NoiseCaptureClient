@@ -19,10 +19,10 @@ import noisecapture.composeapp.generated.resources.cancel
 import noisecapture.composeapp.generated.resources.map_legend_description
 import noisecapture.composeapp.generated.resources.map_legend_title
 import org.jetbrains.compose.resources.stringResource
-import org.noiseplanet.noisecapture.ui.components.button.NCButton
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonStyle
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
+import org.noiseplanet.noisecapture.ui.components.ButtonContent
+import org.noiseplanet.noisecapture.ui.components.NCButton
+import org.noiseplanet.noisecapture.ui.components.transparentContainerColors
+import org.noiseplanet.noisecapture.ui.theme.Noise
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 
 
@@ -37,21 +37,17 @@ fun MapLegendView(
         descendingOrder = true
     )
 
-    val cancelButtonViewModel = NCButtonViewModel(
-        title = Res.string.cancel,
-        style = NCButtonStyle.TEXT,
-        colors = {
-            NCButtonColors.Defaults.text()
-        }
-    )
-
 
     // - Layout
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
-            NCButton(onClick = onDismissRequest, viewModel = cancelButtonViewModel)
+            NCButton(
+                onClick = onDismissRequest,
+                content = ButtonContent(title = Res.string.cancel),
+                colors = Color.Noise.one.transparentContainerColors(),
+            )
         },
         title = {
             Text(stringResource(Res.string.map_legend_title))

@@ -25,15 +25,20 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.history
 import noisecapture.composeapp.generated.resources.home_last_measurements_section_header
+import noisecapture.composeapp.generated.resources.home_open_history_button_title
 import noisecapture.composeapp.generated.resources.home_statistics_recordings_count
 import noisecapture.composeapp.generated.resources.home_statistics_title
 import noisecapture.composeapp.generated.resources.home_statistics_total
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.noiseplanet.noisecapture.model.dao.Measurement
+import org.noiseplanet.noisecapture.ui.components.ButtonContent
 import org.noiseplanet.noisecapture.ui.components.ListSectionHeader
-import org.noiseplanet.noisecapture.ui.components.button.NCButton
+import org.noiseplanet.noisecapture.ui.components.NCButton
+import org.noiseplanet.noisecapture.ui.components.tertiaryContainerColors
+import org.noiseplanet.noisecapture.ui.theme.Noise
 
 
 @Composable
@@ -117,7 +122,11 @@ private fun LastMeasurementsViewContentReady(
 
                 NCButton(
                     onClick = onClickOpenHistoryButton,
-                    viewModel = viewState.historyButtonViewModel,
+                    content = ButtonContent(
+                        title = Res.string.home_open_history_button_title,
+                        icon = Res.drawable.history,
+                    ),
+                    colors = Color.Noise.three.tertiaryContainerColors(),
                     modifier = Modifier.fillMaxWidth()
                 )
             }

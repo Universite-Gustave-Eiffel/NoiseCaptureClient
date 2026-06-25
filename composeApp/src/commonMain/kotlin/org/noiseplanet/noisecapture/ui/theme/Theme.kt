@@ -35,7 +35,7 @@ private val lightColorScheme = lightColorScheme(
     onSurfaceVariant = Color.OnSurfaceVariant,
     surfaceContainer = Color.SurfaceContainer,
     surfaceTint = Color.Noise.one.light,
-    inverseSurface = Color.OnSurface,
+    inverseSurface = Color.InverseSurface,
     inverseOnSurface = Color.Surface,
     error = Color.Noise.eight.dark,
     onError = Color.Noise.eight.light,
@@ -45,12 +45,9 @@ private val lightColorScheme = lightColorScheme(
 
 val ColorScheme.accentBlue get() = Color.AccentBlue
 
-private val darkColorScheme = lightColorScheme
-
 
 @Composable
 fun AppTheme(
-    darkTheme: Boolean = false, // TODO: Enable dark theme when color scheme will be consistent
     content: @Composable() () -> Unit,
 ) {
     val rippleConfiguration = RippleConfiguration(color = Color.Noise.one.mediumLight)
@@ -61,10 +58,7 @@ fun AppTheme(
         fontScale = min(LocalDensity.current.fontScale, 1.3f)
     )
 
-    val colorScheme = when {
-        darkTheme -> darkColorScheme
-        else -> lightColorScheme
-    }
+    val colorScheme = lightColorScheme
 
     CompositionLocalProvider(
         LocalRippleConfiguration provides rippleConfiguration,

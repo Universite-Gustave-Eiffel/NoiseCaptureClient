@@ -15,19 +15,27 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import nl.jacobras.humanreadable.HumanReadable
 import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.delete
 import noisecapture.composeapp.generated.resources.details_audio_size
+import noisecapture.composeapp.generated.resources.details_delete_button
+import noisecapture.composeapp.generated.resources.details_export_button
 import noisecapture.composeapp.generated.resources.details_manage_description
 import noisecapture.composeapp.generated.resources.details_manage_title
 import noisecapture.composeapp.generated.resources.details_total_size
+import noisecapture.composeapp.generated.resources.download
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
-import org.noiseplanet.noisecapture.ui.components.button.NCButton
+import org.noiseplanet.noisecapture.ui.components.ButtonContent
+import org.noiseplanet.noisecapture.ui.components.NCButton
+import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
+import org.noiseplanet.noisecapture.ui.theme.Noise
 
 
 @Composable
@@ -110,7 +118,11 @@ fun ManageMeasurementView(
                 ) {
                     Box(modifier = Modifier.weight(1f)) {
                         NCButton(
-                            viewModel = viewModel.exportButtonViewModel,
+                            content = ButtonContent(
+                                title = Res.string.details_export_button,
+                                icon = Res.drawable.download
+                            ),
+                            colors = Color.Noise.two.secondaryContainerColors(),
                             onClick = { showExportMenu = true },
                             modifier = Modifier.fillMaxWidth(),
                         )
@@ -125,7 +137,11 @@ fun ManageMeasurementView(
 
                     Box(modifier = Modifier.weight(1f)) {
                         NCButton(
-                            viewModel = viewModel.deleteButtonViewModel,
+                            content = ButtonContent(
+                                title = Res.string.details_delete_button,
+                                icon = Res.drawable.delete
+                            ),
+                            colors = Color.Noise.eight.secondaryContainerColors(),
                             onClick = { showDeleteMenu = true },
                             modifier = Modifier.fillMaxWidth(),
                         )

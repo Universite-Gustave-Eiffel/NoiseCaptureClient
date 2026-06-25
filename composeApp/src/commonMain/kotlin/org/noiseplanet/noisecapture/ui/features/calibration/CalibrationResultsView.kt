@@ -66,11 +66,12 @@ import noisecapture.composeapp.generated.resources.cancel
 import noisecapture.composeapp.generated.resources.edit
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.noiseplanet.noisecapture.ui.components.button.NCButton
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonStyle
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
+import org.noiseplanet.noisecapture.ui.components.ButtonContent
+import org.noiseplanet.noisecapture.ui.components.NCButton
+import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
+import org.noiseplanet.noisecapture.ui.components.transparentContainerColors
 import org.noiseplanet.noisecapture.ui.navigation.router.CalibrationRouter
+import org.noiseplanet.noisecapture.ui.theme.Noise
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.AdaptiveUtil
 import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
@@ -287,28 +288,16 @@ fun CalibrationResultsView(
                     modifier = Modifier.padding(top = 24.dp).fillMaxWidth()
                 ) {
                     NCButton(
-                        viewModel = NCButtonViewModel(
-                            title = Res.string.cancel,
-                            style = NCButtonStyle.TEXT,
-                            colors = {
-                                NCButtonColors.Defaults.text()
-                                    .copy(contentColor = contentColor)
-                            }
+                        content = ButtonContent(title = Res.string.cancel),
+                        colors = Color.Noise.one.transparentContainerColors().copy(
+                            contentColor = Color.Noise.one.light
                         ),
                         onClick = { viewModel.cancelCalibration() },
                         modifier = Modifier.height(50.dp).weight(1f),
                     )
                     NCButton(
-                        viewModel = NCButtonViewModel(
-                            title = Res.string.calibration_results_save_gain,
-                            colors = {
-                                NCButtonColors(
-                                    contentColor = containerColor,
-                                    containerColor = contentColor,
-                                )
-                            },
-                            hasDropShadow = true,
-                        ),
+                        content = ButtonContent(title = Res.string.calibration_results_save_gain),
+                        colors = Color.Noise.one.secondaryContainerColors(hasDropShadow = true),
                         onClick = {
                             viewModel.saveGain(viewState.suggestedGain) {
                                 router.popBackStack()

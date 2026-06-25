@@ -8,19 +8,25 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.pause
+import noisecapture.composeapp.generated.resources.play_arrow
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.noiseplanet.noisecapture.permission.Permission
-import org.noiseplanet.noisecapture.ui.components.button.NCButton
+import org.noiseplanet.noisecapture.ui.components.ButtonContent
+import org.noiseplanet.noisecapture.ui.components.NCButton
+import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
+import org.noiseplanet.noisecapture.ui.theme.Noise
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.isInVuMeterRange
 
@@ -38,7 +44,7 @@ fun SoundLevelMeterView(
         .collectAsStateWithLifecycle()
     val currentLeqMetrics by viewModel.laeqMetricsFlow
         .collectAsStateWithLifecycle()
-    val playPauseButtonViewModel by viewModel.playPauseButtonViewModelFlow
+    val isRunning by viewModel.isRunning
         .collectAsStateWithLifecycle()
 
     val currentSplColor by animateColorAsState(
@@ -61,7 +67,7 @@ fun SoundLevelMeterView(
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top,
-                modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth()
+                modifier = Modifier.padding(start = 16.dp, end = 10.dp).fillMaxWidth()
             ) {
                 Column(horizontalAlignment = Alignment.Start) {
                     Text(
@@ -83,8 +89,8 @@ fun SoundLevelMeterView(
                 if (viewModel.showPlayPauseButton) {
                     NCButton(
                         onClick = { viewModel.toggleAudioSource(showPermissionPrompt) },
-                        viewModel = playPauseButtonViewModel,
-                        modifier = Modifier.size(40.dp)
+                        content = ButtonContent(icon = if (isRunning) Res.drawable.pause else Res.drawable.play_arrow),
+                        colors = Color.Noise.two.secondaryContainerColors(),
                     )
                 }
             }

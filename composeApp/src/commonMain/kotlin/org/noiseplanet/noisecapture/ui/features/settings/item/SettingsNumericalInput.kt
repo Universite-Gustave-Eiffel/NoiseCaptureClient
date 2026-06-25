@@ -24,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
@@ -37,10 +38,11 @@ import noisecapture.composeapp.generated.resources.cancel
 import noisecapture.composeapp.generated.resources.save
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-import org.noiseplanet.noisecapture.ui.components.button.NCButton
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonStyle
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
+import org.noiseplanet.noisecapture.ui.components.ButtonContent
+import org.noiseplanet.noisecapture.ui.components.NCButton
+import org.noiseplanet.noisecapture.ui.components.tertiaryContainerColors
+import org.noiseplanet.noisecapture.ui.components.transparentContainerColors
+import org.noiseplanet.noisecapture.ui.theme.Noise
 
 /**
  * A custom text field for numerical settings values.
@@ -145,16 +147,6 @@ private fun EditDialog(
         )
     }
 
-    val confirmButtonViewModel = NCButtonViewModel(
-        title = Res.string.save,
-        colors = { NCButtonColors.Defaults.secondary() }
-    )
-    val cancelButtonViewModel = NCButtonViewModel(
-        title = Res.string.cancel,
-        style = NCButtonStyle.TEXT,
-        colors = { NCButtonColors.Defaults.text() }
-    )
-
 
     // - Layout
 
@@ -192,14 +184,16 @@ private fun EditDialog(
         onDismissRequest = { cancelEdit() },
         confirmButton = {
             NCButton(
-                viewModel = confirmButtonViewModel,
+                content = ButtonContent(title = Res.string.save),
+                colors = Color.Noise.one.tertiaryContainerColors(),
                 onClick = { saveEdit(textFieldValueState.text) }
             )
         },
         dismissButton = {
             NCButton(
-                viewModel = cancelButtonViewModel,
-                onClick = { cancelEdit() }
+                content = ButtonContent(title = Res.string.cancel),
+                colors = Color.Noise.one.transparentContainerColors(),
+                onClick = { saveEdit(textFieldValueState.text) }
             )
         },
         modifier = Modifier.imePadding()
