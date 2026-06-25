@@ -3,6 +3,7 @@ package org.noiseplanet.noisecapture.ui.features.home
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -17,9 +18,11 @@ import noisecapture.composeapp.generated.resources.home_map_browse_button
 import noisecapture.composeapp.generated.resources.home_map_section_header
 import noisecapture.composeapp.generated.resources.map
 import org.noiseplanet.noisecapture.ui.components.ButtonContent
+import org.noiseplanet.noisecapture.ui.components.Container
 import org.noiseplanet.noisecapture.ui.components.ListSectionHeader
 import org.noiseplanet.noisecapture.ui.components.NCButton
 import org.noiseplanet.noisecapture.ui.components.map.MapView
+import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
 import org.noiseplanet.noisecapture.ui.components.tertiaryContainerColors
 import org.noiseplanet.noisecapture.ui.navigation.router.HomeRouter
 import org.noiseplanet.noisecapture.ui.theme.Noise
@@ -40,11 +43,13 @@ fun HomeMapView(
             modifier = Modifier.padding(start = 12.dp),
         )
 
-        Box(
+        Container(
             contentAlignment = Alignment.BottomEnd,
-            modifier = Modifier.clip(MaterialTheme.shapes.large)
+            contentPadding = PaddingValues(0.dp),
+            shape = MaterialTheme.shapes.large,
+            colors = Color.Noise.one.secondaryContainerColors(hasDropShadow = true),
         ) {
-            MapView()
+            MapView(modifier = Modifier.clip(MaterialTheme.shapes.large))
 
             Box(modifier = Modifier.fillMaxSize().clickable(onClick = router::onClickOpenMapButton))
 

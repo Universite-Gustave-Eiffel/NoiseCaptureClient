@@ -26,7 +26,7 @@ import org.noiseplanet.noisecapture.util.ncDropShadow
 object ContainerDefaults {
 
     val ContentPadding: PaddingValues = PaddingValues(16.dp)
-    val Shape: Shape = RoundedCornerShape(20.dp)
+    val Shape: Shape = RoundedCornerShape(16.dp)
 
     @Composable
     fun colors(): ContainerColors {

@@ -53,7 +53,7 @@ fun SoundLevelMeterHeaderView(
     Box(
         contentAlignment = Alignment.CenterStart,
         modifier = modifier.clip(shape)
-            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .background(MaterialTheme.colorScheme.surface)
             .clickable(onClick = onClickOpenSoundLevelMeterButton)
     ) {
         Column(
