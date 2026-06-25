@@ -1,6 +1,5 @@
 package org.noiseplanet.noisecapture.ui.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -48,7 +47,9 @@ fun NCButton(
         contentAlignment = Alignment.Center,
         colors = colors,
         shape = shape,
-        modifier = modifier.clickable(enabled = enabled, onClick = onClick),
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier,
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(

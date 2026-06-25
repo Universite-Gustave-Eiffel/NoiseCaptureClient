@@ -2,6 +2,7 @@ package org.noiseplanet.noisecapture.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -41,6 +42,8 @@ fun Container(
     shape: Shape = ContainerDefaults.Shape,
     colors: ContainerColors = ContainerDefaults.colors(),
     contentAlignment: Alignment = Alignment.TopStart,
+    onClick: (() -> Unit)? = null,
+    enabled: Boolean = false,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
@@ -58,6 +61,7 @@ fun Container(
                 width = 1.dp,
                 shape = shape
             )
+            .clickable(enabled = enabled, onClick = onClick ?: {})
             .padding(contentPadding)
     ) {
         CompositionLocalProvider(

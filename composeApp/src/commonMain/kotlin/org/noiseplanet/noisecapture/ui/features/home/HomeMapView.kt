@@ -1,6 +1,5 @@
 package org.noiseplanet.noisecapture.ui.features.home
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -47,11 +46,12 @@ fun HomeMapView(
             contentAlignment = Alignment.BottomEnd,
             contentPadding = PaddingValues(0.dp),
             shape = MaterialTheme.shapes.large,
+            onClick = router::onClickOpenMapButton,
             colors = Color.Noise.one.secondaryContainerColors(hasDropShadow = true),
         ) {
             MapView(modifier = Modifier.clip(MaterialTheme.shapes.large))
 
-            Box(modifier = Modifier.fillMaxSize().clickable(onClick = router::onClickOpenMapButton))
+            Box(modifier = Modifier.fillMaxSize())
 
             NCButton(
                 content = ButtonContent(

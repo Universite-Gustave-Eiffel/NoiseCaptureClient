@@ -1,5 +1,7 @@
 package org.noiseplanet.noisecapture.ui.components.micselect
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import noisecapture.composeapp.generated.resources.Res
@@ -28,7 +31,8 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.noiseplanet.noisecapture.model.dao.MicrophoneInfo
 import org.noiseplanet.noisecapture.model.dao.MicrophoneType
-import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
+import org.noiseplanet.noisecapture.ui.theme.Noise
+import org.noiseplanet.noisecapture.util.ncDropShadow
 
 
 @Composable
@@ -95,14 +99,28 @@ private fun MicrophoneSelectMenu(
     items: List<MicrophoneInfo>,
     modifier: Modifier = Modifier,
 ) {
+    // - Properties
+
+    val shape = MaterialTheme.shapes.large
+
+
+    // - Layout
+
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismissRequest,
-        containerColor = NoiseLevelColorRamp.level1Light,
+        containerColor = Color.Noise.three.light,
         tonalElevation = 0.dp,
         shadowElevation = 0.dp,
-        shape = MaterialTheme.shapes.medium,
-        modifier = modifier,
+        shape = shape,
+        modifier = modifier
+            .ncDropShadow(shape = shape, color = Color.Noise.three.dark)
+            .background(color = Color.Noise.three.light, shape = shape)
+            .border(
+                width = 1.dp,
+                color = Color.Noise.three.mediumLight,
+                shape = MaterialTheme.shapes.large
+            ),
     ) {
         for (item in items) {
             DropdownMenuItem(
