@@ -41,6 +41,7 @@ import org.noiseplanet.noisecapture.ui.components.ContainerColors
 import org.noiseplanet.noisecapture.ui.components.NCButton
 import org.noiseplanet.noisecapture.ui.theme.accentBlue
 import org.noiseplanet.noisecapture.util.ncDropShadow
+import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 import ovh.plrapps.mapcompose.ui.MapUI
 
 
@@ -80,6 +81,7 @@ fun MapView(
                 verticalAlignment = Alignment.Top,
                 modifier = modifier.fillMaxSize()
                     .padding(16.dp)
+                    .paddingBottomWithInsets(5.dp)
             ) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
