@@ -57,9 +57,9 @@ fun SoundLevelMeterHeaderView(
             .clickable(onClick = onClickOpenSoundLevelMeterButton)
     ) {
         Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = 24.dp)
         ) {
             SoundLevelMeterView(showPermissionPrompt = showPermissionPrompt)
 

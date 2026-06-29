@@ -14,7 +14,6 @@ import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.services.permission.PermissionService
-import org.noiseplanet.noisecapture.util.VuMeterOptions
 import org.noiseplanet.noisecapture.util.roundTo
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 
@@ -24,18 +23,6 @@ class SoundLevelMeterViewModel(
     val showPlayPauseButton: Boolean,
 ) : ViewModel(), KoinComponent {
 
-    // - Constants
-
-    companion object {
-
-        /**
-         * Number of ticks to display along the X-Axis
-         * Tick values will be determined from provided min and max values
-         */
-        const val VU_METER_TICKS_COUNT: Int = 6
-    }
-
-
     // - Properties
 
     private val liveAudioService: LiveAudioService by inject()
@@ -43,11 +30,6 @@ class SoundLevelMeterViewModel(
     private val permissionService: PermissionService by inject()
 
     val isRunning: StateFlow<Boolean> = liveAudioService.isRunning
-
-    val vuMeterTicks: IntArray = IntArray(size = VU_METER_TICKS_COUNT) { index ->
-        val offset = (VuMeterOptions.DB_MAX - VuMeterOptions.DB_MIN) / (VU_METER_TICKS_COUNT - 1)
-        (VuMeterOptions.DB_MIN + (offset * index)).toInt()
-    }
 
     val soundPressureLevelFlow: StateFlow<Double> = liveAudioService
         .getWeightedLeqFlow()

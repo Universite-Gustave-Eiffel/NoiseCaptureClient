@@ -62,7 +62,6 @@ fun SoundLevelMeterView(
         modifier = Modifier.background(color = MaterialTheme.colorScheme.surface)
     ) {
         Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.padding(top = 16.dp)
         ) {
             Row(
@@ -96,10 +95,7 @@ fun SoundLevelMeterView(
                 }
             }
 
-            VuMeter(
-                ticks = viewModel.vuMeterTicks,
-                valueFlow = viewModel.soundPressureLevelFlow,
-            )
+            VuMeter(valueFlow = viewModel.soundPressureLevelFlow)
         }
     }
 }
