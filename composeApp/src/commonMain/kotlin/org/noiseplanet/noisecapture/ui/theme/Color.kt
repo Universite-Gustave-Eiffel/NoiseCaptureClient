@@ -116,8 +116,8 @@ val Color.Companion.OnSurfaceVariant get() = Color(0xFF6A6969)
 
 val Color.Companion.Neutral
     get() = ColorSet(
-        light = Color.Surface,
-        mediumLight = Color.SurfaceContainer,
+        light = Color.SurfaceContainer,
+        mediumLight = Color.Noise.one.mediumLight,
         medium = Color.OnSurfaceVariant,
         dark = Color.OnSurface
     )

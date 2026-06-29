@@ -73,11 +73,23 @@ object NoiseLevelColorRamp {
         value: Double,
         variant: ColorVariant = ColorVariant.MEDIUM,
     ): Color {
+        return getColorSetForSPLValue(value)
+            .getVariant(variant)
+    }
+
+    /**
+     * Get the color set corresponding to the given SPL value
+     * @param value SPL value
+     *
+     * @return Corresponding color set from palette
+     */
+    fun getColorSetForSPLValue(
+        value: Double,
+    ): ColorSet {
         return palette.filter { it.key <= value }
             .minByOrNull { value - it.key }
             ?.value
-            ?.getVariant(variant)
-            ?: Color.Black
+            ?: Color.Neutral
     }
 
     /**
