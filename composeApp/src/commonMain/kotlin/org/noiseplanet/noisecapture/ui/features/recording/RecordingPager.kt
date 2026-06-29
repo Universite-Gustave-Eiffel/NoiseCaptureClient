@@ -95,7 +95,7 @@ fun RecordingPager(
     ) {
         SecondaryTabRow(
             selectedTabIndex = pagerState.currentPage,
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
+            containerColor = MaterialTheme.colorScheme.surface
         ) {
             tabs.toList().forEachIndexed { index, (tabId, label) ->
                 Tab(
@@ -115,11 +115,11 @@ fun RecordingPager(
                                 maxLines = 1,
                                 autoSize = TextAutoSize.StepBased(
                                     minFontSize = 12.sp,
-                                    maxFontSize = 16.sp,
+                                    maxFontSize = 14.sp,
                                     stepSize = 0.25.sp,
                                 ),
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    color = MaterialTheme.colorScheme.onSurface
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 ),
                             )
                         }
