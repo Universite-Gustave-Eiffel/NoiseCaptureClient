@@ -68,7 +68,7 @@ fun SoundLevelMeterView(
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top,
-                modifier = Modifier.padding(start = 16.dp, end = 10.dp).fillMaxWidth()
+                modifier = Modifier.padding(start = 16.dp, end = 12.dp).fillMaxWidth()
             ) {
                 Column(horizontalAlignment = Alignment.Start) {
                     Text(
