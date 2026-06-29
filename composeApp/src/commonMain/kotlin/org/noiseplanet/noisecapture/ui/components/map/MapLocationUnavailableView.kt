@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.location_off
@@ -20,7 +21,7 @@ import noisecapture.composeapp.generated.resources.map_location_services_unavail
 import noisecapture.composeapp.generated.resources.map_location_services_unavailable_title
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
+import org.noiseplanet.noisecapture.ui.theme.Noise
 
 
 @Composable
@@ -32,14 +33,14 @@ fun MapLocationUnavailableView(
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.background(color = NoiseLevelColorRamp.level2Light)
+        modifier = modifier.background(color = MaterialTheme.colorScheme.surfaceContainer)
             .padding(horizontal = 40.dp)
             .padding(bottom = 80.dp)
     ) {
         Icon(
             painter = painterResource(Res.drawable.location_off),
             contentDescription = null,
-            tint = NoiseLevelColorRamp.level8,
+            tint = Color.Noise.eight.medium,
             modifier = Modifier.size(64.dp).padding(bottom = 12.dp)
         )
 

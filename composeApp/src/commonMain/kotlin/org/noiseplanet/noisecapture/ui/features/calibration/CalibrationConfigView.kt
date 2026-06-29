@@ -28,6 +28,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -58,7 +59,7 @@ import org.noiseplanet.noisecapture.model.enums.CalibrationFrequencyBand
 import org.noiseplanet.noisecapture.ui.components.ButtonContent
 import org.noiseplanet.noisecapture.ui.components.NCButton
 import org.noiseplanet.noisecapture.ui.components.micselect.MicrophoneSelectView
-import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
+import org.noiseplanet.noisecapture.ui.theme.Noise
 import org.noiseplanet.noisecapture.util.AdaptiveUtil
 import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 import org.noiseplanet.noisecapture.util.toSignedString
@@ -261,7 +262,7 @@ private fun FrequencyBandSelectMenu(
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismissRequest,
-        containerColor = NoiseLevelColorRamp.level1Light,
+        containerColor = Color.Noise.one.light,
         tonalElevation = 0.dp,
         shadowElevation = 0.dp,
         shape = MaterialTheme.shapes.medium,

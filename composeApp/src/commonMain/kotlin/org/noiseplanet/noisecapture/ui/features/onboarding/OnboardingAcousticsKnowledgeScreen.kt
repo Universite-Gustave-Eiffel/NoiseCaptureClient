@@ -46,7 +46,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.model.enums.AcousticsKnowledgeLevel
 import org.noiseplanet.noisecapture.ui.navigation.router.OnboardingRouter
-import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
+import org.noiseplanet.noisecapture.ui.theme.Noise
 import org.noiseplanet.noisecapture.ui.theme.defaultMarkdownTypography
 
 
@@ -119,7 +119,7 @@ fun OnboardingAcousticsKnowledgeScreen(
         Column(
             modifier = Modifier.border(
                 width = 1.dp,
-                color = NoiseLevelColorRamp.level1Light,
+                color = Color.Noise.one.light,
                 shape = MaterialTheme.shapes.large
             ).clip(shape = MaterialTheme.shapes.large)
         ) {
@@ -131,7 +131,7 @@ fun OnboardingAcousticsKnowledgeScreen(
                         .clickable { viewModel.setAcousticsKnowledgeLevel(item.level) }
                         .background(
                             color = if (selectedItemIndex == index) {
-                                NoiseLevelColorRamp.level4Light
+                                Color.Noise.four.light
                             } else {
                                 Color.Transparent
                             }
@@ -175,7 +175,7 @@ fun OnboardingAcousticsKnowledgeScreen(
                 }
 
                 if (index < items.size - 1) {
-                    HorizontalDivider(color = NoiseLevelColorRamp.level1Light)
+                    HorizontalDivider(color = Color.Noise.one.light)
                 }
             }
         }

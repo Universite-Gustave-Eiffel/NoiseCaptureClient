@@ -113,6 +113,8 @@ fun RnePlotView(
                     .aspectRatio(1f)
                     .height(IntrinsicSize.Min) // Match the row height
             ) {
+                val colors = remember { NoiseLevelColorRamp.palette.values.toList() }
+
                 PieChart(
                     modifier = Modifier.fillMaxHeight().aspectRatio(1f),
                     values = rneData.values.map { it.toFloat() },
@@ -122,13 +124,8 @@ fun RnePlotView(
                     labelSpacing = 1f,
                     maxPieDiameter = 200.dp,
                     slice = @Composable { sliceIndex ->
-                        val colors = remember { NoiseLevelColorRamp.palette.values.toList() }
-                        val borderColors = remember {
-                            NoiseLevelColorRamp.paletteLighter.values.toList()
-                        }
-
                         DefaultSlice(
-                            colors[sliceIndex],
+                            colors[sliceIndex].medium,
                             onClick = {
                                 selectedSliceIndex = if (selectedSliceIndex != sliceIndex) {
                                     sliceIndex
@@ -140,7 +137,7 @@ fun RnePlotView(
                             hoverExpandFactor = 1.05f,
                             antiAlias = true,
                             border = if (selectedSliceIndex == sliceIndex) {
-                                BorderStroke(width = 4.dp, color = borderColors[sliceIndex])
+                                BorderStroke(width = 4.dp, color = colors[sliceIndex].mediumLight)
                             } else {
                                 null
                             }
@@ -160,7 +157,7 @@ fun RnePlotView(
                             }
                         }
                         val percentage = rneData.values.elementAt(index) * 100.0
-                        val foreground = NoiseLevelColorRamp.paletteDarker.values.elementAt(index)
+                        val foreground = colors[index].dark
 
                         Box(
                             modifier = Modifier.fillMaxSize(),

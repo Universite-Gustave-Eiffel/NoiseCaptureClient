@@ -29,7 +29,6 @@ import org.noiseplanet.noisecapture.ui.components.ButtonContent
 import org.noiseplanet.noisecapture.ui.components.NCButton
 import org.noiseplanet.noisecapture.ui.components.tertiaryContainerColors
 import org.noiseplanet.noisecapture.ui.theme.Noise
-import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.AdaptiveUtil
 import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 import org.noiseplanet.noisecapture.util.roundTo
@@ -82,7 +81,7 @@ fun CalibrationRecordingView(
                 }
                 append(" dB(A)")
             },
-            color = NoiseLevelColorRamp.level1Dark,
+            color = Color.Noise.one.dark,
             style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Black,
         )

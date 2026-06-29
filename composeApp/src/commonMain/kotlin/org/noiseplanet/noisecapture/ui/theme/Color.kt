@@ -134,4 +134,21 @@ data class ColorSet(
     val mediumLight: Color,
     val medium: Color,
     val dark: Color,
-)
+) {
+
+    fun getVariant(variant: ColorVariant): Color {
+        return when (variant) {
+            ColorVariant.LIGHT -> light
+            ColorVariant.MEDIUM_LIGHT -> mediumLight
+            ColorVariant.MEDIUM -> medium
+            ColorVariant.DARK -> dark
+        }
+    }
+}
+
+enum class ColorVariant {
+    LIGHT,
+    MEDIUM_LIGHT,
+    MEDIUM,
+    DARK
+}

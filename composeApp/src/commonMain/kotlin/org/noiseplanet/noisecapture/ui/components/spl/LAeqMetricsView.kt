@@ -18,6 +18,7 @@ import noisecapture.composeapp.generated.resources.sound_level_meter_max_dba
 import noisecapture.composeapp.generated.resources.sound_level_meter_min_dba
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.model.dao.LAeqMetrics
+import org.noiseplanet.noisecapture.ui.theme.ColorVariant
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.ui.theme.titleMono
 import org.noiseplanet.noisecapture.util.isInVuMeterRange
@@ -71,7 +72,7 @@ fun LAeqMetricsView(
                         color = metric.value?.let {
                             NoiseLevelColorRamp.getColorForSPLValue(
                                 value = it,
-                                palette = NoiseLevelColorRamp.paletteDarker,
+                                variant = ColorVariant.DARK,
                             )
                         } ?: MaterialTheme.colorScheme.onSurface,
                     ),

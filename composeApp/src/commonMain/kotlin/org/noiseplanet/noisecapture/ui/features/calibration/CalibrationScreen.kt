@@ -15,6 +15,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
@@ -22,7 +23,7 @@ import androidx.navigationevent.compose.rememberNavigationEventState
 import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.ui.navigation.router.CalibrationRouter
-import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
+import org.noiseplanet.noisecapture.ui.theme.Noise
 
 
 @OptIn(KoinExperimentalAPI::class)
@@ -86,7 +87,7 @@ fun CalibrationScreen(
             // Show countdown progress indicator based on current state value
             Box(
                 modifier = Modifier.fillMaxWidth()
-                    .background(color = NoiseLevelColorRamp.level1Light)
+                    .background(color = Color.Noise.one.light)
                     .animateContentSize(
                         tween(
                             durationMillis = animationDurationMs,

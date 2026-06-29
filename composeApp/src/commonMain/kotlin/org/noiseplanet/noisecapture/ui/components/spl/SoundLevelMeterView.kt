@@ -26,6 +26,7 @@ import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.ui.components.ButtonContent
 import org.noiseplanet.noisecapture.ui.components.NCButton
 import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
+import org.noiseplanet.noisecapture.ui.theme.ColorVariant
 import org.noiseplanet.noisecapture.ui.theme.Noise
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.isInVuMeterRange
@@ -50,7 +51,7 @@ fun SoundLevelMeterView(
     val currentSplColor by animateColorAsState(
         NoiseLevelColorRamp.getColorForSPLValue(
             value = currentSpl,
-            palette = NoiseLevelColorRamp.paletteDarker,
+            variant = ColorVariant.DARK,
         )
     )
 

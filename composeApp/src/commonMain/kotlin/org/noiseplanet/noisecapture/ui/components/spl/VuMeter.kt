@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.StateFlow
+import org.noiseplanet.noisecapture.ui.theme.ColorVariant
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.VuMeterOptions
 
@@ -45,7 +46,7 @@ fun VuMeter(
     val color by animateColorAsState(
         NoiseLevelColorRamp.getColorForSPLValue(
             value = value,
-            palette = NoiseLevelColorRamp.paletteDarker,
+            variant = ColorVariant.DARK
         )
     )
     val shape = RoundedCornerShape(

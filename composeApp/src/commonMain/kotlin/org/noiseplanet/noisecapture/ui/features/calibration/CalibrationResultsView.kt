@@ -68,11 +68,11 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.ui.components.ButtonContent
 import org.noiseplanet.noisecapture.ui.components.NCButton
+import org.noiseplanet.noisecapture.ui.components.primaryContainerColors
 import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
 import org.noiseplanet.noisecapture.ui.components.transparentContainerColors
 import org.noiseplanet.noisecapture.ui.navigation.router.CalibrationRouter
 import org.noiseplanet.noisecapture.ui.theme.Noise
-import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.AdaptiveUtil
 import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 import org.noiseplanet.noisecapture.util.roundTo
@@ -122,14 +122,14 @@ fun CalibrationResultsView(
         Text(
             text = stringResource(Res.string.calibration_results_current_gain),
             style = MaterialTheme.typography.titleMedium,
-            color = NoiseLevelColorRamp.level1Dark,
+            color = Color.Noise.one.dark,
             modifier = Modifier.padding(horizontal = 16.dp + 24.dp)
         )
         Text(
             text = "${viewState.currentGain.toSignedString()} dB(A)",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Black,
-            color = NoiseLevelColorRamp.level1Dark,
+            color = Color.Noise.one.dark,
             modifier = Modifier.padding(horizontal = 16.dp + 24.dp)
         )
 
@@ -164,7 +164,7 @@ fun CalibrationResultsView(
             Box(
                 modifier = Modifier.height(1.dp)
                     .fillMaxWidth()
-                    .background(color = NoiseLevelColorRamp.level1.copy(alpha = 0.5f))
+                    .background(color = Color.Noise.one.mediumLight)
             )
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -204,7 +204,7 @@ fun CalibrationResultsView(
             Text(
                 text = stringResource(Res.string.calibration_results_difference),
                 style = MaterialTheme.typography.titleMedium,
-                color = NoiseLevelColorRamp.level1Dark,
+                color = Color.Noise.one.dark,
                 textAlign = TextAlign.End,
                 modifier = Modifier.padding(horizontal = 16.dp + 24.dp).fillMaxWidth(),
             )
@@ -218,7 +218,7 @@ fun CalibrationResultsView(
                 text = differenceText,
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Black,
-                color = NoiseLevelColorRamp.level1Dark,
+                color = Color.Noise.one.dark,
                 textAlign = TextAlign.End,
                 modifier = Modifier.padding(horizontal = 16.dp + 24.dp).fillMaxWidth(),
             )
@@ -226,7 +226,7 @@ fun CalibrationResultsView(
                 Text(
                     text = stringResource(Res.string.calibration_results_already_calibrated),
                     style = MaterialTheme.typography.bodySmall,
-                    color = NoiseLevelColorRamp.level1Dark,
+                    color = Color.Noise.one.dark,
                     textAlign = TextAlign.End,
                     modifier = Modifier.padding(horizontal = 16.dp + 24.dp).fillMaxWidth(),
                 )
@@ -238,17 +238,17 @@ fun CalibrationResultsView(
 
         // Suggested compensation gain
         viewState.suggestedGain?.let { suggestedGain ->
-            val (containerColor, contentColor) = if (viewState.isWarning) {
-                Pair(NoiseLevelColorRamp.level6Dark, NoiseLevelColorRamp.level6Light)
+            val containerColors = if (viewState.isWarning) {
+                Color.Noise.six.primaryContainerColors()
             } else {
-                Pair(NoiseLevelColorRamp.level1Dark, NoiseLevelColorRamp.level1Light)
+                Color.Noise.one.primaryContainerColors()
             }
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .background(
-                        color = containerColor,
+                        color = containerColors.backgroundColor,
                         shape = MaterialTheme.shapes.large.copy(
                             bottomStart = ZeroCornerSize,
                             bottomEnd = ZeroCornerSize
@@ -261,7 +261,7 @@ fun CalibrationResultsView(
                 Text(
                     text = stringResource(Res.string.calibration_results_suggested_gain),
                     style = MaterialTheme.typography.titleMedium,
-                    color = contentColor,
+                    color = containerColors.contentColor,
                 )
                 Text(
                     text = buildAnnotatedString {
@@ -272,7 +272,7 @@ fun CalibrationResultsView(
                     },
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Black,
-                    color = contentColor,
+                    color = containerColors.contentColor,
                 )
 
                 if (viewState.isWarning) {
@@ -280,7 +280,7 @@ fun CalibrationResultsView(
                         text = stringResource(Res.string.calibration_results_suggested_gain_warning),
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center,
-                        color = contentColor,
+                        color = containerColors.contentColor,
                     )
                 }
 
