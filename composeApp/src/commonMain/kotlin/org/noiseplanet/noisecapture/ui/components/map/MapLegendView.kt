@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -21,6 +20,7 @@ import noisecapture.composeapp.generated.resources.map_legend_title
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.ui.components.ButtonContent
 import org.noiseplanet.noisecapture.ui.components.NCButton
+import org.noiseplanet.noisecapture.ui.components.NCDialog
 import org.noiseplanet.noisecapture.ui.components.transparentContainerColors
 import org.noiseplanet.noisecapture.ui.theme.Noise
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
@@ -40,7 +40,7 @@ fun MapLegendView(
 
     // - Layout
 
-    AlertDialog(
+    NCDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             NCButton(

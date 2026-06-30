@@ -30,8 +30,8 @@ fun Modifier.ncDropShadow(
     color: Color = Color.OnSurface,
     alpha: Float = 0.15f,
     blur: Float = 16f,
-    offset: Offset = Offset(x = 0f, y = 8f),
-    spread: Float = 4f,
+    offset: Offset = Offset(x = 0f, y = 4f),
+    spread: Float = 2f,
     isPressed: Boolean = false,
 ): Modifier {
 

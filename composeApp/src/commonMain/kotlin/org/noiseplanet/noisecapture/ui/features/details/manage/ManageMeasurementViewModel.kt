@@ -11,7 +11,6 @@ import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.details_delete_measurement_audio_dialog_text
 import noisecapture.composeapp.generated.resources.details_delete_measurement_dialog_text
-import noisecapture.composeapp.generated.resources.details_delete_measurement_dialog_title
 import noisecapture.composeapp.generated.resources.details_menu_delete_audio_description
 import noisecapture.composeapp.generated.resources.details_menu_delete_audio_title
 import noisecapture.composeapp.generated.resources.details_menu_delete_whole_description
@@ -22,6 +21,7 @@ import noisecapture.composeapp.generated.resources.details_menu_export_geojson_d
 import noisecapture.composeapp.generated.resources.details_menu_export_geojson_title
 import noisecapture.composeapp.generated.resources.details_menu_export_raw_description
 import noisecapture.composeapp.generated.resources.details_menu_export_raw_title
+import org.jetbrains.compose.resources.StringResource
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.model.dao.Measurement
@@ -47,6 +47,12 @@ class ManageMeasurementViewModel(
         ) : ViewState
     }
 
+    data class DeleteConfirmDialogState(
+        val text: StringResource,
+        val onDismissRequest: () -> Unit,
+        val onConfirm: () -> Unit,
+    )
+
 
     // - Properties
 
@@ -57,30 +63,9 @@ class ManageMeasurementViewModel(
     private val measurement: Measurement?
         get() = (viewStateFlow.value as? ViewState.ContentReady)?.measurement
 
-    private val _deleteConfirmationDialogViewModelFlow =
-        MutableStateFlow<DeleteConfirmationDialogViewModel?>(null)
-    val deleteConfirmationDialogViewModelFlow: StateFlow<DeleteConfirmationDialogViewModel?> =
-        _deleteConfirmationDialogViewModelFlow
-
-    private val deleteAudioConfirmationViewModel = DeleteConfirmationDialogViewModel(
-        title = Res.string.details_delete_measurement_dialog_title,
-        text = Res.string.details_delete_measurement_audio_dialog_text,
-        onDismissRequest = { _deleteConfirmationDialogViewModelFlow.tryEmit(null) },
-        onConfirm = {
-            deleteMeasurementAudio()
-            _deleteConfirmationDialogViewModelFlow.tryEmit(null)
-        }
-    )
-
-    private val deleteMeasurementConfirmationViewModel = DeleteConfirmationDialogViewModel(
-        title = Res.string.details_delete_measurement_dialog_title,
-        text = Res.string.details_delete_measurement_dialog_text,
-        onDismissRequest = { _deleteConfirmationDialogViewModelFlow.tryEmit(null) },
-        onConfirm = {
-            deleteMeasurement()
-            _deleteConfirmationDialogViewModelFlow.tryEmit(null)
-        }
-    )
+    private val _deleteConfirmDialogStateFlow = MutableStateFlow<DeleteConfirmDialogState?>(null)
+    val deleteConfirmDialogState: StateFlow<DeleteConfirmDialogState?> =
+        _deleteConfirmDialogStateFlow
 
     val deleteMenuItems: List<ManageMeasurementMenuItem>
         get() = measurement?.let { measurement ->
@@ -88,9 +73,12 @@ class ManageMeasurementViewModel(
                 label = Res.string.details_menu_delete_whole_title,
                 supportingText = Res.string.details_menu_delete_whole_description,
                 onClick = {
-                    _deleteConfirmationDialogViewModelFlow.tryEmit(
-                        deleteMeasurementConfirmationViewModel
+                    val state = DeleteConfirmDialogState(
+                        text = Res.string.details_delete_measurement_audio_dialog_text,
+                        onDismissRequest = { _deleteConfirmDialogStateFlow.tryEmit(null) },
+                        onConfirm = { deleteMeasurementAudio() }
                     )
+                    _deleteConfirmDialogStateFlow.tryEmit(state)
                 },
             )
             if (measurement.recordedAudioUrl != null) {
@@ -99,9 +87,12 @@ class ManageMeasurementViewModel(
                         label = Res.string.details_menu_delete_audio_title,
                         supportingText = Res.string.details_menu_delete_audio_description,
                         onClick = {
-                            _deleteConfirmationDialogViewModelFlow.tryEmit(
-                                deleteAudioConfirmationViewModel
+                            val state = DeleteConfirmDialogState(
+                                text = Res.string.details_delete_measurement_dialog_text,
+                                onDismissRequest = { _deleteConfirmDialogStateFlow.tryEmit(null) },
+                                onConfirm = { deleteMeasurementAudio() },
                             )
+                            _deleteConfirmDialogStateFlow.tryEmit(state)
                         },
                     ),
                     deleteWhole,

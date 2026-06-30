@@ -11,10 +11,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -40,6 +40,7 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.ui.components.ButtonContent
 import org.noiseplanet.noisecapture.ui.components.NCButton
+import org.noiseplanet.noisecapture.ui.components.NCDialog
 import org.noiseplanet.noisecapture.ui.components.tertiaryContainerColors
 import org.noiseplanet.noisecapture.ui.components.transparentContainerColors
 import org.noiseplanet.noisecapture.ui.theme.Noise
@@ -150,7 +151,7 @@ private fun EditDialog(
 
     // - Layout
 
-    AlertDialog(
+    NCDialog(
         title = {
             Text(text = stringResource(title))
         },
@@ -170,6 +171,15 @@ private fun EditDialog(
                     keyboardActions = KeyboardActions(onDone = { saveEdit(textFieldValueState.text) }),
                     isError = !validate(textFieldValueState.text),
                     maxLines = 1,
+                    colors = TextFieldDefaults.colors(
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedContainerColor = Color.Transparent,
+                        disabledContainerColor = Color.Transparent,
+                        errorContainerColor = Color.Noise.eight.light,
+                        errorTextColor = Color.Noise.eight.dark,
+                        errorCursorColor = Color.Noise.eight.dark,
+                    ),
+                    textStyle = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.focusRequester(focusRequester)
                         .onGloballyPositioned {
                             if (!initialFocusRequested) {
