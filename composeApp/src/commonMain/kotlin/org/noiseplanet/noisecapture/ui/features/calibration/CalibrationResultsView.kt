@@ -67,11 +67,13 @@ import noisecapture.composeapp.generated.resources.edit
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.ui.components.ButtonContent
+import org.noiseplanet.noisecapture.ui.components.Container
 import org.noiseplanet.noisecapture.ui.components.NCButton
 import org.noiseplanet.noisecapture.ui.components.primaryContainerColors
 import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
 import org.noiseplanet.noisecapture.ui.components.transparentContainerColors
 import org.noiseplanet.noisecapture.ui.navigation.router.CalibrationRouter
+import org.noiseplanet.noisecapture.ui.theme.Neutral
 import org.noiseplanet.noisecapture.ui.theme.Noise
 import org.noiseplanet.noisecapture.util.AdaptiveUtil
 import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
@@ -135,67 +137,67 @@ fun CalibrationResultsView(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        Column(
-            modifier = Modifier.padding(horizontal = 16.dp)
-                .background(
-                    color = MaterialTheme.colorScheme.surfaceContainer,
-                    shape = MaterialTheme.shapes.large
-                ).padding(top = 16.dp, start = 24.dp, end = 24.dp, bottom = 10.dp)
+        Container(
+            colors = Color.Neutral.secondaryContainerColors(hasDropShadow = true),
+            contentPadding = PaddingValues(top = 16.dp, bottom = 10.dp, start = 24.dp, end = 24.dp),
+            modifier = Modifier.padding(horizontal = 16.dp),
         ) {
-            // Current device measured value
-            Text(
-                text = stringResource(Res.string.calibration_results_your_device_value),
-                style = MaterialTheme.typography.titleMedium,
-            )
-            Text(
-                text = buildAnnotatedString {
-                    withStyle(SpanStyle(fontSize = 45.sp)) {
-                        append(viewState.measuredValue.roundTo(1).toString() + " ")
-                    }
-                    append("dB(A)")
-                },
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Black,
-                modifier = Modifier.offset(y = (-8).dp)
-            )
-
-            // Divider
-            Spacer(modifier = Modifier.height(16.dp))
-            Box(
-                modifier = Modifier.height(1.dp)
-                    .fillMaxWidth()
-                    .background(color = Color.Noise.one.mediumLight)
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Reference device measured value
-            Text(
-                text = stringResource(Res.string.calibration_results_reference_value),
-                style = MaterialTheme.typography.titleMedium,
-                textAlign = TextAlign.End,
-                modifier = Modifier.fillMaxWidth()
-            )
-            ReferenceDeviceValueField(
-                value = referenceDeviceFieldValue,
-                onValueChange = {
-                    // Replace commas with dots for locales that use commas as decimal separator
-                    referenceDeviceFieldValue = it.replace(",", ".")
-                    viewModel.onReferenceValueChange(referenceDeviceFieldValue.toDoubleOrNull())
-                },
-                interactionSource = interactionSource,
-                keyboardActions = KeyboardActions {
-                    keyboardController?.hide()
-                    focusRequester.freeFocus()
-                },
-                isError = referenceDeviceFieldValue.isNotEmpty() &&
-                    referenceDeviceFieldValue.toDoubleOrNull() == null,
-                modifier = Modifier.focusRequester(focusRequester)
-                    .onFocusChanged { focusState ->
-                        if (focusState.isFocused) {
-                            keyboardController?.show()
+            Column {
+                // Current device measured value
+                Text(
+                    text = stringResource(Res.string.calibration_results_your_device_value),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    text = buildAnnotatedString {
+                        withStyle(SpanStyle(fontSize = 45.sp)) {
+                            append(viewState.measuredValue.roundTo(1).toString() + " ")
                         }
-                    }
-            )
+                        append("dB(A)")
+                    },
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Black,
+                    modifier = Modifier.offset(y = (-8).dp)
+                )
+
+                // Divider
+                Spacer(modifier = Modifier.height(16.dp))
+                Box(
+                    modifier = Modifier.height(1.dp)
+                        .fillMaxWidth()
+                        .background(color = Color.Noise.one.mediumLight)
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Reference device measured value
+                Text(
+                    text = stringResource(Res.string.calibration_results_reference_value),
+                    style = MaterialTheme.typography.titleMedium,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                ReferenceDeviceValueField(
+                    value = referenceDeviceFieldValue,
+                    onValueChange = {
+                        // Replace commas with dots for locales that use commas as decimal separator
+                        referenceDeviceFieldValue = it.replace(",", ".")
+                        viewModel.onReferenceValueChange(referenceDeviceFieldValue.toDoubleOrNull())
+                    },
+                    interactionSource = interactionSource,
+                    keyboardActions = KeyboardActions {
+                        keyboardController?.hide()
+                        focusRequester.freeFocus()
+                    },
+                    isError = referenceDeviceFieldValue.isNotEmpty() &&
+                        referenceDeviceFieldValue.toDoubleOrNull() == null,
+                    modifier = Modifier.focusRequester(focusRequester)
+                        .onFocusChanged { focusState ->
+                            if (focusState.isFocused) {
+                                keyboardController?.show()
+                            }
+                        }
+                )
+            }
         }
 
         viewState.difference?.let { difference ->

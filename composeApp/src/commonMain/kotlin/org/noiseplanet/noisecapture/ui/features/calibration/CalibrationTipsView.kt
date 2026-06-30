@@ -2,6 +2,7 @@ package org.noiseplanet.noisecapture.ui.features.calibration
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -38,6 +39,7 @@ import noisecapture.composeapp.generated.resources.calibration_tips_source_title
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.noiseplanet.noisecapture.ui.components.ContainerDefaults
 import org.noiseplanet.noisecapture.ui.theme.Noise
 
 @Composable
@@ -71,7 +73,12 @@ fun CalibrationTipsView(
     // - Layout
 
     Column(
-        modifier = modifier.clip(shape = MaterialTheme.shapes.medium)
+        modifier = modifier.clip(shape = ContainerDefaults.Shape)
+            .border(
+                width = 1.dp,
+                shape = ContainerDefaults.Shape,
+                color = Color.Noise.two.mediumLight
+            )
     ) {
         for (tipsItem in tips) {
             ExpandableSection(title = stringResource(tipsItem.title)) {
@@ -83,7 +90,7 @@ fun CalibrationTipsView(
                         Text(
                             text = stringResource(tip),
                             style = MaterialTheme.typography.bodyMedium,
-                            color = Color.Noise.one.dark,
+                            color = MaterialTheme.colorScheme.onSurface,
                         )
                     }
                 }
@@ -109,7 +116,8 @@ private fun ExpandableSectionTitle(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = modifier.background(Color.Noise.one.light).padding(12.dp)
+        modifier = modifier.background(Color.Noise.two.light)
+            .padding(12.dp)
     ) {
         Icon(
             painter = painterResource(icon),
@@ -149,7 +157,7 @@ private fun ExpandableSection(
         ExpandableSectionTitle(isExpanded = isExpanded, title = title)
 
         AnimatedVisibility(
-            modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer)
+            modifier = Modifier.background(MaterialTheme.colorScheme.surface)
                 .fillMaxWidth(),
             visible = isExpanded,
         ) {

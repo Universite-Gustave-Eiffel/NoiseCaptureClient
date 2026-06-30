@@ -47,20 +47,20 @@ fun CalibrationScreen(
         when (viewState) {
             is CalibrationScreenViewModel.ViewState.Countdown -> {
                 val state = viewState as CalibrationScreenViewModel.ViewState.Countdown
-                (state.timeLeft / state.duration).toFloat()
+                1f - (state.timeLeft / state.duration).toFloat()
             }
 
             is CalibrationScreenViewModel.ViewState.Recording -> {
                 val state = viewState as CalibrationScreenViewModel.ViewState.Recording
-                1f - (state.timeLeft / state.duration).toFloat()
+                (state.timeLeft / state.duration).toFloat()
             }
 
-            is CalibrationScreenViewModel.ViewState.Configure -> 0f
-            is CalibrationScreenViewModel.ViewState.Results -> 1f
+            is CalibrationScreenViewModel.ViewState.Configure -> 1f
+            is CalibrationScreenViewModel.ViewState.Results -> 0f
         }
     }
     val animationDurationMs by derivedStateOf {
-        if (progressIndicatorHeightFraction == 1f) 0 else 150
+        if (progressIndicatorHeightFraction == 0f) 0 else 150
     }
 
 
