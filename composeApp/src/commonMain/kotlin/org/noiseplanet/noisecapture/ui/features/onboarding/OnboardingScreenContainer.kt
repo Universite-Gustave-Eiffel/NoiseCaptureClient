@@ -48,7 +48,7 @@ fun OnboardingScreenContainer(
             NCButton(
                 content = ButtonContent(title = primaryButtonTitle),
                 onClick = primaryButtonAction,
-                modifier = Modifier.height(40.dp).width(200.dp),
+                modifier = Modifier.width(200.dp),
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -58,7 +58,7 @@ fun OnboardingScreenContainer(
                     content = ButtonContent(title = secondaryButtonTitle),
                     colors = Color.Noise.one.tertiaryContainerColors(),
                     onClick = secondaryButtonAction,
-                    modifier = Modifier.height(40.dp).width(200.dp),
+                    modifier = Modifier.width(200.dp),
                 )
             }
         }
