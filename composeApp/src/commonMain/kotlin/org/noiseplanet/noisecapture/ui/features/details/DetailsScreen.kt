@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -35,6 +36,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.ui.components.Container
+import org.noiseplanet.noisecapture.ui.components.ContainerDefaults
 import org.noiseplanet.noisecapture.ui.components.audioplayer.AudioPlayerView
 import org.noiseplanet.noisecapture.ui.components.map.MapView
 import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
@@ -279,7 +281,7 @@ private fun DetailsScreenCompact(
             .padding(horizontal = 16.dp)
             .padding(top = 16.dp)
             .paddingBottomWithInsets(withNavBar = 8.dp, withoutNavBar = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        verticalArrangement = Arrangement.spacedBy(32.dp)
     ) {
         DetailsChartsHeader(
             startTime = viewState.startTimeString,
@@ -363,7 +365,7 @@ private fun MapViewOrPlaceHolder(
         contentPadding = PaddingValues(0.dp),
         contentAlignment = Alignment.Center,
         colors = containerColors,
-        modifier = modifier,
+        modifier = modifier.clip(shape = ContainerDefaults.Shape),
     ) {
         if (isEmpty) {
             Text(
