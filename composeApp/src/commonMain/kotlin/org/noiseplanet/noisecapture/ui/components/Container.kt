@@ -29,10 +29,7 @@ object ContainerDefaults {
     val ContentPadding: PaddingValues = PaddingValues(16.dp)
     val Shape: Shape = RoundedCornerShape(16.dp)
 
-    @Composable
-    fun colors(): ContainerColors {
-        return Color.Neutral.secondaryContainerColors()
-    }
+    val Colors: ContainerColors = Color.Neutral.secondaryContainerColors()
 }
 
 
@@ -40,7 +37,7 @@ object ContainerDefaults {
 fun Container(
     contentPadding: PaddingValues = ContainerDefaults.ContentPadding,
     shape: Shape = ContainerDefaults.Shape,
-    colors: ContainerColors = ContainerDefaults.colors(),
+    colors: ContainerColors = ContainerDefaults.Colors,
     contentAlignment: Alignment = Alignment.TopStart,
     onClick: (() -> Unit)? = null,
     enabled: Boolean = false,

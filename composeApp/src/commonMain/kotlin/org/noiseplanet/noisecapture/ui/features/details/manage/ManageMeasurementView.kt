@@ -37,6 +37,8 @@ import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.ui.components.ButtonContent
 import org.noiseplanet.noisecapture.ui.components.NCButton
 import org.noiseplanet.noisecapture.ui.components.NCDialog
+import org.noiseplanet.noisecapture.ui.components.NCDropdownMenu
+import org.noiseplanet.noisecapture.ui.components.NCDropdownMenuItem
 import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
 import org.noiseplanet.noisecapture.ui.theme.Noise
 
@@ -54,7 +56,7 @@ fun ManageMeasurementView(
     }
     val viewState by viewModel.viewStateFlow.collectAsStateWithLifecycle()
 
-    val deleteConfirmDialoState by viewModel.deleteConfirmDialogState
+    val deleteConfirmDialogState by viewModel.deleteConfirmDialogState
         .collectAsStateWithLifecycle()
 
     var showExportMenu by remember { mutableStateOf(false) }
@@ -130,12 +132,22 @@ fun ManageMeasurementView(
                             modifier = Modifier.fillMaxWidth(),
                         )
 
-                        ManageMeasurementMenu(
+                        NCDropdownMenu(
                             expanded = showExportMenu,
                             onDismissRequest = { showExportMenu = false },
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            items = viewModel.exportMenuItems,
-                        )
+                            colors = Color.Noise.two.secondaryContainerColors(),
+                        ) {
+                            viewModel.exportMenuItems.forEach { item ->
+                                NCDropdownMenuItem(
+                                    label = stringResource(item.label),
+                                    supportingText = item.supportingText?.let { stringResource(it) },
+                                    onClick = {
+                                        item.onClick
+                                        showExportMenu = false
+                                    },
+                                )
+                            }
+                        }
                     }
 
                     Box(modifier = Modifier.weight(1f)) {
@@ -149,12 +161,22 @@ fun ManageMeasurementView(
                             modifier = Modifier.fillMaxWidth(),
                         )
 
-                        ManageMeasurementMenu(
+                        NCDropdownMenu(
                             expanded = showDeleteMenu,
                             onDismissRequest = { showDeleteMenu = false },
-                            containerColor = MaterialTheme.colorScheme.errorContainer,
-                            items = viewModel.deleteMenuItems,
-                        )
+                            colors = Color.Noise.eight.secondaryContainerColors(),
+                        ) {
+                            viewModel.deleteMenuItems.forEach { item ->
+                                NCDropdownMenuItem(
+                                    label = stringResource(item.label),
+                                    supportingText = item.supportingText?.let { stringResource(it) },
+                                    onClick = {
+                                        item.onClick
+                                        showDeleteMenu = false
+                                    },
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -163,7 +185,7 @@ fun ManageMeasurementView(
         else -> return
     }
 
-    deleteConfirmDialoState?.let {
+    deleteConfirmDialogState?.let {
         NCDialog(
             onDismissRequest = it.onDismissRequest,
             onConfirm = it.onConfirm,

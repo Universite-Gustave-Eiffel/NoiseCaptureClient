@@ -7,15 +7,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import org.noiseplanet.noisecapture.ui.theme.OnSurfaceVariant
 import org.noiseplanet.noisecapture.ui.theme.titleMono
 
 @Composable
 fun ListSectionHeader(
     title: StringResource,
+    color: Color = Color.OnSurfaceVariant,
     paddingTop: Dp = 0.dp,
     modifier: Modifier = Modifier,
 ) {
@@ -23,7 +26,7 @@ fun ListSectionHeader(
         Text(
             text = stringResource(title).uppercase(),
             style = MaterialTheme.typography.titleMono,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = color,
             modifier = Modifier.padding(top = paddingTop, bottom = 8.dp)
         )
     }

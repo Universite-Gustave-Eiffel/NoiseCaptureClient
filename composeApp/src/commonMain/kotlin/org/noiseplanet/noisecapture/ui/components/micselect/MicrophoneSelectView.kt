@@ -1,15 +1,11 @@
 package org.noiseplanet.noisecapture.ui.components.micselect
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -25,14 +21,15 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.arrow_drop_down
-import noisecapture.composeapp.generated.resources.arrow_right
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.noiseplanet.noisecapture.model.dao.MicrophoneInfo
 import org.noiseplanet.noisecapture.model.dao.MicrophoneType
-import org.noiseplanet.noisecapture.ui.theme.Noise
-import org.noiseplanet.noisecapture.util.ncDropShadow
+import org.noiseplanet.noisecapture.ui.components.NCDropdownMenu
+import org.noiseplanet.noisecapture.ui.components.NCDropdownMenuItem
+import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
+import org.noiseplanet.noisecapture.ui.theme.Neutral
 
 
 @Composable
@@ -78,77 +75,24 @@ fun MicrophoneSelectView(
             }
         }
 
-        MicrophoneSelectMenu(
+        NCDropdownMenu(
             expanded = showMicrophoneSelectMenu,
             onDismissRequest = { showMicrophoneSelectMenu = false },
-            onSelectMicrophone = {
-                viewModel.selectMicrophone(it)
-                showMicrophoneSelectMenu = false
-            },
-            items = availableDevices,
-        )
-    }
-}
+            colors = Color.Neutral.secondaryContainerColors(),
+            modifier = modifier,
+        ) {
+            availableDevices.forEach { device ->
+                val (title, description) = device.getTitleAndDescription()
 
-
-@Composable
-private fun MicrophoneSelectMenu(
-    expanded: Boolean,
-    onDismissRequest: () -> Unit,
-    onSelectMicrophone: (MicrophoneInfo) -> Unit,
-    items: List<MicrophoneInfo>,
-    modifier: Modifier = Modifier,
-) {
-    // - Properties
-
-    val shape = MaterialTheme.shapes.large
-
-
-    // - Layout
-
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = onDismissRequest,
-        containerColor = Color.Noise.three.light,
-        tonalElevation = 0.dp,
-        shadowElevation = 0.dp,
-        shape = shape,
-        modifier = modifier
-            .ncDropShadow(shape = shape, color = Color.Noise.three.dark)
-            .background(color = Color.Noise.three.light, shape = shape)
-            .border(
-                width = 1.dp,
-                color = Color.Noise.three.mediumLight,
-                shape = MaterialTheme.shapes.large
-            ),
-    ) {
-        for (item in items) {
-            DropdownMenuItem(
-                text = {
-                    val (title, description) = item.getTitleAndDescription()
-
-                    Column(modifier = Modifier.padding(vertical = 12.dp)) {
-                        Text(
-                            text = title,
-                            style = MaterialTheme.typography.titleSmall,
-                        )
-                        Text(
-                            text = description,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                NCDropdownMenuItem(
+                    label = title,
+                    supportingText = description,
+                    onClick = {
+                        viewModel.selectMicrophone(device)
+                        showMicrophoneSelectMenu = false
                     }
-                },
-                onClick = {
-                    onSelectMicrophone(item)
-                },
-                trailingIcon = {
-                    Icon(
-                        painter = painterResource(Res.drawable.arrow_right),
-                        contentDescription = null,
-                    )
-                },
-            )
+                )
+            }
         }
     }
 }

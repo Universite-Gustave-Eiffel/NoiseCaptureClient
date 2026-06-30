@@ -53,6 +53,12 @@ class ManageMeasurementViewModel(
         val onConfirm: () -> Unit,
     )
 
+    data class MenuItem(
+        val label: StringResource,
+        val supportingText: StringResource?,
+        val onClick: () -> Unit,
+    )
+
 
     // - Properties
 
@@ -67,9 +73,9 @@ class ManageMeasurementViewModel(
     val deleteConfirmDialogState: StateFlow<DeleteConfirmDialogState?> =
         _deleteConfirmDialogStateFlow
 
-    val deleteMenuItems: List<ManageMeasurementMenuItem>
+    val deleteMenuItems: List<MenuItem>
         get() = measurement?.let { measurement ->
-            val deleteWhole = ManageMeasurementMenuItem(
+            val deleteWhole = MenuItem(
                 label = Res.string.details_menu_delete_whole_title,
                 supportingText = Res.string.details_menu_delete_whole_description,
                 onClick = {
@@ -83,7 +89,7 @@ class ManageMeasurementViewModel(
             )
             if (measurement.recordedAudioUrl != null) {
                 listOf(
-                    ManageMeasurementMenuItem(
+                    MenuItem(
                         label = Res.string.details_menu_delete_audio_title,
                         supportingText = Res.string.details_menu_delete_audio_description,
                         onClick = {
@@ -102,15 +108,15 @@ class ManageMeasurementViewModel(
             }
         } ?: emptyList()
 
-    val exportMenuItems: List<ManageMeasurementMenuItem>
+    val exportMenuItems: List<MenuItem>
         get() = measurement?.let { measurement ->
             val alwaysVisibleItems = listOf(
-                ManageMeasurementMenuItem(
+                MenuItem(
                     label = Res.string.details_menu_export_raw_title,
                     supportingText = Res.string.details_menu_export_raw_description,
                     onClick = { downloadRawData() },
                 ),
-                ManageMeasurementMenuItem(
+                MenuItem(
                     label = Res.string.details_menu_export_geojson_title,
                     supportingText = Res.string.details_menu_export_geojson_description,
                     onClick = { exportToGeoJson() },
@@ -118,7 +124,7 @@ class ManageMeasurementViewModel(
             )
             if (measurement.recordedAudioUrl != null) {
                 listOf(
-                    ManageMeasurementMenuItem(
+                    MenuItem(
                         label = Res.string.details_menu_export_audio_title,
                         supportingText = Res.string.details_menu_export_audio_description,
                         onClick = { downloadAudio() },
