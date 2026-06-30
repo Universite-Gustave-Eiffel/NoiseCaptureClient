@@ -28,7 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigationevent.NavigationEventInfo
@@ -105,6 +104,7 @@ fun RequestPermissionModal(
         contentWindowInsets = {
             WindowInsets.safeContent.only(WindowInsetsSides.Bottom)
         },
+        containerColor = MaterialTheme.colorScheme.surfaceContainer
     ) {
         // Handle back press or back gesture.
         NavigationBackHandler(
@@ -138,7 +138,7 @@ fun RequestPermissionModal(
             Text(
                 text = stringResource(viewState.title),
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.fillMaxWidth(),
             )
             Markdown(
