@@ -9,7 +9,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
-- WasmJS: Fixed crash due to updates in Promise interop with Kotlin (#310)
+- WasmJS: Fixed crash due to updates in Promise interop with Kotlin (#311)
 
 ## [0.9.1] - 2026-06-17
 
