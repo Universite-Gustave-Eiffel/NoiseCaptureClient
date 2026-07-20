@@ -17,7 +17,7 @@ external class AudioContext {
 
     val destination: AudioDestinationNode
 
-    fun close(): Promise<*>
+    fun close(): Promise<JsAny?>
     fun createMediaStreamSource(mediaStream: MediaStream): AudioNode
     fun createScriptProcessor(
         bufferSize: Int,
