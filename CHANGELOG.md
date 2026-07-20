@@ -9,6 +9,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Android: Status bar icons showing white on white for some devices (#309)
 - WasmJS: Fixed crash due to updates in Promise interop with Kotlin (#311)
 
 ## [0.9.1] - 2026-06-17
