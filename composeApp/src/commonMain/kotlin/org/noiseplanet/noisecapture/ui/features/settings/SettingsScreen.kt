@@ -123,7 +123,7 @@ fun SettingsScreen(
                         title = Res.string.settings_section_information,
                         paddingTop = 16.dp,
                         color = Color.Noise.one.dark,
-                        modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer)
+                        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
                             .padding(start = 16.dp)
                     )
                 }
