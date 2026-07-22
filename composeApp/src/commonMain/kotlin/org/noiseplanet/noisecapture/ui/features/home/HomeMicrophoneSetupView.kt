@@ -96,9 +96,10 @@ fun HomeMicrophoneSetupView(
                     ) {
                         val calibrationProfileText = buildAnnotatedString {
                             if (calibrationProfile.isCalibrated) {
+                                val compGain = viewState.calibrationProfile?.compensationGain
                                 withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
                                     append(stringResource(Res.string.home_mic_setup_current_gain) + " ")
-                                    append("${viewState.calibrationProfile?.compensationGain?.toSignedString()} dB(A)\n")
+                                    append("${compGain?.toSignedString()} dB(A)\n")
                                 }
                                 append(stringResource(Res.string.home_mic_setup_last_calibrated) + " ")
                                 val datetime =

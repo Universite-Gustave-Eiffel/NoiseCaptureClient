@@ -32,7 +32,6 @@ import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 @OptIn(KoinExperimentalAPI::class, ExperimentalLayoutApi::class)
 @Composable
 fun HomeScreen(
-    viewModel: HomeScreenViewModel,
     router: HomeRouter,
 ) {
     // - DI
