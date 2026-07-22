@@ -5,36 +5,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.app_name
-import noisecapture.composeapp.generated.resources.home_slm_button_title
-import noisecapture.composeapp.generated.resources.home_slm_hint
-import noisecapture.composeapp.generated.resources.mic
 import noisecapture.composeapp.generated.resources.settings
 import org.jetbrains.compose.resources.StringResource
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-import org.noiseplanet.noisecapture.model.dao.Measurement
-import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBarButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
 
 class HomeScreenViewModel(
     private val onClickSettingsButton: () -> Unit,
 ) : ViewModel(), KoinComponent, ScreenViewModel {
-
-    // - Properties
-
-    private val measurementService: MeasurementService by inject()
-
-    val soundLevelMeterHintText = Res.string.home_slm_hint
-    val soundLevelMeterButtonViewModel = NCButtonViewModel(
-        title = Res.string.home_slm_button_title,
-        icon = Res.drawable.mic,
-        colors = { NCButtonColors.Defaults.secondary() },
-        hasDropShadow = true,
-    )
-
 
     // - ScreenViewModel
 
@@ -50,9 +29,4 @@ class HomeScreenViewModel(
                 )
             )
         )
-
-
-    // - Public functions
-
-    suspend fun getStoredMeasurements(): List<Measurement> = measurementService.getAllMeasurements()
 }

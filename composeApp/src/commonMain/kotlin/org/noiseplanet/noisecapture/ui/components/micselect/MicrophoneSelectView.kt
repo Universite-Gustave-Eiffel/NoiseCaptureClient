@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -18,17 +16,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.arrow_drop_down
-import noisecapture.composeapp.generated.resources.arrow_right
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.noiseplanet.noisecapture.model.dao.MicrophoneInfo
 import org.noiseplanet.noisecapture.model.dao.MicrophoneType
-import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
+import org.noiseplanet.noisecapture.ui.components.NCDropdownMenu
+import org.noiseplanet.noisecapture.ui.components.NCDropdownMenuItem
+import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
+import org.noiseplanet.noisecapture.ui.theme.Neutral
 
 
 @Composable
@@ -74,63 +75,24 @@ fun MicrophoneSelectView(
             }
         }
 
-        MicrophoneSelectMenu(
+        NCDropdownMenu(
             expanded = showMicrophoneSelectMenu,
             onDismissRequest = { showMicrophoneSelectMenu = false },
-            onSelectMicrophone = {
-                viewModel.selectMicrophone(it)
-                showMicrophoneSelectMenu = false
-            },
-            items = availableDevices,
-        )
-    }
-}
+            colors = Color.Neutral.secondaryContainerColors(),
+            modifier = modifier,
+        ) {
+            availableDevices.forEach { device ->
+                val (title, description) = device.getTitleAndDescription()
 
-
-@Composable
-private fun MicrophoneSelectMenu(
-    expanded: Boolean,
-    onDismissRequest: () -> Unit,
-    onSelectMicrophone: (MicrophoneInfo) -> Unit,
-    items: List<MicrophoneInfo>,
-    modifier: Modifier = Modifier,
-) {
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = onDismissRequest,
-        containerColor = NoiseLevelColorRamp.level1Light,
-        tonalElevation = 0.dp,
-        shadowElevation = 0.dp,
-        shape = MaterialTheme.shapes.medium,
-        modifier = modifier,
-    ) {
-        for (item in items) {
-            DropdownMenuItem(
-                text = {
-                    val (title, description) = item.getTitleAndDescription()
-
-                    Column(modifier = Modifier.padding(vertical = 12.dp)) {
-                        Text(
-                            text = title,
-                            style = MaterialTheme.typography.titleSmall,
-                        )
-                        Text(
-                            text = description,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                NCDropdownMenuItem(
+                    label = title,
+                    supportingText = description,
+                    onClick = {
+                        viewModel.selectMicrophone(device)
+                        showMicrophoneSelectMenu = false
                     }
-                },
-                onClick = {
-                    onSelectMicrophone(item)
-                },
-                trailingIcon = {
-                    Icon(
-                        painter = painterResource(Res.drawable.arrow_right),
-                        contentDescription = null,
-                    )
-                },
-            )
+                )
+            }
         }
     }
 }

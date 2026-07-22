@@ -1,11 +1,11 @@
 package org.noiseplanet.noisecapture.ui.features.details
 
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -25,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -34,10 +35,15 @@ import noisecapture.composeapp.generated.resources.details_loading_hint
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
+import org.noiseplanet.noisecapture.ui.components.Container
+import org.noiseplanet.noisecapture.ui.components.ContainerDefaults
 import org.noiseplanet.noisecapture.ui.components.audioplayer.AudioPlayerView
 import org.noiseplanet.noisecapture.ui.components.map.MapView
+import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
 import org.noiseplanet.noisecapture.ui.features.details.manage.ManageMeasurementView
 import org.noiseplanet.noisecapture.ui.navigation.router.DetailsRouter
+import org.noiseplanet.noisecapture.ui.theme.Neutral
+import org.noiseplanet.noisecapture.ui.theme.Noise
 import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 
 
@@ -275,7 +281,7 @@ private fun DetailsScreenCompact(
             .padding(horizontal = 16.dp)
             .padding(top = 16.dp)
             .paddingBottomWithInsets(withNavBar = 8.dp, withoutNavBar = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        verticalArrangement = Arrangement.spacedBy(32.dp)
     ) {
         DetailsChartsHeader(
             startTime = viewState.startTimeString,
@@ -348,21 +354,29 @@ private fun MapViewOrPlaceHolder(
     viewState: DetailsScreenViewModel.ViewState.ContentReady,
     modifier: Modifier = Modifier,
 ) {
-    Box(
+    val isEmpty = viewState.measurement.locationSequenceIds.isEmpty()
+    val containerColors = if (isEmpty) {
+        Color.Neutral.secondaryContainerColors()
+    } else {
+        Color.Noise.one.secondaryContainerColors(hasDropShadow = true)
+    }
+
+    Container(
+        contentPadding = PaddingValues(0.dp),
         contentAlignment = Alignment.Center,
-        modifier = modifier.clip(shape = MaterialTheme.shapes.large)
-            .background(color = MaterialTheme.colorScheme.surfaceContainer)
+        colors = containerColors,
+        modifier = modifier.clip(shape = ContainerDefaults.Shape),
     ) {
-        if (viewState.measurement.locationSequenceIds.isNotEmpty()) {
-            MapView(
-                modifier = Modifier.fillMaxSize(),
-                focusedMeasurementUuid = viewState.measurement.uuid,
-            )
-        } else {
+        if (isEmpty) {
             Text(
                 text = "No location data available\nfor this measurement.",
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodyLarge,
+            )
+        } else {
+            MapView(
+                modifier = Modifier.fillMaxSize(),
+                focusedMeasurementUuid = viewState.measurement.uuid,
             )
         }
     }

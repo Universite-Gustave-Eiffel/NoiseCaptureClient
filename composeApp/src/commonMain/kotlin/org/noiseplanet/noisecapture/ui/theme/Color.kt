@@ -2,95 +2,153 @@ package org.noiseplanet.noisecapture.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Generated with https://materialkolor.com
+// -----------------------------------------------------------------------
+// Noise levels palette with lighter and darker tones
+// Base colors taken from Coloring noise palette by Beate Tomio:
+// https://www.coloringnoise.com/theoretical_background/new-color-scheme/
+// -----------------------------------------------------------------------
 
-val Seed = Color(0xFF82A6AD)
+interface NoiseColorPalette {
 
-val PrimaryLight = Color(0xFF42656B)
-val OnPrimaryLight = Color(0xFFECFCFF)
-val PrimaryContainerLight = Color(0xFFCCF2F9)
-val OnPrimaryContainerLight = Color(0xFF395C63)
-val InversePrimaryLight = Color(0xFFCCF2F9)
-val SecondaryLight = Color(0xFF4B6368)
-val OnSecondaryLight = Color(0xFFECFCFF)
-val SecondaryContainerLight = Color(0xFFCDE7EC)
-val OnSecondaryContainerLight = Color(0xFF3D565A)
-val TertiaryLight = Color(0xFF496460)
-val OnTertiaryLight = Color(0xFFE2FFFA)
-val TertiaryContainerLight = Color(0xFFE4FFFA)
-val OnTertiaryContainerLight = Color(0xFF47635F)
-val BackgroundLight = Color(0xFFFAF9F9)
-val OnBackgroundLight = Color(0xFF313333)
-val SurfaceLight = Color(0xFFFFFFFF)
-val OnSurfaceLight = Color(0xFF313333)
-val SurfaceVariantLight = Color(0xFFF6FEFF)
-val OnSurfaceVariantLight = Color(0xFF6A6969)
-val SurfaceTintLight = Color(0xFF42656B)
-val InverseSurfaceLight = Color(0xFF0D0E0F)
-val InverseOnSurfaceLight = Color(0xFF9C9D9D)
-val ErrorLight = Color(0xFFCD463E)
-val OnErrorLight = Color(0xFFFFF7F6)
-val ErrorContainerLight = Color(0xFFF3CFCE)
-val OnErrorContainerLight = Color(0xFFCD463E)
-val OutlineLight = Color(0xFF7A7B7B)
-val OutlineVariantLight = Color(0xFFB1B2B2)
-val ScrimLight = Color(0xFF000000)
-val SurfaceBrightLight = Color(0xFFFAF9F9)
-val SurfaceContainerLight = Color(0xFFFAF9F9)
-val SurfaceContainerHighLight = Color(0xFFE8E8E8)
-val SurfaceContainerHighestLight = Color(0xFFE2E2E2)
-val SurfaceContainerLowLight = Color(0xFFF4F3F3)
-val SurfaceContainerLowestLight = Color(0xFFFFFFFF)
-val SurfaceDimLight = Color(0xFFDADADA)
+    val one: ColorSet
+    val two: ColorSet
+    val three: ColorSet
+    val four: ColorSet
+    val five: ColorSet
+    val six: ColorSet
+    val seven: ColorSet
+    val eight: ColorSet
+    val nine: ColorSet
+    val ten: ColorSet
+    val eleven: ColorSet
+}
 
-val PrimaryDark = Color(0xFFCCF2F9)
-val OnPrimaryDark = Color(0xFF395C63)
-val PrimaryContainerDark = Color(0xFF83A7AE)
-val OnPrimaryContainerDark = Color(0xFF00272D)
-val InversePrimaryDark = Color(0xFF41646B)
-val SecondaryDark = Color(0xFFB1CBD0)
-val OnSecondaryDark = Color(0xFF2C4448)
-val SecondaryContainerDark = Color(0xFF273F43)
-val OnSecondaryContainerDark = Color(0xFFAAC4C9)
-val TertiaryDark = Color(0xFFE4FFFA)
-val OnTertiaryDark = Color(0xFF496460)
-val TertiaryContainerDark = Color(0xFFD3F1EC)
-val OnTertiaryContainerDark = Color(0xFF405C58)
-val BackgroundDark = Color(0xFF0D0E0F)
-val OnBackgroundDark = Color(0xFFE5E5E5)
-val SurfaceDark = Color(0xFF0D0E0F)
-val OnSurfaceDark = Color(0xFFE5E5E5)
-val SurfaceVariantDark = Color(0xFF242626)
-val OnSurfaceVariantDark = Color(0xFF939394)
-val SurfaceTintDark = Color(0xFFCCF2F9)
-val InverseSurfaceDark = Color(0xFFFAF9F9)
-val InverseOnSurfaceDark = Color(0xFF545555)
-val ErrorDark = Color(0xFFFF7166)
-val OnErrorDark = Color(0xFF4A0003)
-val ErrorContainerDark = Color(0xFF8C1616)
-val OnErrorContainerDark = Color(0xFFFF998F)
-val OutlineDark = Color(0xFF747576)
-val OutlineVariantDark = Color(0xFF474848)
-val ScrimDark = Color(0xFF000000)
-val SurfaceBrightDark = Color(0xFF2B2C2D)
-val SurfaceContainerDark = Color(0xFF181A1A)
-val SurfaceContainerHighDark = Color(0xFF1E2020)
-val SurfaceContainerHighestDark = Color(0xFF242626)
-val SurfaceContainerLowDark = Color(0xFF121414)
-val SurfaceContainerLowestDark = Color(0xFF000000)
-val SurfaceDimDark = Color(0xFF0D0E0F)
+val Color.Companion.Noise
+    get() = object : NoiseColorPalette {
 
-val PrimaryFixed = Color(0xFFCCF2F9)
-val PrimaryFixedDim = Color(0xFFBEE3EB)
-val OnPrimaryFixed = Color(0xFF264A50)
-val OnPrimaryFixedVariant = Color(0xFF43666D)
-val SecondaryFixed = Color(0xFFCDE7EC)
-val SecondaryFixedDim = Color(0xFFBFD9DE)
-val OnSecondaryFixed = Color(0xFF2B4347)
-val OnSecondaryFixedVariant = Color(0xFF476064)
-val TertiaryFixed = Color(0xFFDEFDF7)
-val TertiaryFixedDim = Color(0xFFD0EEE9)
-val OnTertiaryFixed = Color(0xFF35504D)
-val OnTertiaryFixedVariant = Color(0xFF516D69)
+        override val one = ColorSet(
+            light = Color(0xFFE6EDEF),
+            mediumLight = Color(0xFFC0D2D6),
+            medium = Color(0xFF82A6AD),
+            dark = Color(0xFF576F73),
+        )
 
-val LocationTint = Color(0xFF4E7EE5)
+        override val two = ColorSet(
+            light = Color(0xFFECF1F2),
+            mediumLight = Color(0xFFCFDCDF),
+            medium = Color(0xFFA0BABF),
+            dark = Color(0xFF6B7C7F),
+        )
+
+        override val three = ColorSet(
+            light = Color(0xFFF1F7F6),
+            mediumLight = Color(0xFFDBEAE8),
+            medium = Color(0xFFB8D6D1),
+            dark = Color(0xFF7B8F8B),
+        )
+
+        override val four = ColorSet(
+            light = Color(0xFFF5FAF5),
+            mediumLight = Color(0xFFE6F1E5),
+            medium = Color(0xFFCEE4CC),
+            dark = Color(0xFF899888),
+        )
+
+        override val five = ColorSet(
+            light = Color(0xFFF9FCF2),
+            mediumLight = Color(0xFFF0F8DF),
+            medium = Color(0xFFE2F2BF),
+            dark = Color(0xFF97A17F),
+        )
+
+        override val six = ColorSet(
+            light = Color(0xFFFDF4E6),
+            mediumLight = Color(0xFFF9E2C1),
+            medium = Color(0xFFF3C683),
+            dark = Color(0xFFA28457),
+        )
+
+        override val seven = ColorSet(
+            light = Color(0xFFFAE5DB),
+            mediumLight = Color(0xFFF3BEA6),
+            medium = Color(0xFFE87E4D),
+            dark = Color(0xFFC16940),
+        )
+
+        override val eight = ColorSet(
+            light = Color(0xFFF5DAD8),
+            mediumLight = Color(0xFFE6A29E),
+            medium = Color(0xFFCD463E),
+            dark = Color(0xFFCD463E),
+        )
+
+        override val nine = ColorSet(
+            light = Color(0xFFECD1DB),
+            mediumLight = Color(0xFFD08CA6),
+            medium = Color(0xFFA11A4D),
+            dark = Color(0xFFA11A4D),
+        )
+
+        override val ten = ColorSet(
+            light = Color(0xFFE3CEDE),
+            mediumLight = Color(0xFFBA83AD),
+            medium = Color(0xFF75085C),
+            dark = Color(0xFF75085C),
+        )
+
+        override val eleven = ColorSet(
+            light = Color(0xFFD9CEDB),
+            mediumLight = Color(0xFFA184A4),
+            medium = Color(0xFF430A4A),
+            dark = Color(0xFF430A4A),
+        )
+    }
+
+// -----------------------------------------------------------------------
+// App specific colors
+// -----------------------------------------------------------------------
+
+val Color.Companion.Surface get() = Color(0xFFFFFFFF)
+val Color.Companion.SurfaceContainer get() = Color(0xFFFAF9F9)
+val Color.Companion.InverseSurface get() = Color(0xFF0D0E0F)
+val Color.Companion.OnSurface get() = Color(0xFF313333)
+val Color.Companion.OnSurfaceVariant get() = Color(0xFF6A6969)
+
+val Color.Companion.Neutral
+    get() = ColorSet(
+        light = Color.SurfaceContainer,
+        mediumLight = Color.Noise.one.mediumLight,
+        medium = Color.OnSurfaceVariant,
+        dark = Color.OnSurface
+    )
+
+val Color.Companion.AccentBlue get() = Color(0xFF4E7EE5)
+
+
+// -----------------------------------------------------------------------
+// Types
+// -----------------------------------------------------------------------
+
+data class ColorSet(
+    val light: Color,
+    val mediumLight: Color,
+    val medium: Color,
+    val dark: Color,
+) {
+
+    fun getVariant(variant: ColorVariant): Color {
+        return when (variant) {
+            ColorVariant.LIGHT -> light
+            ColorVariant.MEDIUM_LIGHT -> mediumLight
+            ColorVariant.MEDIUM -> medium
+            ColorVariant.DARK -> dark
+        }
+    }
+}
+
+enum class ColorVariant {
+    LIGHT,
+    MEDIUM_LIGHT,
+    MEDIUM,
+    DARK
+}

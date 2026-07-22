@@ -8,11 +8,14 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.window.core.layout.WindowSizeClass
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +27,8 @@ import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.permission.delegate.PermissionDelegate
 import org.noiseplanet.noisecapture.permission.toPermission
 import org.noiseplanet.noisecapture.services.permission.PermissionService
+import org.noiseplanet.noisecapture.ui.theme.OnSurface
+import org.noiseplanet.noisecapture.ui.theme.Surface
 import org.noiseplanet.noisecapture.util.AndroidNotificationProvider
 import org.noiseplanet.noisecapture.util.NotificationProvider
 
@@ -49,7 +54,12 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.light(
+                scrim = Color.Surface.toArgb(),
+                darkScrim = Color.OnSurface.toArgb(),
+            )
+        )
 
         initKoin(
             additionalModules = listOf(

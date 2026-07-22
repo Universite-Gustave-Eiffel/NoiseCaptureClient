@@ -21,7 +21,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.details_laeq_summary_la10
 import noisecapture.composeapp.generated.resources.details_laeq_summary_la50
@@ -31,6 +30,7 @@ import noisecapture.composeapp.generated.resources.details_laeq_summary_min
 import noisecapture.composeapp.generated.resources.details_laeq_summary_title
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
+import org.noiseplanet.noisecapture.ui.theme.titleMono
 import org.noiseplanet.noisecapture.util.isInVuMeterRange
 import org.noiseplanet.noisecapture.util.roundTo
 
@@ -123,8 +123,7 @@ private fun RowScope.LaeqSummaryItemView(
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.bodySmall,
-            fontWeight = FontWeight.SemiBold,
+            style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
@@ -137,11 +136,8 @@ private fun RowScope.LaeqSummaryItemView(
 
         Text(
             text = if (value.isInVuMeterRange()) value.roundTo(1).toString() else "-",
-            style = MaterialTheme.typography.labelLarge,
+            style = MaterialTheme.typography.titleMono,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 20.sp,
-            lineHeight = 20.sp,
-            fontWeight = FontWeight.SemiBold,
         )
     }
 }

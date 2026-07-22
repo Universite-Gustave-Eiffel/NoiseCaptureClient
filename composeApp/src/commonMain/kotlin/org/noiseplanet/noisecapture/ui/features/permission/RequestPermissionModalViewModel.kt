@@ -17,10 +17,6 @@ import noisecapture.composeapp.generated.resources.compose_multiplatform
 import noisecapture.composeapp.generated.resources.permission_location_illustration
 import noisecapture.composeapp.generated.resources.permission_microphone_illustration
 import noisecapture.composeapp.generated.resources.permission_notifications_illustration
-import noisecapture.composeapp.generated.resources.request_permission_button_go_back
-import noisecapture.composeapp.generated.resources.request_permission_button_request
-import noisecapture.composeapp.generated.resources.request_permission_button_settings
-import noisecapture.composeapp.generated.resources.request_permission_button_skip
 import noisecapture.composeapp.generated.resources.request_permission_location_description
 import noisecapture.composeapp.generated.resources.request_permission_location_title
 import noisecapture.composeapp.generated.resources.request_permission_microphone_description
@@ -35,9 +31,6 @@ import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.services.permission.PermissionService
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonStyle
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 
 
@@ -67,28 +60,6 @@ class RequestPermissionModalViewModel(
     // - Properties
 
     private val permissionService: PermissionService by inject()
-
-    val requestPermissionButtonViewModel = NCButtonViewModel(
-        title = Res.string.request_permission_button_request,
-        hasDropShadow = true,
-    )
-
-    val openSettingsButtonViewModel = NCButtonViewModel(
-        title = Res.string.request_permission_button_settings,
-        hasDropShadow = true,
-    )
-
-    val skipButtonViewModel = NCButtonViewModel(
-        title = Res.string.request_permission_button_skip,
-        style = NCButtonStyle.TEXT,
-        colors = { NCButtonColors.Defaults.text() }
-    )
-
-    val goBackButtonViewModel = NCButtonViewModel(
-        title = Res.string.request_permission_button_go_back,
-        style = NCButtonStyle.TEXT,
-        colors = { NCButtonColors.Defaults.text() }
-    )
 
     val viewStateFlow: StateFlow<ViewState> = permissionPromptFlow
         .flatMapLatest { prompt ->

@@ -11,6 +11,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -20,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -28,21 +30,26 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.cancel
 import noisecapture.composeapp.generated.resources.delete
 import noisecapture.composeapp.generated.resources.details_audio_player_description
 import noisecapture.composeapp.generated.resources.details_audio_player_disclaimer
 import noisecapture.composeapp.generated.resources.details_audio_player_title
 import noisecapture.composeapp.generated.resources.details_delete_measurement_audio_dialog_text
 import noisecapture.composeapp.generated.resources.details_delete_measurement_dialog_title
+import noisecapture.composeapp.generated.resources.pause
+import noisecapture.composeapp.generated.resources.play_arrow
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.model.dao.Measurement
-import org.noiseplanet.noisecapture.ui.components.button.NCButton
-import org.noiseplanet.noisecapture.ui.features.details.manage.DeleteConfirmationDialog
-import org.noiseplanet.noisecapture.ui.features.details.manage.DeleteConfirmationDialogViewModel
-import org.noiseplanet.noisecapture.util.throttleLatest
+import org.noiseplanet.noisecapture.ui.components.ButtonContent
+import org.noiseplanet.noisecapture.ui.components.NCButton
+import org.noiseplanet.noisecapture.ui.components.NCDialog
+import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
+import org.noiseplanet.noisecapture.ui.components.transparentContainerColors
+import org.noiseplanet.noisecapture.ui.theme.Noise
 import org.noiseplanet.noisecapture.util.toHhMmSs
 import kotlin.time.Duration
 
@@ -59,10 +66,10 @@ fun AudioPlayerView(
         parametersOf(measurement)
     }
 
-    val playPauseButtonViewModel by viewModel.playPauseButtonViewModel.collectAsStateWithLifecycle()
+    val isPlaying by viewModel.isPlaying.collectAsStateWithLifecycle()
     val isReady by viewModel.isReady.collectAsStateWithLifecycle()
 
-    val playerCurrentPosition by viewModel.currentPosition.throttleLatest(1_000)
+    val playerCurrentPosition by viewModel.currentPosition
         .collectAsStateWithLifecycle(Duration.ZERO)
 
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) }
@@ -105,7 +112,8 @@ fun AudioPlayerView(
         ) {
             NCButton(
                 onClick = { viewModel.togglePlayPause() },
-                viewModel = playPauseButtonViewModel,
+                content = ButtonContent(icon = if (isPlaying) Res.drawable.pause else Res.drawable.play_arrow),
+                colors = Color.Noise.two.secondaryContainerColors(),
                 modifier = Modifier.size(32.dp)
             )
             AudioPlayerSlider(viewModel)
@@ -132,16 +140,19 @@ fun AudioPlayerView(
     }
 
     if (showDeleteConfirmationDialog) {
-        DeleteConfirmationDialog(
-            viewModel = DeleteConfirmationDialogViewModel(
-                title = Res.string.details_delete_measurement_dialog_title,
-                text = Res.string.details_delete_measurement_audio_dialog_text,
-                onDismissRequest = { showDeleteConfirmationDialog = false },
-                onConfirm = {
-                    viewModel.deleteAudioClip()
-                    showDeleteConfirmationDialog = false
-                }
-            ))
+        NCDialog(
+            onDismissRequest = { showDeleteConfirmationDialog = false },
+            onConfirm = {
+                viewModel.deleteAudioClip()
+                showDeleteConfirmationDialog = false
+            },
+            title = Res.string.details_delete_measurement_dialog_title,
+            text = Res.string.details_delete_measurement_audio_dialog_text,
+            confirmButtonContent = ButtonContent(title = Res.string.delete),
+            confirmButtonColors = Color.Noise.eight.secondaryContainerColors(hasDropShadow = true),
+            dismissButtonContent = ButtonContent(title = Res.string.cancel),
+            dismissButtonColors = Color.Noise.one.transparentContainerColors(),
+        )
     }
 }
 
@@ -187,6 +198,13 @@ private fun RowScope.AudioPlayerSlider(
             }
             seekPosition = null
         },
+        colors = SliderDefaults.colors(
+            thumbColor = Color.Noise.two.dark,
+            activeTickColor = Color.Noise.two.dark,
+            activeTrackColor = Color.Noise.two.dark,
+            inactiveTickColor = Color.Noise.two.light,
+            inactiveTrackColor = Color.Noise.two.light,
+        ),
         modifier = Modifier.weight(1f),
     )
 }

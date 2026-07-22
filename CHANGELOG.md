@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- New design system for sleeker, more consistent look (#312)
+
+### Fixed
+
+- Android: Status bar icons showing white on white for some devices (#309)
+- WasmJS: Fixed crash due to updates in Promise interop with Kotlin (#311)
+
 ## [0.9.1] - 2026-06-17
 
 ### Added

@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -37,7 +38,7 @@ import org.noiseplanet.noisecapture.ui.components.map.MapLocationUnavailableView
 import org.noiseplanet.noisecapture.ui.components.map.MapView
 import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrogram.SpectrogramPlotView
 import org.noiseplanet.noisecapture.ui.features.recording.plot.spectrum.SpectrumPlotView
-import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
+import org.noiseplanet.noisecapture.ui.theme.Noise
 import org.noiseplanet.noisecapture.util.navigationBarInsetsTop
 import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 
@@ -94,7 +95,7 @@ fun RecordingPager(
     ) {
         SecondaryTabRow(
             selectedTabIndex = pagerState.currentPage,
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
+            containerColor = MaterialTheme.colorScheme.surface
         ) {
             tabs.toList().forEachIndexed { index, (tabId, label) ->
                 Tab(
@@ -103,7 +104,7 @@ fun RecordingPager(
                             badge = {
                                 if (tabId == TabId.MAP && showMapBadge) {
                                     Badge(
-                                        contentColor = NoiseLevelColorRamp.level8,
+                                        contentColor = Color.Noise.eight.medium,
                                         modifier = Modifier.offset(x = 8.dp)
                                     )
                                 }
@@ -114,11 +115,11 @@ fun RecordingPager(
                                 maxLines = 1,
                                 autoSize = TextAutoSize.StepBased(
                                     minFontSize = 12.sp,
-                                    maxFontSize = 16.sp,
+                                    maxFontSize = 14.sp,
                                     stepSize = 0.25.sp,
                                 ),
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    color = MaterialTheme.colorScheme.onSurface
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 ),
                             )
                         }

@@ -15,19 +15,32 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import nl.jacobras.humanreadable.HumanReadable
 import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.cancel
+import noisecapture.composeapp.generated.resources.delete
 import noisecapture.composeapp.generated.resources.details_audio_size
+import noisecapture.composeapp.generated.resources.details_delete_button
+import noisecapture.composeapp.generated.resources.details_delete_measurement_dialog_title
+import noisecapture.composeapp.generated.resources.details_export_button
 import noisecapture.composeapp.generated.resources.details_manage_description
 import noisecapture.composeapp.generated.resources.details_manage_title
 import noisecapture.composeapp.generated.resources.details_total_size
+import noisecapture.composeapp.generated.resources.download
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
-import org.noiseplanet.noisecapture.ui.components.button.NCButton
+import org.noiseplanet.noisecapture.ui.components.ButtonContent
+import org.noiseplanet.noisecapture.ui.components.NCButton
+import org.noiseplanet.noisecapture.ui.components.NCDialog
+import org.noiseplanet.noisecapture.ui.components.NCDropdownMenu
+import org.noiseplanet.noisecapture.ui.components.NCDropdownMenuItem
+import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
+import org.noiseplanet.noisecapture.ui.theme.Noise
 
 
 @Composable
@@ -43,7 +56,7 @@ fun ManageMeasurementView(
     }
     val viewState by viewModel.viewStateFlow.collectAsStateWithLifecycle()
 
-    val deleteConfirmationDialogViewModel by viewModel.deleteConfirmationDialogViewModelFlow
+    val deleteConfirmDialogState by viewModel.deleteConfirmDialogState
         .collectAsStateWithLifecycle()
 
     var showExportMenu by remember { mutableStateOf(false) }
@@ -110,32 +123,60 @@ fun ManageMeasurementView(
                 ) {
                     Box(modifier = Modifier.weight(1f)) {
                         NCButton(
-                            viewModel = viewModel.exportButtonViewModel,
+                            content = ButtonContent(
+                                title = Res.string.details_export_button,
+                                icon = Res.drawable.download
+                            ),
+                            colors = Color.Noise.two.secondaryContainerColors(),
                             onClick = { showExportMenu = true },
                             modifier = Modifier.fillMaxWidth(),
                         )
 
-                        ManageMeasurementMenu(
+                        NCDropdownMenu(
                             expanded = showExportMenu,
                             onDismissRequest = { showExportMenu = false },
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            items = viewModel.exportMenuItems,
-                        )
+                            colors = Color.Noise.two.secondaryContainerColors(),
+                        ) {
+                            viewModel.exportMenuItems.forEach { item ->
+                                NCDropdownMenuItem(
+                                    label = stringResource(item.label),
+                                    supportingText = item.supportingText?.let { stringResource(it) },
+                                    onClick = {
+                                        item.onClick
+                                        showExportMenu = false
+                                    },
+                                )
+                            }
+                        }
                     }
 
                     Box(modifier = Modifier.weight(1f)) {
                         NCButton(
-                            viewModel = viewModel.deleteButtonViewModel,
+                            content = ButtonContent(
+                                title = Res.string.details_delete_button,
+                                icon = Res.drawable.delete
+                            ),
+                            colors = Color.Noise.eight.secondaryContainerColors(),
                             onClick = { showDeleteMenu = true },
                             modifier = Modifier.fillMaxWidth(),
                         )
 
-                        ManageMeasurementMenu(
+                        NCDropdownMenu(
                             expanded = showDeleteMenu,
                             onDismissRequest = { showDeleteMenu = false },
-                            containerColor = MaterialTheme.colorScheme.errorContainer,
-                            items = viewModel.deleteMenuItems,
-                        )
+                            colors = Color.Noise.eight.secondaryContainerColors(),
+                        ) {
+                            viewModel.deleteMenuItems.forEach { item ->
+                                NCDropdownMenuItem(
+                                    label = stringResource(item.label),
+                                    supportingText = item.supportingText?.let { stringResource(it) },
+                                    onClick = {
+                                        item.onClick
+                                        showDeleteMenu = false
+                                    },
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -144,7 +185,15 @@ fun ManageMeasurementView(
         else -> return
     }
 
-    deleteConfirmationDialogViewModel?.let {
-        DeleteConfirmationDialog(viewModel = it)
+    deleteConfirmDialogState?.let {
+        NCDialog(
+            onDismissRequest = it.onDismissRequest,
+            onConfirm = it.onConfirm,
+            title = Res.string.details_delete_measurement_dialog_title,
+            text = it.text,
+            confirmButtonContent = ButtonContent(title = Res.string.delete),
+            confirmButtonColors = Color.Noise.eight.secondaryContainerColors(hasDropShadow = true),
+            dismissButtonContent = ButtonContent(title = Res.string.cancel),
+        )
     }
 }

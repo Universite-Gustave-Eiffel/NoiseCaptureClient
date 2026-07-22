@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
@@ -17,16 +16,12 @@ import androidx.window.core.layout.WindowSizeClass
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import noisecapture.composeapp.generated.resources.Res
-import noisecapture.composeapp.generated.resources.location_disabled
 import noisecapture.composeapp.generated.resources.map_marker
-import noisecapture.composeapp.generated.resources.my_location
-import noisecapture.composeapp.generated.resources.question_mark
 import org.jetbrains.compose.resources.painterResource
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -34,16 +29,11 @@ import org.noiseplanet.noisecapture.services.location.UserLocationService
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.services.settings.SettingsKey
 import org.noiseplanet.noisecapture.services.settings.UserSettingsService
-import org.noiseplanet.noisecapture.ui.components.button.IconNCButtonViewModel
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
-import org.noiseplanet.noisecapture.ui.theme.LocationTint
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 import org.noiseplanet.noisecapture.util.geo.GeoUtil
 import org.noiseplanet.noisecapture.util.geo.Point
 import org.noiseplanet.noisecapture.util.geo.lat
 import org.noiseplanet.noisecapture.util.geo.lon
-import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 import ovh.plrapps.mapcompose.api.BoundingBox
 import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.addMarker
@@ -211,59 +201,52 @@ class MapViewModel(
         )
     )
 
-    private var _mapOrientationFlow = MutableStateFlow(0f)
-    var mapOrientationFlow: StateFlow<Float> = _mapOrientationFlow
+    private val _mapOrientationFlow = MutableStateFlow(0f)
+    val mapOrientationFlow: StateFlow<Float> = _mapOrientationFlow
+
+    val isLocationAvailable: StateFlow<Boolean> = locationService.isLocationAvailable
 
     /**
      * If enabled, automatically recenter the map on every location updates.
      * Useful for following user movements when making a measurement.
      */
-    val autoRecenterEnabled = MutableStateFlow(parameters.followUserLocation)
+    private val _autoRecenterEnabled = MutableStateFlow(parameters.followUserLocation)
+    val autoRecenterEnabled: StateFlow<Boolean> = _autoRecenterEnabled
 
     /**
      * Holds the bounding box of the currently focused measurement, if any.
      */
     private var measurementPathBoundingBox: BoundingBox? = null
 
-    val recenterButtonViewModel: StateFlow<NCButtonViewModel?> = locationService.isLocationAvailable
-        .combine(autoRecenterEnabled) { isAvailable, autoRecenterEnabled ->
-            val icon = if (!parameters.followUserLocation || isAvailable) {
-                Res.drawable.my_location
-            } else {
-                Res.drawable.location_disabled
-            }
-            IconNCButtonViewModel(
-                icon = icon,
-                colors = {
-                    val tint = if (isAvailable) {
-                        if (parameters.followUserLocation && autoRecenterEnabled) {
-                            LocationTint
-                        } else {
-                            MaterialTheme.colorScheme.onSurface
-                        }
-                    } else {
-                        MaterialTheme.colorScheme.error
-                    }
-                    NCButtonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                        contentColor = tint
-                    )
-                },
-            )
-        }.stateInWhileSubscribed(
-            scope = viewModelScope,
-            initialValue = null,
-        )
-
-    val helpButtonViewModel = IconNCButtonViewModel(
-        icon = Res.drawable.question_mark,
-        colors = {
-            NCButtonColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                contentColor = MaterialTheme.colorScheme.onSurface
-            )
-        },
-    )
+//    val recenterButtonContent: StateFlow<ButtonContent?> = locationService.isLocationAvailable
+//        .combine(autoRecenterEnabled) { isAvailable, autoRecenterEnabled ->
+//            val icon = if (!parameters.followUserLocation || isAvailable) {
+//                Res.drawable.my_location
+//            } else {
+//                Res.drawable.location_disabled
+//            }
+//            IconNCButtonViewModel(
+//                icon = icon,
+//                colors = {
+//                    val tint = if (isAvailable) {
+//                        if (parameters.followUserLocation && autoRecenterEnabled) {
+//                            MaterialTheme.colorScheme.accentBlue
+//                        } else {
+//                            MaterialTheme.colorScheme.onSurface
+//                        }
+//                    } else {
+//                        MaterialTheme.colorScheme.error
+//                    }
+//                    NCButtonColors(
+//                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+//                        contentColor = tint
+//                    )
+//                },
+//            )
+//        }.stateInWhileSubscribed(
+//            scope = viewModelScope,
+//            initialValue = null,
+//        )
 
 
     // - Lifecycle
@@ -277,7 +260,7 @@ class MapViewModel(
 
         mapState.onTouchDown {
             // If the user manually interacts with the map, disables automatic location tracking.
-            autoRecenterEnabled.tryEmit(false)
+            _autoRecenterEnabled.tryEmit(false)
         }
 
         mapState.setStateChangeListener {
@@ -324,7 +307,7 @@ class MapViewModel(
             // automatic recenter to user location
             viewModelScope.launch(Dispatchers.Main) {
                 addPathsForMeasurement(uuid)
-                autoRecenterEnabled.tryEmit(false)
+                _autoRecenterEnabled.tryEmit(false)
             }
         }
     }
@@ -349,6 +332,7 @@ class MapViewModel(
                         destScale = zoomLevelToScale(parameters.initialZoomLevel),
                     )
                 }
+                _autoRecenterEnabled.tryEmit(true)
             }
         }
     }
@@ -362,13 +346,13 @@ class MapViewModel(
     fun zoomIn() {
         val zoomLevel = scaleToZoomLevel(mapState.scale)
         snapToZoomLevel(zoomLevel + 1)
-        autoRecenterEnabled.tryEmit(false)
+        _autoRecenterEnabled.tryEmit(false)
     }
 
     fun zoomOut() {
         val zoomLevel = scaleToZoomLevel(mapState.scale)
         snapToZoomLevel(zoomLevel - 1)
-        autoRecenterEnabled.tryEmit(false)
+        _autoRecenterEnabled.tryEmit(false)
     }
 
 

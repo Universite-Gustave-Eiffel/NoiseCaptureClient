@@ -2,6 +2,7 @@ package org.noiseplanet.noisecapture.util
 
 import io.ktor.util.toJsArray
 import kotlinx.coroutines.await
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.get
@@ -12,10 +13,8 @@ import org.noiseplanet.noisecapture.interop.storage.FileSystemFileHandle
 import org.noiseplanet.noisecapture.interop.storage.FileSystemWritableFileStream
 import org.noiseplanet.noisecapture.interop.storage.fileSystemHandleOptions
 import org.noiseplanet.noisecapture.log.Logger
-import org.w3c.files.File
 import org.w3c.files.FileReader
 import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 
 /**
@@ -48,10 +47,11 @@ object OPFSHelper : KoinComponent {
         // }.await<JsBoolean>()
 
         // Get root directory handle
-        return storage.getDirectory()
-            .catch {
-                throw OPFSUnavailableException("Cannot get root directory handle")
-            }.await()
+        return try {
+            storage.getDirectory().await()
+        } catch (error: JsException) {
+            throw OPFSUnavailableException("Cannot get root directory handle", error)
+        }
     }
 
     /**
@@ -73,41 +73,41 @@ object OPFSHelper : KoinComponent {
         val dirNames = pathComponents.dropLast(1)
         val fileName = pathComponents.last()
 
-        return try {
-            // Get OPFS root directory
-            val opfsRoot = getOpfsRoot() ?: return null
+        // Get OPFS root directory
+        val opfsRoot = getOpfsRoot() ?: return null
 
-            // Set current directory to OPFS root
-            var currentDirectory = opfsRoot
+        // Set current directory to OPFS root
+        var currentDirectory = opfsRoot
 
-            // Create intermediary directories if they don't exist
-            dirNames.forEach { dirName ->
-                // Every time we create a new directory, update current directory handle
-                currentDirectory = currentDirectory.getDirectoryHandle(
-                    dirName.toJsString(),
-                    options = fileSystemHandleOptions(create = createIfNotFound)
-                ).catch {
-                    throw FileNotFoundException(dirName)
-                }.await()
-            }
-            // Get file handle, create it if necessary
-            val fileHandle: FileSystemFileHandle = currentDirectory.getFileHandle(
-                name = fileName.toJsString(),
-                options = fileSystemHandleOptions(create = createIfNotFound)
-            ).catch {
-                throw FileNotFoundException(filePath)
-            }.await()
-
-            // Return directory and file handles
-            Pair(fileHandle, currentDirectory)
-
-        } catch (error: FileNotFoundException) {
-            logger.warning(message = "Could not access file or directory", throwable = error)
-            null
-        } catch (error: OPFSUnavailableException) {
-            logger.error(message = "An error occurred while access file storage", throwable = error)
-            null
+        // Create intermediary directories if they don't exist
+        for (dirName in dirNames) {
+            // Every time we create a new directory, update current directory handle
+            currentDirectory = currentDirectory.getDirectoryHandle(
+                dirName.toJsString(),
+                options = fileSystemHandleOptions(create = true)
+            ).catch { error ->
+                logger.warning(
+                    "Couldn't get directory handle for dir $dirName",
+                    error.toThrowableOrNull()
+                )
+                null
+            }.await() ?: return null
         }
+
+        // Get file handle, create it if necessary
+        val fileHandle: FileSystemFileHandle = currentDirectory.getFileHandle(
+            name = fileName.toJsString(),
+            options = fileSystemHandleOptions(create = createIfNotFound)
+        ).catch { error ->
+            logger.warning(
+                "Couldn't get file handle for file $filePath",
+                error.toThrowableOrNull()
+            )
+            null
+        }.await() ?: return null
+
+        // Return directory and file handles
+        return Pair(fileHandle, currentDirectory)
     }
 
     /**
@@ -118,14 +118,15 @@ object OPFSHelper : KoinComponent {
      */
     suspend fun read(filePath: String): ByteArray? {
         // Get file and directory handles
+        logger.debug("READ $filePath")
         val (fileHandle, _) = getFileHandle(filePath) ?: return null
-        val file = fileHandle.getFile().await<File>()
+        val file = fileHandle.getFile().await()
 
         // Create file reader
         val reader = FileReader()
         // Read contents from file. Since FileReader relies on a callback to get the contents
         // after reading, we wrap this in a suspendCoroutine to synchronise the result
-        return suspendCoroutine { continuation ->
+        return suspendCancellableCoroutine { continuation ->
             reader.readAsArrayBuffer(file)
             reader.addEventListener("load") {
                 // Continue execution when contents are available.
@@ -152,8 +153,8 @@ object OPFSHelper : KoinComponent {
         // Get writer handle
         val stream: FileSystemWritableFileStream = fileHandle.createWritable().await()
         // Write data to file
-        stream.write(data.toJsArray()).await<Unit>()
+        stream.write(data.toJsArray()).await()
         // Close writer handle
-        stream.close().await<Unit>()
+        stream.close().await()
     }
 }
