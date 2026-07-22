@@ -23,7 +23,7 @@ internal class PersistentLocalStoragePermissionDelegate : DefaultPermissionDeleg
 
     override fun providePermission() {
         scope.launch {
-            navigator?.storage?.persist()?.await<JsBoolean>()
+            navigator?.storage?.persist()?.await()
         }
     }
 }
