@@ -7,6 +7,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- New design system for sleeker, more consistent look (#312)
+
 ### Fixed
 
 - Android: Status bar icons showing white on white for some devices (#309)
