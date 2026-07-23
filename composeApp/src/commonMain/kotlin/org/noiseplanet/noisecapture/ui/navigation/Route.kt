@@ -15,6 +15,7 @@ object RouteIds {
     const val DETAILS: RouteId = "details"
     const val COMMUNITY_MAP: RouteId = "map"
     const val CALIBRATION: RouteId = "calibration"
+    const val QUESTIONNAIRE: RouteId = "questionnaire"
 
     const val ONBOARDING_WELCOME: RouteId = "onboarding_welcome"
     const val ONBOARDING_HOW_IT_WORKS: RouteId = "onboarding_how_it_works"
@@ -61,6 +62,7 @@ open class Route(
                 RouteIds.HISTORY -> HistoryRoute()
                 RouteIds.SETTINGS -> SettingsRoute()
                 RouteIds.COMMUNITY_MAP -> CommunityMapRoute()
+                RouteIds.QUESTIONNAIRE -> QuestionnaireRoute()
                 RouteIds.DEBUG_ROUTE -> DebugRoute()
 
                 RouteIds.DETAILS -> {
@@ -111,6 +113,9 @@ class CommunityMapRoute : Route(id = RouteIds.COMMUNITY_MAP)
 
 @Serializable
 class CalibrationRoute : Route(id = RouteIds.CALIBRATION)
+
+@Serializable
+class QuestionnaireRoute : Route(id = RouteIds.QUESTIONNAIRE)
 
 @Serializable
 class OnboardingWelcomeRoute : Route(id = RouteIds.ONBOARDING_WELCOME)

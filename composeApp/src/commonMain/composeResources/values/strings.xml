@@ -151,6 +151,10 @@
     <string name="community_map_title">Community measurements</string>
 
 
+    <!-- QuestionnaireScreen -->
+    <string name="questionnaire_title">Questionnaire</string>
+
+
     <!-- Settings -->
     <string name="settings_title">Settings</string>
 

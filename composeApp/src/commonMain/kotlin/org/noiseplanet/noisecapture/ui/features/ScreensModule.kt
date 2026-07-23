@@ -9,6 +9,7 @@ import org.noiseplanet.noisecapture.ui.features.history.HistoryScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.home.HomeScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.map.CommunityMapScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.onboarding.OnboardingScreenViewModel
+import org.noiseplanet.noisecapture.ui.features.questionnaire.QuestionnaireScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.recording.RecordingScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.settings.SettingsScreenViewModel
 
@@ -47,6 +48,10 @@ val screensModule = module {
 
     viewModel {
         OnboardingScreenViewModel()
+    }
+
+    viewModel {
+        QuestionnaireScreenViewModel()
     }
 
     viewModel {
