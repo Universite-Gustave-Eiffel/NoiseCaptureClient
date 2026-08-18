@@ -142,7 +142,7 @@ fun ManageMeasurementView(
                                     label = stringResource(item.label),
                                     supportingText = item.supportingText?.let { stringResource(it) },
                                     onClick = {
-                                        item.onClick
+                                        item.onClick()
                                         showExportMenu = false
                                     },
                                 )
@@ -171,7 +171,7 @@ fun ManageMeasurementView(
                                     label = stringResource(item.label),
                                     supportingText = item.supportingText?.let { stringResource(it) },
                                     onClick = {
-                                        item.onClick
+                                        item.onClick()
                                         showDeleteMenu = false
                                     },
                                 )
