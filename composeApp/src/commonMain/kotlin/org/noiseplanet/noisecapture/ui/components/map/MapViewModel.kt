@@ -143,13 +143,13 @@ class MapViewModel(
         private const val DEFAULT_LATITUDE = 47.21724981872895
         private const val DEFAULT_LONGITUDE = -1.5583589911308107
 
-        private const val BACKGROUND_TILESET_URL = "https://a.basemaps.cartocdn.com/light_all"
+        private const val BACKGROUND_TILESET_URL =
+            "https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png" +
+                    "?key=cb1_2gey_1_b3058d86b69f389b5b039989"
 
         private const val NOISEPLANET_GEOSERVER_URL =
-            "https://onomap-gs.noise-planet.org/geoserver/gwc/service/tms/1.0.0/"
-
-        private const val MEASUREMENTS_TILESET_URL =
-            NOISEPLANET_GEOSERVER_URL + "noisecapture:noisecapture_area@EPSG:900913@png"
+            "https://onomap-gs.noise-planet.org/geoserver/gwc/service/tms/1.0.0/" +
+                    "noisecapture:noisecapture_area@EPSG:900913@png/{z}/{x}/{y}.png"
 
         private const val USER_LOCATION_MARKER_ID = "user_location"
     }
@@ -166,7 +166,7 @@ class MapViewModel(
     )
 
     val measurementTilesProvider = RemoteTileStreamProvider(
-        tileServerUrl = MEASUREMENTS_TILESET_URL,
+        tileServerUrl = NOISEPLANET_GEOSERVER_URL,
         tms = true,
     )
 
