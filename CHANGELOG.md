@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.9.2] - 2026-10-05
 
 ### Fixed
 
@@ -198,15 +198,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Show min, average and max values while making a recording (#94)
 - Add a "Last measurements" section to the home page showing the last two measurements and a
   statistics section with total measurements count and total analysed duration (#98)
-- Add a bottom sheet layout for measurement summary showing measurement date, duration,
-  average value and a summary view with Min, LA90, LA50, LA10 and Max values (#103)
-- Added a multiplatform audio player implementation to be able to listen back to recorded
-  audio clips (#105)
-- Added controls to delete a measurement, or only its associated audio clip. This view also
-  shows the size on disk of each measurement and the size of only the audio file. (#106)
+- Add a bottom sheet layout for measurement summary showing measurement date, duration, average
+  value and a summary view with Min, LA90, LA50, LA10 and Max values (#103)
+- Added a multiplatform audio player implementation to be able to listen back to recorded audio
+  clips (#105)
+- Added controls to delete a measurement, or only its associated audio clip. This view also shows
+  the size on disk of each measurement and the size of only the audio file. (#106)
 - Use NotoSans as a shared font between all platforms to improve consistency (#108)
-- Fix and improve SPL weighted decaying. Values in sound level meter should now appear more
-  stable than before, hence more easily readable. (#109)
+- Fix and improve SPL weighted decaying. Values in sound level meter should now appear more stable
+  than before, hence more easily readable. (#109)
 
 ## Fixed
 
