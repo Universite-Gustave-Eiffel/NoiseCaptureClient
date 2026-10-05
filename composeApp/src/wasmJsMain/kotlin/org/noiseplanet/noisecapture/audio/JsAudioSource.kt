@@ -80,49 +80,46 @@ internal class JsAudioSource : AudioSource(), KoinComponent {
             audioConstraints.deviceId = it.id.toJsString()
         }
 
-        window.navigator.mediaDevices.getUserMedia(
+        val mediaStream = window.navigator.mediaDevices.getUserMedia(
             MediaStreamConstraints(audio = audioConstraints)
-        ).then(onFulfilled = { mediaStream ->
-            audioContext = AudioContext()
+        ).await()
 
-            micNode = audioContext?.createMediaStreamSource(mediaStream)
-            checkNotNull(micNode) { "Failed initializing mic node" }
+        audioContext = AudioContext()
 
-            scriptProcessorNode = audioContext?.createScriptProcessor(
-                bufferSize = SAMPLES_BUFFER_SIZE,
-                numberOfInputChannels = 1,
-                numberOfOutputChannels = 1
-            )
-            checkNotNull(scriptProcessorNode) { "Failed initializing script processor node" }
+        micNode = audioContext?.createMediaStreamSource(mediaStream)
+        checkNotNull(micNode) { "Failed initializing mic node" }
 
-            scriptProcessorNode?.onaudioprocess = { audioProcessingEvent ->
-                scope.launch {
-                    val timestamp = Clock.System.now().toEpochMilliseconds()
-                    val buffer = audioProcessingEvent.inputBuffer
-                    val jsBuffer = buffer.getChannelData(0)
+        scriptProcessorNode = audioContext?.createScriptProcessor(
+            bufferSize = SAMPLES_BUFFER_SIZE,
+            numberOfInputChannels = 1,
+            numberOfOutputChannels = 1
+        )
+        checkNotNull(scriptProcessorNode) { "Failed initializing script processor node" }
 
-                    // In case of inconsistency between js buffer size and internal buffer, reallocate
-                    if (jsBuffer.length != samplesBuffer.size) {
-                        samplesBuffer = FloatArray(jsBuffer.length)
-                    }
-                    // Pour audio samples in reusable buffer
-                    for (index in 0 until samplesBuffer.size) {
-                        samplesBuffer[index] = jsBuffer[index]
-                    }
+        scriptProcessorNode?.onaudioprocess = { audioProcessingEvent ->
+            scope.launch {
+                val timestamp = Clock.System.now().toEpochMilliseconds()
+                val buffer = audioProcessingEvent.inputBuffer
+                val jsBuffer = buffer.getChannelData(0)
 
-                    emitAudioSamples(
-                        AudioSamples(
-                            timestamp,
-                            jsBuffer.toFloatArray(),
-                            buffer.sampleRate.toInt()
-                        )
-                    )
+                // In case of inconsistency between js buffer size and internal buffer, reallocate
+                if (jsBuffer.length != samplesBuffer.size) {
+                    samplesBuffer = FloatArray(jsBuffer.length)
                 }
+                // Pour audio samples in reusable buffer
+                for (index in samplesBuffer.indices) {
+                    samplesBuffer[index] = jsBuffer[index]
+                }
+
+                emitAudioSamples(
+                    AudioSamples(
+                        timestamp,
+                        jsBuffer.toFloatArray(),
+                        buffer.sampleRate.toInt()
+                    )
+                )
             }
-            mediaStream
-        }, onRejected = { error ->
-            throw IllegalStateException(error.toString())
-        }).await<JsAny>()
+        }
     }
 
     override fun startInternal() {
@@ -141,9 +138,6 @@ internal class JsAudioSource : AudioSource(), KoinComponent {
 
     override suspend fun releaseInternal() {
         pauseInternal()
-        audioContext?.close()
-            ?.catch { error ->
-                throw IllegalStateException(error.toString())
-            }?.await<JsAny>()
+//        audioContext?.close()?.await()
     }
 }

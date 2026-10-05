@@ -13,9 +13,7 @@ import org.noiseplanet.noisecapture.permission.Permission
 import org.noiseplanet.noisecapture.permission.PermissionState
 import org.noiseplanet.noisecapture.services.permission.PermissionService
 import org.w3c.dom.mediacapture.AUDIOINPUT
-import org.w3c.dom.mediacapture.MediaDeviceInfo
 import org.w3c.dom.mediacapture.MediaDeviceKind
-import org.w3c.dom.mediacapture.MediaStream
 import org.w3c.dom.mediacapture.MediaStreamConstraints
 
 @OptIn(ExperimentalWasmJsInterop::class)
@@ -59,10 +57,10 @@ class JSMicrophoneProviderService : MicrophoneProviderService(), KoinComponent {
 
         window.navigator.mediaDevices
             .getUserMedia(MediaStreamConstraints(audio = true.toJsBoolean()))
-            .await<MediaStream>()
+            .await()
 
         return window.navigator.mediaDevices.enumerateDevices()
-            .await<JsArray<MediaDeviceInfo>>()
+            .await()
             .toList()
             .filter { it.kind == MediaDeviceKind.Companion.AUDIOINPUT }
             .map {
@@ -78,7 +76,7 @@ class JSMicrophoneProviderService : MicrophoneProviderService(), KoinComponent {
     override suspend fun getDefaultInput(): MicrophoneInfo? {
         val mediaStream = window.navigator.mediaDevices
             .getUserMedia(MediaStreamConstraints(audio = true.toJsBoolean()))
-            .await<MediaStream>()
+            .await()
         val audioTrack = mediaStream.getAudioTracks().toList().firstOrNull() ?: return null
 
         return availableInputs.value.firstOrNull {

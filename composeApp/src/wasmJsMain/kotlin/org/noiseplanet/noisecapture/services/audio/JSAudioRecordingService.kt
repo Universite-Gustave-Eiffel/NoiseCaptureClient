@@ -54,17 +54,17 @@ class JSAudioRecordingService : AudioRecordingService, KoinComponent {
 
         window.navigator.mediaDevices.getUserMedia(
             MediaStreamConstraints(audio = audioConstraints)
-        ).then { stream ->
+        ).then(onFulfilled = { stream ->
             configureMediaRecorder(stream)
             blob = null
             fileName = outputFileName
             mediaRecorder?.start()
             recordingStartListener?.onRecordingStart()
             stream
-        }.catch { error ->
+        }, onRejected = { error ->
             logger.error("getUserMedia error during AudioRecorder init: $error")
             error
-        }
+        })
     }
 
     override fun stopRecordingToFile() {

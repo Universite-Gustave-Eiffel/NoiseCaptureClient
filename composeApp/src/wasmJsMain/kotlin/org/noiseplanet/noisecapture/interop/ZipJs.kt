@@ -25,7 +25,7 @@ external object ZipJs {
             options: ZipAddOptions = definedExternally,
         ): Promise<EntryMetaData>
 
-        fun close(): Promise<*>
+        fun close(): Promise<JsAny?>
     }
 
     interface Reader : JsAny

@@ -21,16 +21,16 @@ internal class AudioRecordPermissionDelegate : DefaultPermissionDelegate(
                 video = false.toJsBoolean(),
                 audio = true.toJsBoolean()
             )
-        ).then { stream ->
+        ).then(onFulfilled = { stream ->
             // Try to create an audio stream, this will trigger the audio permissions popup
             audioContext.createMediaStreamSource(stream)
             // Close this stream as we don't need it to stay open
             audioContext.close().then { void -> void }
             stream
-        }.catch { error ->
+        }, onRejected = { error ->
             // If we can't get the audio stream, we consider it's because the user has
             // denied microphone access.
             error
-        }
+        })
     }
 }

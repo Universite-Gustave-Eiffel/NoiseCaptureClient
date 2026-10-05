@@ -35,7 +35,7 @@ class OPFSFileSystemService : FileSystemService {
 
     override suspend fun delete(fileUri: String) {
         val (fileHandle, directoryHandle) = OPFSHelper.getFileHandle(fileUri) ?: return
-        directoryHandle.removeEntry(fileHandle.name).await<Unit>()
+        directoryHandle.removeEntry(fileHandle.name).await()
     }
 
     /**
@@ -62,14 +62,14 @@ class OPFSFileSystemService : FileSystemService {
         // Add each file to the zip archive
         fileUris.forEach { fileUri ->
             val (fileHandle, _) = OPFSHelper.getFileHandle(fileUri) ?: return
-            val file = fileHandle.getFile().await<File>()
+            val file = fileHandle.getFile().await()
             val reader = ZipJs.BlobReader(file)
-            zipWriter.add(fileUri, reader).await<JsAny>()
+            zipWriter.add(fileUri, reader).await()
         }
-        zipWriter.close().await<JsAny>()
+        zipWriter.close().await()
 
         // Get zipped data as blob
-        val blob = writer.getData().await<Blob>()
+        val blob = writer.getData().await()
 
         // Download zip file
         downloadBlob(blob, "$archiveName.zip")
@@ -86,9 +86,9 @@ class OPFSFileSystemService : FileSystemService {
         val (fileHandle, _) = OPFSHelper.getFileHandle(key, createIfNotFound = true) ?: return
         val stream: FileSystemWritableFileStream = fileHandle.createWritable().await()
         // Store raw data
-        stream.write(blob).await<Unit>()
+        stream.write(blob).await()
         // Close stream
-        stream.close().await<Unit>()
+        stream.close().await()
     }
 
 
