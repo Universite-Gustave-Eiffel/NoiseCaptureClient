@@ -13,9 +13,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Export and delete menus from measurement details were unresponsive (#315)
+
+## [0.9.2] - 2026-10-05
+
+### Fixed
+
 - Android: Status bar icons showing white on white for some devices (#309)
 - WasmJS: Fixed crash due to updates in Promise interop with Kotlin (#311)
-- Export and delete menus from measurement details were unresponsive (#315)
+- Provide CartoDb API key of NoiseCapture (#316 #318)
 
 ## [0.9.1] - 2026-06-17
 
