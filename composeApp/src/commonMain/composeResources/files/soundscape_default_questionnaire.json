@@ -5,33 +5,33 @@
       "id": "soundscape_default_page_sources",
       "index": 0,
       "title": "How much did you hear...",
-      "description": "Tap on each of the scales below where you would like to put your answer. Each answer is optional and can be left blank.",
+      "description": "Tap on each scale below where you would like to put your answer.",
       "questions": [
         {
           "id": "source_traffic",
-          "title": "Traffic sounds (cars, trains, planes, motorcycles, ...)",
-          "description": "The question description should give further information if needed",
+          "title": "Traffic sounds",
+          "description": "Cars, trains, planes, motorcycles, ...",
           "startLabel": "Not at all",
           "endLabel": "Dominates completely"
         },
         {
           "id": "source_human_made",
-          "title": "Human made sounds (voices, laughter, footsteps, music, ...)",
-          "description": "The question description should give further information if needed",
+          "title": "Human made sounds",
+          "description": "Voices, laughter, footsteps, music, ...",
           "startLabel": "Not at all",
           "endLabel": "Dominates completely"
         },
         {
           "id": "source_mechanical",
-          "title": "Other mechanical sounds (sirens, construction work, industry, ...)",
-          "description": "The question description should give further information if needed",
+          "title": "Other mechanical sounds",
+          "description": "Sirens, construction work, industry, ...",
           "startLabel": "Not at all",
           "endLabel": "Dominates completely"
         },
         {
           "id": "source_natural",
-          "title": "Natural sounds (animals, water flowing, wind in vegetation, ...)",
-          "description": "The question description should give further information if needed",
+          "title": "Natural sounds",
+          "description": "Animals, water flowing, wind in vegetation, ...",
           "startLabel": "Not at all",
           "endLabel": "Dominates completely"
         }
@@ -41,35 +41,21 @@
       "id": "soundscape_default_page_perception",
       "index": 1,
       "title": "How would you describe the sound environment?",
-      "description": "Tap on each of the scales below where you would like to put your answer. Each answer is optional and can be left blank.",
+      "description": "Tap on each scale below where you would like to put your answer.",
       "questions": [
         {
           "id": "perception_pleasantness",
-          "title": "Traffic sounds (cars, trains, planes, motorcycles, ...)",
-          "description": "The question description should give further information if needed",
-          "startLabel": "Not at all",
-          "endLabel": "Dominates completely"
+          "title": "Pleasantness",
+          "description": null,
+          "startLabel": "Unpleasant",
+          "endLabel": "Pleasant"
         },
         {
-          "id": "source_human_made",
-          "title": "Human made sounds (voices, laughter, footsteps, music, ...)",
-          "description": "The question description should give further information if needed",
-          "startLabel": "Not at all",
-          "endLabel": "Dominates completely"
-        },
-        {
-          "id": "source_mechanical",
-          "title": "Other mechanical sounds (sirens, construction work, industry, ...)",
-          "description": "The question description should give further information if needed",
-          "startLabel": "Not at all",
-          "endLabel": "Dominates completely"
-        },
-        {
-          "id": "source_natural",
-          "title": "Natural sounds (animals, water flowing, wind in vegetation, ...)",
-          "description": "The question description should give further information if needed",
-          "startLabel": "Not at all",
-          "endLabel": "Dominates completely"
+          "id": "perception_eventfulness",
+          "title": "Eventfulness",
+          "description": null,
+          "startLabel": "Uneventful",
+          "endLabel": "Eventful"
         }
       ]
     }

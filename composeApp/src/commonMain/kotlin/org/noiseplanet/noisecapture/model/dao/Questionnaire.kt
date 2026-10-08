@@ -39,7 +39,7 @@ data class Page(
  *
  * @param id Unique identifier
  * @param title The question itself
- * @param description More information
+ * @param description More information (optional)
  * @param startLabel Slider start (or left) label
  * @param endLabel Slider end (or right) label
  */
@@ -47,7 +47,7 @@ data class Page(
 data class Question(
     val id: String,
     val title: String,
-    val description: String,
+    val description: String?,
     val startLabel: String,
     val endLabel: String,
 )

@@ -7,9 +7,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.continue_
 import noisecapture.composeapp.generated.resources.questionnaire_title
+import noisecapture.composeapp.generated.resources.submit
 import org.jetbrains.compose.resources.StringResource
 import org.noiseplanet.noisecapture.model.dao.Questionnaire
+import org.noiseplanet.noisecapture.ui.components.ButtonContent
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 
 
@@ -26,6 +29,7 @@ class QuestionnaireScreenViewModel(
         data class QuestionnaireState(
             val questionnaire: Questionnaire,
             val currentPageIndex: Int,
+            val confirmButtonContent: ButtonContent,
         ) : ViewState
     }
 
@@ -50,6 +54,7 @@ class QuestionnaireScreenViewModel(
                 ViewState.QuestionnaireState(
                     questionnaire = questionnaire,
                     currentPageIndex = 0,
+                    confirmButtonContent = ButtonContent(title = Res.string.continue_),
                 )
             )
         }
@@ -58,10 +63,45 @@ class QuestionnaireScreenViewModel(
 
     // - Public functions
 
-    fun nextPage() {
+    fun confirmPage() {
         val currentState = viewState.value as? ViewState.QuestionnaireState ?: return
-        _viewStateFlow.tryEmit(
-            currentState.copy(currentPageIndex = currentState.currentPageIndex + 1)
+        val currentIndex = currentState.currentPageIndex
+        val pagesCount = currentState.questionnaire.pages.size
+
+        if (currentIndex == pagesCount - 1) {
+            // TODO: Submit answers and leave questionnaire
+        } else {
+            viewStateForPage(currentIndex + 1)?.let {
+                _viewStateFlow.tryEmit(it)
+            }
+        }
+    }
+
+    fun previousPage() {
+        val currentState = viewState.value as? ViewState.QuestionnaireState ?: return
+        val currentIndex = currentState.currentPageIndex
+
+        viewStateForPage(currentIndex - 1)?.let {
+            _viewStateFlow.tryEmit(it)
+        }
+    }
+
+
+    // - Private functions
+
+    fun viewStateForPage(pageIndex: Int): ViewState? {
+        val currentState = viewState.value as? ViewState.QuestionnaireState ?: return null
+        val pagesCount = currentState.questionnaire.pages.size
+
+        return currentState.copy(
+            currentPageIndex = pageIndex,
+            confirmButtonContent = ButtonContent(
+                title = if (pageIndex == pagesCount - 1) {
+                    Res.string.submit
+                } else {
+                    Res.string.continue_
+                }
+            )
         )
     }
 }
