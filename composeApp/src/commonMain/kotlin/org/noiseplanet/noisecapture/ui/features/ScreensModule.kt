@@ -50,8 +50,8 @@ val screensModule = module {
         OnboardingScreenViewModel()
     }
 
-    viewModel {
-        QuestionnaireScreenViewModel()
+    viewModel { (measurementUuid: String) ->
+        QuestionnaireScreenViewModel(measurementUuid = measurementUuid)
     }
 
     viewModel {

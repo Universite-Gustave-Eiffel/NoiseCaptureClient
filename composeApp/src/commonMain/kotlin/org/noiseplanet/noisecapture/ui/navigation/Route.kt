@@ -62,8 +62,12 @@ open class Route(
                 RouteIds.HISTORY -> HistoryRoute()
                 RouteIds.SETTINGS -> SettingsRoute()
                 RouteIds.COMMUNITY_MAP -> CommunityMapRoute()
-                RouteIds.QUESTIONNAIRE -> QuestionnaireRoute()
                 RouteIds.DEBUG_ROUTE -> DebugRoute()
+
+                RouteIds.QUESTIONNAIRE -> {
+                    val measurementId = pathComponents.getOrNull(1) ?: return null
+                    QuestionnaireRoute(measurementId)
+                }
 
                 RouteIds.DETAILS -> {
                     val measurementId = pathComponents.getOrNull(1) ?: return null
@@ -115,7 +119,12 @@ class CommunityMapRoute : Route(id = RouteIds.COMMUNITY_MAP)
 class CalibrationRoute : Route(id = RouteIds.CALIBRATION)
 
 @Serializable
-class QuestionnaireRoute : Route(id = RouteIds.QUESTIONNAIRE)
+class QuestionnaireRoute(val measurementId: String) : Route(id = RouteIds.QUESTIONNAIRE) {
+
+    override fun toUrlPath(): String {
+        return "$id/$measurementId/questionnaire"
+    }
+}
 
 @Serializable
 class OnboardingWelcomeRoute : Route(id = RouteIds.ONBOARDING_WELCOME)

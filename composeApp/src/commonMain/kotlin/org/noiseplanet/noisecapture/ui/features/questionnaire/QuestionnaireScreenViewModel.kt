@@ -9,16 +9,23 @@ import kotlinx.serialization.json.Json
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.continue_
 import noisecapture.composeapp.generated.resources.questionnaire_title
+import noisecapture.composeapp.generated.resources.skip
 import noisecapture.composeapp.generated.resources.submit
 import org.jetbrains.compose.resources.StringResource
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.model.dao.Questionnaire
+import org.noiseplanet.noisecapture.model.dao.QuestionnaireAnswers
+import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.ui.components.ButtonContent
+import org.noiseplanet.noisecapture.ui.components.appbar.AppBarButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 
 
 class QuestionnaireScreenViewModel(
+    val measurementUuid: String,
     val questionnaireId: String = "soundscape_default_questionnaire",
-) : ViewModel(), ScreenViewModel {
+) : ViewModel(), ScreenViewModel, KoinComponent {
 
     // - Associated types
 
@@ -36,11 +43,25 @@ class QuestionnaireScreenViewModel(
 
     // - Properties
 
+    private val measurementService: MeasurementService by inject()
+
     override val title: StringResource
         get() = Res.string.questionnaire_title
 
+    override val actions: StateFlow<List<AppBarButtonViewModel>> = MutableStateFlow(
+        listOf(
+            AppBarButtonViewModel(
+                icon = null,
+                title = Res.string.skip,
+                onClick = { onQuestionnaireDone?.invoke(measurementUuid) },
+            )
+        )
+    )
+
     private val _viewStateFlow = MutableStateFlow<ViewState>(ViewState.Loading)
     val viewState: StateFlow<ViewState> = _viewStateFlow
+
+    var onQuestionnaireDone: ((measurementUuid: String) -> Unit)? = null
 
 
     // - Lifecycle
@@ -63,13 +84,17 @@ class QuestionnaireScreenViewModel(
 
     // - Public functions
 
-    fun confirmPage() {
+    fun confirmPage(answers: QuestionnaireAnswers) {
         val currentState = viewState.value as? ViewState.QuestionnaireState ?: return
         val currentIndex = currentState.currentPageIndex
         val pagesCount = currentState.questionnaire.pages.size
 
         if (currentIndex == pagesCount - 1) {
-            // TODO: Submit answers and leave questionnaire
+            // If this is the last page, save questionnaire answers and trigger completion callback
+            viewModelScope.launch {
+                measurementService.saveQuestionnaireAnswersForMeasurement(measurementUuid, answers)
+                onQuestionnaireDone?.invoke(measurementUuid)
+            }
         } else {
             viewStateForPage(currentIndex + 1)?.let {
                 _viewStateFlow.tryEmit(it)
@@ -89,7 +114,7 @@ class QuestionnaireScreenViewModel(
 
     // - Private functions
 
-    fun viewStateForPage(pageIndex: Int): ViewState? {
+    private fun viewStateForPage(pageIndex: Int): ViewState? {
         val currentState = viewState.value as? ViewState.QuestionnaireState ?: return null
         val pagesCount = currentState.questionnaire.pages.size
 

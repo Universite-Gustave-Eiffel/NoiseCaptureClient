@@ -50,6 +50,7 @@ import org.noiseplanet.noisecapture.ui.navigation.router.DetailsRouter
 import org.noiseplanet.noisecapture.ui.navigation.router.HistoryRouter
 import org.noiseplanet.noisecapture.ui.navigation.router.HomeRouter
 import org.noiseplanet.noisecapture.ui.navigation.router.OnboardingRouter
+import org.noiseplanet.noisecapture.ui.navigation.router.QuestionnaireRouter
 import org.noiseplanet.noisecapture.ui.navigation.router.RecordingRouter
 
 
@@ -67,8 +68,7 @@ fun NavigationManager(
     val settingsService: UserSettingsService = koinInject()
 
     val didCompleteOnboarding = settingsService.get(SettingsKey.DidCompleteOnboarding)
-    val startDestination =
-        QuestionnaireRoute()//if (didCompleteOnboarding) HomeRoute() else OnboardingWelcomeRoute()
+    val startDestination = if (didCompleteOnboarding) HomeRoute() else OnboardingWelcomeRoute()
 
 
     // - Navigation graph
@@ -158,11 +158,18 @@ fun NavigationManager(
             )
         }
 
-        composable<QuestionnaireRoute> {
-            val screenViewModel: QuestionnaireScreenViewModel = koinViewModel()
+        composable<QuestionnaireRoute> { backStackEntry ->
+            val route: QuestionnaireRoute = backStackEntry.toRoute()
+
+            val screenViewModel: QuestionnaireScreenViewModel = koinViewModel {
+                parametersOf(route.measurementId)
+            }
             appBarState.setCurrentScreenViewModel(screenViewModel)
 
-            QuestionnaireScreen(screenViewModel)
+            QuestionnaireScreen(
+                viewModel = screenViewModel,
+                router = QuestionnaireRouter(navController)
+            )
         }
 
         composable<OnboardingWelcomeRoute> {

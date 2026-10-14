@@ -63,5 +63,5 @@ data class QuestionnaireAnswers(
 @Serializable
 data class QuestionAnswer(
     val questionId: String,
-    val answer: Double,
+    val answer: Float,
 )
