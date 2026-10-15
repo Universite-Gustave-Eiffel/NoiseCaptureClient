@@ -48,6 +48,12 @@ class QuestionnaireScreenViewModel(
     override val title: StringResource
         get() = Res.string.questionnaire_title
 
+    override val hideBackButton: Boolean
+        get() = true
+
+    override val confirmPopBackStack: () -> Boolean
+        get() = { false }
+
     override val actions: StateFlow<List<AppBarButtonViewModel>> = MutableStateFlow(
         listOf(
             AppBarButtonViewModel(

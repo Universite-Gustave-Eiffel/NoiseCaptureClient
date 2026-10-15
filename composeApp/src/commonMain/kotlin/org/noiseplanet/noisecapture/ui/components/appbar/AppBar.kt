@@ -62,7 +62,7 @@ fun AppBar(
             actionIconContentColor = MaterialTheme.colorScheme.onSurface,
         ),
         navigationIcon = {
-            if (canNavigateUp && platform.showAppBarBackButton) {
+            if (canNavigateUp && platform.showAppBarBackButton && !screenViewModel.hideBackButton) {
                 IconButton(onClick = {
                     if (screenViewModel.confirmPopBackStack()) {
                         appBarState.navController.navigateUp()

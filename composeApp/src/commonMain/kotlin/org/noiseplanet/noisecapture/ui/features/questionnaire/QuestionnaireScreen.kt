@@ -24,6 +24,9 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.previous
 import org.noiseplanet.noisecapture.model.dao.Question
@@ -77,6 +80,17 @@ fun QuestionnaireScreen(
     // - Layout
 
     Surface {
+        // Prevent back gestures in questionnaire
+        NavigationBackHandler(
+            state = rememberNavigationEventState(NavigationEventInfo.None),
+            isBackEnabled = true,
+            onBackCompleted = {
+                if (viewModel.confirmPopBackStack()) {
+                    router.popBackStack()
+                }
+            }
+        )
+
         when (viewState) {
             is QuestionnaireScreenViewModel.ViewState.QuestionnaireState -> {
                 val state = viewState as QuestionnaireScreenViewModel.ViewState.QuestionnaireState

@@ -11,11 +11,23 @@ interface ScreenViewModel {
 
     val title: StringResource
 
+    /**
+     *
+     */
     val isAppBarVisible: Boolean
         get() = true
 
+    /**
+     * Actions buttons to be added to the top right corner.
+     */
     val actions: StateFlow<List<AppBarButtonViewModel>>
         get() = MutableStateFlow(emptyList())
+
+    /**
+     * If set to true, hides the back button in the app bar even if 
+     */
+    val hideBackButton: Boolean
+        get() = false
 
     /**
      * Callback triggered when pressing back button.
