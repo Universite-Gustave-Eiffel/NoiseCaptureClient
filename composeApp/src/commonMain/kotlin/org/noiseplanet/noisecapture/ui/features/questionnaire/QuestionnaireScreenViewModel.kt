@@ -24,7 +24,7 @@ import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 
 class QuestionnaireScreenViewModel(
     val measurementUuid: String,
-    val questionnaireId: String = "soundscape_default_questionnaire",
+    val questionnaireId: String = "test_questionnaire",
 ) : ViewModel(), ScreenViewModel, KoinComponent {
 
     // - Associated types

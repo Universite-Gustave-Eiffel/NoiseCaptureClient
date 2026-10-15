@@ -1,0 +1,56 @@
+{
+  "id": "test_questionnaire",
+  "pages": [
+    {
+      "id": "test_questionnaire_1",
+      "index": 0,
+      "title": "First round of testing questions",
+      "description": "Answer each question to proceed to the next page.",
+      "questions": [
+        {
+          "id": "slider_question",
+          "type": "slider",
+          "required": true,
+          "title": "Slider question",
+          "description": "With a nice description that explains everything.",
+          "startLabel": "Absolutely not",
+          "endLabel": "Totally"
+        },
+        {
+          "id": "text_question",
+          "type": "text",
+          "required": true,
+          "title": "Text question",
+          "description": "User can input anything they want here. No validation atm.",
+          "placeholder": "This is a placeholder"
+        }
+      ]
+    },
+    {
+      "id": "test_questionnaire_2",
+      "index": 1,
+      "title": "Second round of test questions",
+      "description": "Some questions here are optional. Leaving them blank should still allow you to end the questionnaire.",
+      "questions": [
+        {
+          "id": "perception_pleasantness",
+          "type": "slider",
+          "required": false,
+          "title": "Pleasantness",
+          "description": null,
+          "startLabel": "Unpleasant",
+          "endLabel": "Pleasant"
+        },
+        {
+          "id": "perception_eventfulness",
+          "type": "slider",
+          "required": true,
+          "title": "Eventfulness",
+          "description": null,
+          "startLabel": "Uneventful",
+          "endLabel": "Eventful"
+        }
+      ]
+    }
+  ]
+}

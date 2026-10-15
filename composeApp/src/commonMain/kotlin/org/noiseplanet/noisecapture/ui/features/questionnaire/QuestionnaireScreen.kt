@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.ui.features.questionnaire
 
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,7 +18,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -29,6 +35,7 @@ import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.previous
+import org.noiseplanet.noisecapture.model.dao.Question
 import org.noiseplanet.noisecapture.model.dao.QuestionAnswer
 import org.noiseplanet.noisecapture.model.dao.QuestionnaireAnswers
 import org.noiseplanet.noisecapture.ui.components.ButtonContent
@@ -47,6 +54,9 @@ fun QuestionnaireScreen(
     // - Properties
 
     val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
+    val focusManager: FocusManager = LocalFocusManager.current
+    val keyboardController: SoftwareKeyboardController? = LocalSoftwareKeyboardController.current
+
     val viewState: QuestionnaireScreenViewModel.ViewState by viewModel.viewState.collectAsStateWithLifecycle()
     val answers = remember { mutableStateMapOf<String, QuestionAnswer>() }
 
@@ -95,7 +105,13 @@ fun QuestionnaireScreen(
                 Column(
                     verticalArrangement = Arrangement.spacedBy(32.dp),
                     modifier = Modifier.verticalScroll(state = rememberScrollState())
-                        .padding(vertical = 24.dp, horizontal = 16.dp),
+                        .padding(vertical = 24.dp, horizontal = 16.dp)
+                        .pointerInput(Unit) {
+                            detectTapGestures {
+                                keyboardController?.hide()
+                                focusManager.clearFocus()
+                            }
+                        },
                 ) {
                     val page = state.questionnaire.pages[state.currentPageIndex]
 
@@ -119,13 +135,31 @@ fun QuestionnaireScreen(
                     }
 
                     for (question in page.questions) {
-                        SliderQuestion(
-                            question = question,
-                            value = answers[question.id]?.answer,
-                            onValueChange = {
-                                answers[question.id] = QuestionAnswer(question.id, it)
-                            }
-                        )
+                        when (question) {
+                            is Question.Slider ->
+                                SliderQuestion(
+                                    question = question,
+                                    value = (answers[question.id] as? QuestionAnswer.Slider)?.value,
+                                    onValueChange = {
+                                        answers[question.id] = QuestionAnswer.Slider(
+                                            questionId = question.id,
+                                            value = it,
+                                        )
+                                    }
+                                )
+
+                            is Question.Text ->
+                                TextQuestion(
+                                    question = question,
+                                    value = (answers[question.id] as? QuestionAnswer.Text)?.value,
+                                    onValueChange = {
+                                        answers[question.id] = QuestionAnswer.Text(
+                                            questionId = question.id,
+                                            value = it,
+                                        )
+                                    }
+                                )
+                        }
                     }
 
                     Row(

@@ -9,6 +9,7 @@
       "questions": [
         {
           "id": "source_traffic",
+          "type": "slider",
           "required": true,
           "title": "Traffic sounds",
           "description": "Cars, trains, planes, motorcycles, ...",
@@ -17,6 +18,7 @@
         },
         {
           "id": "source_human_made",
+          "type": "slider",
           "required": true,
           "title": "Human made sounds",
           "description": "Voices, laughter, footsteps, music, ...",
@@ -25,6 +27,7 @@
         },
         {
           "id": "source_mechanical",
+          "type": "slider",
           "required": true,
           "title": "Other mechanical sounds",
           "description": "Sirens, construction work, industry, ...",
@@ -33,6 +36,7 @@
         },
         {
           "id": "source_natural",
+          "type": "slider",
           "required": true,
           "title": "Natural sounds",
           "description": "Animals, water flowing, wind in vegetation, ...",
@@ -49,6 +53,7 @@
       "questions": [
         {
           "id": "perception_pleasantness",
+          "type": "slider",
           "required": true,
           "title": "Pleasantness",
           "description": null,
@@ -57,6 +62,7 @@
         },
         {
           "id": "perception_eventfulness",
+          "type": "slider",
           "required": true,
           "title": "Eventfulness",
           "description": null,
