@@ -29,13 +29,11 @@ import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.previous
-import org.noiseplanet.noisecapture.model.dao.Question
 import org.noiseplanet.noisecapture.model.dao.QuestionAnswer
 import org.noiseplanet.noisecapture.model.dao.QuestionnaireAnswers
 import org.noiseplanet.noisecapture.ui.components.ButtonContent
 import org.noiseplanet.noisecapture.ui.components.Container
 import org.noiseplanet.noisecapture.ui.components.NCButton
-import org.noiseplanet.noisecapture.ui.components.OptionalSlider
 import org.noiseplanet.noisecapture.ui.components.tertiaryContainerColors
 import org.noiseplanet.noisecapture.ui.navigation.router.QuestionnaireRouter
 import org.noiseplanet.noisecapture.ui.theme.Noise
@@ -49,7 +47,7 @@ fun QuestionnaireScreen(
     // - Properties
 
     val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
-    val viewState: QuestionnaireScreenViewModel.ViewState? by viewModel.viewState.collectAsStateWithLifecycle()
+    val viewState: QuestionnaireScreenViewModel.ViewState by viewModel.viewState.collectAsStateWithLifecycle()
     val answers = remember { mutableStateMapOf<String, QuestionAnswer>() }
 
 
@@ -101,6 +99,10 @@ fun QuestionnaireScreen(
                 ) {
                     val page = state.questionnaire.pages[state.currentPageIndex]
 
+                    // Check if all required questions on this page have been answered
+                    val isValid = answers.values.map { it.questionId }
+                        .containsAll(page.questions.filter { it.required }.map { it.id })
+
                     Container {
                         Column {
                             Text(
@@ -140,6 +142,7 @@ fun QuestionnaireScreen(
                         Spacer(modifier = Modifier.weight(1f))
                         NCButton(
                             content = state.confirmButtonContent,
+                            enabled = isValid,
                             onClick = {
                                 viewModel.confirmPage(
                                     answers = QuestionnaireAnswers(
@@ -156,34 +159,4 @@ fun QuestionnaireScreen(
             else -> return@Surface
         }
     }
-}
-
-@Composable
-fun SliderQuestion(
-    question: Question,
-    value: Float?,
-    onValueChange: (Float) -> Unit,
-) {
-    // - Layout
-
-    Column {
-        Text(text = question.title, style = MaterialTheme.typography.titleSmall)
-        question.description?.let {
-            Text(text = it, style = MaterialTheme.typography.bodySmall)
-        }
-
-        OptionalSlider(
-            value = value,
-            onValueChange = onValueChange,
-        )
-
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text(text = question.startLabel, style = MaterialTheme.typography.bodySmall)
-            Text(text = question.endLabel, style = MaterialTheme.typography.bodySmall)
-        }
-    }
-
 }

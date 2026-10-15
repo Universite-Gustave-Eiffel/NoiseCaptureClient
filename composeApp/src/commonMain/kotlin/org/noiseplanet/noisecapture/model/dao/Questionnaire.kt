@@ -37,11 +37,12 @@ data class Page(
 /**
  * A question in a questionnaire.
  *
- * @param id Unique identifier
- * @param title The question itself
- * @param description More information (optional)
- * @param startLabel Slider start (or left) label
- * @param endLabel Slider end (or right) label
+ * @param id Unique identifier.
+ * @param title The question itself.
+ * @param description More information (optional).
+ * @param startLabel Slider start (or left) label.
+ * @param endLabel Slider end (or right) label.
+ * @param required If true, question must be answered to proceed to next page or submit.
  */
 @Serializable
 data class Question(
@@ -50,9 +51,16 @@ data class Question(
     val description: String?,
     val startLabel: String,
     val endLabel: String,
+    val required: Boolean,
 )
 
 
+/**
+ * Answers to a questionnaire.
+ *
+ * @param questionnaireId Questionnaire identifier.
+ * @param answers Individual questions answers.
+ */
 @Serializable
 data class QuestionnaireAnswers(
     val questionnaireId: String,
@@ -60,6 +68,12 @@ data class QuestionnaireAnswers(
 )
 
 
+/**
+ * Answer to a single question.
+ *
+ * @param questionId Question identifier.
+ * @param answer Answer value.
+ */
 @Serializable
 data class QuestionAnswer(
     val questionId: String,
