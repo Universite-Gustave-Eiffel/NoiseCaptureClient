@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.ui.features.questionnaire
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,8 +22,8 @@ import org.noiseplanet.noisecapture.model.dao.QuestionAnswer
 @Composable
 fun SingleChoiceQuestion(
     question: Question.SingleChoice,
-    value: QuestionAnswer.SingleChoice?,
-    onValueChange: (QuestionAnswer.SingleChoice) -> Unit,
+    answer: QuestionAnswer.SingleChoice?,
+    onAnswerChange: (QuestionAnswer.SingleChoice) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // - Layout
@@ -39,17 +40,18 @@ fun SingleChoiceQuestion(
             question.choices.forEach { choice ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
                         .height(56.dp)
                         .selectable(
-                            selected = value?.value == choice.id,
+                            selected = answer?.value == choice.id,
                             onClick = {
-                                onValueChange(QuestionAnswer.SingleChoice(question.id, choice.id))
+                                onAnswerChange(QuestionAnswer.SingleChoice(question.id, choice.id))
                             }
                         ),
                 ) {
                     RadioButton(
-                        selected = value?.value == choice.id,
+                        selected = answer?.value == choice.id,
                         onClick = null // null recommended for accessibility with screen readers
                     )
                     Text(

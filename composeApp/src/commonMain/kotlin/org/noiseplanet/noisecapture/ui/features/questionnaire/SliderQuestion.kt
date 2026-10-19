@@ -19,8 +19,8 @@ import org.noiseplanet.noisecapture.ui.components.OptionalSlider
 @Composable
 fun SliderQuestion(
     question: Question.Slider,
-    value: QuestionAnswer.Slider?,
-    onValueChange: (QuestionAnswer.Slider) -> Unit,
+    answer: QuestionAnswer.Slider?,
+    onAnswerChange: (QuestionAnswer.Slider) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // - Layout
@@ -34,8 +34,8 @@ fun SliderQuestion(
         Spacer(modifier = Modifier.height(8.dp))
 
         OptionalSlider(
-            value = value?.value,
-            onValueChange = { onValueChange(QuestionAnswer.Slider(question.id, it)) },
+            value = answer?.value,
+            onValueChange = { onAnswerChange(QuestionAnswer.Slider(question.id, it)) },
         )
 
         Row(

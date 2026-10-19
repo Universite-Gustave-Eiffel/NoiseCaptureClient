@@ -48,6 +48,31 @@
               "title": "Option four. This one has a longer title to see how it will be rendered."
             }
           ]
+        },
+        {
+          "id": "multiple_choice_question",
+          "type": "multiple_choice",
+          "required": true,
+          "title": "Multiple choice question",
+          "description": "Multiple choices question, multiple answers can be selected at a time.",
+          "choices": [
+            {
+              "id": "option_one",
+              "title": "Option one"
+            },
+            {
+              "id": "option_two",
+              "title": "Option two"
+            },
+            {
+              "id": "option_three",
+              "title": "Option three"
+            },
+            {
+              "id": "option_four",
+              "title": "Option four. This one has a longer title to see how it will be rendered."
+            }
+          ]
         }
       ]
     },

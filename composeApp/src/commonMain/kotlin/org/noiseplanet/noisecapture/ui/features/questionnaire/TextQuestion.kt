@@ -19,8 +19,8 @@ import org.noiseplanet.noisecapture.ui.theme.Noise
 @Composable
 fun TextQuestion(
     question: Question.Text,
-    value: QuestionAnswer.Text?,
-    onValueChange: (QuestionAnswer.Text) -> Unit,
+    answer: QuestionAnswer.Text?,
+    onAnswerChange: (QuestionAnswer.Text) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // - Layout
@@ -34,8 +34,8 @@ fun TextQuestion(
         Spacer(modifier = Modifier.height(8.dp))
 
         TextField(
-            value = value?.value ?: "",
-            onValueChange = { onValueChange(QuestionAnswer.Text(question.id, it)) },
+            value = answer?.value ?: "",
+            onValueChange = { onAnswerChange(QuestionAnswer.Text(question.id, it)) },
             placeholder = {
                 question.placeholder?.let {
                     Text(

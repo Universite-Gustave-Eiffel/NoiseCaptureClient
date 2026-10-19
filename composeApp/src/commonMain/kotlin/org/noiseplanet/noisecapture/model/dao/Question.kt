@@ -67,13 +67,28 @@ sealed class Question {
     ) : Question()
 
     /**
-     * Multiple choice question with one selectable option
+     * Multiple choice question with one selectable option.
      *
      * @param choices Available answer options.
      */
     @Serializable
     @SerialName("single_choice")
     data class SingleChoice(
+        override val id: String,
+        override val title: String,
+        override val description: String?,
+        override val required: Boolean,
+        val choices: List<Choice>,
+    ) : Question()
+
+    /**
+     * Multiple choice question with multiple selectable options.
+     *
+     * @param choices Available answer options.
+     */
+    @Serializable
+    @SerialName("multiple_choice")
+    data class MultipleChoice(
         override val id: String,
         override val title: String,
         override val description: String?,

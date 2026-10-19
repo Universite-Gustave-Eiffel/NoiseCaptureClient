@@ -48,6 +48,18 @@ sealed class QuestionAnswer {
     @SerialName("single_choice")
     data class SingleChoice(
         override val questionId: String,
-        val value: String
-    ): QuestionAnswer()
+        val value: String,
+    ) : QuestionAnswer()
+
+    /**
+     * Multiple choice question answer.
+     *
+     * @param values Selected choices identifiers.
+     */
+    @Serializable
+    @SerialName("multiple_choice")
+    data class MultipleChoice(
+        override val questionId: String,
+        val values: Set<String>,
+    ) : QuestionAnswer()
 }

@@ -139,22 +139,29 @@ fun QuestionnaireScreen(
                             is Question.Slider ->
                                 SliderQuestion(
                                     question = question,
-                                    value = answers[question.id] as? QuestionAnswer.Slider,
-                                    onValueChange = { answers[question.id] = it }
+                                    answer = answers[question.id] as? QuestionAnswer.Slider,
+                                    onAnswerChange = { answers[question.id] = it }
                                 )
 
                             is Question.Text ->
                                 TextQuestion(
                                     question = question,
-                                    value = answers[question.id] as? QuestionAnswer.Text,
-                                    onValueChange = { answers[question.id] = it }
+                                    answer = answers[question.id] as? QuestionAnswer.Text,
+                                    onAnswerChange = { answers[question.id] = it }
                                 )
 
                             is Question.SingleChoice ->
                                 SingleChoiceQuestion(
                                     question = question,
-                                    value = answers[question.id] as? QuestionAnswer.SingleChoice,
-                                    onValueChange = { answers[question.id] = it }
+                                    answer = answers[question.id] as? QuestionAnswer.SingleChoice,
+                                    onAnswerChange = { answers[question.id] = it }
+                                )
+
+                            is Question.MultipleChoice ->
+                                MultipleChoiceQuestion(
+                                    question = question,
+                                    answer = answers[question.id] as? QuestionAnswer.MultipleChoice,
+                                    onAnswerChange = { answers[question.id] = it }
                                 )
                         }
                     }
