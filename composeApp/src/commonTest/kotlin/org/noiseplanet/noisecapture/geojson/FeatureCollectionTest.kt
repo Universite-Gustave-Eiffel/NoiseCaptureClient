@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.signal.geojson
+package org.noiseplanet.noisecapture.geojson
 
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
