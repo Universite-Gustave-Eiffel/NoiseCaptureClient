@@ -3,7 +3,6 @@ package org.noiseplanet.noisecapture.ui.features.questionnaire
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.selection.selectable
@@ -29,12 +28,7 @@ fun SingleChoiceQuestion(
     // - Layout
 
     Column(modifier = modifier) {
-        Text(text = question.title, style = MaterialTheme.typography.titleSmall)
-        question.description?.let {
-            Text(text = it, style = MaterialTheme.typography.bodySmall)
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
+        QuestionHeader(question)
 
         Column(modifier = Modifier.selectableGroup()) {
             question.choices.forEach { choice ->
