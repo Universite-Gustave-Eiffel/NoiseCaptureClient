@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.ui.features.questionnaire
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
@@ -22,8 +24,6 @@ import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -55,7 +55,7 @@ fun QuestionnaireScreen(
 
     val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
     val focusManager: FocusManager = LocalFocusManager.current
-    val keyboardController: SoftwareKeyboardController? = LocalSoftwareKeyboardController.current
+    val scrollState: ScrollState = rememberScrollState()
 
     val viewState: QuestionnaireScreenViewModel.ViewState by viewModel.viewState.collectAsStateWithLifecycle()
     val answers = remember { mutableStateMapOf<String, QuestionAnswer>() }
@@ -84,6 +84,12 @@ fun QuestionnaireScreen(
         }
     }
 
+    LaunchedEffect(scrollState.isScrollInProgress) {
+        if (scrollState.isScrollInProgress) {
+            focusManager.clearFocus()
+        }
+    }
+
 
     // - Layout
 
@@ -104,13 +110,10 @@ fun QuestionnaireScreen(
                 val state = viewState as QuestionnaireScreenViewModel.ViewState.QuestionnaireState
                 Column(
                     verticalArrangement = Arrangement.spacedBy(32.dp),
-                    modifier = Modifier.verticalScroll(state = rememberScrollState())
+                    modifier = Modifier.verticalScroll(state = scrollState)
                         .padding(vertical = 24.dp, horizontal = 16.dp)
                         .pointerInput(Unit) {
-                            detectTapGestures {
-                                keyboardController?.hide()
-                                focusManager.clearFocus()
-                            }
+                            detectTapGestures { focusManager.clearFocus() }
                         },
                 ) {
                     val page = state.questionnaire.pages[state.currentPageIndex]
