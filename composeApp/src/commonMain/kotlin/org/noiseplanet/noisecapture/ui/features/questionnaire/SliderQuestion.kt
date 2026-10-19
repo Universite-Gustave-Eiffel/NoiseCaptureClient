@@ -12,18 +12,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.noiseplanet.noisecapture.model.dao.Question
+import org.noiseplanet.noisecapture.model.dao.QuestionAnswer
 import org.noiseplanet.noisecapture.ui.components.OptionalSlider
 
 
 @Composable
 fun SliderQuestion(
     question: Question.Slider,
-    value: Float?,
-    onValueChange: (Float) -> Unit,
+    value: QuestionAnswer.Slider?,
+    onValueChange: (QuestionAnswer.Slider) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     // - Layout
 
-    Column {
+    Column(modifier = modifier) {
         Text(text = question.title, style = MaterialTheme.typography.titleSmall)
         question.description?.let {
             Text(text = it, style = MaterialTheme.typography.bodySmall)
@@ -32,8 +34,8 @@ fun SliderQuestion(
         Spacer(modifier = Modifier.height(8.dp))
 
         OptionalSlider(
-            value = value,
-            onValueChange = onValueChange,
+            value = value?.value,
+            onValueChange = { onValueChange(QuestionAnswer.Slider(question.id, it)) },
         )
 
         Row(

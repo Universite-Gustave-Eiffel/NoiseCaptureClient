@@ -13,17 +13,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import org.noiseplanet.noisecapture.model.dao.Question
+import org.noiseplanet.noisecapture.model.dao.QuestionAnswer
 import org.noiseplanet.noisecapture.ui.theme.Noise
 
 @Composable
 fun TextQuestion(
     question: Question.Text,
-    value: String?,
-    onValueChange: (String) -> Unit,
+    value: QuestionAnswer.Text?,
+    onValueChange: (QuestionAnswer.Text) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     // - Layout
 
-    Column {
+    Column(modifier = modifier) {
         Text(text = question.title, style = MaterialTheme.typography.titleSmall)
         question.description?.let {
             Text(text = it, style = MaterialTheme.typography.bodySmall)
@@ -32,8 +34,8 @@ fun TextQuestion(
         Spacer(modifier = Modifier.height(8.dp))
 
         TextField(
-            value = value ?: "",
-            onValueChange = onValueChange,
+            value = value?.value ?: "",
+            onValueChange = { onValueChange(QuestionAnswer.Text(question.id, it)) },
             placeholder = {
                 question.placeholder?.let {
                     Text(

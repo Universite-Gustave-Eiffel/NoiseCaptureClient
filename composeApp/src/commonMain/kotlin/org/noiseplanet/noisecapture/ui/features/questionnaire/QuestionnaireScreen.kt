@@ -139,25 +139,22 @@ fun QuestionnaireScreen(
                             is Question.Slider ->
                                 SliderQuestion(
                                     question = question,
-                                    value = (answers[question.id] as? QuestionAnswer.Slider)?.value,
-                                    onValueChange = {
-                                        answers[question.id] = QuestionAnswer.Slider(
-                                            questionId = question.id,
-                                            value = it,
-                                        )
-                                    }
+                                    value = answers[question.id] as? QuestionAnswer.Slider,
+                                    onValueChange = { answers[question.id] = it }
                                 )
 
                             is Question.Text ->
                                 TextQuestion(
                                     question = question,
-                                    value = (answers[question.id] as? QuestionAnswer.Text)?.value,
-                                    onValueChange = {
-                                        answers[question.id] = QuestionAnswer.Text(
-                                            questionId = question.id,
-                                            value = it,
-                                        )
-                                    }
+                                    value = answers[question.id] as? QuestionAnswer.Text,
+                                    onValueChange = { answers[question.id] = it }
+                                )
+
+                            is Question.SingleChoice ->
+                                SingleChoiceQuestion(
+                                    question = question,
+                                    value = answers[question.id] as? QuestionAnswer.SingleChoice,
+                                    onValueChange = { answers[question.id] = it }
                                 )
                         }
                     }
