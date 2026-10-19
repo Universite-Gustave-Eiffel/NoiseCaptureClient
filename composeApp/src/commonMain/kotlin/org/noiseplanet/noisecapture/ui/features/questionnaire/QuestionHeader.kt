@@ -38,11 +38,11 @@ fun QuestionHeader(
                     }
                 }
             },
-            style = MaterialTheme.typography.titleSmall
+            style = MaterialTheme.typography.titleMedium
         )
 
         question.description?.let {
-            Text(text = it, style = MaterialTheme.typography.bodySmall)
+            Text(text = it, style = MaterialTheme.typography.bodyMedium)
         }
     }
 }

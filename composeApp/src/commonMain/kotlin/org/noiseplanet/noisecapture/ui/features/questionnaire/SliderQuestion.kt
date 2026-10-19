@@ -34,8 +34,8 @@ fun SliderQuestion(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text(text = question.startLabel, style = MaterialTheme.typography.bodySmall)
-            Text(text = question.endLabel, style = MaterialTheme.typography.bodySmall)
+            Text(text = question.startLabel, style = MaterialTheme.typography.labelMedium)
+            Text(text = question.endLabel, style = MaterialTheme.typography.labelMedium)
         }
     }
 }
