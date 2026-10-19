@@ -17,12 +17,23 @@ import kotlin.math.pow
  * Fetches map tiles hosted on remote tile servers through HTTP requests
  * and serves them as byte buffers to be displayed by map-compose.
  *
- * @param tileServerUrl Base URL for the tile server before the tile XYZ indices.
- * @param tms In TMS, the origin of coordinates is the bottom left corner so the Y coordinate goes up.
+ * @param tileServerUrl The template URL string.
+ *        Example: 'https://{s}.mapserver.org/service/{z}/{x}/{y}{r}.png'
+ *        - {z}: Zoom level.
+ *        - {x}: X coordinate.
+ *        - {y}: Y coordinate (adjusted if [tms] is true).
+ *        - {s}: Subdomain (selected from [subdomains] based on tile coordinates).
+ *        - {r}: Retina suffix (renders as "@2x" if [isRetina] is true, otherwise empty).
+ * @param tms If true, treats the Y coordinate as originating from the bottom-left corner.
+ * @param subdomains A list of subdomains used to distribute network load.
+ *        Defaults to ['a', 'b', 'c'].
+ * @param isRetina If true, replaces the {r} placeholder with "@2x" to load high-density tiles.
  */
 class RemoteTileStreamProvider(
     val tileServerUrl: String,
     val tms: Boolean = false,
+    val subdomains: List<String> = listOf("a", "b", "c"),
+    val isRetina: Boolean = false
 ) : TileStreamProvider, KoinComponent {
 
     // - Properties
@@ -45,7 +56,20 @@ class RemoteTileStreamProvider(
             row
         }
 
-        val url = "$tileServerUrl/$zoomLvl/$col/$trueRow.png"
+        //Determine Subdomain (Distribute load based on tile coordinates)
+        // This ensures the same tile always hits the same subdomain (good for caching)
+        val subdomain = if (subdomains.isNotEmpty()) {
+            subdomains[(row + col) % subdomains.size]
+        } else {
+            ""
+        }
+
+        val url = tileServerUrl
+            .replace("{s}", subdomain)
+            .replace("{z}", zoomLvl.toString())
+            .replace("{x}", col.toString())
+            .replace("{y}", trueRow.toString())
+            .replace("{r}", if (isRetina) "@2x" else "")
 
         return runCatching {
             val response = httpClient.get(url)
