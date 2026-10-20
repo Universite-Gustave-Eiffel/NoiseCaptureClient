@@ -18,7 +18,9 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
@@ -41,6 +43,7 @@ import org.noiseplanet.noisecapture.model.dao.QuestionnaireAnswers
 import org.noiseplanet.noisecapture.ui.components.ButtonContent
 import org.noiseplanet.noisecapture.ui.components.Container
 import org.noiseplanet.noisecapture.ui.components.NCButton
+import org.noiseplanet.noisecapture.ui.components.dialog.NCDialog
 import org.noiseplanet.noisecapture.ui.components.tertiaryContainerColors
 import org.noiseplanet.noisecapture.ui.navigation.router.QuestionnaireRouter
 import org.noiseplanet.noisecapture.ui.theme.Noise
@@ -60,6 +63,9 @@ fun QuestionnaireScreen(
     val viewState: QuestionnaireScreenViewModel.ViewState by viewModel.viewState.collectAsStateWithLifecycle()
     val answers = remember { mutableStateMapOf<String, QuestionAnswer>() }
 
+    var showSkipConfirmationPopup by remember { mutableStateOf(false) }
+    var showSubmitConfirmationPopup by remember { mutableStateOf(false) }
+
 
     // - Lifecycle
 
@@ -67,11 +73,23 @@ fun QuestionnaireScreen(
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
                 Lifecycle.Event.ON_RESUME -> {
-                    viewModel.onQuestionnaireDone = router::goToMeasurementDetails
+                    viewModel.listener = object : QuestionnaireScreenViewModel.Listener {
+                        override fun onSkipQuestionnaire() {
+                            showSkipConfirmationPopup = true
+                        }
+
+                        override fun onSubmitQuestionnaire() {
+                            showSubmitConfirmationPopup = true
+                        }
+
+                        override fun shouldNavigateToDetails() {
+                            router.goToMeasurementDetails(viewModel.measurementUuid)
+                        }
+                    }
                 }
 
                 Lifecycle.Event.ON_PAUSE -> {
-                    viewModel.onQuestionnaireDone = null
+                    viewModel.listener = null
                 }
 
                 else -> {}
@@ -98,11 +116,7 @@ fun QuestionnaireScreen(
         NavigationBackHandler(
             state = rememberNavigationEventState(NavigationEventInfo.None),
             isBackEnabled = true,
-            onBackCompleted = {
-                if (viewModel.confirmPopBackStack()) {
-                    router.popBackStack()
-                }
-            }
+            onBackCompleted = {}
         )
 
         when (viewState) {
@@ -185,15 +199,38 @@ fun QuestionnaireScreen(
                             content = state.confirmButtonContent,
                             enabled = isValid,
                             onClick = {
-                                viewModel.confirmPage(
-                                    answers = QuestionnaireAnswers(
-                                        questionnaireId = state.questionnaire.id,
-                                        answers = answers.values.toList()
-                                    )
-                                )
+                                viewModel.confirmPage()
                             }
                         )
                     }
+                }
+
+                if (showSkipConfirmationPopup) {
+                    NCDialog(
+                        viewModel = viewModel.skipConfirmationDialogViewModel,
+                        onConfirm = {
+                            router.goToMeasurementDetails(viewModel.measurementUuid)
+                        },
+                        onDismissRequest = {
+                            showSkipConfirmationPopup = false
+                        },
+                    )
+                }
+                if (showSubmitConfirmationPopup) {
+                    NCDialog(
+                        viewModel = viewModel.submitConfirmationDialogViewModel,
+                        onConfirm = {
+                            viewModel.submitAnswers(
+                                answers = QuestionnaireAnswers(
+                                    questionnaireId = state.questionnaire.id,
+                                    answers = answers.values.toList()
+                                )
+                            )
+                        },
+                        onDismissRequest = {
+                            showSubmitConfirmationPopup = false
+                        },
+                    )
                 }
             }
 

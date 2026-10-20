@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.ui.features.questionnaire
 
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -8,7 +9,12 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.cancel
 import noisecapture.composeapp.generated.resources.continue_
+import noisecapture.composeapp.generated.resources.questionnaire_confirm_skip_body
+import noisecapture.composeapp.generated.resources.questionnaire_confirm_skip_title
+import noisecapture.composeapp.generated.resources.questionnaire_confirm_submit_body
+import noisecapture.composeapp.generated.resources.questionnaire_confirm_submit_title
 import noisecapture.composeapp.generated.resources.questionnaire_title
 import noisecapture.composeapp.generated.resources.skip
 import noisecapture.composeapp.generated.resources.submit
@@ -21,6 +27,9 @@ import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.ui.components.ButtonContent
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBarButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
+import org.noiseplanet.noisecapture.ui.components.dialog.NCDialogViewModel
+import org.noiseplanet.noisecapture.ui.components.tertiaryContainerColors
+import org.noiseplanet.noisecapture.ui.theme.Noise
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 
 
@@ -42,6 +51,13 @@ class QuestionnaireScreenViewModel(
         ) : ViewState
     }
 
+    interface Listener {
+
+        fun onSkipQuestionnaire()
+        fun onSubmitQuestionnaire()
+        fun shouldNavigateToDetails()
+    }
+
 
     // - Properties
 
@@ -50,7 +66,21 @@ class QuestionnaireScreenViewModel(
     private val _viewStateFlow = MutableStateFlow<ViewState>(ViewState.Loading)
     val viewState: StateFlow<ViewState> = _viewStateFlow
 
-    var onQuestionnaireDone: ((measurementUuid: String) -> Unit)? = null
+    val submitConfirmationDialogViewModel = NCDialogViewModel(
+        title = Res.string.questionnaire_confirm_submit_title,
+        text = Res.string.questionnaire_confirm_submit_body,
+        confirmButtonContent = ButtonContent(title = Res.string.submit),
+        confirmButtonColors = Color.Noise.one.tertiaryContainerColors(hasDropShadow = true),
+        dismissButtonContent = ButtonContent(title = Res.string.cancel),
+    )
+    val skipConfirmationDialogViewModel = NCDialogViewModel(
+        title = Res.string.questionnaire_confirm_skip_title,
+        text = Res.string.questionnaire_confirm_skip_body,
+        confirmButtonContent = ButtonContent(title = Res.string.skip),
+        confirmButtonColors = Color.Noise.six.tertiaryContainerColors(hasDropShadow = true),
+        dismissButtonContent = ButtonContent(title = Res.string.cancel),
+    )
+    var listener: Listener? = null
 
     override val title: StringResource
         get() = Res.string.questionnaire_title
@@ -68,7 +98,7 @@ class QuestionnaireScreenViewModel(
                     AppBarButtonViewModel(
                         icon = null,
                         title = Res.string.skip,
-                        onClick = { onQuestionnaireDone?.invoke(measurementUuid) },
+                        onClick = { listener?.onSkipQuestionnaire() },
                     )
                 )
             } else {
@@ -98,17 +128,14 @@ class QuestionnaireScreenViewModel(
 
     // - Public functions
 
-    fun confirmPage(answers: QuestionnaireAnswers) {
+    fun confirmPage() {
         val currentState = viewState.value as? ViewState.QuestionnaireState ?: return
         val currentIndex = currentState.currentPageIndex
         val pagesCount = currentState.questionnaire.pages.size
 
         if (currentIndex == pagesCount - 1) {
-            // If this is the last page, save questionnaire answers and trigger completion callback
-            viewModelScope.launch {
-                measurementService.saveQuestionnaireAnswersForMeasurement(measurementUuid, answers)
-                onQuestionnaireDone?.invoke(measurementUuid)
-            }
+            // If this is the last page, trigger completion callback
+            listener?.onSubmitQuestionnaire()
         } else {
             viewStateForPage(currentIndex + 1)?.let {
                 _viewStateFlow.tryEmit(it)
@@ -122,6 +149,13 @@ class QuestionnaireScreenViewModel(
 
         viewStateForPage(currentIndex - 1)?.let {
             _viewStateFlow.tryEmit(it)
+        }
+    }
+
+    fun submitAnswers(answers: QuestionnaireAnswers) {
+        viewModelScope.launch {
+            measurementService.saveQuestionnaireAnswersForMeasurement(measurementUuid, answers)
+            listener?.shouldNavigateToDetails()
         }
     }
 

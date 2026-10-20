@@ -33,6 +33,7 @@ import androidx.navigationevent.compose.rememberNavigationEventState
 import androidx.window.core.layout.WindowSizeClass
 import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
+import org.noiseplanet.noisecapture.ui.components.dialog.NCDialog
 import org.noiseplanet.noisecapture.ui.components.map.MapLocationUnavailableView
 import org.noiseplanet.noisecapture.ui.components.map.MapView
 import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterView
@@ -127,7 +128,8 @@ fun RecordingScreen(
     }
 
     if (showEndRecordingConfirmationDialog) {
-        EndRecordingConfirmationDialog(
+        NCDialog(
+            viewModel = viewModel.endRecordingConfirmationDialogViewModel,
             onDismissRequest = {
                 viewModel.shouldOpenDetailsOnceDone = true
                 showEndRecordingConfirmationDialog = false

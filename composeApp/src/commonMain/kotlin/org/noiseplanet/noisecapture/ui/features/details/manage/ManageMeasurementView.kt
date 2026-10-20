@@ -36,9 +36,10 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.ui.components.ButtonContent
 import org.noiseplanet.noisecapture.ui.components.NCButton
-import org.noiseplanet.noisecapture.ui.components.NCDialog
 import org.noiseplanet.noisecapture.ui.components.NCDropdownMenu
 import org.noiseplanet.noisecapture.ui.components.NCDropdownMenuItem
+import org.noiseplanet.noisecapture.ui.components.dialog.NCDialog
+import org.noiseplanet.noisecapture.ui.components.dialog.NCDialogViewModel
 import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
 import org.noiseplanet.noisecapture.ui.theme.Noise
 
@@ -187,13 +188,15 @@ fun ManageMeasurementView(
 
     deleteConfirmDialogState?.let {
         NCDialog(
+            viewModel = NCDialogViewModel(
+                title = Res.string.details_delete_measurement_dialog_title,
+                text = it.text,
+                confirmButtonContent = ButtonContent(title = Res.string.delete),
+                confirmButtonColors = Color.Noise.eight.secondaryContainerColors(hasDropShadow = true),
+                dismissButtonContent = ButtonContent(title = Res.string.cancel),
+            ),
             onDismissRequest = it.onDismissRequest,
             onConfirm = it.onConfirm,
-            title = Res.string.details_delete_measurement_dialog_title,
-            text = it.text,
-            confirmButtonContent = ButtonContent(title = Res.string.delete),
-            confirmButtonColors = Color.Noise.eight.secondaryContainerColors(hasDropShadow = true),
-            dismissButtonContent = ButtonContent(title = Res.string.cancel),
         )
     }
 }

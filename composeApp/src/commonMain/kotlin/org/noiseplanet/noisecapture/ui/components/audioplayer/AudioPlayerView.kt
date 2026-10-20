@@ -30,13 +30,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import noisecapture.composeapp.generated.resources.Res
-import noisecapture.composeapp.generated.resources.cancel
 import noisecapture.composeapp.generated.resources.delete
 import noisecapture.composeapp.generated.resources.details_audio_player_description
 import noisecapture.composeapp.generated.resources.details_audio_player_disclaimer
 import noisecapture.composeapp.generated.resources.details_audio_player_title
-import noisecapture.composeapp.generated.resources.details_delete_measurement_audio_dialog_text
-import noisecapture.composeapp.generated.resources.details_delete_measurement_dialog_title
 import noisecapture.composeapp.generated.resources.pause
 import noisecapture.composeapp.generated.resources.play_arrow
 import org.jetbrains.compose.resources.painterResource
@@ -46,9 +43,8 @@ import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.ui.components.ButtonContent
 import org.noiseplanet.noisecapture.ui.components.NCButton
-import org.noiseplanet.noisecapture.ui.components.NCDialog
+import org.noiseplanet.noisecapture.ui.components.dialog.NCDialog
 import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
-import org.noiseplanet.noisecapture.ui.components.transparentContainerColors
 import org.noiseplanet.noisecapture.ui.theme.Noise
 import org.noiseplanet.noisecapture.util.toHhMmSs
 import kotlin.time.Duration
@@ -141,17 +137,12 @@ fun AudioPlayerView(
 
     if (showDeleteConfirmationDialog) {
         NCDialog(
+            viewModel = viewModel.deleteConfirmationDialogViewModel,
             onDismissRequest = { showDeleteConfirmationDialog = false },
             onConfirm = {
                 viewModel.deleteAudioClip()
                 showDeleteConfirmationDialog = false
             },
-            title = Res.string.details_delete_measurement_dialog_title,
-            text = Res.string.details_delete_measurement_audio_dialog_text,
-            confirmButtonContent = ButtonContent(title = Res.string.delete),
-            confirmButtonColors = Color.Noise.eight.secondaryContainerColors(hasDropShadow = true),
-            dismissButtonContent = ButtonContent(title = Res.string.cancel),
-            dismissButtonColors = Color.Noise.one.transparentContainerColors(),
         )
     }
 }
