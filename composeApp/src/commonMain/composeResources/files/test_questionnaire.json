@@ -1,5 +1,6 @@
 {
   "id": "test_questionnaire",
+  "skippable": false,
   "pages": [
     {
       "id": "test_questionnaire_1",

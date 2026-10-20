@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import noisecapture.composeapp.generated.resources.Res
@@ -20,6 +21,7 @@ import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.ui.components.ButtonContent
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBarButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
+import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 
 
 class QuestionnaireScreenViewModel(
@@ -45,6 +47,11 @@ class QuestionnaireScreenViewModel(
 
     private val measurementService: MeasurementService by inject()
 
+    private val _viewStateFlow = MutableStateFlow<ViewState>(ViewState.Loading)
+    val viewState: StateFlow<ViewState> = _viewStateFlow
+
+    var onQuestionnaireDone: ((measurementUuid: String) -> Unit)? = null
+
     override val title: StringResource
         get() = Res.string.questionnaire_title
 
@@ -54,20 +61,21 @@ class QuestionnaireScreenViewModel(
     override val confirmPopBackStack: () -> Boolean
         get() = { false }
 
-    override val actions: StateFlow<List<AppBarButtonViewModel>> = MutableStateFlow(
-        listOf(
-            AppBarButtonViewModel(
-                icon = null,
-                title = Res.string.skip,
-                onClick = { onQuestionnaireDone?.invoke(measurementUuid) },
-            )
-        )
-    )
-
-    private val _viewStateFlow = MutableStateFlow<ViewState>(ViewState.Loading)
-    val viewState: StateFlow<ViewState> = _viewStateFlow
-
-    var onQuestionnaireDone: ((measurementUuid: String) -> Unit)? = null
+    override val actions: StateFlow<List<AppBarButtonViewModel>> = _viewStateFlow.map { state ->
+        (state as? ViewState.QuestionnaireState)?.let {
+            if (it.questionnaire.skippable) {
+                listOf(
+                    AppBarButtonViewModel(
+                        icon = null,
+                        title = Res.string.skip,
+                        onClick = { onQuestionnaireDone?.invoke(measurementUuid) },
+                    )
+                )
+            } else {
+                listOf()
+            }
+        } ?: listOf()
+    }.stateInWhileSubscribed(viewModelScope, listOf())
 
 
     // - Lifecycle

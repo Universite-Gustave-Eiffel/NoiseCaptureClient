@@ -1,5 +1,6 @@
 {
   "id": "soundscape_default_questionnaire",
+  "skippable": true,
   "pages": [
     {
       "id": "soundscape_default_page_sources",
