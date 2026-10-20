@@ -11,7 +11,7 @@
         {
           "id": "source_traffic",
           "type": "slider",
-          "required": true,
+          "required": false,
           "title": "Traffic sounds",
           "description": "Cars, trains, planes, motorcycles, ...",
           "startLabel": "Not at all",
@@ -20,7 +20,7 @@
         {
           "id": "source_human_made",
           "type": "slider",
-          "required": true,
+          "required": false,
           "title": "Human made sounds",
           "description": "Voices, laughter, footsteps, music, ...",
           "startLabel": "Not at all",
@@ -29,7 +29,7 @@
         {
           "id": "source_mechanical",
           "type": "slider",
-          "required": true,
+          "required": false,
           "title": "Other mechanical sounds",
           "description": "Sirens, construction work, industry, ...",
           "startLabel": "Not at all",
@@ -38,7 +38,7 @@
         {
           "id": "source_natural",
           "type": "slider",
-          "required": true,
+          "required": false,
           "title": "Natural sounds",
           "description": "Animals, water flowing, wind in vegetation, ...",
           "startLabel": "Not at all",
@@ -55,7 +55,7 @@
         {
           "id": "perception_pleasantness",
           "type": "slider",
-          "required": true,
+          "required": false,
           "title": "Pleasantness",
           "description": null,
           "startLabel": "Unpleasant",
@@ -64,7 +64,7 @@
         {
           "id": "perception_eventfulness",
           "type": "slider",
-          "required": true,
+          "required": false,
           "title": "Eventfulness",
           "description": null,
           "startLabel": "Uneventful",
