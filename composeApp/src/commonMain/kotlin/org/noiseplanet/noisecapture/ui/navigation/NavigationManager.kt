@@ -124,7 +124,7 @@ fun NavigationManager(
             val route: DetailsRoute = backStackEntry.toRoute()
 
             val screenViewModel: DetailsScreenViewModel = koinViewModel {
-                parametersOf(route.measurementId)
+                parametersOf(route)
             }
             appBarState.setCurrentScreenViewModel(screenViewModel)
 
@@ -162,7 +162,7 @@ fun NavigationManager(
             val route: QuestionnaireRoute = backStackEntry.toRoute()
 
             val screenViewModel: QuestionnaireScreenViewModel = koinViewModel {
-                parametersOf(route.measurementId)
+                parametersOf(route)
             }
             appBarState.setCurrentScreenViewModel(screenViewModel)
 

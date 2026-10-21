@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -31,12 +32,18 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowSizeClass
 import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.assignment
 import noisecapture.composeapp.generated.resources.details_loading_hint
+import noisecapture.composeapp.generated.resources.details_questionnaire_description
+import noisecapture.composeapp.generated.resources.details_questionnaire_show_recap_button
+import noisecapture.composeapp.generated.resources.details_questionnaire_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
+import org.noiseplanet.noisecapture.ui.components.ButtonContent
 import org.noiseplanet.noisecapture.ui.components.Container
 import org.noiseplanet.noisecapture.ui.components.ContainerDefaults
+import org.noiseplanet.noisecapture.ui.components.NCButton
 import org.noiseplanet.noisecapture.ui.components.audioplayer.AudioPlayerView
 import org.noiseplanet.noisecapture.ui.components.map.MapView
 import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
@@ -75,7 +82,7 @@ fun DetailsScreen(
                 is DetailsScreenViewModel.ViewState.ContentReady -> {
                     Box(contentAlignment = Alignment.BottomCenter) {
                         if (sizeClass.minWidthDp < WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) {
-                            DetailsScreenCompact(viewState)
+                            DetailsScreenCompact(viewState, router)
                         } else if (sizeClass.minWidthDp < WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND) {
                             DetailsScreenMedium(viewState)
                         } else {
@@ -268,6 +275,7 @@ private fun DetailsScreenMedium(
 @Composable
 private fun DetailsScreenCompact(
     viewState: DetailsScreenViewModel.ViewState.ContentReady,
+    router: DetailsRouter,
 ) {
     // - Properties
 
@@ -313,11 +321,19 @@ private fun DetailsScreenCompact(
             if (summary.avgLevelPerFreq.isNotEmpty()) {
                 AverageLevelPerFreqView(avgLevelPerFreq = summary.avgLevelPerFreq)
             }
+        }
 
-            ManageMeasurementView(
+        viewState.measurement.questionnaireAnswers?.let {
+            QuestionnaireRecapView(
+                questionnaireId = it.questionnaireId,
                 measurementId = viewState.measurement.uuid,
+                router = router
             )
         }
+
+        ManageMeasurementView(
+            measurementId = viewState.measurement.uuid,
+        )
     }
 }
 
@@ -341,6 +357,40 @@ private fun ContentLoadingView() {
             text = stringResource(Res.string.details_loading_hint),
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center
+        )
+    }
+}
+
+
+@Composable
+private fun QuestionnaireRecapView(
+    questionnaireId: String,
+    measurementId: String,
+    router: DetailsRouter,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Text(
+            text = stringResource(Res.string.details_questionnaire_title),
+            style = MaterialTheme.typography.titleMedium,
+        )
+        Text(
+            text = stringResource(Res.string.details_questionnaire_description),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+
+        NCButton(
+            content = ButtonContent(
+                title = Res.string.details_questionnaire_show_recap_button,
+                icon = Res.drawable.assignment,
+            ),
+            onClick = { router.goToQuestionnaireRecap(measurementId, questionnaireId) },
+            colors = Color.Noise.five.secondaryContainerColors(hasDropShadow = true)
         )
     }
 }

@@ -16,7 +16,7 @@ class QuestionnaireRouter(navController: NavHostController) : Router(navControll
             // When exiting questionnaire, show the measurement details route but
             // remove questionnaire from backstack so that going back brings the user
             // directly to the recording page again.
-            popUpTo(QuestionnaireRoute(uuid)) { inclusive = true }
+            popUpTo<QuestionnaireRoute> { inclusive = true }
             launchSingleTop = true
         }
     }

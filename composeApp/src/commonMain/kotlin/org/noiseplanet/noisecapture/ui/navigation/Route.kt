@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.ui.navigation
 
+import io.ktor.http.Url
 import kotlinx.serialization.Serializable
 
 
@@ -53,8 +54,8 @@ open class Route(
          * @return Corresponding route, or null if couldn't match to any route.
          */
         fun fromUrlPath(urlPath: String): Route? {
-            val pathComponents = urlPath.split("/")
-            val routeId = pathComponents.firstOrNull() ?: return null
+            val url = Url(urlPath)
+            val routeId = url.segments.firstOrNull() ?: return null
 
             return when (routeId) {
                 RouteIds.HOME -> HomeRoute()
@@ -65,12 +66,14 @@ open class Route(
                 RouteIds.DEBUG_ROUTE -> DebugRoute()
 
                 RouteIds.QUESTIONNAIRE -> {
-                    val measurementId = pathComponents.getOrNull(1) ?: return null
-                    QuestionnaireRoute(measurementId)
+                    val measurementId = url.segments.getOrNull(1) ?: return null
+                    val questionnaireId = url.segments.getOrNull(2) ?: return null
+                    val isReviewMode = url.segments.getOrNull(3) == "review"
+                    QuestionnaireRoute(measurementId, questionnaireId, isReviewMode)
                 }
 
                 RouteIds.DETAILS -> {
-                    val measurementId = pathComponents.getOrNull(1) ?: return null
+                    val measurementId = url.segments.getOrNull(1) ?: return null
                     DetailsRoute(measurementId)
                 }
 
@@ -119,10 +122,18 @@ class CommunityMapRoute : Route(id = RouteIds.COMMUNITY_MAP)
 class CalibrationRoute : Route(id = RouteIds.CALIBRATION)
 
 @Serializable
-class QuestionnaireRoute(val measurementId: String) : Route(id = RouteIds.QUESTIONNAIRE) {
+class QuestionnaireRoute(
+    val measurementId: String,
+    val questionnaireId: String,
+    val isReviewMode: Boolean,
+) : Route(id = RouteIds.QUESTIONNAIRE) {
 
     override fun toUrlPath(): String {
-        return "$id/$measurementId/questionnaire"
+        return if (isReviewMode) {
+            "$id/$measurementId/$questionnaireId/review"
+        } else {
+            "$id/$measurementId/$questionnaireId"
+        }
     }
 }
 

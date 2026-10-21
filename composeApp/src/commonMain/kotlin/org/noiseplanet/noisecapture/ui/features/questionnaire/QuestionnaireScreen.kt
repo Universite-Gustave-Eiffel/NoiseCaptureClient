@@ -79,11 +79,15 @@ fun QuestionnaireScreen(
                         }
 
                         override fun onSubmitQuestionnaire() {
-                            showSubmitConfirmationPopup = true
+                            if (viewModel.isReviewMode) {
+                                router.popBackStack()
+                            } else {
+                                showSubmitConfirmationPopup = true
+                            }
                         }
 
                         override fun shouldNavigateToDetails() {
-                            router.goToMeasurementDetails(viewModel.measurementUuid)
+                            router.goToMeasurementDetails(viewModel.measurementId)
                         }
                     }
                 }
@@ -122,6 +126,12 @@ fun QuestionnaireScreen(
         when (viewState) {
             is QuestionnaireScreenViewModel.ViewState.QuestionnaireState -> {
                 val state = viewState as QuestionnaireScreenViewModel.ViewState.QuestionnaireState
+
+                // If user has already filled in the questionnaire (review mode), fill in each answer
+                state.previousAnswers?.answers?.forEach {
+                    answers[it.questionId] = it
+                }
+
                 Column(
                     verticalArrangement = Arrangement.spacedBy(32.dp),
                     modifier = Modifier.verticalScroll(state = scrollState)
@@ -131,10 +141,11 @@ fun QuestionnaireScreen(
                         },
                 ) {
                     val page = state.questionnaire.pages[state.currentPageIndex]
+                    val requiredQuestionsIds = page.questions.filter { it.required }.map { it.id }
 
                     // Check if all required questions on this page have been answered
                     val isValid = answers.values.map { it.questionId }
-                        .containsAll(page.questions.filter { it.required }.map { it.id })
+                        .containsAll(requiredQuestionsIds)
 
                     Container {
                         Column {
@@ -197,7 +208,7 @@ fun QuestionnaireScreen(
                         Spacer(modifier = Modifier.weight(1f))
                         NCButton(
                             content = state.confirmButtonContent,
-                            enabled = isValid,
+                            enabled = isValid || viewModel.isReviewMode,
                             onClick = {
                                 viewModel.confirmPage()
                             }
@@ -209,7 +220,7 @@ fun QuestionnaireScreen(
                     NCDialog(
                         viewModel = viewModel.skipConfirmationDialogViewModel,
                         onConfirm = {
-                            router.goToMeasurementDetails(viewModel.measurementUuid)
+                            router.goToMeasurementDetails(viewModel.measurementId)
                         },
                         onDismissRequest = {
                             showSkipConfirmationPopup = false

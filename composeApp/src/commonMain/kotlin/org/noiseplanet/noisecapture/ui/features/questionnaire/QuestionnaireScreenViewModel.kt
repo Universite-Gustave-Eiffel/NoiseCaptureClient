@@ -10,7 +10,8 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.cancel
-import noisecapture.composeapp.generated.resources.continue_
+import noisecapture.composeapp.generated.resources.done
+import noisecapture.composeapp.generated.resources.next
 import noisecapture.composeapp.generated.resources.questionnaire_confirm_skip_body
 import noisecapture.composeapp.generated.resources.questionnaire_confirm_skip_title
 import noisecapture.composeapp.generated.resources.questionnaire_confirm_submit_body
@@ -33,9 +34,17 @@ import org.noiseplanet.noisecapture.ui.theme.Noise
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 
 
+/**
+ * View model for the questionnaire screen.
+ *
+ * @param measurementId Identifier of the measurement tied to this questionnaire submission?
+ * @param isReviewMode If true, all controls are disabled, only shows what the user previously answered.
+ * @param questionnaireId Identifier of the questionnaire.
+ */
 class QuestionnaireScreenViewModel(
-    val measurementUuid: String,
-    val questionnaireId: String = "soundscape_default_questionnaire",
+    val measurementId: String,
+    val questionnaireId: String,
+    val isReviewMode: Boolean,
 ) : ViewModel(), ScreenViewModel, KoinComponent {
 
     // - Associated types
@@ -48,6 +57,7 @@ class QuestionnaireScreenViewModel(
             val questionnaire: Questionnaire,
             val currentPageIndex: Int,
             val confirmButtonContent: ButtonContent,
+            val previousAnswers: QuestionnaireAnswers?,
         ) : ViewState
     }
 
@@ -86,14 +96,11 @@ class QuestionnaireScreenViewModel(
         get() = Res.string.questionnaire_title
 
     override val hideBackButton: Boolean
-        get() = true
-
-    override val confirmPopBackStack: () -> Boolean
-        get() = { false }
+        get() = !isReviewMode
 
     override val actions: StateFlow<List<AppBarButtonViewModel>> = _viewStateFlow.map { state ->
         (state as? ViewState.QuestionnaireState)?.let {
-            if (it.questionnaire.skippable) {
+            if (it.questionnaire.skippable && !isReviewMode) {
                 listOf(
                     AppBarButtonViewModel(
                         icon = null,
@@ -115,11 +122,23 @@ class QuestionnaireScreenViewModel(
             val questionnaireData = Res.readBytes("files/$questionnaireId.json").decodeToString()
             val questionnaire = Json.decodeFromString<Questionnaire>(questionnaireData)
 
+            // If we're in review mode (user has already answered the questionnaire), load previous
+            // answers from measurement data.
+            val answers = if (isReviewMode) {
+                measurementService.getMeasurement(measurementId)?.questionnaireAnswers
+            } else {
+                null
+            }
+
             _viewStateFlow.tryEmit(
                 ViewState.QuestionnaireState(
                     questionnaire = questionnaire,
                     currentPageIndex = 0,
-                    confirmButtonContent = ButtonContent(title = Res.string.continue_),
+                    confirmButtonContent = confirmButtonForPage(
+                        pagesCount = questionnaire.pages.size,
+                        pageIndex = 0
+                    ),
+                    previousAnswers = answers,
                 )
             )
         }
@@ -137,9 +156,15 @@ class QuestionnaireScreenViewModel(
             // If this is the last page, trigger completion callback
             listener?.onSubmitQuestionnaire()
         } else {
-            viewStateForPage(currentIndex + 1)?.let {
-                _viewStateFlow.tryEmit(it)
-            }
+            _viewStateFlow.tryEmit(
+                currentState.copy(
+                    currentPageIndex = currentIndex + 1,
+                    confirmButtonContent = confirmButtonForPage(
+                        pagesCount = currentState.questionnaire.pages.size,
+                        pageIndex = currentIndex + 1
+                    )
+                )
+            )
         }
     }
 
@@ -147,14 +172,20 @@ class QuestionnaireScreenViewModel(
         val currentState = viewState.value as? ViewState.QuestionnaireState ?: return
         val currentIndex = currentState.currentPageIndex
 
-        viewStateForPage(currentIndex - 1)?.let {
-            _viewStateFlow.tryEmit(it)
-        }
+        _viewStateFlow.tryEmit(
+            currentState.copy(
+                currentPageIndex = currentIndex - 1,
+                confirmButtonContent = confirmButtonForPage(
+                    pagesCount = currentState.questionnaire.pages.size,
+                    pageIndex = currentIndex - 1
+                )
+            )
+        )
     }
 
     fun submitAnswers(answers: QuestionnaireAnswers) {
         viewModelScope.launch {
-            measurementService.saveQuestionnaireAnswersForMeasurement(measurementUuid, answers)
+            measurementService.saveQuestionnaireAnswersForMeasurement(measurementId, answers)
             listener?.shouldNavigateToDetails()
         }
     }
@@ -162,19 +193,19 @@ class QuestionnaireScreenViewModel(
 
     // - Private functions
 
-    private fun viewStateForPage(pageIndex: Int): ViewState? {
-        val currentState = viewState.value as? ViewState.QuestionnaireState ?: return null
-        val pagesCount = currentState.questionnaire.pages.size
-
-        return currentState.copy(
-            currentPageIndex = pageIndex,
-            confirmButtonContent = ButtonContent(
-                title = if (pageIndex == pagesCount - 1) {
-                    Res.string.submit
-                } else {
-                    Res.string.continue_
-                }
-            )
-        )
+    private fun confirmButtonForPage(
+        pagesCount: Int,
+        pageIndex: Int,
+    ): ButtonContent {
+        val title = if (pageIndex == pagesCount - 1) {
+            if (isReviewMode) {
+                Res.string.done
+            } else {
+                Res.string.submit
+            }
+        } else {
+            Res.string.next
+        }
+        return ButtonContent(title)
     }
 }
