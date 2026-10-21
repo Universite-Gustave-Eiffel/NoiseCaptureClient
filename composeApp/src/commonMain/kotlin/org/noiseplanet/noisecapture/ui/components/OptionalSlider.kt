@@ -39,6 +39,7 @@ fun OptionalSlider(
         inactiveTrackColor = Color.Noise.two.light,
         inactiveTickColor = Color.Noise.two.dark,
     ),
+    enabled: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     // - Properties
@@ -65,6 +66,7 @@ fun OptionalSlider(
                 )
             }
         },
+        enabled = enabled,
         modifier = modifier.fillMaxWidth(),
     )
 }

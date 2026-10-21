@@ -8,6 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import org.noiseplanet.noisecapture.model.dao.Question
 import org.noiseplanet.noisecapture.model.dao.QuestionAnswer
 import org.noiseplanet.noisecapture.ui.components.OptionalSlider
@@ -19,6 +20,7 @@ fun SliderQuestion(
     answer: QuestionAnswer.Slider?,
     onAnswerChange: (QuestionAnswer.Slider) -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     // - Layout
 
@@ -28,6 +30,8 @@ fun SliderQuestion(
         OptionalSlider(
             value = answer?.value,
             onValueChange = { onAnswerChange(QuestionAnswer.Slider(question.id, it)) },
+            enabled = enabled,
+            modifier = Modifier.alpha(if (enabled) 1.0f else 0.5f),
         )
 
         Row(

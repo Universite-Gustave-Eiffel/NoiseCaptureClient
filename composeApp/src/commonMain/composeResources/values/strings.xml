@@ -161,6 +161,7 @@
     <string name="questionnaire_confirm_submit_body">Thank you for taking the time to fill in this questionnaire! Please note that you won't be able to edit your answers after submitting.</string>
     <string name="questionnaire_confirm_skip_title">Skip the questionnaire</string>
     <string name="questionnaire_confirm_skip_body">Are you sure you want to skip this questionnaire? Please note that you won't be able to go back and answer it later.</string>
+    <string name="questionnaire_review_disclaimer">You already answered this questionnaire. You can review your answers here but cannot edit them.</string>
 
 
     <!-- Settings -->

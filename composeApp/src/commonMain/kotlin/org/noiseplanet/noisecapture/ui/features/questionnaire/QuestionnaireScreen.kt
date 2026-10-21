@@ -37,6 +37,8 @@ import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.previous
+import noisecapture.composeapp.generated.resources.questionnaire_review_disclaimer
+import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.model.dao.Question
 import org.noiseplanet.noisecapture.model.dao.QuestionAnswer
 import org.noiseplanet.noisecapture.model.dao.QuestionnaireAnswers
@@ -44,6 +46,7 @@ import org.noiseplanet.noisecapture.ui.components.ButtonContent
 import org.noiseplanet.noisecapture.ui.components.Container
 import org.noiseplanet.noisecapture.ui.components.NCButton
 import org.noiseplanet.noisecapture.ui.components.dialog.NCDialog
+import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
 import org.noiseplanet.noisecapture.ui.components.tertiaryContainerColors
 import org.noiseplanet.noisecapture.ui.navigation.router.QuestionnaireRouter
 import org.noiseplanet.noisecapture.ui.theme.Noise
@@ -147,6 +150,15 @@ fun QuestionnaireScreen(
                     val isValid = answers.values.map { it.questionId }
                         .containsAll(requiredQuestionsIds)
 
+                    if (viewModel.isReviewMode) {
+                        Container(colors = Color.Noise.eleven.secondaryContainerColors()) {
+                            Text(
+                                text = stringResource(Res.string.questionnaire_review_disclaimer),
+                                style = MaterialTheme.typography.labelMedium,
+                            )
+                        }
+                    }
+
                     Container {
                         Column {
                             Text(
@@ -168,28 +180,32 @@ fun QuestionnaireScreen(
                                 SliderQuestion(
                                     question = question,
                                     answer = answers[question.id] as? QuestionAnswer.Slider,
-                                    onAnswerChange = { answers[question.id] = it }
+                                    onAnswerChange = { answers[question.id] = it },
+                                    enabled = !viewModel.isReviewMode,
                                 )
 
                             is Question.Text ->
                                 TextQuestion(
                                     question = question,
                                     answer = answers[question.id] as? QuestionAnswer.Text,
-                                    onAnswerChange = { answers[question.id] = it }
+                                    onAnswerChange = { answers[question.id] = it },
+                                    enabled = !viewModel.isReviewMode,
                                 )
 
                             is Question.SingleChoice ->
                                 SingleChoiceQuestion(
                                     question = question,
                                     answer = answers[question.id] as? QuestionAnswer.SingleChoice,
-                                    onAnswerChange = { answers[question.id] = it }
+                                    onAnswerChange = { answers[question.id] = it },
+                                    enabled = !viewModel.isReviewMode,
                                 )
 
                             is Question.MultipleChoice ->
                                 MultipleChoiceQuestion(
                                     question = question,
                                     answer = answers[question.id] as? QuestionAnswer.MultipleChoice,
-                                    onAnswerChange = { answers[question.id] = it }
+                                    onAnswerChange = { answers[question.id] = it },
+                                    enabled = !viewModel.isReviewMode,
                                 )
                         }
                     }

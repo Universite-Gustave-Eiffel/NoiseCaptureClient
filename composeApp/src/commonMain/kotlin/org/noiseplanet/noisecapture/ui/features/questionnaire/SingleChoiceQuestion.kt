@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import org.noiseplanet.noisecapture.model.dao.Question
 import org.noiseplanet.noisecapture.model.dao.QuestionAnswer
@@ -24,6 +25,7 @@ fun SingleChoiceQuestion(
     answer: QuestionAnswer.SingleChoice?,
     onAnswerChange: (QuestionAnswer.SingleChoice) -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     // - Layout
 
@@ -46,7 +48,9 @@ fun SingleChoiceQuestion(
                 ) {
                     RadioButton(
                         selected = answer?.value == choice.id,
-                        onClick = null // null recommended for accessibility with screen readers
+                        onClick = null, // null recommended for accessibility with screen readers
+                        enabled = enabled,
+                        modifier = Modifier.alpha(if (enabled) 1.0f else 0.5f),
                     )
                     Text(
                         text = choice.title,

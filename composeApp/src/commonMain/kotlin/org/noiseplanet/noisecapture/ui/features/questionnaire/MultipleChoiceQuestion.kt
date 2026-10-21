@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import org.noiseplanet.noisecapture.model.dao.Question
 import org.noiseplanet.noisecapture.model.dao.QuestionAnswer
@@ -24,6 +25,7 @@ fun MultipleChoiceQuestion(
     answer: QuestionAnswer.MultipleChoice?,
     onAnswerChange: (QuestionAnswer.MultipleChoice) -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     // - Layout
 
@@ -57,7 +59,9 @@ fun MultipleChoiceQuestion(
                 ) {
                     Checkbox(
                         checked = isSelected,
-                        onCheckedChange = null // null recommended for accessibility with screen readers
+                        enabled = enabled,
+                        onCheckedChange = null, // null recommended for accessibility with screen readers
+                        modifier = Modifier.alpha(if (enabled) 1.0f else 0.5f),
                     )
                     Text(
                         text = choice.title,

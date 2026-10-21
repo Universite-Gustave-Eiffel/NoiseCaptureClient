@@ -8,6 +8,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import org.noiseplanet.noisecapture.model.dao.Question
 import org.noiseplanet.noisecapture.model.dao.QuestionAnswer
@@ -19,6 +20,7 @@ fun TextQuestion(
     answer: QuestionAnswer.Text?,
     onAnswerChange: (QuestionAnswer.Text) -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     // - Layout
 
@@ -41,12 +43,15 @@ fun TextQuestion(
                 unfocusedContainerColor = Color.Noise.two.light,
                 focusedContainerColor = Color.Noise.two.light,
                 disabledContainerColor = Color.Noise.two.light,
+                disabledTextColor = MaterialTheme.colorScheme.onSurface,
                 errorContainerColor = Color.Noise.eight.light,
                 errorTextColor = Color.Noise.eight.dark,
                 errorCursorColor = Color.Noise.eight.dark,
             ),
             textStyle = MaterialTheme.typography.bodyMedium,
+            enabled = enabled,
             modifier = Modifier.fillMaxWidth()
+                .alpha(if (enabled) 1.0f else 0.5f),
         )
     }
 }
