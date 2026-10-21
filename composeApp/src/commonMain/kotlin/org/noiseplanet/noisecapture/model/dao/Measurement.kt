@@ -20,6 +20,7 @@ val Measurement.Companion.VERSION: Int get() = 3
  * @param locationSequenceIds Unique identifiers of location sequence fragments for this measurement.
  * @param leqsSequenceIds Unique identifiers of leq sequence fragments for this measurement.
  * @param recordedAudioUrl If audio recording is enabled, URL of the local audio recording.
+ * @param questionnaireAnswers Answers to questionnaire(s) following this measurement.
  */
 @Serializable
 data class Measurement(
@@ -38,6 +39,8 @@ data class Measurement(
 
     val summary: MeasurementSummary? = null,
     val recordedAudioUrl: String? = null,
+
+    val questionnaireAnswers: QuestionnaireAnswers? = null,
 )
 
 /**

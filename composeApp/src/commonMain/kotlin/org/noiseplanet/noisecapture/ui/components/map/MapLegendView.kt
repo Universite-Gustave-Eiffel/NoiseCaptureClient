@@ -20,7 +20,7 @@ import noisecapture.composeapp.generated.resources.map_legend_title
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.ui.components.ButtonContent
 import org.noiseplanet.noisecapture.ui.components.NCButton
-import org.noiseplanet.noisecapture.ui.components.NCDialog
+import org.noiseplanet.noisecapture.ui.components.dialog.NCDialog
 import org.noiseplanet.noisecapture.ui.components.transparentContainerColors
 import org.noiseplanet.noisecapture.ui.theme.Noise
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp

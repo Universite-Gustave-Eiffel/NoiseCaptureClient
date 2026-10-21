@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.semantics.Role
@@ -40,26 +41,30 @@ fun Container(
     colors: ContainerColors = ContainerDefaults.Colors,
     contentAlignment: Alignment = Alignment.TopStart,
     onClick: (() -> Unit)? = null,
-    enabled: Boolean = false,
+    enabled: Boolean = true,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
+    var endModifier = modifier.alpha(if (enabled) 1.0f else 0.5f)
+        .semantics { role = Role.Button }
+        .ncDropShadow(
+            shape = shape,
+            color = if (enabled) colors.shadowColor ?: Color.Transparent else Color.Transparent
+        )
+        .background(color = colors.backgroundColor, shape = shape)
+        .border(
+            color = colors.borderColor ?: Color.Transparent,
+            width = 1.dp,
+            shape = shape
+        )
+    onClick?.let {
+        endModifier = endModifier.clickable(enabled = enabled, onClick = onClick)
+    }
+    endModifier = endModifier.padding(contentPadding)
+
     Box(
         contentAlignment = contentAlignment,
-        modifier = modifier
-            .semantics { role = Role.Button }
-            .ncDropShadow(
-                shape = shape,
-                color = colors.shadowColor ?: Color.Transparent
-            )
-            .background(color = colors.backgroundColor, shape = shape)
-            .border(
-                color = colors.borderColor ?: Color.Transparent,
-                width = 1.dp,
-                shape = shape
-            )
-            .clickable(enabled = enabled, onClick = onClick ?: {})
-            .padding(contentPadding)
+        modifier = endModifier
     ) {
         CompositionLocalProvider(
             LocalContentColor provides colors.contentColor,

@@ -31,7 +31,6 @@ fun NCButton(
     colors: ContainerColors = NCButtonDefaults.colors(),
     textStyle: TextStyle = NCButtonDefaults.textStyle(),
     enabled: Boolean = true,
-    modifier: Modifier = Modifier,
     content: ButtonContent,
     onClick: () -> Unit,
     contentPadding: PaddingValues = if (content.icon == null && content.title != null) {
@@ -41,6 +40,7 @@ fun NCButton(
     } else {
         NCButtonDefaults.IconAndTextContentPadding
     },
+    modifier: Modifier = Modifier,
 ) {
     Container(
         contentPadding = contentPadding,
