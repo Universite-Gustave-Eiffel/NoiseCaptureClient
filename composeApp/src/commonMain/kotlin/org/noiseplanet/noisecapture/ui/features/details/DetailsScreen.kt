@@ -390,7 +390,7 @@ private fun QuestionnaireRecapView(
                 icon = Res.drawable.assignment,
             ),
             onClick = { router.goToQuestionnaireRecap(measurementId, questionnaireId) },
-            colors = Color.Noise.five.secondaryContainerColors(hasDropShadow = true)
+            colors = Color.Noise.eleven.secondaryContainerColors()
         )
     }
 }

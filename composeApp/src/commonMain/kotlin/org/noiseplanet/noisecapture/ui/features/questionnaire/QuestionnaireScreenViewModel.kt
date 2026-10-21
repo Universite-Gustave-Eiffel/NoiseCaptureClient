@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.cancel
-import noisecapture.composeapp.generated.resources.done
+import noisecapture.composeapp.generated.resources.exit
 import noisecapture.composeapp.generated.resources.next
 import noisecapture.composeapp.generated.resources.questionnaire_confirm_skip_body
 import noisecapture.composeapp.generated.resources.questionnaire_confirm_skip_title
@@ -199,7 +199,7 @@ class QuestionnaireScreenViewModel(
     ): ButtonContent {
         val title = if (pageIndex == pagesCount - 1) {
             if (isReviewMode) {
-                Res.string.done
+                Res.string.exit
             } else {
                 Res.string.submit
             }

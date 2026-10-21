@@ -123,7 +123,7 @@
 
     <string name="details_questionnaire_title">Questionnaire</string>
     <string name="details_questionnaire_description">You filled in a questionnaire after recording this measurement. You can review your answers by pressing the button below.</string>
-    <string name="details_questionnaire_show_recap_button">Submission recap</string>
+    <string name="details_questionnaire_show_recap_button">Review answers</string>
 
     <string name="details_manage_title">Manage measurement</string>
     <string name="details_manage_description">Deleting long measurements can help freeing up disk space if needed. Recorded audio can be deleted separately from the rest of the measurement data. Note that this is only the local copy of the measurement, deleting it won't delete it from our server if you've already synced it. However, the associated audio file is never synced and is only for your personal use.</string>
@@ -332,4 +332,5 @@
     <string name="next">Next</string>
     <string name="previous">Previous</string>
     <string name="done">Done</string>
+    <string name="exit">Exit</string>
 </resources>
