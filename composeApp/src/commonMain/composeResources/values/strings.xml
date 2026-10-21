@@ -121,6 +121,10 @@
     <string name="details_rne_plot_title">Repartition of Noise Exposure (RNE)</string>
     <string name="details_rne_plot_description">Represents the percentage of total measurement time where sound level was between the corresponding boundaries.</string>
 
+    <string name="details_questionnaire_title">Questionnaire</string>
+    <string name="details_questionnaire_description">You filled in a questionnaire after recording this measurement. You can review your answers by pressing the button below.</string>
+    <string name="details_questionnaire_show_recap_button">Review answers</string>
+
     <string name="details_manage_title">Manage measurement</string>
     <string name="details_manage_description">Deleting long measurements can help freeing up disk space if needed. Recorded audio can be deleted separately from the rest of the measurement data. Note that this is only the local copy of the measurement, deleting it won't delete it from our server if you've already synced it. However, the associated audio file is never synced and is only for your personal use.</string>
     <string name="details_audio_size">Audio file size: </string>
@@ -149,6 +153,15 @@
 
     <!-- CommunityMapScreen -->
     <string name="community_map_title">Community measurements</string>
+
+
+    <!-- QuestionnaireScreen -->
+    <string name="questionnaire_title">Questionnaire</string>
+    <string name="questionnaire_confirm_submit_title">Submit your answers</string>
+    <string name="questionnaire_confirm_submit_body">Thank you for taking the time to fill in this questionnaire! Please note that you won't be able to edit your answers after submitting.</string>
+    <string name="questionnaire_confirm_skip_title">Skip the questionnaire</string>
+    <string name="questionnaire_confirm_skip_body">Are you sure you want to skip this questionnaire? Please note that you won't be able to go back and answer it later.</string>
+    <string name="questionnaire_review_disclaimer">You already answered this questionnaire. You can review your answers here but cannot edit them.</string>
 
 
     <!-- Settings -->
@@ -307,10 +320,16 @@
     <string name="calibration_results_save_gain">Save gain</string>
     <string name="calibration_results_suggested_gain_warning">The gain difference between your device and the reference is suspiciously high. We advise that you try calibrating again, following the tips. If you’re confident with your calibration method, you can still apply this suggested gain.</string>
 
-
     <!-- Misc -->
     <string name="na">N/A</string>
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
     <string name="save">Save</string>
+    <string name="continue_">Continue</string>
+    <string name="skip">Skip</string>
+    <string name="submit">Submit</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <string name="done">Done</string>
+    <string name="exit">Exit</string>
 </resources>

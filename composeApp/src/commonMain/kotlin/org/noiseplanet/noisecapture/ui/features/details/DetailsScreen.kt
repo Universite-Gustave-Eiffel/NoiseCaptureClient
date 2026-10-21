@@ -31,12 +31,18 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowSizeClass
 import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.assignment
 import noisecapture.composeapp.generated.resources.details_loading_hint
+import noisecapture.composeapp.generated.resources.details_questionnaire_description
+import noisecapture.composeapp.generated.resources.details_questionnaire_show_recap_button
+import noisecapture.composeapp.generated.resources.details_questionnaire_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
+import org.noiseplanet.noisecapture.ui.components.ButtonContent
 import org.noiseplanet.noisecapture.ui.components.Container
 import org.noiseplanet.noisecapture.ui.components.ContainerDefaults
+import org.noiseplanet.noisecapture.ui.components.NCButton
 import org.noiseplanet.noisecapture.ui.components.audioplayer.AudioPlayerView
 import org.noiseplanet.noisecapture.ui.components.map.MapView
 import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
@@ -75,11 +81,11 @@ fun DetailsScreen(
                 is DetailsScreenViewModel.ViewState.ContentReady -> {
                     Box(contentAlignment = Alignment.BottomCenter) {
                         if (sizeClass.minWidthDp < WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) {
-                            DetailsScreenCompact(viewState)
+                            DetailsScreenCompact(viewState, router)
                         } else if (sizeClass.minWidthDp < WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND) {
-                            DetailsScreenMedium(viewState)
+                            DetailsScreenMedium(viewState, router)
                         } else {
-                            DetailsScreenLarge(viewState)
+                            DetailsScreenLarge(viewState, router)
                         }
                     }
                 }
@@ -101,6 +107,7 @@ fun DetailsScreen(
 @Composable
 private fun DetailsScreenLarge(
     viewState: DetailsScreenViewModel.ViewState.ContentReady,
+    router: DetailsRouter,
 ) {
     // - Properties
 
@@ -135,6 +142,14 @@ private fun DetailsScreenLarge(
                 la10 = viewState.measurement.summary?.la10 ?: 0.0,
                 max = viewState.measurement.laeqMetrics.max
             )
+
+            viewState.measurement.questionnaireAnswers?.let {
+                QuestionnaireRecapView(
+                    questionnaireId = it.questionnaireId,
+                    measurementId = viewState.measurement.uuid,
+                    router = router
+                )
+            }
 
             ManageMeasurementView(measurementId = viewState.measurement.uuid)
         }
@@ -176,6 +191,7 @@ private fun DetailsScreenLarge(
 @Composable
 private fun DetailsScreenMedium(
     viewState: DetailsScreenViewModel.ViewState.ContentReady,
+    router: DetailsRouter,
 ) {
     // - Properties
 
@@ -225,41 +241,42 @@ private fun DetailsScreenMedium(
 
         MapViewOrPlaceHolder(viewState, modifier = Modifier.aspectRatio(2f))
 
-        viewState.measurement.summary?.let { summary ->
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(24.dp)
-            ) {
-                if (summary.leqOverTime.isNotEmpty()) {
-                    SplTimePlotView(
-                        leqOverTime = summary.leqOverTime,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-
-                RnePlotView(
-                    rneData = summary.repartitionOfNoiseExposure,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
-
         Row(
-            modifier = Modifier.height(IntrinsicSize.Min),
             horizontalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            viewState.measurement.summary?.let { summary ->
-                if (summary.avgLevelPerFreq.isNotEmpty()) {
-                    AverageLevelPerFreqView(
-                        avgLevelPerFreq = summary.avgLevelPerFreq,
-                        modifier = Modifier.weight(1f),
-                    )
+            Column(
+                verticalArrangement = Arrangement.spacedBy(24.dp),
+                modifier = Modifier.weight(1f),
+            ) {
+                viewState.measurement.summary?.let { summary ->
+                    if (summary.leqOverTime.isNotEmpty()) {
+                        SplTimePlotView(leqOverTime = summary.leqOverTime)
+                    }
+                    if (summary.avgLevelPerFreq.isNotEmpty()) {
+                        AverageLevelPerFreqView(avgLevelPerFreq = summary.avgLevelPerFreq)
+                    }
                 }
             }
 
-            ManageMeasurementView(
-                measurementId = viewState.measurement.uuid,
+            Column(
+                verticalArrangement = Arrangement.spacedBy(24.dp),
                 modifier = Modifier.weight(1f)
-            )
+            ) {
+                viewState.measurement.summary?.let { summary ->
+                    RnePlotView(
+                        rneData = summary.repartitionOfNoiseExposure,
+                    )
+                }
+                viewState.measurement.questionnaireAnswers?.let {
+                    QuestionnaireRecapView(
+                        questionnaireId = it.questionnaireId,
+                        measurementId = viewState.measurement.uuid,
+                        router = router
+                    )
+                }
+
+                ManageMeasurementView(measurementId = viewState.measurement.uuid)
+            }
         }
     }
 }
@@ -268,6 +285,7 @@ private fun DetailsScreenMedium(
 @Composable
 private fun DetailsScreenCompact(
     viewState: DetailsScreenViewModel.ViewState.ContentReady,
+    router: DetailsRouter,
 ) {
     // - Properties
 
@@ -313,11 +331,19 @@ private fun DetailsScreenCompact(
             if (summary.avgLevelPerFreq.isNotEmpty()) {
                 AverageLevelPerFreqView(avgLevelPerFreq = summary.avgLevelPerFreq)
             }
+        }
 
-            ManageMeasurementView(
+        viewState.measurement.questionnaireAnswers?.let {
+            QuestionnaireRecapView(
+                questionnaireId = it.questionnaireId,
                 measurementId = viewState.measurement.uuid,
+                router = router
             )
         }
+
+        ManageMeasurementView(
+            measurementId = viewState.measurement.uuid,
+        )
     }
 }
 
@@ -341,6 +367,40 @@ private fun ContentLoadingView() {
             text = stringResource(Res.string.details_loading_hint),
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center
+        )
+    }
+}
+
+
+@Composable
+private fun QuestionnaireRecapView(
+    questionnaireId: String,
+    measurementId: String,
+    router: DetailsRouter,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = modifier,
+    ) {
+        Text(
+            text = stringResource(Res.string.details_questionnaire_title),
+            style = MaterialTheme.typography.titleMedium,
+        )
+        Text(
+            text = stringResource(Res.string.details_questionnaire_description),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+
+        NCButton(
+            content = ButtonContent(
+                title = Res.string.details_questionnaire_show_recap_button,
+                icon = Res.drawable.assignment,
+            ),
+            onClick = { router.goToQuestionnaireRecap(measurementId, questionnaireId) },
+            colors = Color.Noise.eleven.secondaryContainerColors()
         )
     }
 }

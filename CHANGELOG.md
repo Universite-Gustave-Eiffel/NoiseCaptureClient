@@ -7,6 +7,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Dynamic questionnaires after completing a measurement (#321)
+
 ### Changed
 
 - New design system for sleeker, more consistent look (#312)

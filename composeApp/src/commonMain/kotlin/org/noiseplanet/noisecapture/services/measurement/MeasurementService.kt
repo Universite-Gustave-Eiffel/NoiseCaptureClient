@@ -7,6 +7,7 @@ import org.noiseplanet.noisecapture.model.dao.LeqSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.LocationRecord
 import org.noiseplanet.noisecapture.model.dao.LocationSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.Measurement
+import org.noiseplanet.noisecapture.model.dao.QuestionnaireAnswers
 import org.noiseplanet.noisecapture.util.geo.FeatureCollection
 
 
@@ -168,6 +169,14 @@ interface MeasurementService {
      * @return Updated measurement with summary property.
      */
     suspend fun calculateSummary(measurement: Measurement): Measurement
+
+    /**
+     * Stores the given questionnaire answers into the given measurement.
+     *
+     * @param uuid Measurement unique identifier.
+     * @param answers Questionnaire answers.
+     */
+    suspend fun saveQuestionnaireAnswersForMeasurement(uuid: String, answers: QuestionnaireAnswers)
 
     /**
      * Gets the GeoJson representation of this measurement.

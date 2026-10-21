@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.signal.geojson
+package org.noiseplanet.noisecapture.geojson
 
 import org.noiseplanet.noisecapture.util.geo.GeoJson
 import org.noiseplanet.noisecapture.util.geo.alt

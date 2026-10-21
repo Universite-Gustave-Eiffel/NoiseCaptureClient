@@ -2,6 +2,7 @@ package org.noiseplanet.noisecapture.ui.navigation.router
 
 import androidx.navigation.NavHostController
 import androidx.navigation.toRoute
+import org.noiseplanet.noisecapture.ui.navigation.QuestionnaireRoute
 import org.noiseplanet.noisecapture.ui.navigation.Route
 import org.noiseplanet.noisecapture.ui.navigation.RouteIds
 
@@ -19,5 +20,11 @@ class DetailsRouter(navController: NavHostController) : Router(navController) {
             return
         }
         navController.popBackStack()
+    }
+
+    fun goToQuestionnaireRecap(measurementId: String, questionnaireId: String) {
+        navController.navigate(
+            QuestionnaireRoute(measurementId, questionnaireId, isReviewMode = true)
+        )
     }
 }

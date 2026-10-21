@@ -1,4 +1,4 @@
-package org.noiseplanet.noisecapture.ui.components
+package org.noiseplanet.noisecapture.ui.components.dialog
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,10 +12,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.resources.DrawableResource
-import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.noiseplanet.noisecapture.ui.components.ContainerColors
+import org.noiseplanet.noisecapture.ui.components.NCButton
+import org.noiseplanet.noisecapture.ui.components.primaryContainerColors
+import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
+import org.noiseplanet.noisecapture.ui.components.transparentContainerColors
 import org.noiseplanet.noisecapture.ui.theme.Noise
 import org.noiseplanet.noisecapture.ui.theme.OnSurface
 import org.noiseplanet.noisecapture.util.ncDropShadow
@@ -58,56 +61,48 @@ fun NCDialog(
 
 @Composable
 fun NCDialog(
-    title: StringResource,
-    text: StringResource,
+    viewModel: NCDialogViewModel,
     onDismissRequest: () -> Unit,
     onConfirm: () -> Unit = onDismissRequest,
-    confirmButtonContent: ButtonContent? = null,
-    dismissButtonContent: ButtonContent? = null,
-    confirmButtonColors: ContainerColors = NCDialogDefaults.ConfirmButtonColors,
-    dismissButtonColors: ContainerColors = NCDialogDefaults.DismissButtonColors,
-    containerColors: ContainerColors = NCDialogDefaults.ContainerColors,
-    shape: Shape = NCDialogDefaults.Shape,
-    icon: DrawableResource? = null,
     modifier: Modifier = Modifier,
 ) {
     NCDialog(
         onDismissRequest = onDismissRequest,
         icon = {
-            icon?.let {
+            viewModel.icon?.let {
                 Icon(painterResource(it), contentDescription = null)
             }
         },
         title = {
             Text(
-                stringResource(title),
+                stringResource(viewModel.title),
                 textAlign = TextAlign.Start,
                 modifier = modifier.fillMaxWidth()
             )
         },
         text = {
-            Text(stringResource(text))
+            Text(stringResource(viewModel.text))
         },
         confirmButton = {
-            confirmButtonContent?.let {
+            viewModel.confirmButtonContent?.let {
                 NCButton(
-                    content = confirmButtonContent,
-                    colors = confirmButtonColors,
+                    content = viewModel.confirmButtonContent,
+                    colors = viewModel.confirmButtonColors,
                     onClick = onConfirm
                 )
             }
         },
         dismissButton = {
-            dismissButtonContent?.let {
+            viewModel.dismissButtonContent?.let {
                 NCButton(
-                    content = dismissButtonContent,
-                    colors = dismissButtonColors,
+                    content = viewModel.dismissButtonContent,
+                    colors = viewModel.dismissButtonColors,
                     onClick = onDismissRequest,
                 )
             }
         },
-        shape = shape,
-        containerColors = containerColors,
+        shape = viewModel.shape,
+        containerColors = viewModel.containerColors,
         modifier = modifier,
     )
 }
