@@ -4,32 +4,28 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import noisecapture.composeapp.generated.resources.Res
-import noisecapture.composeapp.generated.resources.cancel
-import noisecapture.composeapp.generated.resources.map_legend_description
 import noisecapture.composeapp.generated.resources.map_legend_title
 import org.jetbrains.compose.resources.stringResource
-import org.noiseplanet.noisecapture.ui.components.ButtonContent
-import org.noiseplanet.noisecapture.ui.components.NCButton
-import org.noiseplanet.noisecapture.ui.components.NCDialog
-import org.noiseplanet.noisecapture.ui.components.transparentContainerColors
-import org.noiseplanet.noisecapture.ui.theme.Noise
+import org.noiseplanet.noisecapture.ui.theme.Neutral
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 
 
 @Composable
-fun MapLegendView(
-    onDismissRequest: () -> Unit,
-) {
+fun MapLegendView() {
 
     // - Properties
 
@@ -40,33 +36,43 @@ fun MapLegendView(
 
     // - Layout
 
-    NCDialog(
-        onDismissRequest = onDismissRequest,
-        confirmButton = {
-            NCButton(
-                onClick = onDismissRequest,
-                content = ButtonContent(title = Res.string.cancel),
-                colors = Color.Noise.one.transparentContainerColors(),
+    Column(
+        modifier = Modifier.padding(16.dp)
+            .padding(top = 24.dp)
+    ) {
+        Text(
+            text = stringResource(Res.string.map_legend_title),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.width(IntrinsicSize.Max)
+                .padding(bottom = 8.dp)
+        ) {
+            Text(
+                text = "Color",
+                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = Color.Neutral.medium,
             )
-        },
-        title = {
-            Text(stringResource(Res.string.map_legend_title))
-        },
-        text = {
-            Column {
-                Text(stringResource(Res.string.map_legend_description))
+            Text(
+                text = "dB(A)",
+                style = MaterialTheme.typography.labelMedium,
+                color = Color.Neutral.medium,
+            )
+        }
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                items.forEach { (value, color) ->
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Box(modifier = Modifier.height(24.dp).width(32.dp).background(color))
-                        Text(value)
-                    }
-                }
+        items.forEach { (value, color) ->
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.width(IntrinsicSize.Max)
+            ) {
+                Box(modifier = Modifier.height(24.dp).width(32.dp).background(color))
+                Text(value, style = MaterialTheme.typography.labelMedium)
             }
         }
-    )
+    }
 }
