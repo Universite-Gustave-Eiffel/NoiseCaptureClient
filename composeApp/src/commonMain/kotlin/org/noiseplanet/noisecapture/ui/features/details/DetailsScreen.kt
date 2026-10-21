@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -84,9 +83,9 @@ fun DetailsScreen(
                         if (sizeClass.minWidthDp < WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) {
                             DetailsScreenCompact(viewState, router)
                         } else if (sizeClass.minWidthDp < WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND) {
-                            DetailsScreenMedium(viewState)
+                            DetailsScreenMedium(viewState, router)
                         } else {
-                            DetailsScreenLarge(viewState)
+                            DetailsScreenLarge(viewState, router)
                         }
                     }
                 }
@@ -108,6 +107,7 @@ fun DetailsScreen(
 @Composable
 private fun DetailsScreenLarge(
     viewState: DetailsScreenViewModel.ViewState.ContentReady,
+    router: DetailsRouter,
 ) {
     // - Properties
 
@@ -142,6 +142,14 @@ private fun DetailsScreenLarge(
                 la10 = viewState.measurement.summary?.la10 ?: 0.0,
                 max = viewState.measurement.laeqMetrics.max
             )
+
+            viewState.measurement.questionnaireAnswers?.let {
+                QuestionnaireRecapView(
+                    questionnaireId = it.questionnaireId,
+                    measurementId = viewState.measurement.uuid,
+                    router = router
+                )
+            }
 
             ManageMeasurementView(measurementId = viewState.measurement.uuid)
         }
@@ -183,6 +191,7 @@ private fun DetailsScreenLarge(
 @Composable
 private fun DetailsScreenMedium(
     viewState: DetailsScreenViewModel.ViewState.ContentReady,
+    router: DetailsRouter,
 ) {
     // - Properties
 
@@ -232,41 +241,42 @@ private fun DetailsScreenMedium(
 
         MapViewOrPlaceHolder(viewState, modifier = Modifier.aspectRatio(2f))
 
-        viewState.measurement.summary?.let { summary ->
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(24.dp)
-            ) {
-                if (summary.leqOverTime.isNotEmpty()) {
-                    SplTimePlotView(
-                        leqOverTime = summary.leqOverTime,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-
-                RnePlotView(
-                    rneData = summary.repartitionOfNoiseExposure,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
-
         Row(
-            modifier = Modifier.height(IntrinsicSize.Min),
             horizontalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            viewState.measurement.summary?.let { summary ->
-                if (summary.avgLevelPerFreq.isNotEmpty()) {
-                    AverageLevelPerFreqView(
-                        avgLevelPerFreq = summary.avgLevelPerFreq,
-                        modifier = Modifier.weight(1f),
-                    )
+            Column(
+                verticalArrangement = Arrangement.spacedBy(24.dp),
+                modifier = Modifier.weight(1f),
+            ) {
+                viewState.measurement.summary?.let { summary ->
+                    if (summary.leqOverTime.isNotEmpty()) {
+                        SplTimePlotView(leqOverTime = summary.leqOverTime)
+                    }
+                    if (summary.avgLevelPerFreq.isNotEmpty()) {
+                        AverageLevelPerFreqView(avgLevelPerFreq = summary.avgLevelPerFreq)
+                    }
                 }
             }
 
-            ManageMeasurementView(
-                measurementId = viewState.measurement.uuid,
+            Column(
+                verticalArrangement = Arrangement.spacedBy(24.dp),
                 modifier = Modifier.weight(1f)
-            )
+            ) {
+                viewState.measurement.summary?.let { summary ->
+                    RnePlotView(
+                        rneData = summary.repartitionOfNoiseExposure,
+                    )
+                }
+                viewState.measurement.questionnaireAnswers?.let {
+                    QuestionnaireRecapView(
+                        questionnaireId = it.questionnaireId,
+                        measurementId = viewState.measurement.uuid,
+                        router = router
+                    )
+                }
+
+                ManageMeasurementView(measurementId = viewState.measurement.uuid)
+            }
         }
     }
 }
@@ -371,7 +381,7 @@ private fun QuestionnaireRecapView(
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier,
     ) {
         Text(
             text = stringResource(Res.string.details_questionnaire_title),
