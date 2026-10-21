@@ -1,9 +1,11 @@
 package org.noiseplanet.noisecapture.ui.components.map
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -28,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.add
+import noisecapture.composeapp.generated.resources.close
 import noisecapture.composeapp.generated.resources.compass
 import noisecapture.composeapp.generated.resources.location_disabled
 import noisecapture.composeapp.generated.resources.my_location
@@ -37,6 +41,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.noiseplanet.noisecapture.ui.components.ButtonContent
+import org.noiseplanet.noisecapture.ui.components.Container
 import org.noiseplanet.noisecapture.ui.components.ContainerColors
 import org.noiseplanet.noisecapture.ui.components.NCButton
 import org.noiseplanet.noisecapture.ui.theme.accentBlue
@@ -91,16 +96,37 @@ fun MapView(
                     }
 
                     // Help button (shows legend and any additional info)
-                    NCButton(
-                        content = ButtonContent(icon = Res.drawable.question_mark),
+                    Container(
                         colors = ContainerColors(
                             backgroundColor = MaterialTheme.colorScheme.surface,
                             contentColor = MaterialTheme.colorScheme.onSurface,
                             shadowColor = MaterialTheme.colorScheme.onSurface,
                         ),
-                        onClick = { showHelpDialog = true },
-                        modifier = Modifier.size(CONTROLS_SIZE)
-                    )
+                        contentPadding = PaddingValues.Zero,
+                        shape = RoundedCornerShape(CONTROLS_SIZE / 2f),
+                    ) {
+                        NCButton(
+                            content = ButtonContent(
+                                icon = if (showHelpDialog) {
+                                    Res.drawable.close
+                                } else {
+                                    Res.drawable.question_mark
+                                }
+                            ),
+                            colors = ContainerColors(
+                                backgroundColor = Color.Transparent,
+                                contentColor = MaterialTheme.colorScheme.onSurface,
+                            ),
+                            onClick = { showHelpDialog = !showHelpDialog },
+                            modifier = Modifier.size(CONTROLS_SIZE)
+                        )
+
+                        AnimatedContent(targetState = showHelpDialog, label = "legend") { visible ->
+                            if (visible) {
+                                MapLegendView()
+                            }
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -184,12 +210,6 @@ fun MapView(
                         modifier = Modifier.size(CONTROLS_SIZE)
                     )
                 }
-            }
-
-            if (showHelpDialog) {
-                MapLegendView(
-                    onDismissRequest = { showHelpDialog = false }
-                )
             }
         }
     }

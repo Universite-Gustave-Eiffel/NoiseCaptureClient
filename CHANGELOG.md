@@ -15,6 +15,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - New design system for sleeker, more consistent look (#312)
 - Update dependencies to latest stable versions (#320)
+- Show map legend as an overlay instead of a popup (#323)
 
 ### Fixed
 

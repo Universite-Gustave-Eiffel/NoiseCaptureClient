@@ -107,9 +107,9 @@ object NoiseLevelColorRamp {
 
         val legend = legendList.mapIndexed { index, (level, color) ->
             val label = when (index) {
-                0 -> "<${level.toInt()} dB(A)"
-                legendList.lastIndex -> ">${level.toInt()} dB(A)"
-                else -> "${level.toInt()}-${legendList[index + 1].first.toInt()} dB(A)"
+                0 -> "<${level.toInt()}"
+                legendList.lastIndex -> ">${level.toInt()}"
+                else -> "${level.toInt()}-${legendList[index + 1].first.toInt()}"
             }
             Pair(label, color.getVariant(variant))
         }

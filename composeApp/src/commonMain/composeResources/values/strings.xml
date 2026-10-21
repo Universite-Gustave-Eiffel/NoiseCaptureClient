@@ -220,8 +220,7 @@
 
 
     <!-- Map -->
-    <string name="map_legend_title">Legend</string>
-    <string name="map_legend_description">The map shows recorded noise levels by steps of 5 decibels.</string>
+    <string name="map_legend_title">Noise level</string>
     <string name="map_gps_accuracy">Accuracy</string>
     <string name="map_gps_poor_signal">Poor GPS signal</string>
     <string name="map_location_services_unavailable_title">Location services currently unavailable</string>
