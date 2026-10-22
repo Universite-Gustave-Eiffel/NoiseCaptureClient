@@ -2,6 +2,7 @@ package org.noiseplanet.noisecapture.ui.features.calibration
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.arrow_drop_down
@@ -37,8 +39,8 @@ import noisecapture.composeapp.generated.resources.calibration_tips_source_title
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
-
+import org.noiseplanet.noisecapture.ui.components.ContainerDefaults
+import org.noiseplanet.noisecapture.ui.theme.Noise
 
 @Composable
 fun CalibrationTipsView(
@@ -71,7 +73,12 @@ fun CalibrationTipsView(
     // - Layout
 
     Column(
-        modifier = modifier.clip(shape = MaterialTheme.shapes.medium)
+        modifier = modifier.clip(shape = ContainerDefaults.Shape)
+            .border(
+                width = 1.dp,
+                shape = ContainerDefaults.Shape,
+                color = Color.Noise.two.mediumLight
+            )
     ) {
         for (tipsItem in tips) {
             ExpandableSection(title = stringResource(tipsItem.title)) {
@@ -83,7 +90,7 @@ fun CalibrationTipsView(
                         Text(
                             text = stringResource(tip),
                             style = MaterialTheme.typography.bodyMedium,
-                            color = NoiseLevelColorRamp.level1Dark,
+                            color = MaterialTheme.colorScheme.onSurface,
                         )
                     }
                 }
@@ -109,18 +116,19 @@ private fun ExpandableSectionTitle(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = modifier.background(NoiseLevelColorRamp.level1Light).padding(12.dp)
+        modifier = modifier.background(Color.Noise.two.light)
+            .padding(12.dp)
     ) {
         Icon(
             painter = painterResource(icon),
             contentDescription = null,
-            tint = NoiseLevelColorRamp.level1Dark,
+            tint = Color.Noise.one.dark,
             modifier = Modifier.size(24.dp)
         )
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,
-            color = NoiseLevelColorRamp.level1Dark,
+            color = Color.Noise.one.dark,
             modifier = Modifier.weight(1f)
         )
     }
@@ -149,7 +157,7 @@ private fun ExpandableSection(
         ExpandableSectionTitle(isExpanded = isExpanded, title = title)
 
         AnimatedVisibility(
-            modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer)
+            modifier = Modifier.background(MaterialTheme.colorScheme.surface)
                 .fillMaxWidth(),
             visible = isExpanded,
         ) {

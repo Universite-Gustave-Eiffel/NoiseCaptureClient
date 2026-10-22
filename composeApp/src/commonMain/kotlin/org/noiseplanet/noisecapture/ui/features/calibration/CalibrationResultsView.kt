@@ -66,12 +66,15 @@ import noisecapture.composeapp.generated.resources.cancel
 import noisecapture.composeapp.generated.resources.edit
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.noiseplanet.noisecapture.ui.components.button.NCButton
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonStyle
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
+import org.noiseplanet.noisecapture.ui.components.ButtonContent
+import org.noiseplanet.noisecapture.ui.components.Container
+import org.noiseplanet.noisecapture.ui.components.NCButton
+import org.noiseplanet.noisecapture.ui.components.primaryContainerColors
+import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
+import org.noiseplanet.noisecapture.ui.components.transparentContainerColors
 import org.noiseplanet.noisecapture.ui.navigation.router.CalibrationRouter
-import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
+import org.noiseplanet.noisecapture.ui.theme.Neutral
+import org.noiseplanet.noisecapture.ui.theme.Noise
 import org.noiseplanet.noisecapture.util.AdaptiveUtil
 import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 import org.noiseplanet.noisecapture.util.roundTo
@@ -121,80 +124,80 @@ fun CalibrationResultsView(
         Text(
             text = stringResource(Res.string.calibration_results_current_gain),
             style = MaterialTheme.typography.titleMedium,
-            color = NoiseLevelColorRamp.level1Dark,
+            color = Color.Noise.one.dark,
             modifier = Modifier.padding(horizontal = 16.dp + 24.dp)
         )
         Text(
             text = "${viewState.currentGain.toSignedString()} dB(A)",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Black,
-            color = NoiseLevelColorRamp.level1Dark,
+            color = Color.Noise.one.dark,
             modifier = Modifier.padding(horizontal = 16.dp + 24.dp)
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        Column(
-            modifier = Modifier.padding(horizontal = 16.dp)
-                .background(
-                    color = MaterialTheme.colorScheme.surfaceContainer,
-                    shape = MaterialTheme.shapes.large
-                ).padding(top = 16.dp, start = 24.dp, end = 24.dp, bottom = 10.dp)
+        Container(
+            colors = Color.Neutral.secondaryContainerColors(hasDropShadow = true),
+            contentPadding = PaddingValues(top = 16.dp, bottom = 10.dp, start = 24.dp, end = 24.dp),
+            modifier = Modifier.padding(horizontal = 16.dp),
         ) {
-            // Current device measured value
-            Text(
-                text = stringResource(Res.string.calibration_results_your_device_value),
-                style = MaterialTheme.typography.titleMedium,
-            )
-            Text(
-                text = buildAnnotatedString {
-                    withStyle(SpanStyle(fontSize = 45.sp)) {
-                        append(viewState.measuredValue.roundTo(1).toString() + " ")
-                    }
-                    append("dB(A)")
-                },
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Black,
-                modifier = Modifier.offset(y = (-8).dp)
-            )
-
-            // Divider
-            Spacer(modifier = Modifier.height(16.dp))
-            Box(
-                modifier = Modifier.height(1.dp)
-                    .fillMaxWidth()
-                    .background(color = NoiseLevelColorRamp.level1.copy(alpha = 0.5f))
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Reference device measured value
-            Text(
-                text = stringResource(Res.string.calibration_results_reference_value),
-                style = MaterialTheme.typography.titleMedium,
-                textAlign = TextAlign.End,
-                modifier = Modifier.fillMaxWidth()
-            )
-            ReferenceDeviceValueField(
-                value = referenceDeviceFieldValue,
-                onValueChange = {
-                    // Replace commas with dots for locales that use commas as decimal separator
-                    referenceDeviceFieldValue = it.replace(",", ".")
-                    viewModel.onReferenceValueChange(referenceDeviceFieldValue.toDoubleOrNull())
-                },
-                interactionSource = interactionSource,
-                keyboardActions = KeyboardActions {
-                    keyboardController?.hide()
-                    focusRequester.freeFocus()
-                },
-                isError = referenceDeviceFieldValue.isNotEmpty() &&
-                    referenceDeviceFieldValue.toDoubleOrNull() == null,
-                modifier = Modifier.focusRequester(focusRequester)
-                    .onFocusChanged { focusState ->
-                        if (focusState.isFocused) {
-                            keyboardController?.show()
+            Column {
+                // Current device measured value
+                Text(
+                    text = stringResource(Res.string.calibration_results_your_device_value),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    text = buildAnnotatedString {
+                        withStyle(SpanStyle(fontSize = 45.sp)) {
+                            append(viewState.measuredValue.roundTo(1).toString() + " ")
                         }
-                    }
-            )
+                        append("dB(A)")
+                    },
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Black,
+                    modifier = Modifier.offset(y = (-8).dp)
+                )
+
+                // Divider
+                Spacer(modifier = Modifier.height(16.dp))
+                Box(
+                    modifier = Modifier.height(1.dp)
+                        .fillMaxWidth()
+                        .background(color = Color.Noise.one.mediumLight)
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Reference device measured value
+                Text(
+                    text = stringResource(Res.string.calibration_results_reference_value),
+                    style = MaterialTheme.typography.titleMedium,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                ReferenceDeviceValueField(
+                    value = referenceDeviceFieldValue,
+                    onValueChange = {
+                        // Replace commas with dots for locales that use commas as decimal separator
+                        referenceDeviceFieldValue = it.replace(",", ".")
+                        viewModel.onReferenceValueChange(referenceDeviceFieldValue.toDoubleOrNull())
+                    },
+                    interactionSource = interactionSource,
+                    keyboardActions = KeyboardActions {
+                        keyboardController?.hide()
+                        focusRequester.freeFocus()
+                    },
+                    isError = referenceDeviceFieldValue.isNotEmpty() &&
+                        referenceDeviceFieldValue.toDoubleOrNull() == null,
+                    modifier = Modifier.focusRequester(focusRequester)
+                        .onFocusChanged { focusState ->
+                            if (focusState.isFocused) {
+                                keyboardController?.show()
+                            }
+                        }
+                )
+            }
         }
 
         viewState.difference?.let { difference ->
@@ -203,7 +206,7 @@ fun CalibrationResultsView(
             Text(
                 text = stringResource(Res.string.calibration_results_difference),
                 style = MaterialTheme.typography.titleMedium,
-                color = NoiseLevelColorRamp.level1Dark,
+                color = Color.Noise.one.dark,
                 textAlign = TextAlign.End,
                 modifier = Modifier.padding(horizontal = 16.dp + 24.dp).fillMaxWidth(),
             )
@@ -217,7 +220,7 @@ fun CalibrationResultsView(
                 text = differenceText,
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Black,
-                color = NoiseLevelColorRamp.level1Dark,
+                color = Color.Noise.one.dark,
                 textAlign = TextAlign.End,
                 modifier = Modifier.padding(horizontal = 16.dp + 24.dp).fillMaxWidth(),
             )
@@ -225,7 +228,7 @@ fun CalibrationResultsView(
                 Text(
                     text = stringResource(Res.string.calibration_results_already_calibrated),
                     style = MaterialTheme.typography.bodySmall,
-                    color = NoiseLevelColorRamp.level1Dark,
+                    color = Color.Noise.one.dark,
                     textAlign = TextAlign.End,
                     modifier = Modifier.padding(horizontal = 16.dp + 24.dp).fillMaxWidth(),
                 )
@@ -237,17 +240,17 @@ fun CalibrationResultsView(
 
         // Suggested compensation gain
         viewState.suggestedGain?.let { suggestedGain ->
-            val (containerColor, contentColor) = if (viewState.isWarning) {
-                Pair(NoiseLevelColorRamp.level6Dark, NoiseLevelColorRamp.level6Light)
+            val containerColors = if (viewState.isWarning) {
+                Color.Noise.six.primaryContainerColors()
             } else {
-                Pair(NoiseLevelColorRamp.level1Dark, NoiseLevelColorRamp.level1Light)
+                Color.Noise.one.primaryContainerColors()
             }
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .background(
-                        color = containerColor,
+                        color = containerColors.backgroundColor,
                         shape = MaterialTheme.shapes.large.copy(
                             bottomStart = ZeroCornerSize,
                             bottomEnd = ZeroCornerSize
@@ -260,7 +263,7 @@ fun CalibrationResultsView(
                 Text(
                     text = stringResource(Res.string.calibration_results_suggested_gain),
                     style = MaterialTheme.typography.titleMedium,
-                    color = contentColor,
+                    color = containerColors.contentColor,
                 )
                 Text(
                     text = buildAnnotatedString {
@@ -271,7 +274,7 @@ fun CalibrationResultsView(
                     },
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Black,
-                    color = contentColor,
+                    color = containerColors.contentColor,
                 )
 
                 if (viewState.isWarning) {
@@ -279,7 +282,7 @@ fun CalibrationResultsView(
                         text = stringResource(Res.string.calibration_results_suggested_gain_warning),
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center,
-                        color = contentColor,
+                        color = containerColors.contentColor,
                     )
                 }
 
@@ -287,28 +290,16 @@ fun CalibrationResultsView(
                     modifier = Modifier.padding(top = 24.dp).fillMaxWidth()
                 ) {
                     NCButton(
-                        viewModel = NCButtonViewModel(
-                            title = Res.string.cancel,
-                            style = NCButtonStyle.TEXT,
-                            colors = {
-                                NCButtonColors.Defaults.text()
-                                    .copy(contentColor = contentColor)
-                            }
+                        content = ButtonContent(title = Res.string.cancel),
+                        colors = Color.Noise.one.transparentContainerColors().copy(
+                            contentColor = Color.Noise.one.light
                         ),
                         onClick = { viewModel.cancelCalibration() },
                         modifier = Modifier.height(50.dp).weight(1f),
                     )
                     NCButton(
-                        viewModel = NCButtonViewModel(
-                            title = Res.string.calibration_results_save_gain,
-                            colors = {
-                                NCButtonColors(
-                                    contentColor = containerColor,
-                                    containerColor = contentColor,
-                                )
-                            },
-                            hasDropShadow = true,
-                        ),
+                        content = ButtonContent(title = Res.string.calibration_results_save_gain),
+                        colors = Color.Noise.one.secondaryContainerColors(hasDropShadow = true),
                         onClick = {
                             viewModel.saveGain(viewState.suggestedGain) {
                                 router.popBackStack()

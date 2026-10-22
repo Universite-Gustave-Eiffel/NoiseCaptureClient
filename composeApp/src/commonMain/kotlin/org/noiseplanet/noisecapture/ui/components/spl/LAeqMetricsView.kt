@@ -10,8 +10,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import noisecapture.composeapp.generated.resources.Res
@@ -20,7 +18,9 @@ import noisecapture.composeapp.generated.resources.sound_level_meter_max_dba
 import noisecapture.composeapp.generated.resources.sound_level_meter_min_dba
 import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.model.dao.LAeqMetrics
+import org.noiseplanet.noisecapture.ui.theme.ColorVariant
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
+import org.noiseplanet.noisecapture.ui.theme.titleMono
 import org.noiseplanet.noisecapture.util.isInVuMeterRange
 
 
@@ -59,9 +59,7 @@ fun LAeqMetricsView(
             ) {
                 Text(
                     text = metric.label,
-                    style = MaterialTheme.typography.labelLarge.copy(
-                        fontWeight = FontWeight.SemiBold
-                    ),
+                    style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
 
@@ -70,14 +68,11 @@ fun LAeqMetricsView(
                     text = if (value != null && value.isInVuMeterRange()) {
                         value.toString()
                     } else "-",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Start,
-                        lineHeight = 24.sp,
+                    style = MaterialTheme.typography.titleMono.copy(
                         color = metric.value?.let {
                             NoiseLevelColorRamp.getColorForSPLValue(
                                 value = it,
-                                palette = NoiseLevelColorRamp.paletteDarker,
+                                variant = ColorVariant.DARK,
                             )
                         } ?: MaterialTheme.colorScheme.onSurface,
                     ),

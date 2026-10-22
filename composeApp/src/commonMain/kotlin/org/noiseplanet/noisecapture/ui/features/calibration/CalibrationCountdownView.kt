@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import noisecapture.composeapp.generated.resources.Res
@@ -20,9 +21,10 @@ import noisecapture.composeapp.generated.resources.calibration_countdown_label
 import noisecapture.composeapp.generated.resources.cancel
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.time.inMs
-import org.noiseplanet.noisecapture.ui.components.button.NCButton
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
+import org.noiseplanet.noisecapture.ui.components.ButtonContent
+import org.noiseplanet.noisecapture.ui.components.NCButton
+import org.noiseplanet.noisecapture.ui.components.tertiaryContainerColors
+import org.noiseplanet.noisecapture.ui.theme.Noise
 import org.noiseplanet.noisecapture.util.AdaptiveUtil
 import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 import kotlin.math.ceil
@@ -58,15 +60,8 @@ fun CalibrationCountdownView(
     Spacer(modifier = Modifier.weight(1f))
 
     NCButton(
-        viewModel = NCButtonViewModel(
-            title = Res.string.cancel,
-            colors = {
-                NCButtonColors(
-                    contentColor = MaterialTheme.colorScheme.onSurface,
-                    containerColor = MaterialTheme.colorScheme.surface,
-                )
-            }
-        ),
+        content = ButtonContent(title = Res.string.cancel),
+        colors = Color.Noise.one.tertiaryContainerColors(),
         onClick = { viewModel.cancelCalibration() },
         modifier = Modifier.height(50.dp).width(200.dp)
     )

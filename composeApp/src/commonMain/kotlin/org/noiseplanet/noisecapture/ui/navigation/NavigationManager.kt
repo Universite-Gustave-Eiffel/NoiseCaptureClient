@@ -39,6 +39,8 @@ import org.noiseplanet.noisecapture.ui.features.onboarding.OnboardingLocationPer
 import org.noiseplanet.noisecapture.ui.features.onboarding.OnboardingMicPermissionScreen
 import org.noiseplanet.noisecapture.ui.features.onboarding.OnboardingScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.onboarding.OnboardingWelcomeScreen
+import org.noiseplanet.noisecapture.ui.features.questionnaire.QuestionnaireScreen
+import org.noiseplanet.noisecapture.ui.features.questionnaire.QuestionnaireScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.recording.RecordingScreen
 import org.noiseplanet.noisecapture.ui.features.recording.RecordingScreenViewModel
 import org.noiseplanet.noisecapture.ui.features.settings.SettingsScreen
@@ -48,6 +50,7 @@ import org.noiseplanet.noisecapture.ui.navigation.router.DetailsRouter
 import org.noiseplanet.noisecapture.ui.navigation.router.HistoryRouter
 import org.noiseplanet.noisecapture.ui.navigation.router.HomeRouter
 import org.noiseplanet.noisecapture.ui.navigation.router.OnboardingRouter
+import org.noiseplanet.noisecapture.ui.navigation.router.QuestionnaireRouter
 import org.noiseplanet.noisecapture.ui.navigation.router.RecordingRouter
 
 
@@ -93,7 +96,6 @@ fun NavigationManager(
             appBarState.setCurrentScreenViewModel(screenViewModel)
 
             HomeScreen(
-                viewModel = screenViewModel,
                 router = router,
             )
         }
@@ -122,7 +124,7 @@ fun NavigationManager(
             val route: DetailsRoute = backStackEntry.toRoute()
 
             val screenViewModel: DetailsScreenViewModel = koinViewModel {
-                parametersOf(route.measurementId)
+                parametersOf(route)
             }
             appBarState.setCurrentScreenViewModel(screenViewModel)
 
@@ -153,6 +155,20 @@ fun NavigationManager(
             CalibrationScreen(
                 viewModel = screenViewModel,
                 router = CalibrationRouter(navController)
+            )
+        }
+
+        composable<QuestionnaireRoute> { backStackEntry ->
+            val route: QuestionnaireRoute = backStackEntry.toRoute()
+
+            val screenViewModel: QuestionnaireScreenViewModel = koinViewModel {
+                parametersOf(route)
+            }
+            appBarState.setCurrentScreenViewModel(screenViewModel)
+
+            QuestionnaireScreen(
+                viewModel = screenViewModel,
+                router = QuestionnaireRouter(navController)
             )
         }
 

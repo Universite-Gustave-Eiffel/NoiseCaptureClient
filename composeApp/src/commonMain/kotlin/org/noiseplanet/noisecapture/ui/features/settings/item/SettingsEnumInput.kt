@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,22 +14,30 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.stringResource
+import org.noiseplanet.noisecapture.ui.components.NCDropdownMenu
+import org.noiseplanet.noisecapture.ui.components.NCDropdownMenuItem
 
 @Composable
 fun SettingsEnumInput(
     viewModel: SettingsEnumItemViewModel<*>,
 ) {
-    val isDropDownExpanded = remember {
+    // - Properties
+
+    var isDropDownExpanded by remember {
         mutableStateOf(false)
     }
     val isEnabled by viewModel.isEnabled
         .collectAsState(true)
 
-    val selectedItemName by viewModel.selected
+    val selectedItem by viewModel.selected
         .collectAsState(initial = viewModel.initialValue)
+
+
+    // - Layout
 
     Column(
         modifier = Modifier.width(IntrinsicSize.Min),
@@ -43,33 +49,27 @@ fun SettingsEnumInput(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.clickable(enabled = isEnabled) {
-                    isDropDownExpanded.value = true
+                    isDropDownExpanded = true
                 }
             ) {
                 Text(
-                    text = stringResource(selectedItemName),
+                    text = stringResource(selectedItem.shortName),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface
                         .copy(alpha = if (isEnabled) 1.0f else 0.5f)
                 )
             }
-            DropdownMenu(
-                expanded = isDropDownExpanded.value,
-                onDismissRequest = {
-                    isDropDownExpanded.value = false
-                },
+            NCDropdownMenu(
+                expanded = isDropDownExpanded,
+                onDismissRequest = { isDropDownExpanded = false },
             ) {
-                viewModel.choices.forEachIndexed { index, name ->
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                text = stringResource(name),
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        },
+                viewModel.choices.forEachIndexed { index, item ->
+                    NCDropdownMenuItem(
+                        label = stringResource(item.shortName),
+                        supportingText = stringResource(item.fullName),
                         onClick = {
                             viewModel.select(index)
-                            isDropDownExpanded.value = false
+                            isDropDownExpanded = false
                         }
                     )
                 }

@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalComposeUiApi::class)
-
 package org.noiseplanet.noisecapture.ui.features.recording
 
 import androidx.compose.foundation.background
@@ -21,7 +19,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
@@ -36,6 +33,7 @@ import androidx.navigationevent.compose.rememberNavigationEventState
 import androidx.window.core.layout.WindowSizeClass
 import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
+import org.noiseplanet.noisecapture.ui.components.dialog.NCDialog
 import org.noiseplanet.noisecapture.ui.components.map.MapLocationUnavailableView
 import org.noiseplanet.noisecapture.ui.components.map.MapView
 import org.noiseplanet.noisecapture.ui.components.spl.SoundLevelMeterView
@@ -81,7 +79,7 @@ fun RecordingScreen(
                         showEndRecordingConfirmationDialog = false
 
                         if (viewModel.shouldOpenDetailsOnceDone) {
-                            router.openMeasurementDetails(measurementUuid)
+                            router.goToQuestionnaire(measurementUuid)
                         } else {
                             router.popBackStack()
                             viewModel.shouldOpenDetailsOnceDone = true
@@ -130,7 +128,8 @@ fun RecordingScreen(
     }
 
     if (showEndRecordingConfirmationDialog) {
-        EndRecordingConfirmationDialog(
+        NCDialog(
+            viewModel = viewModel.endRecordingConfirmationDialogViewModel,
             onDismissRequest = {
                 viewModel.shouldOpenDetailsOnceDone = true
                 showEndRecordingConfirmationDialog = false

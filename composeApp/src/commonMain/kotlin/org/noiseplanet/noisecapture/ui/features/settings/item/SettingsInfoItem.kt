@@ -1,11 +1,9 @@
 package org.noiseplanet.noisecapture.ui.features.settings.item
 
 import Platform
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -57,10 +55,7 @@ fun SettingsInfoItem(
     Row(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.background(
-            color = MaterialTheme.colorScheme.surface,
-            shape = MaterialTheme.shapes.medium
-        ).padding(16.dp),
+        modifier = modifier,
     ) {
         Column(
             modifier = Modifier.weight(1f)
@@ -68,6 +63,7 @@ fun SettingsInfoItem(
             Text(
                 text = stringResource(Res.string.settings_info_app_title),
                 style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
                 text = info,

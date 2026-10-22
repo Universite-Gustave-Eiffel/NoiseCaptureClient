@@ -27,7 +27,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.github.koalaplot.core.pie.DefaultSlice
@@ -114,6 +113,8 @@ fun RnePlotView(
                     .aspectRatio(1f)
                     .height(IntrinsicSize.Min) // Match the row height
             ) {
+                val colors = remember { NoiseLevelColorRamp.palette.values.toList() }
+
                 PieChart(
                     modifier = Modifier.fillMaxHeight().aspectRatio(1f),
                     values = rneData.values.map { it.toFloat() },
@@ -123,13 +124,8 @@ fun RnePlotView(
                     labelSpacing = 1f,
                     maxPieDiameter = 200.dp,
                     slice = @Composable { sliceIndex ->
-                        val colors = remember { NoiseLevelColorRamp.palette.values.toList() }
-                        val borderColors = remember {
-                            NoiseLevelColorRamp.paletteLighter.values.toList()
-                        }
-
                         DefaultSlice(
-                            colors[sliceIndex],
+                            colors[sliceIndex].medium,
                             onClick = {
                                 selectedSliceIndex = if (selectedSliceIndex != sliceIndex) {
                                     sliceIndex
@@ -141,7 +137,7 @@ fun RnePlotView(
                             hoverExpandFactor = 1.05f,
                             antiAlias = true,
                             border = if (selectedSliceIndex == sliceIndex) {
-                                BorderStroke(width = 4.dp, color = borderColors[sliceIndex])
+                                BorderStroke(width = 4.dp, color = colors[sliceIndex].mediumLight)
                             } else {
                                 null
                             }
@@ -156,12 +152,12 @@ fun RnePlotView(
                                 Text(
                                     text = "RNE",
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                                    style = MaterialTheme.typography.titleSmall
                                 )
                             }
                         }
                         val percentage = rneData.values.elementAt(index) * 100.0
-                        val foreground = NoiseLevelColorRamp.paletteDarker.values.elementAt(index)
+                        val foreground = colors[index].dark
 
                         Box(
                             modifier = Modifier.fillMaxSize(),
@@ -170,7 +166,7 @@ fun RnePlotView(
                             Text(
                                 text = "${percentage.roundTo(1)}%",
                                 color = foreground,
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                                style = MaterialTheme.typography.titleSmall,
                             )
                         }
                     }

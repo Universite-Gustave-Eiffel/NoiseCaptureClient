@@ -1,11 +1,11 @@
 package org.noiseplanet.noisecapture.ui.features.details
 
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -25,19 +25,31 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowSizeClass
 import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.assignment
 import noisecapture.composeapp.generated.resources.details_loading_hint
+import noisecapture.composeapp.generated.resources.details_questionnaire_description
+import noisecapture.composeapp.generated.resources.details_questionnaire_show_recap_button
+import noisecapture.composeapp.generated.resources.details_questionnaire_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
+import org.noiseplanet.noisecapture.ui.components.ButtonContent
+import org.noiseplanet.noisecapture.ui.components.Container
+import org.noiseplanet.noisecapture.ui.components.ContainerDefaults
+import org.noiseplanet.noisecapture.ui.components.NCButton
 import org.noiseplanet.noisecapture.ui.components.audioplayer.AudioPlayerView
 import org.noiseplanet.noisecapture.ui.components.map.MapView
+import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
 import org.noiseplanet.noisecapture.ui.features.details.manage.ManageMeasurementView
 import org.noiseplanet.noisecapture.ui.navigation.router.DetailsRouter
+import org.noiseplanet.noisecapture.ui.theme.Neutral
+import org.noiseplanet.noisecapture.ui.theme.Noise
 import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 
 
@@ -69,11 +81,11 @@ fun DetailsScreen(
                 is DetailsScreenViewModel.ViewState.ContentReady -> {
                     Box(contentAlignment = Alignment.BottomCenter) {
                         if (sizeClass.minWidthDp < WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) {
-                            DetailsScreenCompact(viewState)
+                            DetailsScreenCompact(viewState, router)
                         } else if (sizeClass.minWidthDp < WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND) {
-                            DetailsScreenMedium(viewState)
+                            DetailsScreenMedium(viewState, router)
                         } else {
-                            DetailsScreenLarge(viewState)
+                            DetailsScreenLarge(viewState, router)
                         }
                     }
                 }
@@ -95,6 +107,7 @@ fun DetailsScreen(
 @Composable
 private fun DetailsScreenLarge(
     viewState: DetailsScreenViewModel.ViewState.ContentReady,
+    router: DetailsRouter,
 ) {
     // - Properties
 
@@ -129,6 +142,14 @@ private fun DetailsScreenLarge(
                 la10 = viewState.measurement.summary?.la10 ?: 0.0,
                 max = viewState.measurement.laeqMetrics.max
             )
+
+            viewState.measurement.questionnaireAnswers?.let {
+                QuestionnaireRecapView(
+                    questionnaireId = it.questionnaireId,
+                    measurementId = viewState.measurement.uuid,
+                    router = router
+                )
+            }
 
             ManageMeasurementView(measurementId = viewState.measurement.uuid)
         }
@@ -170,6 +191,7 @@ private fun DetailsScreenLarge(
 @Composable
 private fun DetailsScreenMedium(
     viewState: DetailsScreenViewModel.ViewState.ContentReady,
+    router: DetailsRouter,
 ) {
     // - Properties
 
@@ -219,41 +241,42 @@ private fun DetailsScreenMedium(
 
         MapViewOrPlaceHolder(viewState, modifier = Modifier.aspectRatio(2f))
 
-        viewState.measurement.summary?.let { summary ->
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(24.dp)
-            ) {
-                if (summary.leqOverTime.isNotEmpty()) {
-                    SplTimePlotView(
-                        leqOverTime = summary.leqOverTime,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-
-                RnePlotView(
-                    rneData = summary.repartitionOfNoiseExposure,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
-
         Row(
-            modifier = Modifier.height(IntrinsicSize.Min),
             horizontalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            viewState.measurement.summary?.let { summary ->
-                if (summary.avgLevelPerFreq.isNotEmpty()) {
-                    AverageLevelPerFreqView(
-                        avgLevelPerFreq = summary.avgLevelPerFreq,
-                        modifier = Modifier.weight(1f),
-                    )
+            Column(
+                verticalArrangement = Arrangement.spacedBy(24.dp),
+                modifier = Modifier.weight(1f),
+            ) {
+                viewState.measurement.summary?.let { summary ->
+                    if (summary.leqOverTime.isNotEmpty()) {
+                        SplTimePlotView(leqOverTime = summary.leqOverTime)
+                    }
+                    if (summary.avgLevelPerFreq.isNotEmpty()) {
+                        AverageLevelPerFreqView(avgLevelPerFreq = summary.avgLevelPerFreq)
+                    }
                 }
             }
 
-            ManageMeasurementView(
-                measurementId = viewState.measurement.uuid,
+            Column(
+                verticalArrangement = Arrangement.spacedBy(24.dp),
                 modifier = Modifier.weight(1f)
-            )
+            ) {
+                viewState.measurement.summary?.let { summary ->
+                    RnePlotView(
+                        rneData = summary.repartitionOfNoiseExposure,
+                    )
+                }
+                viewState.measurement.questionnaireAnswers?.let {
+                    QuestionnaireRecapView(
+                        questionnaireId = it.questionnaireId,
+                        measurementId = viewState.measurement.uuid,
+                        router = router
+                    )
+                }
+
+                ManageMeasurementView(measurementId = viewState.measurement.uuid)
+            }
         }
     }
 }
@@ -262,6 +285,7 @@ private fun DetailsScreenMedium(
 @Composable
 private fun DetailsScreenCompact(
     viewState: DetailsScreenViewModel.ViewState.ContentReady,
+    router: DetailsRouter,
 ) {
     // - Properties
 
@@ -275,7 +299,7 @@ private fun DetailsScreenCompact(
             .padding(horizontal = 16.dp)
             .padding(top = 16.dp)
             .paddingBottomWithInsets(withNavBar = 8.dp, withoutNavBar = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        verticalArrangement = Arrangement.spacedBy(32.dp)
     ) {
         DetailsChartsHeader(
             startTime = viewState.startTimeString,
@@ -307,11 +331,19 @@ private fun DetailsScreenCompact(
             if (summary.avgLevelPerFreq.isNotEmpty()) {
                 AverageLevelPerFreqView(avgLevelPerFreq = summary.avgLevelPerFreq)
             }
+        }
 
-            ManageMeasurementView(
+        viewState.measurement.questionnaireAnswers?.let {
+            QuestionnaireRecapView(
+                questionnaireId = it.questionnaireId,
                 measurementId = viewState.measurement.uuid,
+                router = router
             )
         }
+
+        ManageMeasurementView(
+            measurementId = viewState.measurement.uuid,
+        )
     }
 }
 
@@ -340,6 +372,40 @@ private fun ContentLoadingView() {
 }
 
 
+@Composable
+private fun QuestionnaireRecapView(
+    questionnaireId: String,
+    measurementId: String,
+    router: DetailsRouter,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = modifier,
+    ) {
+        Text(
+            text = stringResource(Res.string.details_questionnaire_title),
+            style = MaterialTheme.typography.titleMedium,
+        )
+        Text(
+            text = stringResource(Res.string.details_questionnaire_description),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+
+        NCButton(
+            content = ButtonContent(
+                title = Res.string.details_questionnaire_show_recap_button,
+                icon = Res.drawable.assignment,
+            ),
+            onClick = { router.goToQuestionnaireRecap(measurementId, questionnaireId) },
+            colors = Color.Noise.eleven.secondaryContainerColors()
+        )
+    }
+}
+
+
 /**
  * Will show the map if measurement has location data, or a placeholder
  */
@@ -348,21 +414,29 @@ private fun MapViewOrPlaceHolder(
     viewState: DetailsScreenViewModel.ViewState.ContentReady,
     modifier: Modifier = Modifier,
 ) {
-    Box(
+    val isEmpty = viewState.measurement.locationSequenceIds.isEmpty()
+    val containerColors = if (isEmpty) {
+        Color.Neutral.secondaryContainerColors()
+    } else {
+        Color.Noise.one.secondaryContainerColors(hasDropShadow = true)
+    }
+
+    Container(
+        contentPadding = PaddingValues(0.dp),
         contentAlignment = Alignment.Center,
-        modifier = modifier.clip(shape = MaterialTheme.shapes.large)
-            .background(color = MaterialTheme.colorScheme.surfaceContainer)
+        colors = containerColors,
+        modifier = modifier.clip(shape = ContainerDefaults.Shape),
     ) {
-        if (viewState.measurement.locationSequenceIds.isNotEmpty()) {
-            MapView(
-                modifier = Modifier.fillMaxSize(),
-                focusedMeasurementUuid = viewState.measurement.uuid,
-            )
-        } else {
+        if (isEmpty) {
             Text(
                 text = "No location data available\nfor this measurement.",
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodyLarge,
+            )
+        } else {
+            MapView(
+                modifier = Modifier.fillMaxSize(),
+                focusedMeasurementUuid = viewState.measurement.uuid,
             )
         }
     }

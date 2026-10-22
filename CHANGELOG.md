@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2026-10-22
+
+### Added
+
+- Dynamic questionnaires after completing a measurement (#321)
+
+### Changed
+
+- New design system for sleeker, more consistent look (#312)
+- Update dependencies to latest stable versions (#320)
+- Show map legend as an overlay instead of a popup (#323)
+
+### Fixed
+
+- Export and delete menus from measurement details were unresponsive (#315)
+
 ## [0.9.2] - 2026-10-05
 
 ### Fixed

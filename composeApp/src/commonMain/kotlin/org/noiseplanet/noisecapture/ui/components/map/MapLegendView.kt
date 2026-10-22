@@ -4,32 +4,28 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import noisecapture.composeapp.generated.resources.Res
-import noisecapture.composeapp.generated.resources.cancel
-import noisecapture.composeapp.generated.resources.map_legend_description
 import noisecapture.composeapp.generated.resources.map_legend_title
 import org.jetbrains.compose.resources.stringResource
-import org.noiseplanet.noisecapture.ui.components.button.NCButton
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonStyle
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
+import org.noiseplanet.noisecapture.ui.theme.Neutral
 import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
 
 
 @Composable
-fun MapLegendView(
-    onDismissRequest: () -> Unit,
-) {
+fun MapLegendView() {
 
     // - Properties
 
@@ -37,40 +33,46 @@ fun MapLegendView(
         descendingOrder = true
     )
 
-    val cancelButtonViewModel = NCButtonViewModel(
-        title = Res.string.cancel,
-        style = NCButtonStyle.TEXT,
-        colors = {
-            NCButtonColors.Defaults.text()
-        }
-    )
-
 
     // - Layout
 
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        confirmButton = {
-            NCButton(onClick = onDismissRequest, viewModel = cancelButtonViewModel)
-        },
-        title = {
-            Text(stringResource(Res.string.map_legend_title))
-        },
-        text = {
-            Column {
-                Text(stringResource(Res.string.map_legend_description))
+    Column(
+        modifier = Modifier.padding(16.dp)
+            .padding(top = 24.dp)
+    ) {
+        Text(
+            text = stringResource(Res.string.map_legend_title),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
 
-                Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.width(IntrinsicSize.Max)
+                .padding(bottom = 8.dp)
+        ) {
+            Text(
+                text = "Color",
+                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = Color.Neutral.medium,
+            )
+            Text(
+                text = "dB(A)",
+                style = MaterialTheme.typography.labelMedium,
+                color = Color.Neutral.medium,
+            )
+        }
 
-                items.forEach { (value, color) ->
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Box(modifier = Modifier.height(24.dp).width(32.dp).background(color))
-                        Text(value)
-                    }
-                }
+        items.forEach { (value, color) ->
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.width(IntrinsicSize.Max)
+            ) {
+                Box(modifier = Modifier.height(24.dp).width(32.dp).background(color))
+                Text(value, style = MaterialTheme.typography.labelMedium)
             }
         }
-    )
+    }
 }

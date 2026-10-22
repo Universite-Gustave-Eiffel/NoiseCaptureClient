@@ -14,6 +14,7 @@ import org.noiseplanet.noisecapture.model.dao.LocationSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.model.dao.MeasurementSummary
 import org.noiseplanet.noisecapture.model.dao.MutableMeasurement
+import org.noiseplanet.noisecapture.model.dao.QuestionnaireAnswers
 import org.noiseplanet.noisecapture.services.audio.MicrophoneProviderService
 import org.noiseplanet.noisecapture.services.statistics.UserStatisticsService
 import org.noiseplanet.noisecapture.services.storage.FileSystemService
@@ -33,14 +34,11 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
  * Default implementation for [MeasurementService].
  */
-@OptIn(ExperimentalTime::class)
 @Suppress("TooManyFunctions")
 class DefaultMeasurementService : MeasurementService, KoinComponent {
 
@@ -152,7 +150,6 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
         }
     }
 
-    @OptIn(ExperimentalUuidApi::class)
     override fun openOngoingMeasurement(uuid: String?) {
         // Create a new ongoing measurement with a unique identifier and start time to now.
         ongoingMeasurement = MutableMeasurement(
@@ -317,6 +314,14 @@ class DefaultMeasurementService : MeasurementService, KoinComponent {
         measurementStorageService.set(measurement.uuid, newValue)
         // Return that new value.
         return newValue
+    }
+
+    override suspend fun saveQuestionnaireAnswersForMeasurement(
+        uuid: String,
+        answers: QuestionnaireAnswers,
+    ) {
+        val measurement = measurementStorageService.get(uuid) ?: return
+        measurementStorageService.set(uuid, measurement.copy(questionnaireAnswers = answers))
     }
 
     override suspend fun getMeasurementAsGeoJson(uuid: String): FeatureCollection {
