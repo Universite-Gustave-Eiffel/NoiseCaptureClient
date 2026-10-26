@@ -1,14 +1,25 @@
 package org.noiseplanet.noisecapture.ui.features.recording
 
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.measurement_end_confirmation_dialog_body
+import noisecapture.composeapp.generated.resources.measurement_end_confirmation_dialog_confirm
+import noisecapture.composeapp.generated.resources.measurement_end_confirmation_dialog_continue
+import noisecapture.composeapp.generated.resources.measurement_end_confirmation_dialog_title
 import noisecapture.composeapp.generated.resources.measurement_title
 import org.jetbrains.compose.resources.StringResource
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.services.location.UserLocationService
 import org.noiseplanet.noisecapture.services.measurement.RecordingService
+import org.noiseplanet.noisecapture.ui.components.ButtonContent
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
+import org.noiseplanet.noisecapture.ui.components.dialog.NCDialogViewModel
+import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
+import org.noiseplanet.noisecapture.ui.components.tertiaryContainerColors
+import org.noiseplanet.noisecapture.ui.components.transparentContainerColors
+import org.noiseplanet.noisecapture.ui.theme.Noise
 
 class RecordingScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
 
@@ -43,6 +54,16 @@ class RecordingScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
                 true
             }
         }
+
+    val endRecordingConfirmationDialogViewModel = NCDialogViewModel(
+        containerColors = Color.Noise.two.secondaryContainerColors(),
+        confirmButtonContent = ButtonContent(title = Res.string.measurement_end_confirmation_dialog_confirm),
+        confirmButtonColors = Color.Noise.two.tertiaryContainerColors(hasDropShadow = true),
+        dismissButtonContent = ButtonContent(title = Res.string.measurement_end_confirmation_dialog_continue),
+        dismissButtonColors = Color.Noise.two.transparentContainerColors(),
+        title = Res.string.measurement_end_confirmation_dialog_title,
+        text = Res.string.measurement_end_confirmation_dialog_body,
+    )
 
 
     // - Public functions

@@ -13,10 +13,9 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.model.dao.MicrophoneCalibrationProfile
 import org.noiseplanet.noisecapture.services.audio.MicrophoneProviderService
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonStyle
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
-import org.noiseplanet.noisecapture.ui.theme.NoiseLevelColorRamp
+import org.noiseplanet.noisecapture.ui.components.ButtonContent
+import org.noiseplanet.noisecapture.ui.theme.ColorSet
+import org.noiseplanet.noisecapture.ui.theme.Noise
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 
 
@@ -25,9 +24,8 @@ class HomeMicrophoneSetupViewModel : ViewModel(), KoinComponent {
     // - View state
 
     data class ViewState(
-        val buttonViewModel: NCButtonViewModel,
-        val contentColor: Color,
-        val containerColor: Color,
+        val buttonContent: ButtonContent,
+        val colors: ColorSet,
         val calibrationProfile: MicrophoneCalibrationProfile? = null,
     )
 
@@ -41,25 +39,14 @@ class HomeMicrophoneSetupViewModel : ViewModel(), KoinComponent {
         .map { calibrationProfile ->
             if (calibrationProfile.isCalibrated) {
                 ViewState(
-                    buttonViewModel = NCButtonViewModel(
-                        title = Res.string.home_mic_setup_recalibrate_button,
-                        style = NCButtonStyle.OUTLINED,
-                        colors = {
-                            NCButtonColors(
-                                containerColor = NoiseLevelColorRamp.level5Dark,
-                                contentColor = NoiseLevelColorRamp.level5Dark
-                            )
-                        }
-                    ),
-                    contentColor = NoiseLevelColorRamp.level5Dark,
-                    containerColor = NoiseLevelColorRamp.level5Light,
+                    buttonContent = ButtonContent(Res.string.home_mic_setup_recalibrate_button),
+                    colors = Color.Noise.five,
                     calibrationProfile = calibrationProfile,
                 )
             } else {
                 ViewState(
-                    buttonViewModel = NCButtonViewModel(Res.string.home_mic_setup_calibrate_button),
-                    contentColor = NoiseLevelColorRamp.level6Dark,
-                    containerColor = NoiseLevelColorRamp.level6Light,
+                    colors = Color.Noise.six,
+                    buttonContent = ButtonContent(Res.string.home_mic_setup_calibrate_button),
                     calibrationProfile = calibrationProfile,
                 )
             }
@@ -67,9 +54,8 @@ class HomeMicrophoneSetupViewModel : ViewModel(), KoinComponent {
         .stateInWhileSubscribed(
             scope = viewModelScope,
             initialValue = ViewState(
-                buttonViewModel = NCButtonViewModel(Res.string.home_mic_setup_calibrate_button),
-                contentColor = NoiseLevelColorRamp.level6Dark,
-                containerColor = NoiseLevelColorRamp.level6Light,
+                buttonContent = ButtonContent(Res.string.home_mic_setup_calibrate_button),
+                colors = Color.Noise.six,
             )
         )
 }

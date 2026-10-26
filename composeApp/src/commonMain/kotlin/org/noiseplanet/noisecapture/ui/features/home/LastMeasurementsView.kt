@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,20 +21,26 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.history
 import noisecapture.composeapp.generated.resources.home_last_measurements_section_header
+import noisecapture.composeapp.generated.resources.home_open_history_button_title
 import noisecapture.composeapp.generated.resources.home_statistics_recordings_count
 import noisecapture.composeapp.generated.resources.home_statistics_title
 import noisecapture.composeapp.generated.resources.home_statistics_total
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.noiseplanet.noisecapture.model.dao.Measurement
+import org.noiseplanet.noisecapture.ui.components.ButtonContent
+import org.noiseplanet.noisecapture.ui.components.Container
 import org.noiseplanet.noisecapture.ui.components.ListSectionHeader
-import org.noiseplanet.noisecapture.ui.components.button.NCButton
+import org.noiseplanet.noisecapture.ui.components.NCButton
+import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
+import org.noiseplanet.noisecapture.ui.components.tertiaryContainerColors
+import org.noiseplanet.noisecapture.ui.theme.Noise
 
 
 @Composable
@@ -89,37 +96,38 @@ private fun LastMeasurementsViewContentReady(
             modifier = Modifier.height(IntrinsicSize.Max)
                 .fillMaxWidth()
         ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.width(IntrinsicSize.Min)
-                    .background(
-                        color = MaterialTheme.colorScheme.surfaceContainer,
-                        shape = MaterialTheme.shapes.medium,
-                    )
-                    .padding(12.dp)
+            Container(
+                contentPadding = PaddingValues(12.dp),
+                colors = Color.Noise.three.secondaryContainerColors(),
+                modifier = Modifier.width(IntrinsicSize.Min),
             ) {
-                Text(
-                    text = stringResource(Res.string.home_statistics_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = stringResource(Res.string.home_statistics_title),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
 
-                StatisticsElement(
-                    viewState.measurementsCount.toString(),
-                    stringResource(Res.string.home_statistics_recordings_count)
-                )
-                StatisticsElement(
-                    viewState.totalDuration,
-                    "${viewState.durationUnit} ${stringResource(Res.string.home_statistics_total)}"
-                )
+                    StatisticsElement(
+                        viewState.measurementsCount.toString(),
+                        stringResource(Res.string.home_statistics_recordings_count)
+                    )
+                    StatisticsElement(
+                        viewState.totalDuration,
+                        "${viewState.durationUnit} ${stringResource(Res.string.home_statistics_total)}"
+                    )
 
-                Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.weight(1f))
 
-                NCButton(
-                    onClick = onClickOpenHistoryButton,
-                    viewModel = viewState.historyButtonViewModel,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                    NCButton(
+                        onClick = onClickOpenHistoryButton,
+                        content = ButtonContent(
+                            title = Res.string.home_open_history_button_title,
+                            icon = Res.drawable.history,
+                        ),
+                        colors = Color.Noise.three.tertiaryContainerColors(),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
 
             FlowRow(
@@ -155,13 +163,8 @@ private fun StatisticsElement(
 ) {
     // - Properties
 
-    val statisticsValueStyle = MaterialTheme.typography.titleMedium.copy(
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        fontWeight = FontWeight.Bold,
-    )
-    val statisticsLabelStyle = MaterialTheme.typography.bodyMedium.copy(
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
+    val statisticsValueStyle = MaterialTheme.typography.titleMedium
+    val statisticsLabelStyle = MaterialTheme.typography.bodyMedium
 
 
     // - Layout

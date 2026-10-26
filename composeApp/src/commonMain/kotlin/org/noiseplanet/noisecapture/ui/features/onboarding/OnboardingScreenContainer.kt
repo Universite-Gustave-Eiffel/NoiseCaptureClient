@@ -12,12 +12,13 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.StringResource
-import org.noiseplanet.noisecapture.ui.components.button.NCButton
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonColors
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonStyle
-import org.noiseplanet.noisecapture.ui.components.button.NCButtonViewModel
+import org.noiseplanet.noisecapture.ui.components.ButtonContent
+import org.noiseplanet.noisecapture.ui.components.NCButton
+import org.noiseplanet.noisecapture.ui.components.tertiaryContainerColors
+import org.noiseplanet.noisecapture.ui.theme.Noise
 import org.noiseplanet.noisecapture.util.AdaptiveUtil
 import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 
@@ -45,22 +46,19 @@ fun OnboardingScreenContainer(
             Spacer(modifier = Modifier.height(32.dp))
 
             NCButton(
-                viewModel = NCButtonViewModel(title = primaryButtonTitle, hasDropShadow = true),
+                content = ButtonContent(title = primaryButtonTitle),
                 onClick = primaryButtonAction,
-                modifier = Modifier.height(40.dp).width(200.dp),
+                modifier = Modifier.width(200.dp),
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             if (secondaryButtonTitle != null && secondaryButtonAction != null) {
                 NCButton(
-                    viewModel = NCButtonViewModel(
-                        title = secondaryButtonTitle,
-                        style = NCButtonStyle.TEXT,
-                        colors = { NCButtonColors.Defaults.text() }
-                    ),
+                    content = ButtonContent(title = secondaryButtonTitle),
+                    colors = Color.Noise.one.tertiaryContainerColors(),
                     onClick = secondaryButtonAction,
-                    modifier = Modifier.height(40.dp).width(200.dp),
+                    modifier = Modifier.width(200.dp),
                 )
             }
         }

@@ -32,7 +32,6 @@ import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 @OptIn(KoinExperimentalAPI::class, ExperimentalLayoutApi::class)
 @Composable
 fun HomeScreen(
-    viewModel: HomeScreenViewModel,
     router: HomeRouter,
 ) {
     // - DI
@@ -54,15 +53,15 @@ fun HomeScreen(
         color = MaterialTheme.colorScheme.surface
     ) {
         when (sizeClass.minWidthDp) {
-            WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND -> HomeScreenLarge(viewModel, router)
-            else -> HomeScreenCompact(viewModel, router)
+            WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND -> HomeScreenLarge(router)
+            else -> HomeScreenCompact(router)
         }
     }
 }
 
 
 @Composable
-private fun HomeScreenCompact(viewModel: HomeScreenViewModel, router: HomeRouter) {
+private fun HomeScreenCompact(router: HomeRouter) {
 
     // - Properties
 
@@ -84,7 +83,6 @@ private fun HomeScreenCompact(viewModel: HomeScreenViewModel, router: HomeRouter
             .padding(horizontal = horizontalPadding)
     ) {
         SoundLevelMeterHeaderView(
-            viewModel = viewModel,
             onClickOpenSoundLevelMeterButton = router::onClickOpenSoundLevelMeterButton,
             showPermissionPrompt = router.showPermissionPrompt,
             modifier = Modifier.padding(horizontal = horizontalPadding)
@@ -114,7 +112,7 @@ private fun HomeScreenCompact(viewModel: HomeScreenViewModel, router: HomeRouter
 
 
 @Composable
-private fun HomeScreenLarge(viewModel: HomeScreenViewModel, router: HomeRouter) {
+private fun HomeScreenLarge(router: HomeRouter) {
     Column(
         verticalArrangement = Arrangement.spacedBy(24.dp),
         modifier = Modifier.navigationBarInsetsTop()
@@ -127,7 +125,6 @@ private fun HomeScreenLarge(viewModel: HomeScreenViewModel, router: HomeRouter) 
             modifier = Modifier.height(IntrinsicSize.Min)
         ) {
             SoundLevelMeterHeaderView(
-                viewModel = viewModel,
                 onClickOpenSoundLevelMeterButton = router::onClickOpenSoundLevelMeterButton,
                 showPermissionPrompt = router.showPermissionPrompt,
                 modifier = Modifier.weight(1f).fillMaxHeight(),

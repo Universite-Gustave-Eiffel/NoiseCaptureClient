@@ -2,7 +2,6 @@ package org.noiseplanet.noisecapture.ui.features.settings.item
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
 import org.jetbrains.compose.resources.StringResource
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -10,6 +9,7 @@ import org.noiseplanet.noisecapture.services.settings.SettingsKey
 import org.noiseplanet.noisecapture.services.settings.UserSettingsService
 import org.noiseplanet.noisecapture.util.IterableEnum
 import org.noiseplanet.noisecapture.util.ShortNameRepresentable
+import kotlin.enums.EnumEntries
 
 /**
  * Base setting item view model class to use with primitive types.
@@ -62,30 +62,26 @@ class SettingsEnumItemViewModel<T>(
     settingKey = settingKey
 ) where T : Enum<T>, T : IterableEnum<T>, T : ShortNameRepresentable {
 
-    private val entries = settingKey.defaultValue.entries()
-
     /**
      * Lists the choices that will be available in the dropdown menu
      */
-    val choices: List<StringResource> = entries
-        .map { it.fullName }
+    val choices: EnumEntries<T> = settingKey.defaultValue.entries()
 
     /**
      * Returns the currently selected item as a string resource
      */
-    val selected: Flow<StringResource> = getValueFlow()
-        .map { it.shortName }
+    val selected: Flow<T> = getValueFlow()
 
     /**
      * The initial value to be displayed as a string resource
      */
-    val initialValue: StringResource = getValue().shortName
+    val initialValue: T = getValue()
 
     /**
      * Select a new value and update the underlying setting value from the index
      * of the selected choice.
      */
     fun select(index: Int) {
-        setValue(entries[index])
+        setValue(choices[index])
     }
 }

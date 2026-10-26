@@ -1,0 +1,107 @@
+{
+  "id": "test_questionnaire",
+  "skippable": false,
+  "pages": [
+    {
+      "id": "test_questionnaire_1",
+      "index": 0,
+      "title": "First round of testing questions",
+      "description": "Answer each question to proceed to the next page.",
+      "questions": [
+        {
+          "id": "slider_question",
+          "type": "slider",
+          "required": true,
+          "title": "Slider question",
+          "description": "With a nice description that explains everything.",
+          "startLabel": "Absolutely not",
+          "endLabel": "Totally"
+        },
+        {
+          "id": "text_question",
+          "type": "text",
+          "required": true,
+          "title": "Text question",
+          "description": "User can input anything they want here. No validation atm.",
+          "placeholder": "This is a placeholder"
+        },
+        {
+          "id": "single_choice_question",
+          "type": "single_choice",
+          "required": true,
+          "title": "Single choice question",
+          "description": "Multiple choices question, only one answer can be selected at a time.",
+          "choices": [
+            {
+              "id": "option_one",
+              "title": "Option one"
+            },
+            {
+              "id": "option_two",
+              "title": "Option two"
+            },
+            {
+              "id": "option_three",
+              "title": "Option three"
+            },
+            {
+              "id": "option_four",
+              "title": "Option four. This one has a longer title to see how it will be rendered."
+            }
+          ]
+        },
+        {
+          "id": "multiple_choice_question",
+          "type": "multiple_choice",
+          "required": true,
+          "title": "Multiple choice question",
+          "description": "Multiple choices question, multiple answers can be selected at a time.",
+          "choices": [
+            {
+              "id": "option_one",
+              "title": "Option one"
+            },
+            {
+              "id": "option_two",
+              "title": "Option two"
+            },
+            {
+              "id": "option_three",
+              "title": "Option three"
+            },
+            {
+              "id": "option_four",
+              "title": "Option four. This one has a longer title to see how it will be rendered."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "test_questionnaire_2",
+      "index": 1,
+      "title": "Second round of test questions",
+      "description": "Some questions here are optional. Leaving them blank should still allow you to end the questionnaire.",
+      "questions": [
+        {
+          "id": "perception_pleasantness",
+          "type": "slider",
+          "required": false,
+          "title": "Pleasantness",
+          "description": null,
+          "startLabel": "Unpleasant",
+          "endLabel": "Pleasant"
+        },
+        {
+          "id": "perception_eventfulness",
+          "type": "slider",
+          "required": true,
+          "title": "Eventfulness",
+          "description": null,
+          "startLabel": "Uneventful",
+          "endLabel": "Eventful"
+        }
+      ]
+    }
+  ]
+}

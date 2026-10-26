@@ -9,6 +9,7 @@ import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import org.noiseplanet.noisecapture.ui.theme.OnSurface
 
 /**
  * Adds a drop shadow effect to the composable.
@@ -26,11 +27,11 @@ import androidx.compose.ui.graphics.Shape
 @Composable
 fun Modifier.ncDropShadow(
     shape: Shape,
-    color: Color = Color.Black,
-    alpha: Float = 0.1f,
-    blur: Float = 12f,
-    offset: Offset = Offset(x = 0f, y = 2f),
-    spread: Float = 0f,
+    color: Color = Color.OnSurface,
+    alpha: Float = 0.15f,
+    blur: Float = 16f,
+    offset: Offset = Offset(x = 0f, y = 4f),
+    spread: Float = 2f,
     isPressed: Boolean = false,
 ): Modifier {
 

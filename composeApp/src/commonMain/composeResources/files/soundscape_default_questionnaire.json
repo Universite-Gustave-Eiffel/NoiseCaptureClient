@@ -1,0 +1,76 @@
+{
+  "id": "soundscape_default_questionnaire",
+  "skippable": true,
+  "pages": [
+    {
+      "id": "soundscape_default_page_sources",
+      "index": 0,
+      "title": "How much did you hear...",
+      "description": "Tap on each scale below where you would like to put your answer.",
+      "questions": [
+        {
+          "id": "source_traffic",
+          "type": "slider",
+          "required": false,
+          "title": "Traffic sounds",
+          "description": "Cars, trains, planes, motorcycles, ...",
+          "startLabel": "Not at all",
+          "endLabel": "Dominates completely"
+        },
+        {
+          "id": "source_human_made",
+          "type": "slider",
+          "required": false,
+          "title": "Human made sounds",
+          "description": "Voices, laughter, footsteps, music, ...",
+          "startLabel": "Not at all",
+          "endLabel": "Dominates completely"
+        },
+        {
+          "id": "source_mechanical",
+          "type": "slider",
+          "required": false,
+          "title": "Other mechanical sounds",
+          "description": "Sirens, construction work, industry, ...",
+          "startLabel": "Not at all",
+          "endLabel": "Dominates completely"
+        },
+        {
+          "id": "source_natural",
+          "type": "slider",
+          "required": false,
+          "title": "Natural sounds",
+          "description": "Animals, water flowing, wind in vegetation, ...",
+          "startLabel": "Not at all",
+          "endLabel": "Dominates completely"
+        }
+      ]
+    },
+    {
+      "id": "soundscape_default_page_perception",
+      "index": 1,
+      "title": "How would you describe the sound environment?",
+      "description": "Tap on each scale below where you would like to put your answer.",
+      "questions": [
+        {
+          "id": "perception_pleasantness",
+          "type": "slider",
+          "required": false,
+          "title": "Pleasantness",
+          "description": null,
+          "startLabel": "Unpleasant",
+          "endLabel": "Pleasant"
+        },
+        {
+          "id": "perception_eventfulness",
+          "type": "slider",
+          "required": false,
+          "title": "Eventfulness",
+          "description": null,
+          "startLabel": "Uneventful",
+          "endLabel": "Eventful"
+        }
+      ]
+    }
+  ]
+}
