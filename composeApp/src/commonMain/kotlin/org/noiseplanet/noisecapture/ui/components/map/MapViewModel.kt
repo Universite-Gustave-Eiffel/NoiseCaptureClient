@@ -218,36 +218,6 @@ class MapViewModel(
      */
     private var measurementPathBoundingBox: BoundingBox? = null
 
-//    val recenterButtonContent: StateFlow<ButtonContent?> = locationService.isLocationAvailable
-//        .combine(autoRecenterEnabled) { isAvailable, autoRecenterEnabled ->
-//            val icon = if (!parameters.followUserLocation || isAvailable) {
-//                Res.drawable.my_location
-//            } else {
-//                Res.drawable.location_disabled
-//            }
-//            IconNCButtonViewModel(
-//                icon = icon,
-//                colors = {
-//                    val tint = if (isAvailable) {
-//                        if (parameters.followUserLocation && autoRecenterEnabled) {
-//                            MaterialTheme.colorScheme.accentBlue
-//                        } else {
-//                            MaterialTheme.colorScheme.onSurface
-//                        }
-//                    } else {
-//                        MaterialTheme.colorScheme.error
-//                    }
-//                    NCButtonColors(
-//                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-//                        contentColor = tint
-//                    )
-//                },
-//            )
-//        }.stateInWhileSubscribed(
-//            scope = viewModelScope,
-//            initialValue = null,
-//        )
-
 
     // - Lifecycle
 
