@@ -3,6 +3,8 @@ package org.noiseplanet.noisecapture.services
 import org.koin.dsl.module
 import org.noiseplanet.noisecapture.services.audio.DefaultLiveAudioService
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
+import org.noiseplanet.noisecapture.services.campaign.CampaignService
+import org.noiseplanet.noisecapture.services.campaign.DefaultCampaignService
 import org.noiseplanet.noisecapture.services.location.DefaultUserLocationService
 import org.noiseplanet.noisecapture.services.location.UserLocationService
 import org.noiseplanet.noisecapture.services.measurement.DefaultMeasurementService
@@ -46,5 +48,9 @@ val servicesModule = module {
 
     single<UserStatisticsService> {
         DefaultUserStatisticsService()
+    }
+
+    single<CampaignService> {
+        DefaultCampaignService()
     }
 }
