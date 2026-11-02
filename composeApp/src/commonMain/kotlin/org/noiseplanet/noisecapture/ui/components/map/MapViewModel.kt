@@ -135,7 +135,7 @@ class MapViewModel(
 
         private const val BACKGROUND_TILESET_URL =
             "https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png" +
-                "?key=cb1_2gey_1_b3058d86b69f389b5b039989"
+                "?key=cb1_2gey_2_927078f8f5c9f5567829817b"
 
         private const val NOISEPLANET_GEOSERVER_URL =
             "https://onomap-gs.noise-planet.org/geoserver/gwc/service/tms/1.0.0/" +
