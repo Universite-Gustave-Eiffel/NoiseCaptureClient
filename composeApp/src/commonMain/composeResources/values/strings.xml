@@ -20,6 +20,11 @@
     <string name="home_mic_setup_not_calibrated">For your measurements to be accurate, it is important that you calibrate your microphone.</string>
     <string name="home_mic_setup_calibrate_button">Calibrate</string>
     <string name="home_mic_setup_recalibrate_button">Recalibrate</string>
+    <string name="home_campaign_section_header">Measurement campaign</string>
+    <string name="home_campaign_join_description">Campaigns allow participants to group together all measurements made with a common goal, or for a special event.</string>
+    <string name="home_campaign_join_scan_button">Scan invite</string>
+    <string name="home_campaign_join_enter_code_button">Enter invite code</string>
+    <string name="home_campaign_join_create_your_own">Want to create your own campaign?</string>
 
     <string name="home_statistics_title">Statistics</string>
     <!-- TODO: Use localisation that supports plurals -->
@@ -320,6 +325,14 @@
     <string name="calibration_results_save_gain">Save gain</string>
     <string name="calibration_results_suggested_gain_warning">The gain difference between your device and the reference is suspiciously high. We advise that you try calibrating again, following the tips. If you’re confident with your calibration method, you can still apply this suggested gain.</string>
 
+
+    <!-- Campaign -->
+    <string name="campaign_join_invite_code_title">Enter invite code</string>
+    <string name="campaign_join_invite_code_body">Campaigns allow participants to group together all measurements made with a common goal, or for a special event. If you received an invitation with a code, enter it down bellow to join the campaign.</string>
+    <string name="campaign_join_invite_code_confirm">Join campaign</string>
+    <string name="campaign_join_disclaimer">Note: you can leave and join measurement campaigns at any time, without restriction.</string>
+
+
     <!-- Misc -->
     <string name="na">N/A</string>
     <string name="delete">Delete</string>
@@ -332,4 +345,5 @@
     <string name="previous">Previous</string>
     <string name="done">Done</string>
     <string name="exit">Exit</string>
+    <string name="contact_us">Contact us!</string>
 </resources>

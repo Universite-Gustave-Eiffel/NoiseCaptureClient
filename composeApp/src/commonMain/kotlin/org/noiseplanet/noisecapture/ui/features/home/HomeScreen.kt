@@ -106,6 +106,10 @@ private fun HomeScreenCompact(router: HomeRouter) {
             modifier = Modifier.padding(horizontal = 16.dp)
         )
 
+        HomeCampaignJoinView(
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+
         // TODO: Add more info section
     }
 }
