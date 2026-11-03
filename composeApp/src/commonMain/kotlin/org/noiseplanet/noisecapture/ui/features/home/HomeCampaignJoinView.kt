@@ -16,34 +16,36 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import noisecapture.composeapp.generated.resources.Res
-import noisecapture.composeapp.generated.resources.campaign_not_found_body
-import noisecapture.composeapp.generated.resources.campaign_not_found_title
-import noisecapture.composeapp.generated.resources.close
 import noisecapture.composeapp.generated.resources.home_campaign_join_description
 import noisecapture.composeapp.generated.resources.home_campaign_join_enter_code_button
 import noisecapture.composeapp.generated.resources.home_campaign_join_scan_button
 import noisecapture.composeapp.generated.resources.home_campaign_section_header
 import noisecapture.composeapp.generated.resources.qr_code_scanner
 import org.jetbrains.compose.resources.stringResource
+import org.noiseplanet.noisecapture.model.dao.Campaign
 import org.noiseplanet.noisecapture.ui.components.ButtonContent
 import org.noiseplanet.noisecapture.ui.components.ListSectionHeader
 import org.noiseplanet.noisecapture.ui.components.NCButton
-import org.noiseplanet.noisecapture.ui.components.dialog.NCDialog
-import org.noiseplanet.noisecapture.ui.components.dialog.NCDialogViewModel
 import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
 import org.noiseplanet.noisecapture.ui.components.tertiaryContainerColors
-import org.noiseplanet.noisecapture.ui.components.transparentContainerColors
+import org.noiseplanet.noisecapture.ui.features.campaign.CampaignExpiredDialog
 import org.noiseplanet.noisecapture.ui.features.campaign.CampaignInviteCodeDialog
+import org.noiseplanet.noisecapture.ui.features.campaign.CampaignNotFoundDialog
 import org.noiseplanet.noisecapture.ui.theme.Noise
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 @Composable
 fun HomeCampaignJoinView(
+    onCampaignJoinRequest: (Campaign) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // - Properties
 
     var showInviteCodeDialog: Boolean by remember { mutableStateOf(false) }
-    var showInvalidCodeDialog: Boolean by remember { mutableStateOf(false) }
+    var showCampaignNotFoundDialog: Boolean by remember { mutableStateOf(false) }
+    var showCampaignExpiredDialog: Boolean by remember { mutableStateOf(false) }
+    var pendingCampaign: Campaign? by remember { mutableStateOf(null) }
 
 
     // - Layout
@@ -86,26 +88,40 @@ fun HomeCampaignJoinView(
     if (showInviteCodeDialog) {
         CampaignInviteCodeDialog(
             onDismissRequest = { showInviteCodeDialog = false },
-            onCampaignFound = { showInviteCodeDialog = false },
+            onCampaignFound = { campaign ->
+                showInviteCodeDialog = false
+                if (
+                    campaign.endTimestamp != null &&
+                    Clock.System.now() >= Instant.fromEpochMilliseconds(campaign.endTimestamp)
+                ) {
+                    pendingCampaign = campaign
+                    showCampaignExpiredDialog = true
+                } else {
+                    onCampaignJoinRequest(campaign)
+                }
+            },
             onCampaignNotFound = {
                 showInviteCodeDialog = false
-                showInvalidCodeDialog = true
+                showCampaignNotFoundDialog = true
             },
         )
     }
 
-    if (showInvalidCodeDialog) {
-        NCDialog(
-            viewModel = NCDialogViewModel(
-                title = Res.string.campaign_not_found_title,
-                text = Res.string.campaign_not_found_body,
-                dismissButtonContent = ButtonContent(title = Res.string.close),
-                dismissButtonColors = Color.Noise.eight.transparentContainerColors(),
-                containerColors = Color.Noise.eight.secondaryContainerColors(hasDropShadow = true),
-            ),
-            onDismissRequest = {
-                showInvalidCodeDialog = false
-            }
+    if (showCampaignNotFoundDialog) {
+        CampaignNotFoundDialog(
+            onDismissRequest = { showCampaignNotFoundDialog = false },
         )
+    }
+
+    if (showCampaignExpiredDialog) {
+        pendingCampaign?.let {
+            CampaignExpiredDialog(
+                campaign = it,
+                onDismissRequest = {
+                    pendingCampaign = null
+                    showCampaignExpiredDialog = false
+                }
+            )
+        } ?: run { showInviteCodeDialog = false }
     }
 }

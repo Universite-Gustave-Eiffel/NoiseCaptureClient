@@ -46,6 +46,8 @@ fun NCDialog(
         text = text,
         shape = shape,
         containerColor = containerColors.backgroundColor,
+        titleContentColor = MaterialTheme.colorScheme.onSurface,
+        textContentColor = MaterialTheme.colorScheme.onSurface,
         modifier = modifier
             .border(
                 width = 1.dp,
