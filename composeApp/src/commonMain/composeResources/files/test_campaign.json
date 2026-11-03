@@ -1,0 +1,10 @@
+{
+  "id": "test_campaign",
+  "code": "123456",
+  "title": "NoiseCapture Party",
+  "subtitle": "Fête de la science 2026 - Strasbourg",
+  "description": "NoiseCapture Party dans le cadre de la fête de la science 2026. Rejoignez l’évènement pour cartographier ensemble les environs du Palais Universitaire et en apprendre plus sur notre environnement sonore!\n\nDépart devant le Palais U dimanche 18/10 à 11h.",
+  "startTimestamp": 1792850400000,
+  "endTimestamp": 1798124400000,
+  "questionnaireId": "test_questionnaire"
+}

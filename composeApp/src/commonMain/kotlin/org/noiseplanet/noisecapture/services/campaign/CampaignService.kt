@@ -18,11 +18,20 @@ interface CampaignService {
     fun getCurrentCampaign(): Campaign?
 
     /**
+     * Fetches campaign information remotely from a given invite code.
+     *
+     * @param code Campaign invite code
+     *
+     * @return Matching campaign, null if not found.
+     */
+    suspend fun getFromInviteCode(code: String): Campaign?
+
+    /**
      * Enroll in the given campaign.
      *
      * @param campaign Campaign to enroll in.
      *
-     * @throws CampaignOverException If campaign has an end date and it has already passed.
+     * @throws CampaignOverException If campaign has an end date, and it has already passed.
      */
     fun enroll(campaign: Campaign)
 

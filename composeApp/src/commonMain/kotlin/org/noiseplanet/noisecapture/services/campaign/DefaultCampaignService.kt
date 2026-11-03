@@ -1,5 +1,8 @@
 package org.noiseplanet.noisecapture.services.campaign
 
+import kotlinx.coroutines.delay
+import kotlinx.serialization.json.Json
+import noisecapture.composeapp.generated.resources.Res
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.model.dao.Campaign
@@ -29,6 +32,18 @@ class DefaultCampaignService : CampaignService, KoinComponent {
             return null
         }
         return storedCampaign
+    }
+
+    override suspend fun getFromInviteCode(code: String): Campaign? {
+        // TODO: Fetch campaign remotely
+        delay(500L)
+        val data = Res.readBytes("files/test_campaign.json").decodeToString()
+        val campaign = Json.decodeFromString<Campaign>(data)
+
+        if (code == campaign.code) {
+            return campaign
+        }
+        return null
     }
 
     override fun enroll(campaign: Campaign) {

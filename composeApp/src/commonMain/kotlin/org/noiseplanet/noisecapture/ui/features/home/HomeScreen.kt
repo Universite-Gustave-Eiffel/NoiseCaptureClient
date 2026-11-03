@@ -66,6 +66,7 @@ private fun HomeScreenCompact(router: HomeRouter) {
     // - Properties
 
     val sizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
+    val scrollState = rememberScrollState()
     val horizontalPadding =
         if (sizeClass.minWidthDp >= WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) 16.dp else 0.dp
     val topPadding =
@@ -76,7 +77,7 @@ private fun HomeScreenCompact(router: HomeRouter) {
 
     Column(
         verticalArrangement = Arrangement.spacedBy(24.dp),
-        modifier = Modifier.verticalScroll(rememberScrollState())
+        modifier = Modifier.verticalScroll(scrollState)
             .navigationBarInsetsTop()
             .paddingBottomWithInsets(32.dp)
             .padding(top = topPadding)

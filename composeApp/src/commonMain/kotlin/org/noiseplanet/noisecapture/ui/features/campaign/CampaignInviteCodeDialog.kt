@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -12,7 +13,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -23,6 +26,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.campaign_join_disclaimer
 import noisecapture.composeapp.generated.resources.campaign_join_invite_code_body
@@ -30,6 +35,9 @@ import noisecapture.composeapp.generated.resources.campaign_join_invite_code_con
 import noisecapture.composeapp.generated.resources.campaign_join_invite_code_title
 import noisecapture.composeapp.generated.resources.cancel
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
+import org.noiseplanet.noisecapture.model.dao.Campaign
+import org.noiseplanet.noisecapture.services.campaign.CampaignService
 import org.noiseplanet.noisecapture.ui.components.ButtonContent
 import org.noiseplanet.noisecapture.ui.components.NCButton
 import org.noiseplanet.noisecapture.ui.components.dialog.NCDialog
@@ -40,14 +48,19 @@ import org.noiseplanet.noisecapture.ui.theme.Noise
 @Composable
 fun CampaignInviteCodeDialog(
     onDismissRequest: () -> Unit,
+    onCampaignFound: (Campaign) -> Unit,
+    onCampaignNotFound: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // - Properties
 
     val focusRequester = remember { FocusRequester() }
     var initialFocusRequested by remember { mutableStateOf(false) }
-
+    var isLoading by remember { mutableStateOf(false) }
     var inviteCode: String by remember { mutableStateOf("") }
+
+    val coroutineScope = rememberCoroutineScope()
+    val campaignService: CampaignService = koinInject()
 
     val textStyle = MaterialTheme.typography.headlineLarge.copy(
         fontWeight = FontWeight.SemiBold,
@@ -62,44 +75,51 @@ fun CampaignInviteCodeDialog(
             Text(text = stringResource(Res.string.campaign_join_invite_code_title))
         },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
                 Text(text = stringResource(Res.string.campaign_join_invite_code_body))
 
-                TextField(
-                    value = inviteCode,
-                    onValueChange = { newValue ->
-                        if (newValue.length <= 6) {
-                            inviteCode = newValue
-                        }
-                    },
-                    placeholder = {
-                        Text(text = "000000", style = textStyle, color = Color.Noise.two.dark)
-                    },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Decimal,
-                        imeAction = ImeAction.Done,
-                    ),
-                    keyboardActions = KeyboardActions(onDone = { onDismissRequest }),
-                    isError = !inviteCode.all { it.isDigit() },
-                    maxLines = 1,
-                    colors = TextFieldDefaults.colors(
-                        unfocusedContainerColor = Color.Transparent,
-                        focusedContainerColor = Color.Transparent,
-                        disabledContainerColor = Color.Transparent,
-                        errorContainerColor = Color.Noise.eight.light,
-                        errorTextColor = Color.Noise.eight.dark,
-                        errorCursorColor = Color.Noise.eight.dark,
-                    ),
-                    textStyle = textStyle,
-                    modifier = Modifier.focusRequester(focusRequester)
-                        .onGloballyPositioned {
-                            if (!initialFocusRequested) {
-                                // Show keyboard automatically when opening the popup.
-                                focusRequester.requestFocus()
-                                initialFocusRequested = true
+                if (isLoading) {
+                    CircularProgressIndicator()
+                } else {
+                    TextField(
+                        value = inviteCode,
+                        onValueChange = { newValue ->
+                            if (newValue.length <= 6) {
+                                inviteCode = newValue
                             }
-                        }
-                )
+                        },
+                        placeholder = {
+                            Text(text = "000000", style = textStyle, color = Color.Noise.two.dark)
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Decimal,
+                            imeAction = ImeAction.Done,
+                        ),
+                        keyboardActions = KeyboardActions(onDone = { onDismissRequest }),
+                        isError = !inviteCode.all { it.isDigit() },
+                        maxLines = 1,
+                        colors = TextFieldDefaults.colors(
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedContainerColor = Color.Transparent,
+                            disabledContainerColor = Color.Transparent,
+                            errorContainerColor = Color.Noise.eight.light,
+                            errorTextColor = Color.Noise.eight.dark,
+                            errorCursorColor = Color.Noise.eight.dark,
+                        ),
+                        textStyle = textStyle,
+                        modifier = Modifier.focusRequester(focusRequester)
+                            .onGloballyPositioned {
+                                if (!initialFocusRequested) {
+                                    // Show keyboard automatically when opening the popup.
+                                    focusRequester.requestFocus()
+                                    initialFocusRequested = true
+                                }
+                            }
+                    )
+                }
 
                 Text(
                     text = stringResource(Res.string.campaign_join_disclaimer),
@@ -113,10 +133,17 @@ fun CampaignInviteCodeDialog(
                 content = ButtonContent(title = Res.string.campaign_join_invite_code_confirm),
                 colors = Color.Noise.two.tertiaryContainerColors(hasDropShadow = true),
                 onClick = {
-                    // TODO: Fetch campaign
-                    onDismissRequest()
+                    isLoading = true
+                    coroutineScope.launch(Dispatchers.Default) {
+                        val campaign = campaignService.getFromInviteCode(inviteCode)
+                        if (campaign == null) {
+                            onCampaignNotFound()
+                        } else {
+                            onCampaignFound(campaign)
+                        }
+                    }
                 },
-                enabled = isValidInviteCode(inviteCode)
+                enabled = isValidInviteCode(inviteCode) && !isLoading
             )
         },
         dismissButton = {

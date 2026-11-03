@@ -331,6 +331,8 @@
     <string name="campaign_join_invite_code_body">Campaigns allow participants to group together all measurements made with a common goal, or for a special event. If you received an invitation with a code, enter it down bellow to join the campaign.</string>
     <string name="campaign_join_invite_code_confirm">Join campaign</string>
     <string name="campaign_join_disclaimer">Note: you can leave and join measurement campaigns at any time, without restriction.</string>
+    <string name="campaign_not_found_title">Campaign not found</string>
+    <string name="campaign_not_found_body">Sorry, we couldn’t find any campaign corresponding to this invite code. Are you sure you entered it correctly?</string>
 
 
     <!-- Misc -->
@@ -345,5 +347,6 @@
     <string name="previous">Previous</string>
     <string name="done">Done</string>
     <string name="exit">Exit</string>
+    <string name="close">Close</string>
     <string name="contact_us">Contact us!</string>
 </resources>

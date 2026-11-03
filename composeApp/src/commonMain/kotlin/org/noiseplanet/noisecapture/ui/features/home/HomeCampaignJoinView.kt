@@ -16,6 +16,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.campaign_not_found_body
+import noisecapture.composeapp.generated.resources.campaign_not_found_title
+import noisecapture.composeapp.generated.resources.close
 import noisecapture.composeapp.generated.resources.home_campaign_join_description
 import noisecapture.composeapp.generated.resources.home_campaign_join_enter_code_button
 import noisecapture.composeapp.generated.resources.home_campaign_join_scan_button
@@ -25,8 +28,11 @@ import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.ui.components.ButtonContent
 import org.noiseplanet.noisecapture.ui.components.ListSectionHeader
 import org.noiseplanet.noisecapture.ui.components.NCButton
+import org.noiseplanet.noisecapture.ui.components.dialog.NCDialog
+import org.noiseplanet.noisecapture.ui.components.dialog.NCDialogViewModel
 import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
 import org.noiseplanet.noisecapture.ui.components.tertiaryContainerColors
+import org.noiseplanet.noisecapture.ui.components.transparentContainerColors
 import org.noiseplanet.noisecapture.ui.features.campaign.CampaignInviteCodeDialog
 import org.noiseplanet.noisecapture.ui.theme.Noise
 
@@ -37,6 +43,7 @@ fun HomeCampaignJoinView(
     // - Properties
 
     var showInviteCodeDialog: Boolean by remember { mutableStateOf(false) }
+    var showInvalidCodeDialog: Boolean by remember { mutableStateOf(false) }
 
 
     // - Layout
@@ -78,7 +85,27 @@ fun HomeCampaignJoinView(
 
     if (showInviteCodeDialog) {
         CampaignInviteCodeDialog(
-            onDismissRequest = { showInviteCodeDialog = false }
+            onDismissRequest = { showInviteCodeDialog = false },
+            onCampaignFound = { showInviteCodeDialog = false },
+            onCampaignNotFound = {
+                showInviteCodeDialog = false
+                showInvalidCodeDialog = true
+            },
+        )
+    }
+
+    if (showInvalidCodeDialog) {
+        NCDialog(
+            viewModel = NCDialogViewModel(
+                title = Res.string.campaign_not_found_title,
+                text = Res.string.campaign_not_found_body,
+                dismissButtonContent = ButtonContent(title = Res.string.close),
+                dismissButtonColors = Color.Noise.eight.transparentContainerColors(),
+                containerColors = Color.Noise.eight.secondaryContainerColors(hasDropShadow = true),
+            ),
+            onDismissRequest = {
+                showInvalidCodeDialog = false
+            }
         )
     }
 }
