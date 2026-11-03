@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.cancel
 import noisecapture.composeapp.generated.resources.exit
@@ -25,6 +24,7 @@ import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.model.dao.Questionnaire
 import org.noiseplanet.noisecapture.model.dao.QuestionnaireAnswers
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
+import org.noiseplanet.noisecapture.services.questionnaire.QuestionnaireService
 import org.noiseplanet.noisecapture.ui.components.ButtonContent
 import org.noiseplanet.noisecapture.ui.components.appbar.AppBarButtonViewModel
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
@@ -38,8 +38,8 @@ import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
  * View model for the questionnaire screen.
  *
  * @param measurementId Identifier of the measurement tied to this questionnaire submission?
- * @param isReviewMode If true, all controls are disabled, only shows what the user previously answered.
  * @param questionnaireId Identifier of the questionnaire.
+ * @param isReviewMode If true, all controls are disabled, only shows what the user previously answered.
  */
 class QuestionnaireScreenViewModel(
     val measurementId: String,
@@ -72,6 +72,7 @@ class QuestionnaireScreenViewModel(
     // - Properties
 
     private val measurementService: MeasurementService by inject()
+    private val questionnaireService: QuestionnaireService by inject()
 
     private val _viewStateFlow = MutableStateFlow<ViewState>(ViewState.Loading)
     val viewState: StateFlow<ViewState> = _viewStateFlow
@@ -119,8 +120,9 @@ class QuestionnaireScreenViewModel(
 
     init {
         viewModelScope.launch {
-            val questionnaireData = Res.readBytes("files/$questionnaireId.json").decodeToString()
-            val questionnaire = Json.decodeFromString<Questionnaire>(questionnaireData)
+            // Fetch questionnaire. In case of error, just skip directly to the next step.
+            val questionnaire = questionnaireService.getQuestionnaire(questionnaireId)
+                ?: return@launch run { listener?.onSkipQuestionnaire() }
 
             // If we're in review mode (user has already answered the questionnaire), load previous
             // answers from measurement data.

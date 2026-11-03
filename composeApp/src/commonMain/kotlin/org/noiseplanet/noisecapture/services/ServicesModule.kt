@@ -13,6 +13,8 @@ import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.services.measurement.RecordingService
 import org.noiseplanet.noisecapture.services.permission.DefaultPermissionService
 import org.noiseplanet.noisecapture.services.permission.PermissionService
+import org.noiseplanet.noisecapture.services.questionnaire.DefaultQuestionnaireService
+import org.noiseplanet.noisecapture.services.questionnaire.QuestionnaireService
 import org.noiseplanet.noisecapture.services.settings.DefaultUserSettingsService
 import org.noiseplanet.noisecapture.services.settings.UserSettingsService
 import org.noiseplanet.noisecapture.services.statistics.DefaultUserStatisticsService
@@ -52,5 +54,9 @@ val servicesModule = module {
 
     single<CampaignService> {
         DefaultCampaignService()
+    }
+
+    single<QuestionnaireService> {
+        DefaultQuestionnaireService()
     }
 }

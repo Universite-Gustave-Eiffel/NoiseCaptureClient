@@ -15,6 +15,7 @@ import org.noiseplanet.noisecapture.model.dao.LeqSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.LocationSequenceFragment
 import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.model.dao.MicrophoneCalibrationProfile
+import org.noiseplanet.noisecapture.model.dao.Questionnaire
 import org.noiseplanet.noisecapture.model.dao.UserStatistics
 import org.noiseplanet.noisecapture.model.dao.VERSION
 import org.noiseplanet.noisecapture.services.storage.FileSystemService
@@ -188,6 +189,11 @@ open class KStoreStorageService<RecordType : @Serializable Any>(
             MicrophoneCalibrationProfile::class -> storeForTypedRecord<MicrophoneCalibrationProfile>(
                 uuid,
                 modelVersion = MicrophoneCalibrationProfile.VERSION
+            )
+
+            Questionnaire::class -> storeForTypedRecord<Questionnaire>(
+                uuid,
+                modelVersion = Questionnaire.VERSION,
             )
 
             // Add other types that can be stored here.
