@@ -2,7 +2,6 @@ package org.noiseplanet.noisecapture.ui.features.home
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -17,11 +16,20 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowSizeClass
 import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
+import org.noiseplanet.noisecapture.model.dao.Campaign
+import org.noiseplanet.noisecapture.ui.features.campaign.CampaignManageDialog
 import org.noiseplanet.noisecapture.ui.navigation.router.HomeRouter
 import org.noiseplanet.noisecapture.util.navigationBarInsetsTop
 import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
@@ -29,9 +37,10 @@ import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
 /**
  * Home screen layout.
  */
-@OptIn(KoinExperimentalAPI::class, ExperimentalLayoutApi::class)
+@OptIn(KoinExperimentalAPI::class)
 @Composable
 fun HomeScreen(
+    viewModel: HomeScreenViewModel,
     router: HomeRouter,
 ) {
     // - DI
@@ -44,6 +53,31 @@ fun HomeScreen(
     // - Properties
 
     val sizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
+    val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
+
+    val currentCampaign: Campaign? by viewModel.currentCampaign.collectAsStateWithLifecycle()
+    val pendingCampaign: Campaign? by viewModel.pendingCampaign.collectAsStateWithLifecycle()
+
+
+    // - Lifecycle
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_RESUME -> {
+                    // Whenever user comes back to the home screen, refresh the current campaign state.
+                    viewModel.refreshCurrentCampaign()
+                }
+
+                else -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
 
     // - Layout
@@ -54,14 +88,34 @@ fun HomeScreen(
     ) {
         when (sizeClass.minWidthDp) {
             WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND -> HomeScreenLarge(router)
-            else -> HomeScreenCompact(router)
+            else -> HomeScreenCompact(
+                viewModel = viewModel,
+                onManageCampaignRequest = {
+                    viewModel.setPendingCampaign(it)
+                },
+                router = router,
+            )
+        }
+
+        pendingCampaign?.let { campaign ->
+            CampaignManageDialog(
+                campaign = campaign,
+                isCurrentCampaign = campaign == currentCampaign,
+                onDismissRequest = { viewModel.dismissPendingCampaign() },
+                onJoinRequest = { viewModel.joinPendingCampaign() },
+                onLeaveRequest = { viewModel.leaveCurrentCampaign() },
+            )
         }
     }
 }
 
 
 @Composable
-private fun HomeScreenCompact(router: HomeRouter) {
+private fun HomeScreenCompact(
+    viewModel: HomeScreenViewModel,
+    onManageCampaignRequest: (Campaign) -> Unit,
+    router: HomeRouter,
+) {
 
     // - Properties
 
@@ -71,6 +125,8 @@ private fun HomeScreenCompact(router: HomeRouter) {
         if (sizeClass.minWidthDp >= WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) 16.dp else 0.dp
     val topPadding =
         if (sizeClass.minWidthDp >= WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) 32.dp else 0.dp
+
+    val currentCampaign: Campaign? by viewModel.currentCampaign.collectAsStateWithLifecycle()
 
 
     // - Layout
@@ -107,12 +163,14 @@ private fun HomeScreenCompact(router: HomeRouter) {
             modifier = Modifier.padding(horizontal = 16.dp)
         )
 
-        HomeCampaignJoinView(
-            modifier = Modifier.padding(horizontal = 16.dp),
-            onCampaignJoinRequest = {}
-        )
-
-        // TODO: Add more info section
+        currentCampaign?.let {
+            // TODO: Manage campaign
+        } ?: run {
+            HomeCampaignJoinView(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                onCampaignJoinRequest = onManageCampaignRequest,
+            )
+        }
     }
 }
 

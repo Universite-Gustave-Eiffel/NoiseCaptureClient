@@ -18,6 +18,12 @@ interface CampaignService {
     fun getCurrentCampaign(): Campaign?
 
     /**
+     * Unenrolls from the current campaign, if any.
+     * Does nothing otherwise.
+     */
+    fun leaveCurrentCampaign()
+
+    /**
      * Fetches campaign information remotely from a given invite code.
      *
      * @param code Campaign invite code

@@ -34,6 +34,10 @@ class DefaultCampaignService : CampaignService, KoinComponent {
         return storedCampaign
     }
 
+    override fun leaveCurrentCampaign() {
+        userSettingsService.set(SettingsKey.CurrentCampaign, null)
+    }
+
     override suspend fun getFromInviteCode(code: String): Campaign? {
         // TODO: Fetch campaign remotely
         delay(500L)
@@ -58,6 +62,6 @@ class DefaultCampaignService : CampaignService, KoinComponent {
 
     private fun isCampaignExpired(campaign: Campaign): Boolean {
         val endTimestamp = campaign.endTimestamp ?: return false
-        return Instant.fromEpochMilliseconds(endTimestamp) > Clock.System.now()
+        return Clock.System.now() >= Instant.fromEpochMilliseconds(endTimestamp)
     }
 }

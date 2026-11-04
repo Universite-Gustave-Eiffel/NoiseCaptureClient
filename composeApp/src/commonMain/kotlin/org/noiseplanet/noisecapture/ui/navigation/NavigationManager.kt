@@ -96,6 +96,7 @@ fun NavigationManager(
             appBarState.setCurrentScreenViewModel(screenViewModel)
 
             HomeScreen(
+                viewModel = screenViewModel,
                 router = router,
             )
         }

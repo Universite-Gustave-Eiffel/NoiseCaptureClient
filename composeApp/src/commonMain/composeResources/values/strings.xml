@@ -338,6 +338,8 @@
     <string name="campaign_not_found_body">Sorry, we couldn’t find any campaign corresponding to this invite code. Are you sure you entered it correctly?</string>
     <string name="campaign_expired_title">Campaign expired</string>
     <string name="campaign_expired_body">The campaign you’re trying to join has already ended. Did you enter the correct invite code?</string>
+    <string name="campaign_manage_leave_button">Leave campaign</string>
+    <string name="campaign_manage_join_button">Join campaign</string>
 
 
     <!-- Misc -->
