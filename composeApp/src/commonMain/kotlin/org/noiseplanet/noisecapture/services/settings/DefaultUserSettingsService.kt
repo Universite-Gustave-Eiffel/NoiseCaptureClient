@@ -39,7 +39,7 @@ class DefaultUserSettingsService(
 
         value?.let {
             settingsProvider.encodeValue(key.serializer, keyName, it)
-        } ?: {
+        } ?: run {
             settingsProvider.removeValue(key.serializer, keyName)
         }
         // Notify that a new value was stored

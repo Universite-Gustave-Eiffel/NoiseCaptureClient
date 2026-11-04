@@ -25,6 +25,7 @@
     <string name="home_campaign_join_scan_button">Scan invite</string>
     <string name="home_campaign_join_enter_code_button">Enter invite code</string>
     <string name="home_campaign_join_create_your_own">Want to create your own campaign?</string>
+    <string name="home_campaign_manage_button">Manage</string>
 
     <string name="home_statistics_title">Statistics</string>
     <!-- TODO: Use localisation that supports plurals -->

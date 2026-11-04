@@ -157,15 +157,21 @@ private fun HomeScreenCompact(
                 .padding(horizontal = 16.dp)
         )
 
+        currentCampaign?.let {
+            HomeCurrentCampaignView(
+                campaign = it,
+                onManageCampaignRequest = onManageCampaignRequest,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+        }
+
         LastMeasurementsView(
             onClickMeasurement = router::onClickMeasurement,
             onClickOpenHistoryButton = router::onClickOpenHistoryButton,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
 
-        currentCampaign?.let {
-            // TODO: Manage campaign
-        } ?: run {
+        if (currentCampaign == null) {
             HomeCampaignJoinView(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 onCampaignJoinRequest = onManageCampaignRequest,

@@ -1,9 +1,11 @@
 package org.noiseplanet.noisecapture.ui.features.campaign
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
@@ -21,6 +23,7 @@ import org.noiseplanet.noisecapture.util.millisecondsToFormattedDateTime
 fun CampaignDetailsView(
     campaign: Campaign,
     modifier: Modifier = Modifier,
+    baseStyle: TextStyle = MaterialTheme.typography.bodyMedium,
 ) {
     Text(
         text = buildAnnotatedString {
@@ -45,8 +48,8 @@ fun CampaignDetailsView(
                 append(": ")
             }
             append(campaign.code)
-            appendLine()
         },
+        style = baseStyle,
         modifier = modifier,
     )
 }

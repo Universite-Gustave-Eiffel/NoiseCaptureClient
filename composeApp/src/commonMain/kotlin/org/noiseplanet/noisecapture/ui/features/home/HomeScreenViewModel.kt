@@ -80,6 +80,7 @@ class HomeScreenViewModel(
 
     fun leaveCurrentCampaign() {
         campaignService.leaveCurrentCampaign()
+        pendingCampaign.tryEmit(null)
         refreshCurrentCampaign()
     }
 }
