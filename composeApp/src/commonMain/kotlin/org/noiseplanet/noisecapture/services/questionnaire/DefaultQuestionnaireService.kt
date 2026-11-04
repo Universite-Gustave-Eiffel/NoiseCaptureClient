@@ -39,8 +39,17 @@ class DefaultQuestionnaireService : QuestionnaireService, KoinComponent {
             val path = "$LOCAL_QUESTIONNAIRES_DIR/$DEFAULT_QUESTIONNAIRE_ID.json"
             return deserializeQuestionnaire(jsonData = Res.readBytes(path).decodeToString())
         }
-        // In case of a custom questionnaire, try to get it from cache, or download it
-        return getLocalQuestionnaire(id) ?: getRemoteQuestionnaire(id)
+        // In case of a custom questionnaire, try to get it from cache
+        getLocalQuestionnaire(id)?.let {
+            return it
+        }
+        // If no cached definition was found, try downloading remotely and caching the result
+        getRemoteQuestionnaire(id)?.let {
+            storageService.set(id, it)
+            return it
+        }
+        // Questionnaire could not be fetched or doesn't exist
+        return null
     }
 
 
