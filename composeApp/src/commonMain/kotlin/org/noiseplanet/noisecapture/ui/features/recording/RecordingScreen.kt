@@ -75,11 +75,14 @@ fun RecordingScreen(
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
                 Lifecycle.Event.ON_RESUME -> {
-                    viewModel.registerMeasurementDoneListener { measurementUuid ->
+                    viewModel.registerMeasurementDoneListener { measurementId ->
                         showEndRecordingConfirmationDialog = false
 
                         if (viewModel.shouldOpenDetailsOnceDone) {
-                            router.goToQuestionnaire(measurementUuid)
+                            router.goToQuestionnaire(
+                                measurementId = measurementId,
+                                questionnaireId = viewModel.questionnaireId
+                            )
                         } else {
                             router.popBackStack()
                             viewModel.shouldOpenDetailsOnceDone = true
