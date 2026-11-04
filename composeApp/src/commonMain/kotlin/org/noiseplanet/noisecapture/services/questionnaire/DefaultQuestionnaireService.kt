@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.services.questionnaire
 
+import kotlinx.coroutines.delay
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import noisecapture.composeapp.generated.resources.Res
@@ -50,8 +51,16 @@ class DefaultQuestionnaireService : QuestionnaireService, KoinComponent {
     }
 
     private suspend fun getRemoteQuestionnaire(id: String): Questionnaire? {
-        // TODO
-        return null
+        // TODO: Fetch questionnaire remotely
+        delay(500L)
+
+        try {
+            val data = Res.readBytes("files/$id.json").decodeToString()
+            val questionnaire = Json.decodeFromString<Questionnaire>(data)
+            return questionnaire
+        } catch (_: Exception) {
+            return null
+        }
     }
 
     private fun deserializeQuestionnaire(jsonData: String): Questionnaire? {
