@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,8 +25,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.campaign_join_disclaimer
 import noisecapture.composeapp.generated.resources.campaign_join_invite_code_body
@@ -35,9 +32,6 @@ import noisecapture.composeapp.generated.resources.campaign_join_invite_code_con
 import noisecapture.composeapp.generated.resources.campaign_join_invite_code_title
 import noisecapture.composeapp.generated.resources.cancel
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
-import org.noiseplanet.noisecapture.model.dao.Campaign
-import org.noiseplanet.noisecapture.services.campaign.CampaignService
 import org.noiseplanet.noisecapture.ui.components.ButtonContent
 import org.noiseplanet.noisecapture.ui.components.NCButton
 import org.noiseplanet.noisecapture.ui.components.dialog.NCDialog
@@ -48,8 +42,7 @@ import org.noiseplanet.noisecapture.ui.theme.Noise
 @Composable
 fun CampaignInviteCodeDialog(
     onDismissRequest: () -> Unit,
-    onCampaignFound: (Campaign) -> Unit,
-    onCampaignNotFound: () -> Unit,
+    onCampaignJoinRequest: (inviteCode: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // - Properties
@@ -58,9 +51,6 @@ fun CampaignInviteCodeDialog(
     var initialFocusRequested by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
     var inviteCode: String by remember { mutableStateOf("") }
-
-    val coroutineScope = rememberCoroutineScope()
-    val campaignService: CampaignService = koinInject()
 
     val textStyle = MaterialTheme.typography.headlineLarge.copy(
         fontWeight = FontWeight.SemiBold,
@@ -134,14 +124,7 @@ fun CampaignInviteCodeDialog(
                 colors = Color.Noise.two.tertiaryContainerColors(hasDropShadow = true),
                 onClick = {
                     isLoading = true
-                    coroutineScope.launch(Dispatchers.Default) {
-                        val campaign = campaignService.getFromInviteCode(inviteCode)
-                        if (campaign == null) {
-                            onCampaignNotFound()
-                        } else {
-                            onCampaignFound(campaign)
-                        }
-                    }
+                    onCampaignJoinRequest(inviteCode)
                 },
                 enabled = isValidInviteCode(inviteCode) && !isLoading
             )

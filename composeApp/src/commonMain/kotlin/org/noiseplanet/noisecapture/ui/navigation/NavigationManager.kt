@@ -7,13 +7,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import kotlinx.coroutines.flow.map
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -69,6 +71,9 @@ fun NavigationManager(
 
     val didCompleteOnboarding = settingsService.get(SettingsKey.DidCompleteOnboarding)
     val startDestination = if (didCompleteOnboarding) HomeRoute() else OnboardingWelcomeRoute()
+    val shouldPopToHomeScreen by settingsService.getFlow(SettingsKey.CampaignInviteCode)
+        .map { it != null }
+        .collectAsStateWithLifecycle(initialValue = false)
 
 
     // - Navigation graph
@@ -238,7 +243,7 @@ fun NavigationManager(
                     settingsService.set(SettingsKey.DidCompleteOnboarding, value = true)
                     // Navigate to home screen and clear backstack
                     navController.navigate(HomeRoute()) {
-                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+                        popUpTo<HomeRoute> { inclusive = true }
                         launchSingleTop = true
                     }
                 }
@@ -255,5 +260,9 @@ fun NavigationManager(
 
             DebugScreen()
         }
+    }
+
+    if (shouldPopToHomeScreen) {
+        navController.popBackStack(HomeRoute(), inclusive = false)
     }
 }

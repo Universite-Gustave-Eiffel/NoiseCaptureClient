@@ -29,10 +29,14 @@ import androidx.window.core.layout.WindowSizeClass
 import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.model.dao.Campaign
+import org.noiseplanet.noisecapture.ui.features.campaign.CampaignExpiredDialog
 import org.noiseplanet.noisecapture.ui.features.campaign.CampaignManageDialog
+import org.noiseplanet.noisecapture.ui.features.campaign.CampaignNotFoundDialog
 import org.noiseplanet.noisecapture.ui.navigation.router.HomeRouter
 import org.noiseplanet.noisecapture.util.navigationBarInsetsTop
 import org.noiseplanet.noisecapture.util.paddingBottomWithInsets
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 /**
  * Home screen layout.
@@ -57,6 +61,7 @@ fun HomeScreen(
 
     val currentCampaign: Campaign? by viewModel.currentCampaign.collectAsStateWithLifecycle()
     val pendingCampaign: Campaign? by viewModel.pendingCampaign.collectAsStateWithLifecycle()
+    val showCampaignNotFoundDialog by viewModel.showCampaignNotFoundDialog.collectAsStateWithLifecycle()
 
 
     // - Lifecycle
@@ -98,13 +103,29 @@ fun HomeScreen(
         }
 
         pendingCampaign?.let { campaign ->
-            CampaignManageDialog(
-                campaign = campaign,
-                isCurrentCampaign = campaign == currentCampaign,
-                onDismissRequest = { viewModel.dismissPendingCampaign() },
-                onJoinRequest = { viewModel.joinPendingCampaign() },
-                onLeaveRequest = { viewModel.leaveCurrentCampaign() },
-            )
+            if (
+                campaign.endTimestamp != null &&
+                Clock.System.now() > Instant.fromEpochMilliseconds(campaign.endTimestamp)
+            ) {
+                CampaignExpiredDialog(
+                    campaign = campaign,
+                    onDismissRequest = { viewModel.dismissPendingCampaign() }
+                )
+            } else {
+                CampaignManageDialog(
+                    campaign = campaign,
+                    isCurrentCampaign = campaign == currentCampaign,
+                    onDismissRequest = { viewModel.dismissPendingCampaign() },
+                    onJoinRequest = { viewModel.joinPendingCampaign() },
+                    onLeaveRequest = { viewModel.leaveCurrentCampaign() },
+                )
+            }
+        }
+
+        if (showCampaignNotFoundDialog) {
+            CampaignNotFoundDialog(onDismissRequest = {
+                viewModel.showCampaignNotFoundDialog.tryEmit(false)
+            })
         }
     }
 }
@@ -174,7 +195,9 @@ private fun HomeScreenCompact(
         if (currentCampaign == null) {
             HomeCampaignJoinView(
                 modifier = Modifier.padding(horizontal = 16.dp),
-                onCampaignJoinRequest = onManageCampaignRequest,
+                onCampaignJoinRequest = { inviteCode ->
+                    viewModel.redeemInviteCode(inviteCode)
+                },
             )
         }
     }

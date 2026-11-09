@@ -135,4 +135,9 @@ sealed class SettingsKey<T>(
         Campaign.serializer().nullable,
         defaultValue = null,
     )
+
+    data object CampaignInviteCode : SettingsKey<String?>(
+        String.serializer().nullable,
+        defaultValue = null,
+    )
 }

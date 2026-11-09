@@ -6,6 +6,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -27,6 +28,8 @@ import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.permission.delegate.PermissionDelegate
 import org.noiseplanet.noisecapture.permission.toPermission
 import org.noiseplanet.noisecapture.services.permission.PermissionService
+import org.noiseplanet.noisecapture.services.settings.SettingsKey
+import org.noiseplanet.noisecapture.services.settings.UserSettingsService
 import org.noiseplanet.noisecapture.ui.theme.OnSurface
 import org.noiseplanet.noisecapture.ui.theme.Surface
 import org.noiseplanet.noisecapture.util.AndroidNotificationProvider
@@ -41,6 +44,7 @@ class MainActivity : ComponentActivity() {
     // - Properties
 
     private lateinit var permissionService: PermissionService
+    private lateinit var settingsService: UserSettingsService
     private lateinit var logger: Logger
 
     private lateinit var filePickerEventBus: AndroidFilePickerEventBus
@@ -86,10 +90,13 @@ class MainActivity : ComponentActivity() {
         }
 
         permissionService = get()
+        settingsService = get()
         logger = get()
         filePickerEventBus = get()
 
         subscribeToFilePickerEventBus()
+
+        intent.data?.let { handleDeepLink(it) }
     }
 
     override fun onRequestPermissionsResult(
@@ -107,8 +114,24 @@ class MainActivity : ComponentActivity() {
         delegate.checkPermissionState()
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+
+        intent.data?.let { handleDeepLink(it) }
+    }
+
 
     // - Private functions
+
+    private fun handleDeepLink(uri: Uri) {
+        logger.info("Handling deep link: $uri")
+
+        val inviteCode = uri.getQueryParameter("code") ?: return
+        logger.info("Invite code: $inviteCode")
+
+        settingsService.set(SettingsKey.CampaignInviteCode, inviteCode)
+    }
 
     /**
      * Listen for new file picker events and launch file picker intent on new events.
