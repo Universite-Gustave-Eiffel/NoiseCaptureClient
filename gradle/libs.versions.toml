@@ -19,6 +19,7 @@ compose-material3-adaptive = "1.3.0-rc01"
 coroutines = "1.11.0"
 detekt = "1.23.8"
 google-play-services-android-location = "21.4.0"
+google-play-services-code-scanner = "16.1.0"
 human-readable = "2.0.0"
 koala-plot = "0.12.1"
 koin = "4.2.2"
@@ -51,6 +52,7 @@ compose-ui-backhandler = { group = "org.jetbrains.compose.ui", name = "ui-backha
 compose-ui-tooling = { group = "org.jetbrains.compose.ui", name = "ui-tooling", version.ref = "compose" }
 compose-ui-tooling-preview = { group = "org.jetbrains.compose.ui", name = "ui-tooling-preview", version.ref = "compose" }
 google-play-services-android-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "google-play-services-android-location" }
+google-play-services-code-scanner = { group = "com.google.android.gms", name = "play-services-code-scanner", version.ref = "google-play-services-code-scanner" }
 humanreadable = { group = "nl.jacobras", name = "Human-Readable", version.ref = "human-readable" }
 koalaplot-core = { group = "io.github.koalaplot", name = "koalaplot-core", version.ref = "koala-plot" }
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }

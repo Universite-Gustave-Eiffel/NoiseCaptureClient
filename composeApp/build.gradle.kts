@@ -123,6 +123,7 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.androidx.preference)
             implementation(libs.google.play.services.android.location)
+            implementation(libs.google.play.services.code.scanner)
             implementation(libs.kstore.file)
             implementation(libs.ktor.client.android)
         }

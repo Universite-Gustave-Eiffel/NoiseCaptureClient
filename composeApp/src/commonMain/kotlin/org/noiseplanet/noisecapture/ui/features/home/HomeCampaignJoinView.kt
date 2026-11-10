@@ -25,12 +25,16 @@ import noisecapture.composeapp.generated.resources.home_campaign_join_scan_butto
 import noisecapture.composeapp.generated.resources.home_campaign_section_header
 import noisecapture.composeapp.generated.resources.qr_code_scanner
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
+import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.ui.components.ButtonContent
 import org.noiseplanet.noisecapture.ui.components.ListSectionHeader
 import org.noiseplanet.noisecapture.ui.components.NCButton
 import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
 import org.noiseplanet.noisecapture.ui.components.tertiaryContainerColors
 import org.noiseplanet.noisecapture.ui.features.campaign.CampaignInviteCodeDialog
+import org.noiseplanet.noisecapture.ui.features.campaign.QrScannerView
+import org.noiseplanet.noisecapture.ui.navigation.DeepLinkHandler
 import org.noiseplanet.noisecapture.ui.theme.Noise
 
 @Composable
@@ -40,7 +44,11 @@ fun HomeCampaignJoinView(
 ) {
     // - Properties
 
+    val deepLinkHandler: DeepLinkHandler = koinInject()
+    val logger: Logger = koinInject()
+
     var showInviteCodeDialog: Boolean by remember { mutableStateOf(false) }
+    var showQrScanner: Boolean by remember { mutableStateOf(false) }
 
     val coroutineScope: CoroutineScope = rememberCoroutineScope()
 
@@ -66,9 +74,7 @@ fun HomeCampaignJoinView(
                         icon = Res.drawable.qr_code_scanner,
                     ),
                     colors = Color.Noise.two.secondaryContainerColors(hasDropShadow = true),
-                    onClick = {
-                        // TODO: Open camera
-                    },
+                    onClick = { showQrScanner = true },
                     modifier = Modifier.weight(1f)
                 )
                 NCButton(
@@ -91,6 +97,16 @@ fun HomeCampaignJoinView(
                     showInviteCodeDialog = false
                 }
             },
+        )
+    }
+
+    if (showQrScanner) {
+        QrScannerView(
+            onResult = { result ->
+                logger.info("SCANNED: $result")
+                showQrScanner = false
+                deepLinkHandler.handle(result)
+            }
         )
     }
 }
