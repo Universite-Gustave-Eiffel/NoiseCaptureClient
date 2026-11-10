@@ -1,8 +1,9 @@
-import UIKit
-import SwiftUI
 import ComposeApp
+import SwiftUI
+import UIKit
 
 struct ComposeView: UIViewControllerRepresentable {
+
     func makeUIViewController(context: Context) -> UIViewController {
         MainViewControllerKt.MainViewController()
     }
@@ -10,9 +11,14 @@ struct ComposeView: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
 }
 
+
 struct ContentView: View {
+
     var body: some View {
         ComposeView()
-                .ignoresSafeArea(.all) // Compose has own insets handler
+            .ignoresSafeArea(.all)  // Compose has own insets handler
+            .onOpenURL { deeplink in
+                MainViewControllerKt.handleDeepLink(deeplink: deeplink.absoluteString)
+            }
     }
 }

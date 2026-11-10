@@ -136,7 +136,7 @@ sealed class SettingsKey<T>(
         defaultValue = null,
     )
 
-    data object CampaignInviteCode : SettingsKey<String?>(
+    data object PendingCampaignInviteCode : SettingsKey<String?>(
         String.serializer().nullable,
         defaultValue = null,
     )

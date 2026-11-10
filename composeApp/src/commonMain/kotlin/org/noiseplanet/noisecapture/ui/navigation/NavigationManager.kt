@@ -71,7 +71,7 @@ fun NavigationManager(
 
     val didCompleteOnboarding = settingsService.get(SettingsKey.DidCompleteOnboarding)
     val startDestination = if (didCompleteOnboarding) HomeRoute() else OnboardingWelcomeRoute()
-    val shouldPopToHomeScreen by settingsService.getFlow(SettingsKey.CampaignInviteCode)
+    val shouldPopToHomeScreen by settingsService.getFlow(SettingsKey.PendingCampaignInviteCode)
         .map { it != null }
         .collectAsStateWithLifecycle(initialValue = false)
 

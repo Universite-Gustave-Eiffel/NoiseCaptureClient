@@ -57,11 +57,11 @@ class HomeScreenViewModel(
 
     init {
         viewModelScope.launch {
-            settingsService.getFlow(SettingsKey.CampaignInviteCode)
+            settingsService.getFlow(SettingsKey.PendingCampaignInviteCode)
                 .mapNotNull { it }
                 .collect {
                     redeemInviteCode(it)
-                    settingsService.set(SettingsKey.CampaignInviteCode, null)
+                    settingsService.set(SettingsKey.PendingCampaignInviteCode, null)
                 }
         }
         refreshCurrentCampaign()
