@@ -94,7 +94,7 @@ fun HomeScreen(
         color = MaterialTheme.colorScheme.surface
     ) {
         when (sizeClass.minWidthDp) {
-            WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND -> HomeScreenLarge(router)
+            WindowSizeClass.WIDTH_DP_LARGE_LOWER_BOUND -> HomeScreenLarge(router)
             else -> HomeScreenCompact(
                 viewModel = viewModel,
                 onManageCampaignRequest = {
