@@ -341,6 +341,9 @@
     <string name="campaign_expired_body">The campaign you’re trying to join has already ended. Did you enter the correct invite code?</string>
     <string name="campaign_manage_leave_button">Leave campaign</string>
     <string name="campaign_manage_join_button">Join campaign</string>
+    <string name="campaign_scan_not_available_dialog_title">Cannot open scanner</string>
+    <string name="campaign_scan_not_available_dialog_body_android">NoiseCapture relies on Google Play Services built-in scanner to scan QR codes in app. If you own a de-Googled device, please use your own QR code scanner to scan the invite, or enter invite code manually.</string>
+    <string name="campaign_scan_not_available_dialog_body_ios">We couldn't access your device's camera. Please enable camera permissions, use the iOS camera to scan the invite code, or enter it manually.</string>
 
 
     <!-- Misc -->

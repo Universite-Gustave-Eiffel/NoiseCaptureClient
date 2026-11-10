@@ -6,5 +6,6 @@ import androidx.compose.ui.Modifier
 @Composable
 expect fun QrScannerView(
     onResult: (String) -> Unit,
+    onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
 )

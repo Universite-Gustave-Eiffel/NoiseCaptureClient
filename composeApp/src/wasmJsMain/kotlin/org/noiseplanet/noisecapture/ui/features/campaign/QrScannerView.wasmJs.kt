@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 @Composable
 actual fun QrScannerView(
     onResult: (String) -> Unit,
+    onDismissRequest: () -> Unit,
     modifier: Modifier,
 ) {
     Text(text = "NOT SUPPORTED", modifier = modifier)

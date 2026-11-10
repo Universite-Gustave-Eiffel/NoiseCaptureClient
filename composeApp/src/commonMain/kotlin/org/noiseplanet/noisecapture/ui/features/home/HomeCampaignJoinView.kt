@@ -106,7 +106,8 @@ fun HomeCampaignJoinView(
                 logger.info("SCANNED: $result")
                 showQrScanner = false
                 deepLinkHandler.handle(result)
-            }
+            },
+            onDismissRequest = { showQrScanner = false }
         )
     }
 }
