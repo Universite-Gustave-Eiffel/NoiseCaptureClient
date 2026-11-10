@@ -1,5 +1,6 @@
 package org.noiseplanet.noisecapture.ui.features.home
 
+import Platform
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -26,6 +27,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowSizeClass
+import org.koin.compose.koinInject
 import org.koin.compose.module.rememberKoinModules
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.noiseplanet.noisecapture.model.dao.Campaign
@@ -147,6 +149,7 @@ private fun HomeScreenCompact(
     val topPadding =
         if (sizeClass.minWidthDp >= WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) 32.dp else 0.dp
 
+    val enableMeasurementCampaigns = koinInject<Platform>().enableMeasurementCampaigns
     val currentCampaign: Campaign? by viewModel.currentCampaign.collectAsStateWithLifecycle()
 
 
@@ -179,11 +182,13 @@ private fun HomeScreenCompact(
         )
 
         currentCampaign?.let {
-            HomeCurrentCampaignView(
-                campaign = it,
-                onManageCampaignRequest = onManageCampaignRequest,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
+            if (enableMeasurementCampaigns) {
+                HomeCurrentCampaignView(
+                    campaign = it,
+                    onManageCampaignRequest = onManageCampaignRequest,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
         }
 
         LastMeasurementsView(
@@ -192,7 +197,7 @@ private fun HomeScreenCompact(
             modifier = Modifier.padding(horizontal = 16.dp)
         )
 
-        if (currentCampaign == null) {
+        if (currentCampaign == null && enableMeasurementCampaigns) {
             HomeCampaignJoinView(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 onCampaignJoinRequest = { inviteCode ->
