@@ -35,6 +35,8 @@
 	<string>16</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Used to scan campaign QR codes</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>To be able to match recorded audio levels with map coordinates, we need access to your live location during the time you’re making a measurement.</string>
 	<key>NSLocationAlwaysUsageDescription</key>

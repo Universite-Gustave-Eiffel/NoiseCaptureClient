@@ -86,6 +86,17 @@ fun HomeCampaignJoinView(
                 )
             }
         }
+
+        if (showQrScanner) {
+            QrScannerView(
+                onResult = { result ->
+                    logger.info("SCANNED: $result")
+                    showQrScanner = false
+                    deepLinkHandler.handle(result)
+                },
+                onDismissRequest = { showQrScanner = false },
+            )
+        }
     }
 
     if (showInviteCodeDialog) {
@@ -97,17 +108,6 @@ fun HomeCampaignJoinView(
                     showInviteCodeDialog = false
                 }
             },
-        )
-    }
-
-    if (showQrScanner) {
-        QrScannerView(
-            onResult = { result ->
-                logger.info("SCANNED: $result")
-                showQrScanner = false
-                deepLinkHandler.handle(result)
-            },
-            onDismissRequest = { showQrScanner = false }
         )
     }
 }
