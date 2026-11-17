@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -66,7 +67,15 @@ fun NCButton(
                 )
             }
             content.title?.let {
-                Text(stringResource(it), style = textStyle)
+                Text(
+                    text = stringResource(it),
+                    style = textStyle,
+                    maxLines = 1,
+                    autoSize = TextAutoSize.StepBased(
+                        minFontSize = textStyle.fontSize.times(0.75f),
+                        maxFontSize = textStyle.fontSize,
+                    )
+                )
             }
         }
     }
