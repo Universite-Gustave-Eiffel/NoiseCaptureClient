@@ -1,7 +1,7 @@
 # keep sorted please, use Edit -> Sort Lines
 
 [versions]
-agp = "9.4.1"
+agp = "9.5.1"
 android-compileSdk = "37"
 android-minSdk = "24"
 android-targetSdk = "37"
@@ -10,12 +10,12 @@ androidx-preference = "1.2.1"
 build-konfig-gradle-plugin = "0.23.0"
 # compose-* library versions must be set according to the libraries table on the coresponding
 # compose verison release page (e.g. https://github.com/JetBrains/compose-multiplatform/releases/tag/v1.10.0)
-compose = "1.12.1"
+compose = "1.12.2"
 compose-lifecycle = "2.11.0"
-compose-navigation = "2.10.0-beta01"
+compose-navigation = "2.10.0-rc01"
 compose-navigationevent = "1.1.0"
 compose-material3 = "1.12.0-alpha03"
-compose-material3-adaptive = "1.3.0-rc01"
+compose-material3-adaptive = "1.3.0"
 coroutines = "1.11.0"
 detekt = "1.23.8"
 google-play-services-android-location = "21.4.0"
@@ -23,7 +23,7 @@ google-play-services-code-scanner = "16.1.0"
 human-readable = "2.0.0"
 koala-plot = "0.12.1"
 koin = "4.2.2"
-kotlin = "2.4.20"
+kotlin = "2.4.21"
 kotlinx-datetime = "0.8.0"
 kotlinx-serialization = "1.11.0"
 kstore = "1.1.0"
