@@ -17,8 +17,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import noisecapture.composeapp.generated.resources.Res
+import noisecapture.composeapp.generated.resources.campaign_manage_not_started_disclaimer
 import noisecapture.composeapp.generated.resources.home_campaign_manage_button
 import noisecapture.composeapp.generated.resources.home_campaign_section_header
+import org.jetbrains.compose.resources.stringResource
 import org.noiseplanet.noisecapture.model.dao.Campaign
 import org.noiseplanet.noisecapture.ui.components.ButtonContent
 import org.noiseplanet.noisecapture.ui.components.Container
@@ -28,6 +30,7 @@ import org.noiseplanet.noisecapture.ui.components.secondaryContainerColors
 import org.noiseplanet.noisecapture.ui.components.tertiaryContainerColors
 import org.noiseplanet.noisecapture.ui.features.campaign.CampaignDetailsView
 import org.noiseplanet.noisecapture.ui.theme.Noise
+import kotlin.time.Clock
 
 @Composable
 fun HomeCurrentCampaignView(
@@ -35,6 +38,14 @@ fun HomeCurrentCampaignView(
     onManageCampaignRequest: (Campaign) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // - Properties
+
+    val hasCampaignStarted: Boolean = campaign.startTimestamp
+        ?.let { Clock.System.now().toEpochMilliseconds() > it }
+        ?: true
+    val colorPalette = if (hasCampaignStarted) Color.Noise.four else Color.Noise.six
+
+
     // - Layout
 
     Column(modifier = modifier) {
@@ -46,7 +57,7 @@ fun HomeCurrentCampaignView(
         Container(
             modifier = Modifier.fillMaxWidth(),
             contentPadding = PaddingValues(12.dp),
-            colors = Color.Noise.four.secondaryContainerColors().copy(
+            colors = colorPalette.secondaryContainerColors().copy(
                 contentColor = MaterialTheme.colorScheme.onSurface
             )
         ) {
@@ -56,7 +67,7 @@ fun HomeCurrentCampaignView(
                     Text(
                         text = it,
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                        color = Color.Noise.four.dark,
+                        color = colorPalette.dark,
                     )
                 }
 
@@ -74,8 +85,17 @@ fun HomeCurrentCampaignView(
 
                     NCButton(
                         content = ButtonContent(title = Res.string.home_campaign_manage_button),
-                        colors = Color.Noise.four.tertiaryContainerColors(hasDropShadow = true),
+                        colors = colorPalette.tertiaryContainerColors(hasDropShadow = true),
                         onClick = { onManageCampaignRequest(campaign) }
+                    )
+                }
+
+                if (!hasCampaignStarted) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = stringResource(Res.string.campaign_manage_not_started_disclaimer),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = colorPalette.dark,
                     )
                 }
             }
