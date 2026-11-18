@@ -53,7 +53,9 @@ val servicesModule = module {
     }
 
     single<CampaignService> {
-        DefaultCampaignService()
+        DefaultCampaignService(
+            userSettingsService = get()
+        )
     }
 
     single<QuestionnaireService> {

@@ -140,4 +140,15 @@ sealed class SettingsKey<T>(
         String.serializer().nullable,
         defaultValue = null,
     )
+
+    // Unit tests
+    data object IntTest : SettingsKey<Int>(
+        Int.serializer(),
+        defaultValue = 42,
+    )
+
+    data object NullableStringTest : SettingsKey<String?>(
+        String.serializer().nullable,
+        defaultValue = null,
+    )
 }

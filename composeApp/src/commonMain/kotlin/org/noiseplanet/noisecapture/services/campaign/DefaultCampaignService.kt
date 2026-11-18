@@ -3,8 +3,6 @@ package org.noiseplanet.noisecapture.services.campaign
 import kotlinx.coroutines.delay
 import kotlinx.serialization.json.Json
 import noisecapture.composeapp.generated.resources.Res
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.model.dao.Campaign
 import org.noiseplanet.noisecapture.services.settings.SettingsKey
 import org.noiseplanet.noisecapture.services.settings.UserSettingsService
@@ -14,12 +12,10 @@ import kotlin.time.Instant
 /**
  * Default campaign service storing campaign in
  */
-class DefaultCampaignService : CampaignService, KoinComponent {
-
-    // - Properties
-
-    private val userSettingsService: UserSettingsService by inject()
-
+class DefaultCampaignService(
+    private val userSettingsService: UserSettingsService,
+    private val clock: Clock = Clock.System,
+) : CampaignService {
 
     // - CampaignService
 
@@ -62,6 +58,6 @@ class DefaultCampaignService : CampaignService, KoinComponent {
 
     private fun isCampaignExpired(campaign: Campaign): Boolean {
         val endTimestamp = campaign.endTimestamp ?: return false
-        return Clock.System.now() >= Instant.fromEpochMilliseconds(endTimestamp)
+        return clock.now() >= Instant.fromEpochMilliseconds(endTimestamp)
     }
 }
