@@ -82,7 +82,10 @@ class ManageMeasurementViewModel(
                     val state = DeleteConfirmDialogState(
                         text = Res.string.details_delete_measurement_audio_dialog_text,
                         onDismissRequest = { _deleteConfirmDialogStateFlow.tryEmit(null) },
-                        onConfirm = { deleteMeasurementAudio() }
+                        onConfirm = {
+                            deleteMeasurement()
+                            _deleteConfirmDialogStateFlow.tryEmit(null)
+                        }
                     )
                     _deleteConfirmDialogStateFlow.tryEmit(state)
                 },
@@ -96,7 +99,10 @@ class ManageMeasurementViewModel(
                             val state = DeleteConfirmDialogState(
                                 text = Res.string.details_delete_measurement_dialog_text,
                                 onDismissRequest = { _deleteConfirmDialogStateFlow.tryEmit(null) },
-                                onConfirm = { deleteMeasurementAudio() },
+                                onConfirm = {
+                                    deleteMeasurementAudio()
+                                    _deleteConfirmDialogStateFlow.tryEmit(null)
+                                },
                             )
                             _deleteConfirmDialogStateFlow.tryEmit(state)
                         },
@@ -152,9 +158,9 @@ class ManageMeasurementViewModel(
         )
 
 
-    // - Public functions
+    // - Private functions
 
-    fun deleteMeasurementAudio() {
+    private fun deleteMeasurementAudio() {
         measurement?.let {
             viewModelScope.launch {
                 measurementService.deleteMeasurementAssociatedAudio(it)
@@ -162,7 +168,7 @@ class ManageMeasurementViewModel(
         }
     }
 
-    fun deleteMeasurement() {
+    private fun deleteMeasurement() {
         measurement?.let {
             viewModelScope.launch {
                 measurementService.deleteMeasurement(it)
@@ -170,7 +176,7 @@ class ManageMeasurementViewModel(
         }
     }
 
-    fun downloadRawData() {
+    private fun downloadRawData() {
         measurement?.let {
             viewModelScope.launch {
                 measurementService.downloadRawMeasurement(it.uuid)
@@ -178,7 +184,7 @@ class ManageMeasurementViewModel(
         }
     }
 
-    fun downloadAudio() {
+    private fun downloadAudio() {
         measurement?.recordedAudioUrl?.let {
             viewModelScope.launch {
                 fileSystemService.download(it)
@@ -186,7 +192,7 @@ class ManageMeasurementViewModel(
         }
     }
 
-    fun exportToGeoJson() {
+    private fun exportToGeoJson() {
         viewModelScope.launch(Dispatchers.Default) {
             // Download as geojson file
             fileSystemService.download("measurement/geojson/$measurementId.geojson")
