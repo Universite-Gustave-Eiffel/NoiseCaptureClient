@@ -9,25 +9,26 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import org.noiseplanet.noisecapture.services.storage.CacheFileSystemService
+import kotlin.time.Clock
 
 
-class FilesystemHttpCacheStorage : CacheStorage, KoinComponent {
+class FilesystemHttpCacheStorage(
+    private val cacheSystemService: CacheFileSystemService,
+    private val clock: Clock = Clock.System,
+    private val maxCacheSizeBytes: Long = DEFAULT_MAX_CACHE_SIZE_BYTES,
+    scope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob()),
+) : CacheStorage {
 
     // - Constants
 
     companion object {
 
-        const val MAX_CACHE_SIZE_BYTES: Long = 25 * 1024 * 1024 // 25MB
+        const val DEFAULT_MAX_CACHE_SIZE_BYTES: Long = 25 * 1024 * 1024 // 25MB
     }
 
 
     // - Properties
-
-    private val cacheSystemService: CacheFileSystemService by inject()
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     private var entries: MutableMap<String, CachedResponseMetadata>? = null
 
@@ -78,10 +79,10 @@ class FilesystemHttpCacheStorage : CacheStorage, KoinComponent {
         }
         // Try to read cached value's expiration time
         val metadata: CachedResponseMetadata = cacheSystemService.readString(metadataKey)
-            ?.let { Json.decodeFromString(it) }
+            ?.let { decodeMetadata(metadataKey, it) }
             ?: return null
         // If cached data has expired, delete it
-        if (GMTDate() > metadata.expires) {
+        if (GMTDate(clock.now().toEpochMilliseconds()) > metadata.expires) {
             remove(url, varyKeys)
             return null
         }
@@ -127,13 +128,8 @@ class FilesystemHttpCacheStorage : CacheStorage, KoinComponent {
 
             for (path in metaDataPaths) {
                 val metadataString = cacheSystemService.readString(path) ?: continue
-                runCatching {
-                    val metadata: CachedResponseMetadata = Json.decodeFromString(metadataString)
+                decodeMetadata(path, metadataString)?.let { metadata ->
                     entries?.set(cacheKeyFromUrl(metadata.url), metadata)
-                }.onFailure {
-                    // If decoding fails (cached data is corrupted)
-                    cacheSystemService.delete(path.removeSuffix(".meta"))
-                    cacheSystemService.delete(path)
                 }
             }
         }
@@ -144,9 +140,19 @@ class FilesystemHttpCacheStorage : CacheStorage, KoinComponent {
             totalCacheSize += metadata.bodySize
 
             // If cache size is over limit, delete entries that will expire first
-            if (totalCacheSize > MAX_CACHE_SIZE_BYTES) {
+            if (totalCacheSize > maxCacheSizeBytes) {
                 removeAll(metadata.url)
             }
         }
+    }
+
+    private suspend fun decodeMetadata(key: String, stringValue: String): CachedResponseMetadata? {
+        return runCatching {
+            Json.decodeFromString<CachedResponseMetadata>(stringValue)
+        }.onFailure {
+            // If decoding fails (cached data is corrupted)
+            cacheSystemService.delete(key.removeSuffix(".meta"))
+            cacheSystemService.delete(key)
+        }.getOrNull()
     }
 }
