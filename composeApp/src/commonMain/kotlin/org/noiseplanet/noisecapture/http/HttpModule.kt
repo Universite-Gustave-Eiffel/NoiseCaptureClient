@@ -11,7 +11,9 @@ val httpModule = module {
     single<HttpClient> {
         HttpClient {
             install(HttpCache) {
-                val cacheStorage = FilesystemHttpCacheStorage()
+                val cacheStorage = FilesystemHttpCacheStorage(
+                    cacheSystemService = get()
+                )
                 this.privateStorage(cacheStorage)
                 this.publicStorage(cacheStorage)
             }

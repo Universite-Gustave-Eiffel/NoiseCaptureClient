@@ -3,6 +3,7 @@ package org.noiseplanet.noisecapture.service
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
 import org.noiseplanet.noisecapture.TestClock
+import org.noiseplanet.noisecapture.mock.MockUserSettingsService
 import org.noiseplanet.noisecapture.model.dao.Campaign
 import org.noiseplanet.noisecapture.services.campaign.CampaignService
 import org.noiseplanet.noisecapture.services.campaign.DefaultCampaignService

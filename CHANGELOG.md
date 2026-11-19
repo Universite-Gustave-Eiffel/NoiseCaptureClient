@@ -11,6 +11,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Measurement campaigns (#335)
 
+### Fixed
+
+- Decoding corrupted HTTP cache elements would cause the app to crash endlessly (#336)
+
 ## [0.10.1] - 2026-10-22
 
 ### Changed
