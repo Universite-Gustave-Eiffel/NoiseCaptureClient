@@ -126,10 +126,15 @@ class FilesystemHttpCacheStorage : CacheStorage, KoinComponent {
             entries = mutableMapOf()
 
             for (path in metaDataPaths) {
-                val metadata: CachedResponseMetadata = cacheSystemService.readString(path)
-                    ?.let { Json.decodeFromString(it) }
-                    ?: continue
-                entries?.set(cacheKeyFromUrl(metadata.url), metadata)
+                val metadataString = cacheSystemService.readString(path) ?: continue
+                runCatching {
+                    val metadata: CachedResponseMetadata = Json.decodeFromString(metadataString)
+                    entries?.set(cacheKeyFromUrl(metadata.url), metadata)
+                }.onFailure {
+                    // If decoding fails (cached data is corrupted)
+                    cacheSystemService.delete(path.removeSuffix(".meta"))
+                    cacheSystemService.delete(path)
+                }
             }
         }
 
