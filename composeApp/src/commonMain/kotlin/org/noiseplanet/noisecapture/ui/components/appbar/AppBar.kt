@@ -2,13 +2,12 @@ package org.noiseplanet.noisecapture.ui.components.appbar
 
 import Platform
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -78,14 +77,14 @@ fun AppBar(
         },
         actions = {
             LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp, alignment = Alignment.End)
+                horizontalArrangement = Arrangement.spacedBy(8.dp, alignment = Alignment.End),
+                modifier = Modifier.padding(end = 2.dp)
             ) {
                 items(actions) { action ->
-                    Button(
+                    IconButton(
                         onClick = action.onClick,
-                        colors = ButtonDefaults.textButtonColors()
+                        colors = IconButtonDefaults.iconButtonColors()
                             .copy(contentColor = MaterialTheme.colorScheme.onSurface),
-                        contentPadding = PaddingValues.Zero,
                     ) {
                         action.icon?.let {
                             Icon(
