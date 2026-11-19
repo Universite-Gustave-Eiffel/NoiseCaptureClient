@@ -14,6 +14,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 
 - Decoding corrupted HTTP cache elements would cause the app to crash endlessly (#336)
+- Fix "Delete measurement" button that used to deleted only the associated audio (#339)
 
 ## [0.10.1] - 2026-10-22
 
