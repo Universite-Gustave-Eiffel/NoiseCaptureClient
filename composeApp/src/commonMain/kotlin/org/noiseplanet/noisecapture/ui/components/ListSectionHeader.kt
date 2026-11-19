@@ -27,7 +27,7 @@ fun ListSectionHeader(
             text = stringResource(title).uppercase(),
             style = MaterialTheme.typography.titleMono,
             color = color,
-            modifier = Modifier.padding(top = paddingTop, bottom = 8.dp)
+            modifier = Modifier.padding(top = paddingTop, bottom = 4.dp)
         )
     }
 }

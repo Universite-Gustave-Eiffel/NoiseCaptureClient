@@ -12,7 +12,7 @@ class RecordingRouter(navController: NavHostController) : Router(navController) 
 
     fun goToQuestionnaire(
         measurementId: String,
-        questionnaireId: String = "soundscape_default_questionnaire", // TODO: Dynamic questionnaire
+        questionnaireId: String,
     ) {
         navController.navigate(
             QuestionnaireRoute(

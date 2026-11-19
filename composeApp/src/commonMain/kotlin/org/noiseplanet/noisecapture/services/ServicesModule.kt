@@ -3,6 +3,8 @@ package org.noiseplanet.noisecapture.services
 import org.koin.dsl.module
 import org.noiseplanet.noisecapture.services.audio.DefaultLiveAudioService
 import org.noiseplanet.noisecapture.services.audio.LiveAudioService
+import org.noiseplanet.noisecapture.services.campaign.CampaignService
+import org.noiseplanet.noisecapture.services.campaign.DefaultCampaignService
 import org.noiseplanet.noisecapture.services.location.DefaultUserLocationService
 import org.noiseplanet.noisecapture.services.location.UserLocationService
 import org.noiseplanet.noisecapture.services.measurement.DefaultMeasurementService
@@ -11,6 +13,8 @@ import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.services.measurement.RecordingService
 import org.noiseplanet.noisecapture.services.permission.DefaultPermissionService
 import org.noiseplanet.noisecapture.services.permission.PermissionService
+import org.noiseplanet.noisecapture.services.questionnaire.DefaultQuestionnaireService
+import org.noiseplanet.noisecapture.services.questionnaire.QuestionnaireService
 import org.noiseplanet.noisecapture.services.settings.DefaultUserSettingsService
 import org.noiseplanet.noisecapture.services.settings.UserSettingsService
 import org.noiseplanet.noisecapture.services.statistics.DefaultUserStatisticsService
@@ -46,5 +50,15 @@ val servicesModule = module {
 
     single<UserStatisticsService> {
         DefaultUserStatisticsService()
+    }
+
+    single<CampaignService> {
+        DefaultCampaignService(
+            userSettingsService = get()
+        )
+    }
+
+    single<QuestionnaireService> {
+        DefaultQuestionnaireService()
     }
 }

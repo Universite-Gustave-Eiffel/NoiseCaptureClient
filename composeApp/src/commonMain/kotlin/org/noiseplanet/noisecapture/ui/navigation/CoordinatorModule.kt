@@ -22,4 +22,8 @@ val coordinatorModule = module {
     single<MockMeasurementBuilder> {
         MockMeasurementBuilder(measurementService = get())
     }
+
+    single {
+        DeepLinkHandler()
+    }
 }

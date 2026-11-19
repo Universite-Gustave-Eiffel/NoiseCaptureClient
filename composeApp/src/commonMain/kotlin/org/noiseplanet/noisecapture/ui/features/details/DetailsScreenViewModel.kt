@@ -4,9 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.format
-import kotlinx.datetime.toLocalDateTime
 import noisecapture.composeapp.generated.resources.Res
 import noisecapture.composeapp.generated.resources.details_title
 import org.jetbrains.compose.resources.StringResource
@@ -16,6 +13,7 @@ import org.noiseplanet.noisecapture.model.dao.Measurement
 import org.noiseplanet.noisecapture.services.measurement.MeasurementService
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 import org.noiseplanet.noisecapture.util.DateUtil
+import org.noiseplanet.noisecapture.util.millisecondsToFormattedDateTime
 import org.noiseplanet.noisecapture.util.stateInWhileSubscribed
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
@@ -81,10 +79,8 @@ class DetailsScreenViewModel(
     // - Private functions
 
     private fun getMeasurementStartTimeString(measurement: Measurement): String {
-        val instant = Instant.fromEpochMilliseconds(measurement.startTimestamp)
-        val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
-
-        return localDateTime.format(DateUtil.Format.MEASUREMENT_START_DATETIME)
+        return measurement.startTimestamp
+            .millisecondsToFormattedDateTime(DateUtil.Format.MEASUREMENT_START_DATETIME)
     }
 
     private fun getMeasurementDurationString(measurement: Measurement): String {

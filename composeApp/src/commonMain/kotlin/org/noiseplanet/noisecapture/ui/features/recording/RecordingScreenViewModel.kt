@@ -11,8 +11,10 @@ import noisecapture.composeapp.generated.resources.measurement_title
 import org.jetbrains.compose.resources.StringResource
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.noiseplanet.noisecapture.services.campaign.CampaignService
 import org.noiseplanet.noisecapture.services.location.UserLocationService
 import org.noiseplanet.noisecapture.services.measurement.RecordingService
+import org.noiseplanet.noisecapture.services.questionnaire.QuestionnaireService
 import org.noiseplanet.noisecapture.ui.components.ButtonContent
 import org.noiseplanet.noisecapture.ui.components.appbar.ScreenViewModel
 import org.noiseplanet.noisecapture.ui.components.dialog.NCDialogViewModel
@@ -27,6 +29,7 @@ class RecordingScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
 
     private val recordingService: RecordingService by inject()
     private val locationService: UserLocationService by inject()
+    private val campaignService: CampaignService by inject()
 
     var showEndRecordingConfirmationDialog: (() -> Unit)? = null
 
@@ -37,6 +40,8 @@ class RecordingScreenViewModel : ViewModel(), ScreenViewModel, KoinComponent {
     var shouldOpenDetailsOnceDone: Boolean = true
 
     val isLocationAvailable = locationService.isLocationAvailable
+    val questionnaireId: String = campaignService.getCurrentCampaign()?.questionnaireId
+        ?: QuestionnaireService.DEFAULT_QUESTIONNAIRE_ID
 
 
     // - ScreenViewModel

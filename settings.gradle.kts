@@ -27,7 +27,6 @@ dependencyResolutionManagement {
                 includeGroupAndSubgroups("com.google")
             }
         }
-        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
         mavenCentral()
     }
 }

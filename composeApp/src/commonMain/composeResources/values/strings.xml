@@ -20,6 +20,12 @@
     <string name="home_mic_setup_not_calibrated">For your measurements to be accurate, it is important that you calibrate your microphone.</string>
     <string name="home_mic_setup_calibrate_button">Calibrate</string>
     <string name="home_mic_setup_recalibrate_button">Recalibrate</string>
+    <string name="home_campaign_section_header">Measurement campaign</string>
+    <string name="home_campaign_join_description">Campaigns allow participants to group together all measurements made with a common goal, or for a special event.</string>
+    <string name="home_campaign_join_scan_button">Scan invite</string>
+    <string name="home_campaign_join_enter_code_button">Enter invite code</string>
+    <string name="home_campaign_join_create_your_own">Want to create your own campaign?</string>
+    <string name="home_campaign_manage_button">Manage</string>
 
     <string name="home_statistics_title">Statistics</string>
     <!-- TODO: Use localisation that supports plurals -->
@@ -320,6 +326,28 @@
     <string name="calibration_results_save_gain">Save gain</string>
     <string name="calibration_results_suggested_gain_warning">The gain difference between your device and the reference is suspiciously high. We advise that you try calibrating again, following the tips. If you’re confident with your calibration method, you can still apply this suggested gain.</string>
 
+
+    <!-- Campaign -->
+    <string name="campaign_details_start_date">Starts on</string>
+    <string name="campaign_details_end_date">Ends on</string>
+    <string name="campaign_details_invite_code">Invite code</string>
+    <string name="campaign_join_invite_code_title">Enter invite code</string>
+    <string name="campaign_join_invite_code_body">Campaigns allow participants to group together all measurements made with a common goal, or for a special event. If you received an invitation with a code, enter it down bellow to join the campaign.</string>
+    <string name="campaign_join_invite_code_confirm">Join campaign</string>
+    <string name="campaign_join_disclaimer">Note: you can leave and join measurement campaigns at any time, without restriction.</string>
+    <string name="campaign_not_found_title">Campaign not found</string>
+    <string name="campaign_not_found_body">Sorry, we couldn’t find any campaign corresponding to this invite code. Are you sure you entered it correctly?</string>
+    <string name="campaign_expired_title">Campaign expired</string>
+    <string name="campaign_expired_body">The campaign you’re trying to join has already ended. Did you enter the correct invite code?</string>
+    <string name="campaign_manage_leave_button">Leave campaign</string>
+    <string name="campaign_manage_join_button">Join campaign</string>
+    <string name="campaign_manage_not_started_disclaimer">This campaign has not yet started. You can still make measurements before the start date, but they will not be registered as part of the campaign.</string>
+    <string name="campaign_scan_not_available_dialog_title">Cannot open scanner</string>
+    <string name="campaign_scan_not_available_dialog_body_android">NoiseCapture relies on Google Play Services built-in scanner to scan QR codes in app. If you own a de-Googled device, please use your own QR code scanner to scan the invite, or enter invite code manually.</string>
+    <string name="campaign_scan_not_available_dialog_body_ios">We couldn't access your device's camera. Please enable camera permissions, use the iOS camera to scan the invite code, or enter it manually.</string>
+    <string name="campaign_scan_dialog_ios_title">Scan invite code</string>
+
+
     <!-- Misc -->
     <string name="na">N/A</string>
     <string name="delete">Delete</string>
@@ -332,4 +360,7 @@
     <string name="previous">Previous</string>
     <string name="done">Done</string>
     <string name="exit">Exit</string>
+    <string name="close">Close</string>
+    <string name="at">at</string>
+    <string name="contact_us">Contact us!</string>
 </resources>

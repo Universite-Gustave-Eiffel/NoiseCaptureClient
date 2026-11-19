@@ -43,4 +43,7 @@ class WasmJSPlatform : Platform {
     // On web, rely on the browser's backward/forward buttons for navigation
     override val showAppBarBackButton: Boolean
         get() = false
+
+    override val enableMeasurementCampaigns: Boolean
+        get() = false
 }

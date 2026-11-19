@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -45,6 +46,8 @@ fun NCDialog(
         text = text,
         shape = shape,
         containerColor = containerColors.backgroundColor,
+        titleContentColor = MaterialTheme.colorScheme.onSurface,
+        textContentColor = MaterialTheme.colorScheme.onSurface,
         modifier = modifier
             .border(
                 width = 1.dp,
@@ -75,13 +78,16 @@ fun NCDialog(
         },
         title = {
             Text(
-                stringResource(viewModel.title),
+                text = stringResource(viewModel.title),
                 textAlign = TextAlign.Start,
                 modifier = modifier.fillMaxWidth()
             )
         },
         text = {
-            Text(stringResource(viewModel.text))
+            Text(
+                text = stringResource(viewModel.text),
+                color = MaterialTheme.colorScheme.onSurface
+            )
         },
         confirmButton = {
             viewModel.confirmButtonContent?.let {

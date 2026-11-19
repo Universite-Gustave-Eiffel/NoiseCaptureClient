@@ -21,12 +21,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.get
+import org.koin.android.ext.android.inject
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.noiseplanet.noisecapture.log.Logger
 import org.noiseplanet.noisecapture.permission.delegate.PermissionDelegate
 import org.noiseplanet.noisecapture.permission.toPermission
-import org.noiseplanet.noisecapture.services.permission.PermissionService
+import org.noiseplanet.noisecapture.ui.navigation.DeepLinkHandler
 import org.noiseplanet.noisecapture.ui.theme.OnSurface
 import org.noiseplanet.noisecapture.ui.theme.Surface
 import org.noiseplanet.noisecapture.util.AndroidNotificationProvider
@@ -40,10 +41,10 @@ class MainActivity : ComponentActivity() {
 
     // - Properties
 
-    private lateinit var permissionService: PermissionService
-    private lateinit var logger: Logger
+    private val deepLinkHandler: DeepLinkHandler by inject()
+    private val logger: Logger by inject()
 
-    private lateinit var filePickerEventBus: AndroidFilePickerEventBus
+    private val filePickerEventBus: AndroidFilePickerEventBus by inject()
     private var filePickerIntentLauncher: ActivityResultLauncher<Intent>? = null
 
     private val scope = CoroutineScope(Dispatchers.Main)
@@ -85,11 +86,11 @@ class MainActivity : ComponentActivity() {
             App()
         }
 
-        permissionService = get()
-        logger = get()
-        filePickerEventBus = get()
-
         subscribeToFilePickerEventBus()
+
+        intent.data?.let {
+            deepLinkHandler.handle(it.toString())
+        }
     }
 
     override fun onRequestPermissionsResult(
@@ -105,6 +106,15 @@ class MainActivity : ComponentActivity() {
         val permission = permissions.toList().filterNotNull().toPermission() ?: return
         val delegate: PermissionDelegate = get(named(permission.name))
         delegate.checkPermissionState()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+
+        intent.data?.let {
+            deepLinkHandler.handle(it.toString())
+        }
     }
 
 

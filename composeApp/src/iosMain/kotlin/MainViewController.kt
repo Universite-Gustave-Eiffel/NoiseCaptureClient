@@ -4,8 +4,10 @@ import androidx.compose.ui.window.ComposeUIViewController
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.cinterop.ExperimentalForeignApi
 import org.koin.compose.koinInject
+import org.koin.mp.KoinPlatform
 import org.noiseplanet.noisecapture.initKoin
 import org.noiseplanet.noisecapture.platformModule
+import org.noiseplanet.noisecapture.ui.navigation.DeepLinkHandler
 import org.noiseplanet.noisecapture.util.FilePickerEvent
 import org.noiseplanet.noisecapture.util.IOSFilePickerEventBus
 import platform.UIKit.UIDocumentInteractionController
@@ -61,6 +63,17 @@ fun MainViewController() = ComposeUIViewController {
     // - Entry point
 
     App()
+}
+
+
+/**
+ * Deeplink handling entrypoint, accessible from SwiftUI code.
+ *
+ * @param deeplink Raw deeplink without processing, [DeepLinkHandler] does the parsing/verification.
+ */
+fun handleDeepLink(deeplink: String) {
+    val deepLinkHandler: DeepLinkHandler = KoinPlatform.getKoin().get()
+    deepLinkHandler.handle(deeplink)
 }
 
 

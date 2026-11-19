@@ -61,4 +61,13 @@ interface Platform {
      */
     val showAppBarBackButton: Boolean
         get() = true
+
+    /**
+     * If false, disables the measurement campaigns feature.
+     * Defaults to `false`.
+     *
+     * TODO: Move this property to a more flexible feature toggle service
+     */
+    val enableMeasurementCampaigns: Boolean
+        get() = true
 }
