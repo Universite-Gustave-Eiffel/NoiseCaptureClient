@@ -82,7 +82,10 @@ class ManageMeasurementViewModel(
                     val state = DeleteConfirmDialogState(
                         text = Res.string.details_delete_measurement_audio_dialog_text,
                         onDismissRequest = { _deleteConfirmDialogStateFlow.tryEmit(null) },
-                        onConfirm = { deleteMeasurement() }
+                        onConfirm = {
+                            deleteMeasurement()
+                            _deleteConfirmDialogStateFlow.tryEmit(null)
+                        }
                     )
                     _deleteConfirmDialogStateFlow.tryEmit(state)
                 },
@@ -96,7 +99,10 @@ class ManageMeasurementViewModel(
                             val state = DeleteConfirmDialogState(
                                 text = Res.string.details_delete_measurement_dialog_text,
                                 onDismissRequest = { _deleteConfirmDialogStateFlow.tryEmit(null) },
-                                onConfirm = { deleteMeasurementAudio() },
+                                onConfirm = {
+                                    deleteMeasurementAudio()
+                                    _deleteConfirmDialogStateFlow.tryEmit(null)
+                                },
                             )
                             _deleteConfirmDialogStateFlow.tryEmit(state)
                         },
